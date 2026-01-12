@@ -48,8 +48,8 @@ export async function POST(request: NextRequest) {
       whatsappPhone: data.whatsappPhone || data.phone,
       location: data.address,
       age: undefined,
-      maritalStatus: data.maritalStatus,
-      employmentStatus: data.employmentStatus,
+      maritalStatus: data.maritalStatus as MaritalStatus,
+      employmentStatus: data.employmentStatus as EmploymentStatus,
       interests: data.interests || [],
       groupId: data.groupId,
     });
