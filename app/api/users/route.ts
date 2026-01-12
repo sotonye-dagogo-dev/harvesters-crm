@@ -1,0 +1,49 @@
+import { NextRequest } from "next/server";
+import { userDb } from "@/lib/data/database";
+import { requireRole } from "@/lib/utils/middleware";
+import { userToAuthUser } from "@/lib/utils/auth";
+import { paginatedResponse, handleApiError } from "@/lib/utils/api";
+
+// GET /api/users - List all users (Superadmin only)
+export async function GET(request: NextRequest) {
+  try {
+    // Require superadmin role
+    const { user: _user, error } = await requireRole(
+      [UserRole.SUPERADMIN],
+      request
+    );
+    if (error) return error;
+
+    const searchParams = request.nextUrl.searchParams;
+    const page = parseInt(searchParams.get("page") || "1");
+    const pageSize = parseInt(searchParams.get("pageSize") || "20");
+    const role = searchParams.get("role") as UserRole | null;
+    const groupId = searchParams.get("groupId");
+    const search = searchParams.get("search") || undefined;
+    const isActive = searchParams.get("isActive");
+
+    // Build filters
+    const filters: UserFilters = {
+      role: role || undefined,
+      groupId: groupId || undefined,
+      search,
+      isActive: isActive ? isActive === "true" : undefined,
+    };
+
+    // Get users
+    const allUsers = userDb.findAll(filters);
+    const total = allUsers.length;
+
+    // Paginate
+    const start = (page - 1) * pageSize;
+    const end = start + pageSize;
+    const paginatedUsers = allUsers.slice(start, end);
+
+    // Convert to auth users (remove passwords)
+    const authUsers = paginatedUsers.map(userToAuthUser);
+
+    return paginatedResponse(authUsers, total, page, pageSize);
+  } catch (error) {
+    return handleApiError(error);
+  }
+}
