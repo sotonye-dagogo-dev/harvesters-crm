@@ -18,6 +18,7 @@ import {
 } from "@ant-design/icons";
 import { useAuth } from "@/providers/AuthProvider";
 import { AppHeader, AppFooter } from "@/components/ui/Layout";
+import { ThemeToggle } from "@/components/ui/ThemeToggle";
 
 const { Sider, Content } = Layout;
 
@@ -213,12 +214,13 @@ export default function DashboardLayout({
           title={`Welcome, ${user?.firstName || "User"}`}
           actions={
             <div className="flex items-center gap-4">
-              <span className="text-sm text-gray-600">
+              <ThemeToggle />
+              <span className="text-sm text-gray-600 dark:text-gray-300">
                 {role === "SUPERADMIN"
                   ? "Super Admin"
                   : role.charAt(0) + role.slice(1).toLowerCase()}
               </span>
-              <div className="w-10 h-10 rounded-full bg-church-primary text-white flex items-center justify-center font-semibold">
+              <div className="w-10 h-10 rounded-full bg-church-primary dark:bg-green-600 text-white flex items-center justify-center font-semibold">
                 {user?.firstName?.[0]}
                 {user?.lastName?.[0]}
               </div>
@@ -226,7 +228,7 @@ export default function DashboardLayout({
           }
         />
 
-        <Content className="p-6 bg-gray-50">
+        <Content className="p-6 bg-gray-50 dark:bg-slate-900">
           <main id="main-content" tabIndex={-1} aria-label="Main content">
             <div className="max-w-7xl mx-auto">{children}</div>
           </main>

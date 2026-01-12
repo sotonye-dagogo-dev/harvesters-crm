@@ -1,6 +1,7 @@
 import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
 import { cookies } from "next/headers";
+import { USER_ROLES } from "@/lib/constants";
 
 // JWT Configuration
 const ACCESS_TOKEN_SECRET =
@@ -164,15 +165,19 @@ export function hasRole(user: AuthUser | null, roles: UserRole[]): boolean {
 }
 
 export function isSuperadmin(user: AuthUser | null): boolean {
-  return hasRole(user, [UserRole.SUPERADMIN]);
+  return hasRole(user, [USER_ROLES.SUPERADMIN]);
 }
 
 export function isLeader(user: AuthUser | null): boolean {
-  return hasRole(user, [UserRole.LEADER, UserRole.SUPERADMIN]);
+  return hasRole(user, [USER_ROLES.LEADER, USER_ROLES.SUPERADMIN]);
 }
 
 export function isMember(user: AuthUser | null): boolean {
-  return hasRole(user, [UserRole.MEMBER, UserRole.LEADER, UserRole.SUPERADMIN]);
+  return hasRole(user, [
+    USER_ROLES.MEMBER,
+    USER_ROLES.LEADER,
+    USER_ROLES.SUPERADMIN,
+  ]);
 }
 
 export function canAccessGroup(
@@ -187,5 +192,5 @@ export function canAccessGroup(
 export function canManageGroup(user: AuthUser | null, group: Group): boolean {
   if (!user) return false;
   if (isSuperadmin(user)) return true;
-  return user.role === UserRole.LEADER && group.leaderId === user.id;
+  return user.role === USER_ROLES.LEADER && group.leaderId === user.id;
 }

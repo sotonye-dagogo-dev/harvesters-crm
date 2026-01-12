@@ -1,6 +1,7 @@
 import { NextRequest } from "next/server";
 import { userDb, groupDb, meetingDb, interactionDb } from "@/lib/data/database";
 import { getAuthenticatedUser } from "@/lib/utils/middleware";
+import { USER_ROLES } from "@/lib/constants";
 import {
   successResponse,
   forbiddenResponse,
@@ -14,7 +15,7 @@ export async function GET(request: NextRequest) {
     if (error) return error;
 
     // Only superadmin can access overview analytics
-    if (user?.role !== UserRole.SUPERADMIN) {
+    if (user?.role !== USER_ROLES.SUPERADMIN) {
       return forbiddenResponse("You don't have permission to access analytics");
     }
 

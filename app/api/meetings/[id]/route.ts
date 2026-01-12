@@ -9,6 +9,7 @@ import {
   badRequestResponse,
   handleApiError,
 } from "@/lib/utils/api";
+import { USER_ROLES } from "@/lib/constants";
 
 // GET /api/meetings/[id] - Get meeting by ID
 export async function GET(
@@ -29,7 +30,7 @@ export async function GET(
     // Check permissions
     const group = groupDb.findById(meeting.groupId);
     const canView =
-      user?.role === UserRole.SUPERADMIN ||
+      user?.role === USER_ROLES.SUPERADMIN ||
       group?.leaderId === user?.id ||
       user?.groupId === meeting.groupId;
 
@@ -71,7 +72,7 @@ export async function PUT(
     // Check permissions
     const group = groupDb.findById(meeting.groupId);
     const canUpdate =
-      user?.role === UserRole.SUPERADMIN ||
+      user?.role === USER_ROLES.SUPERADMIN ||
       group?.leaderId === user?.id ||
       meeting.createdById === user?.id;
 
@@ -112,7 +113,7 @@ export async function DELETE(
     // Check permissions
     const group = groupDb.findById(meeting.groupId);
     const canDelete =
-      user?.role === UserRole.SUPERADMIN ||
+      user?.role === USER_ROLES.SUPERADMIN ||
       group?.leaderId === user?.id ||
       meeting.createdById === user?.id;
 

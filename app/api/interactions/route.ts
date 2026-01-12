@@ -8,6 +8,7 @@ import {
   badRequestResponse,
   handleApiError,
 } from "@/lib/utils/api";
+import { USER_ROLES } from "@/lib/constants";
 
 // GET /api/interactions - List interactions
 export async function GET(request: NextRequest) {
@@ -23,14 +24,14 @@ export async function GET(request: NextRequest) {
     const limit = parseInt(searchParams.get("limit") || "20");
 
     // Build filter based on user role
-    let filter: Record<string, unknown> = {};
+    const filter: Record<string, unknown> = {};
 
-    if (user?.role === UserRole.SUPERADMIN) {
+    if (user?.role === USER_ROLES.SUPERADMIN) {
       // Superadmin sees all interactions
       if (type) filter.type = type;
       if (memberId) filter.memberId = memberId;
       if (leaderId) filter.leaderId = leaderId;
-    } else if (user?.role === UserRole.LEADER) {
+    } else if (user?.role === USER_ROLES.LEADER) {
       // Leaders see interactions in their group
       filter.leaderId = user.id;
       if (type) filter.type = type;
@@ -107,7 +108,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Only leaders and superadmins can create interactions
-    if (user?.role === UserRole.MEMBER) {
+    if (user?.role === USER_ROLES.MEMBER) {
       return forbiddenResponse(
         "You don't have permission to create interactions"
       );
@@ -120,7 +121,7 @@ export async function POST(request: NextRequest) {
     }
 
     // If leader, verify member is in their group
-    if (user.role === UserRole.LEADER) {
+    if (user.role === USER_ROLES.LEADER) {
       if (member.groupId !== user.groupId) {
         return forbiddenResponse(
           "You can only create interactions for members in your group"

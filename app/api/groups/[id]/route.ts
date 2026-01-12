@@ -9,6 +9,7 @@ import {
   badRequestResponse,
   handleApiError,
 } from "@/lib/utils/api";
+import { USER_ROLES } from "@/lib/constants";
 
 // GET /api/groups/[id] - Get group by ID
 export async function GET(
@@ -28,7 +29,7 @@ export async function GET(
 
     // Check permissions
     const canView =
-      user?.role === UserRole.SUPERADMIN ||
+      user?.role === USER_ROLES.SUPERADMIN ||
       group.leaderId === user?.id ||
       user?.groupId === id;
 
@@ -67,7 +68,7 @@ export async function PUT(
 
     // Check permissions
     const canUpdate =
-      user?.role === UserRole.SUPERADMIN || group.leaderId === user?.id;
+      user?.role === USER_ROLES.SUPERADMIN || group.leaderId === user?.id;
 
     if (!canUpdate) {
       return forbiddenResponse(
@@ -98,7 +99,10 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { error } = await requireRole([UserRole.SUPERADMIN], request);
+    const { error } = await requireRole(
+      [USER_ROLES.SUPERADMIN as UserRole],
+      request
+    );
     if (error) return error;
 
     const { id } = await params;

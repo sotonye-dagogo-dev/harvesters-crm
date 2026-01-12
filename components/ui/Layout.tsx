@@ -10,8 +10,10 @@ interface AppHeaderProps {
 
 export function AppHeader({ title, actions }: AppHeaderProps) {
   return (
-    <Header className="bg-white border-b border-gray-200 px-6 flex items-center justify-between h-16">
-      <h1 className="text-xl font-semibold text-gray-900 m-0">{title}</h1>
+    <Header className="bg-white dark:bg-slate-800 border-b border-gray-200 dark:border-slate-700 px-6 flex items-center justify-between h-16">
+      <h1 className="text-xl font-semibold text-gray-900 dark:text-white m-0">
+        {title}
+      </h1>
       {actions && <div className="flex items-center gap-4">{actions}</div>}
     </Header>
   );
@@ -23,8 +25,8 @@ interface AppFooterProps {
 
 export function AppFooter({ className = "" }: AppFooterProps) {
   return (
-    <Footer className={`text-center bg-gray-50 ${className}`}>
-      <p className="text-gray-600 text-sm m-0">
+    <Footer className={`text-center bg-gray-50 dark:bg-slate-900 ${className}`}>
+      <p className="text-gray-600 dark:text-gray-400 text-sm m-0">
         Church Fellowship CRM © {new Date().getFullYear()}
       </p>
     </Footer>

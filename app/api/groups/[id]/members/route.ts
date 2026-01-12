@@ -9,6 +9,7 @@ import {
   badRequestResponse,
   handleApiError,
 } from "@/lib/utils/api";
+import { USER_ROLES } from "@/lib/constants";
 
 // GET /api/groups/[id]/members - Get group members
 export async function GET(
@@ -28,7 +29,7 @@ export async function GET(
 
     // Check permissions
     const canView =
-      user?.role === UserRole.SUPERADMIN ||
+      user?.role === USER_ROLES.SUPERADMIN ||
       group.leaderId === user?.id ||
       user?.groupId === id;
 
@@ -72,7 +73,7 @@ export async function POST(
 
     // Check permissions
     const canAdd =
-      user?.role === UserRole.SUPERADMIN || group.leaderId === user?.id;
+      user?.role === USER_ROLES.SUPERADMIN || group.leaderId === user?.id;
 
     if (!canAdd) {
       return forbiddenResponse(

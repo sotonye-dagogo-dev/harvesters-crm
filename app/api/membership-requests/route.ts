@@ -9,6 +9,7 @@ import {
   handleApiError,
 } from "@/lib/utils/api";
 import { sendNewMembershipRequestNotification } from "@/lib/utils/notificationHelpers";
+import { USER_ROLES } from "@/lib/constants";
 
 const createRequestSchema = z.object({
   groupId: z.string().min(1, "Group ID is required"),
@@ -32,13 +33,13 @@ export async function GET(request: NextRequest) {
     const limit = parseInt(searchParams.get("limit") || "20");
 
     // Build filter based on user role
-    let filter: Record<string, unknown> = {};
+    const filter: Record<string, unknown> = {};
 
-    if (user?.role === UserRole.SUPERADMIN) {
+    if (user?.role === USER_ROLES.SUPERADMIN) {
       // Superadmin sees all requests
       if (status) filter.status = status;
       if (groupId) filter.groupId = groupId;
-    } else if (user?.role === UserRole.LEADER) {
+    } else if (user?.role === USER_ROLES.LEADER) {
       // Leaders see requests for their group
       filter.groupId = user.groupId;
       if (status) filter.status = status;
@@ -120,7 +121,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Only members can create membership requests
-    if (user?.role !== UserRole.MEMBER) {
+    if (user?.role !== USER_ROLES.MEMBER) {
       return forbiddenResponse("Only members can create membership requests");
     }
 

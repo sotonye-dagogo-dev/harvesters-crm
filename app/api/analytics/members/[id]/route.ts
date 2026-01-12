@@ -7,6 +7,7 @@ import {
   forbiddenResponse,
   handleApiError,
 } from "@/lib/utils/api";
+import { USER_ROLES } from "@/lib/constants";
 
 // GET /api/analytics/members/[id] - Get member analytics
 export async function GET(
@@ -32,7 +33,7 @@ export async function GET(
       ? groupDb.findById(member.groupId)
       : null;
     const canView =
-      user?.role === UserRole.SUPERADMIN ||
+      user?.role === USER_ROLES.SUPERADMIN ||
       memberGroup?.leaderId === user?.id ||
       user?.id === id;
 

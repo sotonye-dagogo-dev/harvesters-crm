@@ -13,6 +13,7 @@ import {
   sendMembershipRequestNotification,
   sendNewMemberNotification,
 } from "@/lib/utils/notificationHelpers";
+import { USER_ROLES } from "@/lib/constants";
 
 const processRequestSchema = z.object({
   action: z.enum(["approve", "reject"]),
@@ -45,7 +46,7 @@ export async function POST(
     // Check permissions - only group leader or superadmin can process
     const group = groupDb.findById(membershipRequest.toGroupId);
     const canProcess =
-      user?.role === UserRole.SUPERADMIN || group?.leaderId === user?.id;
+      user?.role === USER_ROLES.SUPERADMIN || group?.leaderId === user?.id;
 
     if (!canProcess) {
       return forbiddenResponse(
@@ -71,7 +72,7 @@ export async function POST(
         status: newStatus,
         responseMessage: notes,
       },
-      user?.id!
+      user?.id ?? ""
     );
 
     if (!updatedRequest) {

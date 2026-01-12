@@ -2,14 +2,15 @@ import { NextRequest } from "next/server";
 import { userDb } from "@/lib/data/database";
 import { requireRole } from "@/lib/utils/middleware";
 import { userToAuthUser } from "@/lib/utils/auth";
+import { USER_ROLES } from "@/lib/constants";
 import { paginatedResponse, handleApiError } from "@/lib/utils/api";
 
 // GET /api/users - List all users (Superadmin only)
 export async function GET(request: NextRequest) {
   try {
     // Require superadmin role
-    const { user: _user, error } = await requireRole(
-      [UserRole.SUPERADMIN],
+    const { error } = await requireRole(
+      [USER_ROLES.SUPERADMIN as UserRole],
       request
     );
     if (error) return error;

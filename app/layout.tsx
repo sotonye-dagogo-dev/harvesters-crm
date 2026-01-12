@@ -3,9 +3,11 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { AntdProvider } from "@/providers/AntdProvider";
 import { AuthProvider } from "@/providers/AuthProvider";
+import { ThemeProvider } from "@/providers/ThemeProvider";
 import { organizationSchema, webApplicationSchema } from "@/lib/utils/seo";
-import { ServiceWorkerRegistration } from "@/components/features/pwa/ServiceWorkerRegistration";
-import { InstallPrompt } from "@/components/features/pwa/InstallPrompt";
+// PWA features temporarily disabled due to filesystem cache issues
+// import { ServiceWorkerRegistration } from "@/components/features/pwa/ServiceWorkerRegistration";
+// import { InstallPrompt } from "@/components/features/pwa/InstallPrompt";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -25,12 +27,13 @@ export const metadata: Metadata = {
     "attendance tracking",
   ],
   authors: [{ name: "Harvesters Church" }],
-  manifest: "/manifest.json",
-  appleWebApp: {
-    capable: true,
-    statusBarStyle: "default",
-    title: "Fellowship CRM",
-  },
+  // PWA features temporarily disabled
+  // manifest: "/manifest.json",
+  // appleWebApp: {
+  //   capable: true,
+  //   statusBarStyle: "default",
+  //   title: "Fellowship CRM",
+  // },
   openGraph: {
     title: "Church Fellowship CRM",
     description:
@@ -45,7 +48,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <head>
         {/* JSON-LD Structured Data */}
         <script
@@ -69,11 +72,14 @@ export default function RootLayout({
         >
           Skip to main content
         </a>
-        <ServiceWorkerRegistration />
-        <InstallPrompt />
-        <AntdProvider>
-          <AuthProvider>{children}</AuthProvider>
-        </AntdProvider>
+        {/* PWA features temporarily disabled */}
+        {/* <ServiceWorkerRegistration /> */}
+        {/* <InstallPrompt /> */}
+        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+          <AntdProvider>
+            <AuthProvider>{children}</AuthProvider>
+          </AntdProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

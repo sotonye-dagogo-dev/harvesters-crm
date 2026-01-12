@@ -7,6 +7,7 @@ import {
   forbiddenResponse,
   handleApiError,
 } from "@/lib/utils/api";
+import { USER_ROLES } from "@/lib/constants";
 
 // GET /api/membership-requests/[id] - Get membership request by ID
 export async function GET(
@@ -27,7 +28,7 @@ export async function GET(
     // Check permissions
     const group = groupDb.findById(membershipRequest.toGroupId);
     const canView =
-      user?.role === UserRole.SUPERADMIN ||
+      user?.role === USER_ROLES.SUPERADMIN ||
       group?.leaderId === user?.id ||
       membershipRequest.memberId === user?.id;
 
@@ -93,7 +94,7 @@ export async function DELETE(
     // Only the requester or superadmin can cancel
     if (
       user?.id !== membershipRequest.memberId &&
-      user?.role !== UserRole.SUPERADMIN
+      user?.role !== USER_ROLES.SUPERADMIN
     ) {
       return forbiddenResponse(
         "You don't have permission to cancel this request"

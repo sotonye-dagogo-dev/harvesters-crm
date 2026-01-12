@@ -10,6 +10,7 @@ import {
   handleApiError,
 } from "@/lib/utils/api";
 import { scheduleMeetingReminder } from "@/lib/utils/notificationHelpers";
+import { USER_ROLES } from "@/lib/constants";
 
 // GET /api/meetings - List meetings
 export async function GET(request: NextRequest) {
@@ -35,10 +36,10 @@ export async function GET(request: NextRequest) {
     let allMeetings = meetingDb.findAll(filters);
 
     // Filter by permission
-    if (user?.role === UserRole.MEMBER) {
+    if (user?.role === USER_ROLES.MEMBER) {
       // Members can only see meetings from their group
       allMeetings = allMeetings.filter((m) => m.groupId === user.groupId);
-    } else if (user?.role === UserRole.LEADER) {
+    } else if (user?.role === USER_ROLES.LEADER) {
       // Leaders can see meetings from groups they lead or are members of
       const leaderGroups = groupDb.findAll({ leaderId: user.id });
       const leaderGroupIds = leaderGroups.map((g) => g.id);
@@ -65,7 +66,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const { user, error } = await requireRole(
-      [UserRole.LEADER, UserRole.SUPERADMIN],
+      [USER_ROLES.LEADER as UserRole, USER_ROLES.SUPERADMIN as UserRole],
       request
     );
     if (error) return error;
@@ -87,7 +88,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Check permissions - leader can only create meetings for their group
-    if (user?.role === UserRole.LEADER && group.leaderId !== user.id) {
+    if (user?.role === USER_ROLES.LEADER && group.leaderId !== user.id) {
       return forbiddenResponse(
         "You can only create meetings for groups you lead"
       );

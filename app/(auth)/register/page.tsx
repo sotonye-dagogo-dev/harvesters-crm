@@ -1,5 +1,6 @@
 import { Metadata } from "next";
 import RegisterForm from "@/components/features/auth/RegisterForm";
+import { ThemeToggle } from "@/components/ui/ThemeToggle";
 
 export const metadata: Metadata = {
   title: "Register - Church Fellowship CRM",
@@ -8,7 +9,12 @@ export const metadata: Metadata = {
 
 export default function RegisterPage() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-church-primary/10 to-church-accent/10 p-4 py-12">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-church-primary/10 to-church-accent/10 dark:from-slate-900 dark:to-slate-800 p-4 py-12">
+      {/* Theme Toggle - Fixed Position */}
+      <div className="fixed top-4 right-4 z-50">
+        <ThemeToggle />
+      </div>
+
       <div className="w-full max-w-2xl">
         <RegisterForm />
       </div>

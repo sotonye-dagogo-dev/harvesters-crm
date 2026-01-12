@@ -9,6 +9,7 @@ import {
   badRequestResponse,
   handleApiError,
 } from "@/lib/utils/api";
+import { USER_ROLES } from "@/lib/constants";
 
 // GET /api/interactions/[id] - Get interaction by ID
 export async function GET(
@@ -28,7 +29,7 @@ export async function GET(
 
     // Check permissions
     const canView =
-      user?.role === UserRole.SUPERADMIN ||
+      user?.role === USER_ROLES.SUPERADMIN ||
       interaction.leaderId === user?.id ||
       interaction.memberId === user?.id;
 
@@ -90,7 +91,7 @@ export async function PUT(
 
     // Check permissions - only the leader who created it or superadmin can update
     const canUpdate =
-      user?.role === UserRole.SUPERADMIN || interaction.leaderId === user?.id;
+      user?.role === USER_ROLES.SUPERADMIN || interaction.leaderId === user?.id;
 
     if (!canUpdate) {
       return forbiddenResponse(
@@ -134,7 +135,7 @@ export async function DELETE(
 
     // Check permissions - only the leader who created it or superadmin can delete
     const canDelete =
-      user?.role === UserRole.SUPERADMIN || interaction.leaderId === user?.id;
+      user?.role === USER_ROLES.SUPERADMIN || interaction.leaderId === user?.id;
 
     if (!canDelete) {
       return forbiddenResponse(

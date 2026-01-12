@@ -2,18 +2,24 @@ import Link from "next/link";
 import { HomeOutlined, InfoCircleOutlined } from "@ant-design/icons";
 import Button from "@/components/ui/Button";
 import Card from "@/components/ui/Card";
+import { ThemeToggle } from "@/components/ui/ThemeToggle";
 
 export default function Home() {
   return (
-    <main className="min-h-screen bg-gradient-to-br from-church-primary/5 via-white to-church-accent/5">
+    <main className="min-h-screen bg-gradient-to-br from-church-primary/5 via-white to-church-accent/5 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
+      {/* Theme Toggle - Fixed Position */}
+      <div className="fixed top-4 right-4 z-50">
+        <ThemeToggle />
+      </div>
+
       <div className="container mx-auto px-4 py-12 sm:px-6 sm:py-16 lg:px-8 lg:py-20">
         <div className="max-w-6xl mx-auto">
           {/* Hero Section */}
           <div className="text-center mb-12 sm:mb-16 lg:mb-24">
-            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-church-primary mb-4 sm:mb-6 leading-tight">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-church-primary dark:text-green-400 mb-4 sm:mb-6 leading-tight">
               Church Fellowship CRM
             </h1>
-            <p className="text-base sm:text-lg lg:text-xl text-gray-600 mb-8 sm:mb-10 max-w-3xl mx-auto px-4 leading-relaxed">
+            <p className="text-base sm:text-lg lg:text-xl text-gray-600 dark:text-gray-300 mb-8 sm:mb-10 max-w-3xl mx-auto px-4 leading-relaxed">
               Manage church subgroups, track member engagement, and support
               pastoral care through structured insights and informed
               decision-making.
@@ -43,40 +49,40 @@ export default function Home() {
 
           {/* Feature Cards */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8 mb-12 sm:mb-16 lg:mb-20">
-            <Card className="text-center p-6 sm:p-8 hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
-              <div className="w-16 h-16 bg-church-primary/10 rounded-xl flex items-center justify-center mx-auto mb-4">
-                <HomeOutlined className="text-church-primary text-3xl" />
+            <Card className="text-center p-6 sm:p-8 hover:shadow-xl transition-all duration-300 hover:-translate-y-1 bg-white dark:bg-slate-800 border-gray-200 dark:border-slate-700">
+              <div className="w-16 h-16 bg-church-primary/10 dark:bg-green-500/10 rounded-xl flex items-center justify-center mx-auto mb-4">
+                <HomeOutlined className="text-church-primary dark:text-green-400 text-3xl" />
               </div>
-              <h3 className="text-xl font-semibold mb-3 text-gray-900">
+              <h3 className="text-xl font-semibold mb-3 text-gray-900 dark:text-white">
                 Group Management
               </h3>
-              <p className="text-gray-600 leading-relaxed">
+              <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
                 Create and manage fellowship groups with ease. Track attendance
                 and engagement.
               </p>
             </Card>
 
-            <Card className="text-center p-6 sm:p-8 hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
-              <div className="w-16 h-16 bg-church-accent/10 rounded-xl flex items-center justify-center mx-auto mb-4">
-                <InfoCircleOutlined className="text-church-accent text-3xl" />
+            <Card className="text-center p-6 sm:p-8 hover:shadow-xl transition-all duration-300 hover:-translate-y-1 bg-white dark:bg-slate-800 border-gray-200 dark:border-slate-700">
+              <div className="w-16 h-16 bg-church-accent/10 dark:bg-yellow-500/10 rounded-xl flex items-center justify-center mx-auto mb-4">
+                <InfoCircleOutlined className="text-church-accent dark:text-yellow-400 text-3xl" />
               </div>
-              <h3 className="text-xl font-semibold mb-3 text-gray-900">
+              <h3 className="text-xl font-semibold mb-3 text-gray-900 dark:text-white">
                 Member Analytics
               </h3>
-              <p className="text-gray-600 leading-relaxed">
+              <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
                 Get insights into member participation and identify
                 opportunities for growth.
               </p>
             </Card>
 
-            <Card className="text-center p-6 sm:p-8 hover:shadow-xl transition-all duration-300 hover:-translate-y-1 md:col-span-2 lg:col-span-1">
-              <div className="w-16 h-16 bg-church-secondary/10 rounded-xl flex items-center justify-center mx-auto mb-4">
-                <HomeOutlined className="text-church-secondary text-3xl" />
+            <Card className="text-center p-6 sm:p-8 hover:shadow-xl transition-all duration-300 hover:-translate-y-1 md:col-span-2 lg:col-span-1 bg-white dark:bg-slate-800 border-gray-200 dark:border-slate-700">
+              <div className="w-16 h-16 bg-church-secondary/10 dark:bg-blue-500/10 rounded-xl flex items-center justify-center mx-auto mb-4">
+                <HomeOutlined className="text-church-secondary dark:text-blue-400 text-3xl" />
               </div>
-              <h3 className="text-xl font-semibold mb-3 text-gray-900">
+              <h3 className="text-xl font-semibold mb-3 text-gray-900 dark:text-white">
                 Pastoral Care
               </h3>
-              <p className="text-gray-600 leading-relaxed">
+              <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
                 Log interactions and follow-ups to support your congregation
                 effectively.
               </p>

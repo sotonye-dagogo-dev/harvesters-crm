@@ -10,6 +10,7 @@ const publicRoutes = [
   "/forgot-password",
   "/about",
   "/contact",
+  "/unregister-sw.html",
 ];
 
 // Define role-based routes
@@ -80,7 +81,7 @@ export async function proxy(request: NextRequest) {
 
     // User has valid token and appropriate role
     return NextResponse.next();
-  } catch (error) {
+  } catch {
     // Token is invalid or expired
     const url = request.nextUrl.clone();
     url.pathname = "/login";

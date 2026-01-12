@@ -8,6 +8,7 @@ import {
   badRequestResponse,
   handleApiError,
 } from "@/lib/utils/api";
+import { USER_ROLES } from "@/lib/constants";
 
 // GET /api/groups - List groups
 export async function GET(request: NextRequest) {
@@ -31,10 +32,10 @@ export async function GET(request: NextRequest) {
     let allGroups = groupDb.findAll(filters);
 
     // Filter by permission
-    if (user?.role === UserRole.MEMBER) {
+    if (user?.role === USER_ROLES.MEMBER) {
       // Members can only see their own group
       allGroups = allGroups.filter((g) => g.id === user.groupId);
-    } else if (user?.role === UserRole.LEADER) {
+    } else if (user?.role === USER_ROLES.LEADER) {
       // Leaders can see their own group and available groups
       allGroups = allGroups.filter(
         (g) => g.leaderId === user.id || g.id === user.groupId
@@ -59,7 +60,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const { user, error } = await requireRole(
-      [UserRole.SUPERADMIN, UserRole.LEADER],
+      [USER_ROLES.SUPERADMIN as UserRole, USER_ROLES.LEADER as UserRole],
       request
     );
     if (error) return error;
@@ -75,7 +76,7 @@ export async function POST(request: NextRequest) {
     const data = validation.data;
 
     // If leader is creating, they must be the leader of the new group
-    if (user?.role === UserRole.LEADER && data.leaderId !== user.id) {
+    if (user?.role === USER_ROLES.LEADER && data.leaderId !== user.id) {
       return badRequestResponse(
         "Leaders can only create groups where they are the leader"
       );

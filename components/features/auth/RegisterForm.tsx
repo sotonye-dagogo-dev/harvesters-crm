@@ -495,13 +495,13 @@ export default function RegisterForm() {
         size="large"
         autoComplete="off"
       >
-        <div style={{ display: currentStep === 0 ? "block" : "none" }}>
+        <div className={currentStep === 0 ? "block" : "hidden"}>
           {renderStepContent(0)}
         </div>
-        <div style={{ display: currentStep === 1 ? "block" : "none" }}>
+        <div className={currentStep === 1 ? "block" : "hidden"}>
           {renderStepContent(1)}
         </div>
-        <div style={{ display: currentStep === 2 ? "block" : "none" }}>
+        <div className={currentStep === 2 ? "block" : "hidden"}>
           {renderStepContent(2)}
         </div>
 
