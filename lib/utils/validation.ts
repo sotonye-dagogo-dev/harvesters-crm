@@ -140,7 +140,11 @@ export const updateUserSchema = updateProfileSchema.extend({
   groupId: z.string().optional(),
   isActive: z.boolean().optional(),
   role: z
-    .enum([USER_ROLES.SUPERADMIN, USER_ROLES.LEADER, USER_ROLES.MEMBER])
+    .enum([
+      USER_ROLES.SUPERADMIN as "SUPERADMIN",
+      USER_ROLES.LEADER as "LEADER",
+      USER_ROLES.MEMBER as "MEMBER",
+    ])
     .optional(),
 });
 
@@ -312,7 +316,11 @@ export const sortSchema = z.object({
 
 export const userFiltersSchema = z.object({
   role: z
-    .enum([USER_ROLES.SUPERADMIN, USER_ROLES.LEADER, USER_ROLES.MEMBER])
+    .enum([
+      USER_ROLES.SUPERADMIN as "SUPERADMIN",
+      USER_ROLES.LEADER as "LEADER",
+      USER_ROLES.MEMBER as "MEMBER",
+    ])
     .optional(),
   groupId: z.string().optional(),
   isActive: z.boolean().optional(),

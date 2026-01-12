@@ -165,18 +165,21 @@ export function hasRole(user: AuthUser | null, roles: UserRole[]): boolean {
 }
 
 export function isSuperadmin(user: AuthUser | null): boolean {
-  return hasRole(user, [USER_ROLES.SUPERADMIN]);
+  return hasRole(user, [USER_ROLES.SUPERADMIN as UserRole]);
 }
 
 export function isLeader(user: AuthUser | null): boolean {
-  return hasRole(user, [USER_ROLES.LEADER, USER_ROLES.SUPERADMIN]);
+  return hasRole(user, [
+    USER_ROLES.LEADER as UserRole,
+    USER_ROLES.SUPERADMIN as UserRole,
+  ]);
 }
 
 export function isMember(user: AuthUser | null): boolean {
   return hasRole(user, [
-    USER_ROLES.MEMBER,
-    USER_ROLES.LEADER,
-    USER_ROLES.SUPERADMIN,
+    USER_ROLES.MEMBER as UserRole,
+    USER_ROLES.LEADER as UserRole,
+    USER_ROLES.SUPERADMIN as UserRole,
   ]);
 }
 
