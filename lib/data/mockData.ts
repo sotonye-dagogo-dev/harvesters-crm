@@ -4,13 +4,6 @@ import bcrypt from "bcryptjs";
 // HELPER FUNCTIONS
 // ============================================================================
 
-// Kept for potential future use
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-// @ts-ignore - Keeping for future use
-function _generateId(): string {
-  return `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-}
-
 function hashPassword(password: string): string {
   return bcrypt.hashSync(password, 10);
 }

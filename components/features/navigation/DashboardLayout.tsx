@@ -24,15 +24,18 @@ const { Sider, Content } = Layout;
 
 interface DashboardLayoutProps {
   children: ReactNode;
-  role: "SUPERADMIN" | "LEADER" | "MEMBER";
+  role?: "SUPERADMIN" | "LEADER" | "MEMBER";
 }
 
 export default function DashboardLayout({
   children,
-  role,
+  role: propRole,
 }: DashboardLayoutProps) {
   const [collapsed, setCollapsed] = useState(false);
   const { user, logout } = useAuth();
+
+  // Use prop role if provided, otherwise use user role from auth context
+  const role = propRole || (user?.role as "SUPERADMIN" | "LEADER" | "MEMBER");
 
   // Menu items based on role
   const getMenuItems = () => {
@@ -164,21 +167,26 @@ export default function DashboardLayout({
   };
 
   return (
-    <Layout className="min-h-screen">
+    <Layout className="min-h-screen bg-gray-50 dark:bg-slate-900">
       <Sider
         collapsible
         collapsed={collapsed}
         onCollapse={setCollapsed}
-        className="!bg-church-primary"
+        className="!bg-gradient-to-b !from-green-800 !via-green-700 !to-green-900 dark:!from-slate-900 dark:!via-slate-800 dark:!to-slate-900 shadow-2xl"
         theme="dark"
-        width={250}
+        width={280}
+        collapsedWidth={80}
         aria-label="Main navigation"
       >
-        <div className="h-16 flex items-center justify-center border-b border-white/10">
+        <div className="h-20 flex items-center justify-center border-b border-white/10 backdrop-blur-sm">
           {!collapsed ? (
-            <h1 className="text-white text-lg font-bold m-0">Fellowship CRM</h1>
+            <h1 className="text-white text-xl font-bold m-0 tracking-wide drop-shadow-lg">
+              Fellowship CRM
+            </h1>
           ) : (
-            <h1 className="text-white text-lg font-bold m-0">FC</h1>
+            <h1 className="text-white text-2xl font-bold m-0 bg-white/10 w-12 h-12 rounded-xl flex items-center justify-center backdrop-blur-sm">
+              FC
+            </h1>
           )}
         </div>
 
@@ -187,21 +195,23 @@ export default function DashboardLayout({
           mode="inline"
           defaultSelectedKeys={["dashboard"]}
           items={getMenuItems()}
-          className="!bg-church-primary !border-r-0"
+          className="!bg-transparent !border-r-0 mt-4 px-2 [&_.ant-menu-item]:rounded-xl [&_.ant-menu-item]:mb-2 [&_.ant-menu-item:hover]:bg-white/10 [&_.ant-menu-item-selected]:bg-white/20 [&_.ant-menu-item-selected]:shadow-lg [&_.ant-menu-submenu-title]:rounded-xl [&_.ant-menu-submenu-title:hover]:bg-white/10"
           aria-label="Dashboard navigation menu"
         />
 
-        <div className="absolute bottom-4 w-full px-4">
+        <div className="absolute bottom-6 w-full px-4">
           <Menu
             theme="dark"
             mode="inline"
-            className="!bg-church-primary !border-r-0"
+            className="!bg-transparent !border-r-0"
             items={[
               {
                 key: "logout",
-                icon: <LogoutOutlined />,
-                label: "Logout",
+                icon: <LogoutOutlined className="text-lg" />,
+                label: <span className="font-semibold">Logout</span>,
                 onClick: logout,
+                className:
+                  "!rounded-xl hover:!bg-red-500/20 !text-red-200 hover:!text-red-100",
               },
             ]}
             aria-label="User account actions"
@@ -213,14 +223,14 @@ export default function DashboardLayout({
         <AppHeader
           title={`Welcome, ${user?.firstName || "User"}`}
           actions={
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-5">
               <ThemeToggle />
-              <span className="text-sm text-gray-600 dark:text-gray-300">
+              <span className="text-sm font-semibold text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-slate-800 px-4 py-2 rounded-full shadow-sm">
                 {role === "SUPERADMIN"
                   ? "Super Admin"
                   : role.charAt(0) + role.slice(1).toLowerCase()}
               </span>
-              <div className="w-10 h-10 rounded-full bg-church-primary dark:bg-green-600 text-white flex items-center justify-center font-semibold">
+              <div className="w-11 h-11 rounded-full bg-gradient-to-br from-green-600 to-green-700 dark:from-green-500 dark:to-green-600 text-white flex items-center justify-center font-bold text-sm shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 cursor-pointer border-2 border-white dark:border-slate-700">
                 {user?.firstName?.[0]}
                 {user?.lastName?.[0]}
               </div>
@@ -228,7 +238,7 @@ export default function DashboardLayout({
           }
         />
 
-        <Content className="p-6 bg-gray-50 dark:bg-slate-900">
+        <Content className="p-8 bg-gradient-to-br from-gray-50 via-white to-gray-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 min-h-screen">
           <main id="main-content" tabIndex={-1} aria-label="Main content">
             <div className="max-w-7xl mx-auto">{children}</div>
           </main>

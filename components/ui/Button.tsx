@@ -31,8 +31,25 @@ export default function Button({
     }
   };
 
+  const getButtonStyles = () => {
+    switch (variant) {
+      case "primary":
+        return "shadow-md hover:shadow-lg transition-all duration-200 font-semibold";
+      case "secondary":
+        return "shadow-sm hover:shadow-md transition-all duration-200 font-semibold";
+      case "outline":
+        return "shadow-sm hover:shadow-md border-2 transition-all duration-200 font-semibold hover:scale-[1.02]";
+      default:
+        return "transition-all duration-200";
+    }
+  };
+
   return (
-    <AntButton type={getButtonType()} className={`${className}`} {...props}>
+    <AntButton
+      type={getButtonType()}
+      className={`${getButtonStyles()} ${className}`}
+      {...props}
+    >
       {children}
     </AntButton>
   );

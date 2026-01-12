@@ -35,7 +35,15 @@ export default function SuperadminDashboard() {
         const response = await fetch("/api/analytics/overview");
         if (response.ok) {
           const data = await response.json();
-          setAnalytics(data.data);
+          // API returns data in overview property
+          setAnalytics({
+            totalUsers: data.data.overview.totalUsers,
+            totalGroups: data.data.overview.totalGroups,
+            recentMeetings: data.data.overview.totalMeetings,
+            recentInteractions: data.data.overview.totalInteractions,
+            activeUsers: data.data.overview.activeUsers,
+            activeGroups: data.data.overview.activeGroups,
+          });
         }
       } catch (error) {
         console.error("Failed to fetch analytics:", error);
@@ -62,8 +70,12 @@ export default function SuperadminDashboard() {
       <div className="space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Dashboard</h2>
-            <p className="text-gray-600 dark:text-gray-400">Welcome to Church Fellowship CRM</p>
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+              Dashboard
+            </h2>
+            <p className="text-gray-600 dark:text-gray-400">
+              Welcome to Church Fellowship CRM
+            </p>
           </div>
           <Button
             type="primary"
@@ -103,27 +115,40 @@ export default function SuperadminDashboard() {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">
-          <Card title="Active Members" className="h-full bg-white dark:bg-slate-800 border-gray-200 dark:border-slate-700">
+          <Card
+            title="Active Members"
+            className="h-full bg-white dark:bg-slate-800 border-gray-200 dark:border-slate-700"
+          >
             <div className="text-center py-8">
               <div className="text-4xl font-bold text-church-primary dark:text-green-400 mb-2">
                 {analytics?.activeUsers || 0}
               </div>
-              <p className="text-gray-600 dark:text-gray-400">Members are actively engaged</p>
+              <p className="text-gray-600 dark:text-gray-400">
+                Members are actively engaged
+              </p>
             </div>
           </Card>
 
-          <Card title="Active Groups" className="h-full bg-white dark:bg-slate-800 border-gray-200 dark:border-slate-700">
+          <Card
+            title="Active Groups"
+            className="h-full bg-white dark:bg-slate-800 border-gray-200 dark:border-slate-700"
+          >
             <div className="text-center py-8">
               <div className="text-4xl font-bold text-church-primary dark:text-green-400 mb-2">
                 {analytics?.activeGroups || 0}
               </div>
-              <p className="text-gray-600 dark:text-gray-400">Groups meeting regularly</p>
+              <p className="text-gray-600 dark:text-gray-400">
+                Groups meeting regularly
+              </p>
             </div>
           </Card>
         </div>
 
         {/* Quick Actions */}
-        <Card title="Quick Actions" className="mt-6 bg-white dark:bg-slate-800 border-gray-200 dark:border-slate-700">
+        <Card
+          title="Quick Actions"
+          className="mt-6 bg-white dark:bg-slate-800 border-gray-200 dark:border-slate-700"
+        >
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             <Button
               type="primary"

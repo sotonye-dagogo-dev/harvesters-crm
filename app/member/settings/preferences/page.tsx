@@ -77,33 +77,35 @@ export default function PreferencesPage() {
 
   return (
     <DashboardLayout role={user?.role || "MEMBER"}>
-      <div className="space-y-6">
-        <div>
-          <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-            <BellOutlined />
+      <div className="space-y-8">
+        <div className="bg-gradient-to-r from-green-50 to-blue-50 dark:from-slate-800 dark:to-slate-900 p-6 rounded-2xl shadow-lg border border-gray-200 dark:border-slate-700">
+          <h2 className="text-3xl font-bold text-gray-900 dark:text-white flex items-center gap-3">
+            <div className="w-12 h-12 bg-green-100 dark:bg-green-900/30 rounded-xl flex items-center justify-center">
+              <BellOutlined className="text-2xl text-green-600 dark:text-green-400" />
+            </div>
             Notification Preferences
           </h2>
-          <p className="text-gray-600 mt-1">
+          <p className="text-gray-600 dark:text-gray-400 mt-3 text-lg">
             Manage your notification preferences and how you receive updates
           </p>
         </div>
 
         <Card
           title={
-            <div className="flex items-center gap-2">
-              <BellOutlined />
+            <div className="flex items-center gap-3 text-lg">
+              <BellOutlined className="text-xl" />
               In-App Notifications
             </div>
           }
-          className="max-w-3xl"
+          className="max-w-4xl shadow-xl"
         >
-          <div className="space-y-4">
-            <div className="flex items-center justify-between py-2">
-              <div>
-                <div className="font-medium text-gray-900">
+          <div className="space-y-1">
+            <div className="flex items-center justify-between py-4 px-4 rounded-xl hover:bg-gray-50 dark:hover:bg-slate-800 transition-all duration-200">
+              <div className="flex-1">
+                <div className="font-semibold text-gray-900 dark:text-white text-base">
                   Meeting Reminders
                 </div>
-                <div className="text-sm text-gray-500">
+                <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">
                   Get notified about upcoming meetings
                 </div>
               </div>
@@ -112,17 +114,18 @@ export default function PreferencesPage() {
                 onChange={(checked) =>
                   handleToggle("meetingReminders", checked)
                 }
+                className="ml-4"
               />
             </div>
 
             <Divider className="my-2" />
 
-            <div className="flex items-center justify-between py-2">
-              <div>
-                <div className="font-medium text-gray-900">
+            <div className="flex items-center justify-between py-4 px-4 rounded-xl hover:bg-gray-50 dark:hover:bg-slate-800 transition-all duration-200">
+              <div className="flex-1">
+                <div className="font-semibold text-gray-900 dark:text-white text-base">
                   Membership Requests
                 </div>
-                <div className="text-sm text-gray-500">
+                <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">
                   Notifications for new membership requests (Leaders only)
                 </div>
               </div>
@@ -132,30 +135,36 @@ export default function PreferencesPage() {
                   handleToggle("membershipRequests", checked)
                 }
                 disabled={user?.role === "MEMBER"}
+                className="ml-4"
               />
             </div>
 
             <Divider className="my-2" />
 
-            <div className="flex items-center justify-between py-2">
-              <div>
-                <div className="font-medium text-gray-900">Role Changes</div>
-                <div className="text-sm text-gray-500">
+            <div className="flex items-center justify-between py-4 px-4 rounded-xl hover:bg-gray-50 dark:hover:bg-slate-800 transition-all duration-200">
+              <div className="flex-1">
+                <div className="font-semibold text-gray-900 dark:text-white text-base">
+                  Role Changes
+                </div>
+                <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">
                   Notifications when your role is updated
                 </div>
               </div>
               <Switch
                 checked={preferences.roleChanges}
                 onChange={(checked) => handleToggle("roleChanges", checked)}
+                className="ml-4"
               />
             </div>
 
             <Divider className="my-2" />
 
-            <div className="flex items-center justify-between py-2">
-              <div>
-                <div className="font-medium text-gray-900">New Members</div>
-                <div className="text-sm text-gray-500">
+            <div className="flex items-center justify-between py-4 px-4 rounded-xl hover:bg-gray-50 dark:hover:bg-slate-800 transition-all duration-200">
+              <div className="flex-1">
+                <div className="font-semibold text-gray-900 dark:text-white text-base">
+                  New Members
+                </div>
+                <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">
                   Notifications when new members join your group (Leaders only)
                 </div>
               </div>
@@ -163,6 +172,7 @@ export default function PreferencesPage() {
                 checked={preferences.newMembers}
                 onChange={(checked) => handleToggle("newMembers", checked)}
                 disabled={user?.role === "MEMBER"}
+                className="ml-4"
               />
             </div>
 

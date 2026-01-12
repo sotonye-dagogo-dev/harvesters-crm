@@ -18,9 +18,9 @@ export function ThemeToggle() {
   if (!mounted) {
     return (
       <Button
-        type="text"
-        icon={<SunOutlined />}
-        className="flex items-center justify-center"
+        type="default"
+        icon={<SunOutlined className="text-lg" />}
+        className="flex items-center justify-center h-10 w-10 rounded-full shadow-md hover:shadow-lg transition-all duration-300"
         aria-label="Toggle theme"
       />
     );
@@ -28,10 +28,16 @@ export function ThemeToggle() {
 
   return (
     <Button
-      type="text"
-      icon={theme === "dark" ? <SunOutlined /> : <MoonOutlined />}
+      type="default"
+      icon={
+        theme === "dark" ? (
+          <SunOutlined className="text-lg text-yellow-500" />
+        ) : (
+          <MoonOutlined className="text-lg text-blue-600" />
+        )
+      }
       onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-      className="flex items-center justify-center"
+      className="flex items-center justify-center h-10 w-10 rounded-full shadow-md hover:shadow-lg transition-all duration-300 hover:scale-110 bg-white dark:bg-slate-800"
       aria-label={`Switch to ${theme === "dark" ? "light" : "dark"} mode`}
     />
   );
