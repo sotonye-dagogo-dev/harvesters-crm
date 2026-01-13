@@ -51,13 +51,15 @@ export default function MyGroupPage() {
       setLoading(true);
       // Get current user's group
       const userResponse = await fetch("/api/auth/me");
+
       if (!userResponse.ok) {
+        message.error("Session expired. Please log in again.");
         router.push("/login");
         return;
       }
 
       const userData = await userResponse.json();
-      const user = userData.data;
+      const user = userData.data || userData;
 
       if (!user.groupId) {
         setLoading(false);
@@ -66,14 +68,16 @@ export default function MyGroupPage() {
 
       // Fetch group details
       const groupResponse = await fetch(`/api/groups/${user.groupId}`);
-      if (groupResponse.ok) {
-        const groupData = await groupResponse.json();
-        setGroup(groupData.data);
-      } else {
-        message.error("Failed to fetch group details");
+
+      if (!groupResponse.ok) {
+        throw new Error("Failed to fetch group");
       }
-    } catch {
-      message.error("An error occurred while fetching group");
+
+      const groupData = await groupResponse.json();
+      setGroup(groupData.data || groupData);
+    } catch (error) {
+      console.error("Failed to fetch group:", error);
+      message.error("Failed to load group details. Please refresh the page.");
     } finally {
       setLoading(false);
     }

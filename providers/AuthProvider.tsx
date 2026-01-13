@@ -7,8 +7,7 @@ import {
   useEffect,
   ReactNode,
 } from "react";
-import { useRouter } from "next/navigation";
-import { USER_ROLES } from "@/lib/constants";
+import { useRouter } from "next/navigation";import { message } from "antd";import { USER_ROLES } from "@/lib/constants";
 
 interface AuthContextType {
   user: User | null;
@@ -86,6 +85,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
 
       setUser(data.data.user);
+      message.success("Welcome back!");
 
       // Redirect based on role
       const redirectPath = getRoleBasedRedirect(data.data.user.role);
@@ -104,11 +104,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       });
 
       setUser(null);
+      message.success("Logged out successfully!");
       router.push("/login");
     } catch (error) {
       console.error("Logout error:", error);
       // Still clear user and redirect even if API call fails
       setUser(null);
+      message.success("Logged out successfully!");
       router.push("/login");
     }
   };
@@ -130,6 +132,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       // Auto-login after registration
       setUser(result.data.user);
+      message.success("Account created successfully! Redirecting...");
 
       // Redirect based on role (typically MEMBER for new registrations)
       const redirectPath = getRoleBasedRedirect(result.data.user.role);

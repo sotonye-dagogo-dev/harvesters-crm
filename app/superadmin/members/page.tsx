@@ -3,21 +3,10 @@
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import DashboardLayout from "@/components/features/navigation/DashboardLayout";
-import {
-  Card,
-  Table,
-  Input,
-  Select,
-  Tag,
-  Button,
-  Space,
-  Spin,
-  message,
-} from "antd";
-import { SearchOutlined, EditOutlined } from "@ant-design/icons";
+import { Card, Table, Select, Tag, Button, Space, Spin, message } from "antd";
+import { EditOutlined } from "@ant-design/icons";
+import { SearchInput } from "@/components/ui/SearchInput";
 import type { ColumnsType } from "antd/es/table";
-
-const { Search } = Input;
 const { Option } = Select;
 
 interface Member {
@@ -148,11 +137,10 @@ export default function MembersPage() {
         </div>
 
         <Card className="dark:bg-slate-800 dark:border-slate-700">
-          <div className="flex flex-col sm:flex-row gap-4 mb-4">
-            <Search
+          <div className="flex flex-col sm:flex-row gap-4 mb-6">
+            <SearchInput
               placeholder="Search by name or email"
               allowClear
-              enterButton={<SearchOutlined />}
               size="large"
               value={searchText}
               onChange={(e) => setSearchText(e.target.value)}

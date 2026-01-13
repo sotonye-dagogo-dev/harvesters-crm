@@ -12,7 +12,7 @@ import {
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Card from "@/components/ui/Card";
-import { Spin, Button } from "antd";
+import { Spin, Button, message } from "antd";
 import { useAuth } from "@/providers/AuthProvider";
 
 interface MemberAnalytics {
@@ -37,13 +37,21 @@ export default function MemberDashboard() {
       }
 
       try {
+        setLoading(true);
         const response = await fetch(`/api/analytics/members/${user.id}`);
-        if (response.ok) {
-          const data = await response.json();
-          setAnalytics(data.data);
+
+        if (!response.ok) {
+          throw new Error("Failed to fetch analytics");
         }
+
+        const result = await response.json();
+        // Handle both data.data and direct data formats
+        setAnalytics(result.data || result);
       } catch (error) {
         console.error("Failed to fetch analytics:", error);
+        message.error(
+          "Failed to load dashboard data. Please refresh the page."
+        );
       } finally {
         setLoading(false);
       }

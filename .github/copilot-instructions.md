@@ -1,8 +1,8 @@
-# GitHub Copilot Instructions for Church Fellowship CRM
+# GitHub Copilot Instructions for Harvesters Small Groups CRM
 
 ## Project Overview
 
-Church Fellowship CRM is a centralized, data-driven web application that enables churches to effectively manage subgroup or fellowship meetings, track member engagement, and support pastoral care through structured insights, accountability, and informed decision-making.
+Harvesters Small Groups CRM is a centralized, data-driven web application that enables Harvesters International Christian Centre to effectively manage small group meetings, track member engagement, and support pastoral care through structured insights, accountability, and informed decision-making. Built for Harvesters' vision of changing lives by pioneering thriving churches across Nigeria, the United Kingdom, and the United States of America.
 
 ## Note
 

@@ -212,3 +212,65 @@ a:not(.ant-btn) {
   min-width: auto;
   min-height: initial;
 }
+
+/* Ant Design Switch Customization - Proper Toggle Appearance */
+/* Ensure switches are rectangular with rounded ends, not circular */
+.ant-switch {
+  min-width: 44px !important;
+  height: 22px !important;
+  line-height: 20px !important;
+  border-radius: 100px !important; /* Fully rounded ends */
+  background-color: rgba(0, 0, 0, 0.25) !important;
+  vertical-align: middle !important;
+}
+
+.ant-switch-checked {
+  background-color: #1b4b3e !important; /* Church green */
+}
+
+.dark .ant-switch-checked {
+  background-color: #22c55e !important; /* Green for dark mode */
+}
+
+/* Handle (the small circle that moves) */
+.ant-switch-handle {
+  width: 18px !important;
+  height: 18px !important;
+  border-radius: 50% !important; /* Perfect circle */
+  top: 2px !important;
+  inset-inline-start: 2px !important;
+}
+
+.ant-switch-checked .ant-switch-handle {
+  inset-inline-start: calc(100% - 20px) !important;
+}
+
+/* Smooth transition for handle movement */
+.ant-switch-handle::before {
+  border-radius: 50% !important;
+  box-shadow: 0 2px 4px 0 rgba(0, 35, 11, 0.2) !important;
+  transition: all 0.2s ease-in-out !important;
+}
+
+/* Loading state */
+.ant-switch-loading .ant-switch-handle::before {
+  box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.1) !important;
+}
+
+/* Disabled state */
+.ant-switch-disabled {
+  opacity: 0.4 !important;
+  cursor: not-allowed !important;
+}
+
+/* Focus state for accessibility */
+.ant-switch:focus-visible {
+  outline: 2px solid var(--primary) !important;
+  outline-offset: 2px !important;
+  box-shadow: 0 0 0 2px rgba(27, 75, 62, 0.2) !important;
+}
+
+.dark .ant-switch:focus-visible {
+  outline-color: var(--accent) !important;
+  box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.2) !important;
+}

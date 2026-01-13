@@ -1,8 +1,12 @@
-# Church Fellowship CRM - Project Context
+# Harvesters Small Groups CRM - Project Context
 
 ## Project Vision
 
-Church Fellowship CRM is a centralized, data-driven web application that enables churches to effectively manage subgroup or fellowship meetings, track member engagement, and support pastoral care through structured insights, accountability, and informed decision-making. The platform provides visibility into member participation, group health, and leadership effectiveness while remaining simple, respectful of privacy, and aligned with church operations.
+Harvesters Small Groups CRM is a centralized, data-driven web application built exclusively for Harvesters International Christian Centre. The platform enables effective management of small group meetings, tracks member engagement, and supports pastoral care through structured insights, accountability, and informed decision-making. 
+
+Founded on December 13th, 2003, by Pastor Bolaji Idowu, Harvesters has grown from a handful of people to over 70,000 worshippers across multiple locations in Nigeria, the United Kingdom, and the United States of America. This platform supports Harvesters' vision of changing lives by pioneering thriving churches in key global cities that bring hope, connect people with God, influence culture, and lead people to become fully devoted followers of Christ.
+
+The platform provides visibility into member participation, group health, and leadership effectiveness while remaining simple, respectful of privacy, and aligned with Harvesters' operations and values.
 
 ## Core Features
 

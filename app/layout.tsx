@@ -16,28 +16,32 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Church Fellowship CRM",
+  title: "Harvesters Small Groups | Harvesters International Christian Centre",
   description:
-    "Manage church subgroups, track member engagement, and support pastoral care",
+    "Manage small groups, track member engagement, and foster transformational encounters at Harvesters International Christian Centre. Connecting people with God across Nigeria, UK, and USA.",
   keywords: [
-    "church",
+    "Harvesters Church",
+    "Harvesters International Christian Centre",
+    "small groups",
     "fellowship",
-    "CRM",
-    "member management",
+    "Pastor Bolaji Idowu",
+    "church management",
+    "Lagos church",
+    "member engagement",
     "attendance tracking",
   ],
-  authors: [{ name: "Harvesters Church" }],
+  authors: [{ name: "Harvesters International Christian Centre" }],
   // PWA features temporarily disabled
   // manifest: "/manifest.json",
   // appleWebApp: {
   //   capable: true,
   //   statusBarStyle: "default",
-  //   title: "Fellowship CRM",
+  //   title: "Harvesters Small Groups",
   // },
   openGraph: {
-    title: "Church Fellowship CRM",
+    title: "Harvesters Small Groups | HICC",
     description:
-      "Manage church subgroups, track member engagement, and support pastoral care",
+      "Manage small groups and foster transformational encounters at Harvesters International Christian Centre",
     type: "website",
   },
 };

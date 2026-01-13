@@ -1,8 +1,11 @@
 "use client";
 
-import { Layout, Menu } from "antd";
-import { ReactNode, useState } from "react";
+import { Layout, Menu, Drawer, Dropdown } from "antd";
+import { ReactNode, useState, useEffect } from "react";
 import Link from "next/link";
+import Image from "next/image";
+import { usePathname, useRouter } from "next/navigation";
+import { useTheme } from "next-themes";
 import {
   DashboardOutlined,
   TeamOutlined,
@@ -15,12 +18,15 @@ import {
   ScheduleOutlined,
   ClockCircleOutlined,
   BellOutlined,
+  MenuOutlined,
+  CloseOutlined,
 } from "@ant-design/icons";
 import { useAuth } from "@/providers/AuthProvider";
 import { AppHeader, AppFooter } from "@/components/ui/Layout";
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
+import type { MenuProps } from "antd";
 
-const { Sider, Content } = Layout;
+const { Sider, Content, Header } = Layout;
 
 interface DashboardLayoutProps {
   children: ReactNode;
@@ -32,10 +38,47 @@ export default function DashboardLayout({
   role: propRole,
 }: DashboardLayoutProps) {
   const [collapsed, setCollapsed] = useState(false);
+  const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const { user, logout } = useAuth();
+  const pathname = usePathname();
+  const router = useRouter();
+  const { theme, resolvedTheme } = useTheme();
 
   // Use prop role if provided, otherwise use user role from auth context
   const role = propRole || (user?.role as "SUPERADMIN" | "LEADER" | "MEMBER");
+
+  // Detect mobile screen and set mounted flag
+  useEffect(() => {
+    setMounted(true);
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
+
+  // Get active key from pathname
+  const getSelectedKeys = () => {
+    if (!pathname) return ["dashboard"];
+
+    // Extract the key from pathname
+    const pathParts = pathname.split("/").filter(Boolean);
+    if (pathParts.length >= 2) {
+      // For nested routes like /leader/my-group, return ["my-group"]
+      return [pathParts[1]];
+    }
+    return ["dashboard"];
+  };
+
+  const handleMenuClick = () => {
+    if (isMobile) {
+      setMobileDrawerOpen(false);
+    }
+  };
 
   // Menu items based on role
   const getMenuItems = () => {
@@ -48,6 +91,7 @@ export default function DashboardLayout({
         key: "dashboard",
         icon: <DashboardOutlined />,
         label: <Link href={`/${rolePath}/dashboard`}>Dashboard</Link>,
+        onClick: handleMenuClick,
       },
     ];
 
@@ -58,16 +102,19 @@ export default function DashboardLayout({
           key: "groups",
           icon: <TeamOutlined />,
           label: <Link href="/superadmin/groups">Groups</Link>,
+          onClick: handleMenuClick,
         },
         {
           key: "members",
           icon: <UserOutlined />,
           label: <Link href="/superadmin/members">Members</Link>,
+          onClick: handleMenuClick,
         },
         {
           key: "analytics",
           icon: <FileTextOutlined />,
           label: <Link href="/superadmin/analytics">Analytics</Link>,
+          onClick: handleMenuClick,
         },
         {
           key: "settings",
@@ -75,13 +122,27 @@ export default function DashboardLayout({
           label: "Settings",
           children: [
             {
-              key: "notifications",
+              key: "system-notifications",
               icon: <BellOutlined />,
               label: (
                 <Link href="/superadmin/settings/system-notifications">
                   Notifications
                 </Link>
               ),
+              onClick: handleMenuClick,
+            },
+            {
+              key: "profile",
+              icon: <UserOutlined />,
+              label: <Link href="/profile">Profile</Link>,
+              onClick: handleMenuClick,
+            },
+            {
+              key: "logout",
+              icon: <LogoutOutlined />,
+              label: "Logout",
+              onClick: logout,
+              danger: true,
             },
           ],
         },
@@ -95,31 +156,37 @@ export default function DashboardLayout({
           key: "my-group",
           icon: <TeamOutlined />,
           label: <Link href="/leader/my-group">My Group</Link>,
+          onClick: handleMenuClick,
         },
         {
           key: "meetings",
           icon: <CalendarOutlined />,
           label: <Link href="/leader/meetings">Meetings</Link>,
+          onClick: handleMenuClick,
         },
         {
           key: "schedule",
           icon: <ScheduleOutlined />,
           label: <Link href="/leader/schedule">Schedule</Link>,
+          onClick: handleMenuClick,
         },
         {
           key: "follow-ups",
           icon: <ClockCircleOutlined />,
           label: <Link href="/leader/follow-ups">Follow-ups</Link>,
+          onClick: handleMenuClick,
         },
         {
           key: "members",
           icon: <UserOutlined />,
           label: <Link href="/leader/members">Members</Link>,
+          onClick: handleMenuClick,
         },
         {
           key: "interactions",
           icon: <PhoneOutlined />,
           label: <Link href="/leader/interactions">Interactions</Link>,
+          onClick: handleMenuClick,
         },
         {
           key: "settings",
@@ -127,13 +194,27 @@ export default function DashboardLayout({
           label: "Settings",
           children: [
             {
-              key: "notifications",
+              key: "meeting-reminders",
               icon: <BellOutlined />,
               label: (
                 <Link href="/leader/settings/meeting-reminders">
                   Notifications
                 </Link>
               ),
+              onClick: handleMenuClick,
+            },
+            {
+              key: "profile",
+              icon: <UserOutlined />,
+              label: <Link href="/profile">Profile</Link>,
+              onClick: handleMenuClick,
+            },
+            {
+              key: "logout",
+              icon: <LogoutOutlined />,
+              label: "Logout",
+              onClick: logout,
+              danger: true,
             },
           ],
         },
@@ -147,11 +228,13 @@ export default function DashboardLayout({
         key: "my-group",
         icon: <TeamOutlined />,
         label: <Link href="/member/my-group">My Group</Link>,
+        onClick: handleMenuClick,
       },
       {
         key: "history",
         icon: <FileTextOutlined />,
         label: <Link href="/member/history">My History</Link>,
+        onClick: handleMenuClick,
       },
       {
         key: "settings",
@@ -159,92 +242,191 @@ export default function DashboardLayout({
         label: "Settings",
         children: [
           {
-            key: "notifications",
+            key: "preferences",
             icon: <BellOutlined />,
             label: (
               <Link href="/member/settings/preferences">Notifications</Link>
             ),
+            onClick: handleMenuClick,
+          },
+          {
+            key: "profile",
+            icon: <UserOutlined />,
+            label: <Link href="/profile">Profile</Link>,
+            onClick: handleMenuClick,
+          },
+          {
+            key: "logout",
+            icon: <LogoutOutlined />,
+            label: "Logout",
+            onClick: logout,
+            danger: true,
           },
         ],
       },
     ];
   };
 
-  return (
-    <Layout className="min-h-screen bg-gray-50 dark:bg-slate-900">
-      <Sider
-        collapsible
-        collapsed={collapsed}
-        onCollapse={setCollapsed}
-        className="!bg-gradient-to-b !from-green-800 !via-green-700 !to-green-900 dark:!from-slate-900 dark:!via-slate-800 dark:!to-slate-900 shadow-2xl"
+  // Profile dropdown menu items
+  const profileMenuItems: MenuProps["items"] = [
+    {
+      key: "profile",
+      icon: <UserOutlined />,
+      label: "My Profile",
+      onClick: () => router.push("/profile"),
+    },
+    {
+      type: "divider",
+    },
+    {
+      key: "logout",
+      icon: <LogoutOutlined />,
+      label: "Logout",
+      onClick: logout,
+      danger: true,
+    },
+  ];
+Determine logo to use based on theme (dark-bg logo for dark sidebar, white-bg logo for light sidebar)
+  // Since sidebar has dark background, we use the dark-bg logo (white text)
+  const logoSrc = "/logo/dark-bg-harvesters-Logo.jpg";
+
+  // Sidebar content (shared between desktop and mobile)
+  const sidebarContent = (
+    <>
+      <div className="h-20 flex items-center justify-center border-b border-white/10 backdrop-blur-sm px-4">
+        {!collapsed || isMobile ? (
+          <div className="flex items-center justify-center w-full">
+            {mounted && (
+              <Image
+                src={logoSrc}
+                alt="Harvesters International Christian Centre"
+                width={180}
+                height={60}
+                className="object-contain"
+                priority
+              />
+            )}
+          </div>
+        ) : (
+          <div className="w-12 h-12 rounded-xl flex items-center justify-center bg-white/10 backdrop-blur-sm">
+            {mounted && (
+              <Image
+                src={logoSrc}
+                alt="HICC"
+                width={40}
+                height={40}
+                className="object-contain rounded-lg"
+                priority
+              />
+            )}
+          </div
+          </h1>
+        )}
+      </div>
+
+      <Menu
         theme="dark"
+        mode="inline"
+        selectedKeys={getSelectedKeys()}
+        items={getMenuItems()}
+        className="!bg-transparent !border-r-0 mt-4 px-2 [&_.ant-menu-item]:rounded-xl [&_.ant-menu-item]:mb-2 [&_.ant-menu-item:hover]:bg-white/10 [&_.ant-menu-item-selected]:bg-white/20 [&_.ant-menu-item-selected]:shadow-lg [&_.ant-menu-submenu-title]:rounded-xl [&_.ant-menu-submenu-title:hover]:bg-white/10"
+        aria-label="Dashboard navigation menu"
+      />
+    </>
+  );
+
+  return (
+    <Layout style={{ minHeight: "100vh" }}>
+      {/* Desktop Sidebar (Fixed) */}
+      {!isMobile && (
+        <Sider
+          collapsible
+          collapsed={collapsed}
+          onCollapse={(value) => setCollapsed(value)}
+          className="!fixed !left-0 !top-0 !bottom-0 !h-screen !z-10 !bg-gradient-to-b !from-green-800 !via-green-700 !to-green-900 dark:!from-slate-900 dark:!via-slate-800 dark:!to-slate-950 shadow-2xl"
+          width={280}
+          collapsedWidth={80}
+          aria-label="Main navigation sidebar"
+        >
+          {sidebarContent}
+        </Sider>
+      )}
+
+      {/* Mobile Drawer (Overlay) */}
+      <Drawer
+        placement="left"
+        open={mobileDrawerOpen}
+        onClose={() => setMobileDrawerOpen(false)}
         width={280}
-        collapsedWidth={80}
-        aria-label="Main navigation"
+        styles={{
+          body: { padding: 0 },
+          header: { display: "none" },
+        }}
+        className="[&_.ant-drawer-body]:!bg-gradient-to-b [&_.ant-drawer-body]:!from-green-800 [&_.ant-drawer-body]:!via-green-700 [&_.ant-drawer-body]:!to-green-900 dark:[&_.ant-drawer-body]:!from-slate-900 dark:[&_.ant-drawer-body]:!via-slate-800 dark:[&_.ant-drawer-body]:!to-slate-950"
       >
-        <div className="h-20 flex items-center justify-center border-b border-white/10 backdrop-blur-sm">
-          {!collapsed ? (
-            <h1 className="text-white text-xl font-bold m-0 tracking-wide drop-shadow-lg">
-              Fellowship CRM
-            </h1>
-          ) : (
-            <h1 className="text-white text-2xl font-bold m-0 bg-white/10 w-12 h-12 rounded-xl flex items-center justify-center backdrop-blur-sm">
-              FC
-            </h1>
-          )}
+        <div className="flex justify-end p-4">
+          <button
+            onClick={() => setMobileDrawerOpen(false)}
+            className="text-white/80 hover:text-white text-2xl p-2 hover:bg-white/10 rounded-lg transition-colors"
+            aria-label="Close menu"
+          >
+            <CloseOutlined />
+          </button>
         </div>
+        {sidebarContent}
+      </Drawer>
 
-        <Menu
-          theme="dark"
-          mode="inline"
-          defaultSelectedKeys={["dashboard"]}
-          items={getMenuItems()}
-          className="!bg-transparent !border-r-0 mt-4 px-2 [&_.ant-menu-item]:rounded-xl [&_.ant-menu-item]:mb-2 [&_.ant-menu-item:hover]:bg-white/10 [&_.ant-menu-item-selected]:bg-white/20 [&_.ant-menu-item-selected]:shadow-lg [&_.ant-menu-submenu-title]:rounded-xl [&_.ant-menu-submenu-title:hover]:bg-white/10"
-          aria-label="Dashboard navigation menu"
-        />
-
-        <div className="absolute bottom-6 w-full px-4">
-          <Menu
-            theme="dark"
-            mode="inline"
-            className="!bg-transparent !border-r-0"
-            items={[
-              {
-                key: "logout",
-                icon: <LogoutOutlined className="text-lg" />,
-                label: <span className="font-semibold">Logout</span>,
-                onClick: logout,
-                className:
-                  "!rounded-xl hover:!bg-red-500/20 !text-red-200 hover:!text-red-100",
-              },
-            ]}
-            aria-label="User account actions"
-          />
-        </div>
-      </Sider>
-
-      <Layout>
-        <AppHeader
-          title={`Welcome, ${user?.firstName || "User"}`}
-          actions={
-            <div className="flex items-center gap-5">
-              <ThemeToggle />
-              {role && (
-                <span className="text-sm font-semibold text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-slate-800 px-4 py-2 rounded-full shadow-sm">
-                  {role === "SUPERADMIN"
-                    ? "Super Admin"
-                    : role.charAt(0) + role.slice(1).toLowerCase()}
-                </span>
+      <Layout
+        className={
+          !isMobile && !collapsed ? "ml-[280px]" : !isMobile ? "ml-[80px]" : ""
+        }
+      >
+        <Header className="!bg-gradient-to-r !from-gray-50 !via-white !to-gray-100 dark:!from-slate-950 dark:!via-slate-900 dark:!to-slate-950 !p-0 shadow-sm border-b border-gray-200 dark:border-slate-800 !sticky !top-0 !z-[5]">
+          <div className="h-full flex items-center justify-between px-6">
+            <div className="flex items-center gap-4">
+              {isMobile && (
+                <button
+                  onClick={() => setMobileDrawerOpen(true)}
+                  className="text-gray-700 dark:text-gray-200 text-2xl p-2 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
+                  aria-label="Open menu"
+                >
+                  <MenuOutlined />
+                </button>
               )}
-              <div className="w-11 h-11 rounded-full bg-gradient-to-br from-green-600 to-green-700 dark:from-green-500 dark:to-green-600 text-white flex items-center justify-center font-bold text-sm shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 cursor-pointer border-2 border-white dark:border-slate-700">
-                {user?.firstName?.[0]}
-                {user?.lastName?.[0]}
-              </div>
+              <AppHeader
+                title={`Welcome, ${user?.firstName || "User"}`}
+                actions={
+                  <div className="flex items-center gap-5">
+                    <ThemeToggle />
+                    {role && (
+                      <span className="text-sm font-semibold text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-slate-800 px-4 py-2 rounded-full shadow-sm">
+                        {role === "SUPERADMIN"
+                          ? "Super Admin"
+                          : role.charAt(0) + role.slice(1).toLowerCase()}
+                      </span>
+                    )}
+                    <Dropdown
+                      menu={{ items: profileMenuItems }}
+                      trigger={["click"]}
+                      placement="bottomRight"
+                    >
+                      <div
+                        className="w-11 h-11 rounded-full bg-gradient-to-br from-green-600 to-green-800 dark:from-green-700 dark:to-green-900 flex items-center justify-center text-white font-semibold text-base shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 cursor-pointer"
+                        aria-label={`${user?.firstName} ${user?.lastName} profile`}
+                        title={`${user?.firstName} ${user?.lastName}`}
+                      >
+                        {user?.firstName?.[0]}
+                        {user?.lastName?.[0]}
+                      </div>
+                    </Dropdown>
+                  </div>
+                }
+              />
             </div>
-          }
-        />
+          </div>
+        </Header>
 
-        <Content className="p-8 bg-gradient-to-br from-gray-50 via-white to-gray-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 min-h-screen">
+        <Content className="p-6 md:p-8 bg-gradient-to-br from-gray-50 via-white to-gray-100 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 text-gray-700 dark:text-gray-200">
           <main id="main-content" tabIndex={-1} aria-label="Main content">
             <div className="max-w-7xl mx-auto">{children}</div>
           </main>
