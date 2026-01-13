@@ -41,7 +41,7 @@ export default function DashboardLayout({
   const getMenuItems = () => {
     // Return empty array if no role is available
     if (!role) return [];
-    
+
     const rolePath = role.toLowerCase();
     const commonItems = [
       {
@@ -229,11 +229,13 @@ export default function DashboardLayout({
           actions={
             <div className="flex items-center gap-5">
               <ThemeToggle />
-              <span className="text-sm font-semibold text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-slate-800 px-4 py-2 rounded-full shadow-sm">
-                {role === "SUPERADMIN"
-                  ? "Super Admin"
-                  : role.charAt(0) + role.slice(1).toLowerCase()}
-              </span>
+              {role && (
+                <span className="text-sm font-semibold text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-slate-800 px-4 py-2 rounded-full shadow-sm">
+                  {role === "SUPERADMIN"
+                    ? "Super Admin"
+                    : role.charAt(0) + role.slice(1).toLowerCase()}
+                </span>
+              )}
               <div className="w-11 h-11 rounded-full bg-gradient-to-br from-green-600 to-green-700 dark:from-green-500 dark:to-green-600 text-white flex items-center justify-center font-bold text-sm shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 cursor-pointer border-2 border-white dark:border-slate-700">
                 {user?.firstName?.[0]}
                 {user?.lastName?.[0]}

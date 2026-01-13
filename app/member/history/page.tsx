@@ -54,21 +54,29 @@ export default function MemberHistoryPage() {
         const analyticsData = data.data;
 
         // Transform analytics data to history format
-        const historyData: MeetingHistory[] = analyticsData.meetings?.map(
-          (meeting: any) => ({
-            id: meeting.id,
-            groupName: analyticsData.groupName || "Unknown Group",
-            date: meeting.date,
-            attended: meeting.attended,
-            notes: meeting.notes,
-          })
-        ) || [];
+        const historyData: MeetingHistory[] =
+          analyticsData.meetings?.map(
+            (meeting: {
+              id: string;
+              date: string;
+              attended: boolean;
+              notes?: string;
+            }) => ({
+              id: meeting.id,
+              groupName: analyticsData.groupName || "Unknown Group",
+              date: meeting.date,
+              attended: meeting.attended,
+              notes: meeting.notes,
+            })
+          ) || [];
 
         setHistory(historyData);
         setStats({
           totalMeetings: analyticsData.totalMeetings || 0,
           attended: analyticsData.attendedMeetings || 0,
-          missed: (analyticsData.totalMeetings || 0) - (analyticsData.attendedMeetings || 0),
+          missed:
+            (analyticsData.totalMeetings || 0) -
+            (analyticsData.attendedMeetings || 0),
           attendanceRate: analyticsData.attendanceRate || 0,
         });
       } else {
