@@ -279,7 +279,7 @@ export default function ManageAttendancePage() {
         </Card>
 
         <div className="flex gap-3 justify-end">
-          <Button onClick={() => router.push(`/meetings/${meetingId}`)}>
+          <Button onClick={() => router.push(`/leader/meetings/${meetingId}`)}>
             Cancel
           </Button>
           <Button

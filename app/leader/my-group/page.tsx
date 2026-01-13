@@ -498,7 +498,7 @@ export default function MyGroupPage() {
                   <AntButton
                     type="primary"
                     icon={<PlusOutlined />}
-                    onClick={() => router.push("/meetings/new")}
+                    onClick={() => router.push("/leader/meetings/new")}
                   >
                     Create First Meeting
                   </AntButton>

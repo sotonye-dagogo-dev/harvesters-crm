@@ -384,7 +384,7 @@ export default function MeetingSchedulingPage() {
                     </div>
                     <AntButton
                       type="link"
-                      onClick={() => router.push(`/meetings/${meeting.id}`)}
+                      onClick={() => router.push(`/leader/meetings/${meeting.id}`)}
                     >
                       View Details
                     </AntButton>

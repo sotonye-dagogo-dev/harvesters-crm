@@ -60,7 +60,7 @@ export default function CreateMeetingPage() {
       if (response.ok) {
         const data = await response.json();
         message.success("Meeting created successfully");
-        router.push(`/meetings/${data.data.id}`);
+        router.push(`/leader/meetings/${data.data.id}`);
       } else {
         const error = await response.json();
         message.error(error.error || "Failed to create meeting");

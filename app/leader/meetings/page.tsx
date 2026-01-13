@@ -88,7 +88,7 @@ export default function MeetingsPage() {
             <AntButton
               type="primary"
               icon={<PlusOutlined />}
-              onClick={() => router.push("/meetings/new")}
+              onClick={() => router.push("/leader/meetings/new")}
             >
               Log Meeting
             </AntButton>
@@ -117,7 +117,7 @@ export default function MeetingsPage() {
                 <AntButton
                   type="primary"
                   icon={<PlusOutlined />}
-                  onClick={() => router.push("/meetings/new")}
+                  onClick={() => router.push("/leader/meetings/new")}
                 >
                   Log First Meeting
                 </AntButton>
@@ -125,13 +125,13 @@ export default function MeetingsPage() {
             }
           />
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mx-2 sm:mx-0">
             {filteredMeetings.map((meeting) => (
               <MeetingCard
                 key={meeting.id}
                 meeting={meeting}
                 showActions={canCreateMeeting}
-                onEdit={(id) => router.push(`/meetings/${id}/edit`)}
+                onEdit={(id) => router.push(`/leader/meetings/${id}/edit`)}
                 onDelete={() => message.info("Delete coming soon")}
               />
             ))}

@@ -62,6 +62,58 @@ export default function LeaderDashboard() {
     fetchAnalytics();
   }, [user?.groupId]);
 
+  // Dynamic stats configuration
+  const stats = [
+    {
+      title: "Group Members",
+      value: analytics?.totalMembers || 0,
+      icon: <UserOutlined />,
+      color: "text-blue-600 dark:text-blue-400",
+    },
+    {
+      title: "Total Meetings",
+      value: analytics?.totalMeetings || 0,
+      icon: <CalendarOutlined />,
+      color: "text-green-600 dark:text-green-400",
+    },
+    {
+      title: "Recent Meetings",
+      value: analytics?.recentMeetings || 0,
+      icon: <CalendarOutlined />,
+      color: "text-purple-600 dark:text-purple-400",
+    },
+    {
+      title: "Recent Interactions",
+      value: analytics?.recentInteractions || 0,
+      icon: <PhoneOutlined />,
+      color: "text-orange-600 dark:text-orange-400",
+    },
+  ];
+
+  // Quick actions configuration
+  const quickActions = [
+    {
+      label: "View My Group",
+      icon: <TeamOutlined />,
+      path: "/leader/my-group",
+    },
+    {
+      label: "Create Meeting",
+      icon: <CalendarOutlined />,
+      path: "/leader/meetings/new",
+    },
+    {
+      label: "Log Interaction",
+      icon: <PhoneOutlined />,
+      path: "/leader/interactions/new",
+    },
+    {
+      label: "Manage Follow-ups",
+      icon: <ClockCircleOutlined />,
+      path: "/leader/follow-ups",
+    },
+  ];
+
   if (loading) {
     return (
       <DashboardLayout role="LEADER">
@@ -75,27 +127,27 @@ export default function LeaderDashboard() {
   return (
     <DashboardLayout role="LEADER">
       <div className="space-y-6">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
               Leader Dashboard
             </h2>
-            <p className="text-gray-600">
+            <p className="text-gray-600 dark:text-gray-400">
               Manage your group and track engagement
             </p>
           </div>
           {user?.groupId && (
-            <div className="flex gap-2">
+            <div className="flex flex-wrap gap-2">
               <Button
                 icon={<ClockCircleOutlined />}
-                onClick={() => router.push("/follow-ups")}
+                onClick={() => router.push("/leader/follow-ups")}
               >
                 Follow-ups
               </Button>
               <Button
                 type="primary"
                 icon={<BarChartOutlined />}
-                onClick={() => router.push("/analytics")}
+                onClick={() => router.push("/leader/analytics")}
               >
                 View Analytics
               </Button>
@@ -105,79 +157,51 @@ export default function LeaderDashboard() {
 
         {user?.groupId ? (
           <>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              <StatCard
-                title="Group Members"
-                value={analytics?.totalMembers || 0}
-                icon={<UserOutlined />}
-                color="text-blue-600"
-              />
-              <StatCard
-                title="Total Meetings"
-                value={analytics?.totalMeetings || 0}
-                icon={<CalendarOutlined />}
-                color="text-green-600"
-              />
-              <StatCard
-                title="Recent Meetings"
-                value={analytics?.recentMeetings || 0}
-                icon={<CalendarOutlined />}
-                color="text-purple-600"
-              />
-              <StatCard
-                title="Recent Interactions"
-                value={analytics?.recentInteractions || 0}
-                icon={<PhoneOutlined />}
-                color="text-orange-600"
-              />
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mx-2 sm:mx-0">
+              {stats.map((stat, index) => (
+                <StatCard
+                  key={index}
+                  title={stat.title}
+                  value={stat.value}
+                  icon={stat.icon}
+                  color={stat.color}
+                />
+              ))}
             </div>
 
             {/* Follow-up Reminders Widget */}
             <FollowUpReminderWidget leaderGroupId={user.groupId} />
 
-            <Card title="Average Attendance">
+            <Card
+              title="Average Attendance"
+              className="bg-white dark:bg-slate-800 border-gray-200 dark:border-slate-700"
+            >
               <div className="text-center py-8">
-                <div className="text-4xl font-bold text-church-primary mb-2">
+                <div className="text-4xl font-bold text-church-primary dark:text-green-400 mb-2">
                   {analytics?.averageAttendance?.toFixed(1) || "0"}%
                 </div>
-                <p className="text-gray-600">Group attendance rate</p>
+                <p className="text-gray-600 dark:text-gray-400">
+                  Group attendance rate
+                </p>
               </div>
             </Card>
 
-            <Card title="Quick Actions">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <Button
-                  size="large"
-                  block
-                  icon={<TeamOutlined />}
-                  onClick={() => router.push("/my-group")}
-                >
-                  View My Group
-                </Button>
-                <Button
-                  size="large"
-                  block
-                  icon={<CalendarOutlined />}
-                  onClick={() => router.push("/meetings/new")}
-                >
-                  Create Meeting
-                </Button>
-                <Button
-                  size="large"
-                  block
-                  icon={<PhoneOutlined />}
-                  onClick={() => router.push("/interactions/new")}
-                >
-                  Log Interaction
-                </Button>
-                <Button
-                  size="large"
-                  block
-                  icon={<ClockCircleOutlined />}
-                  onClick={() => router.push("/follow-ups")}
-                >
-                  Manage Follow-ups
-                </Button>
+            <Card
+              title="Quick Actions"
+              className="bg-white dark:bg-slate-800 border-gray-200 dark:border-slate-700"
+            >
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mx-2 sm:mx-0">
+                {quickActions.map((action, index) => (
+                  <Button
+                    key={index}
+                    size="large"
+                    block
+                    icon={action.icon}
+                    onClick={() => router.push(action.path)}
+                  >
+                    {action.label}
+                  </Button>
+                ))}
               </div>
             </Card>
           </>

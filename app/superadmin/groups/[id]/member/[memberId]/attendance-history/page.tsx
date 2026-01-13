@@ -288,7 +288,9 @@ export default function AttendanceHistoryPage() {
         <AntButton
           icon={<ArrowLeftOutlined />}
           onClick={() =>
-            router.push(`/groups/${groupId}/member/${memberId}/stats`)
+            router.push(
+              `/superadmin/groups/${groupId}/member/${memberId}/stats`
+            )
           }
           className="mb-4"
         >

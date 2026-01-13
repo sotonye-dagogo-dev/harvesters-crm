@@ -90,7 +90,7 @@ export default function GroupsPage() {
             <AntButton
               type="primary"
               icon={<PlusOutlined />}
-              onClick={() => router.push("/groups/new")}
+              onClick={() => router.push("/superadmin/groups/new")}
             >
               Create Group
             </AntButton>
@@ -123,7 +123,7 @@ export default function GroupsPage() {
                 <AntButton
                   type="primary"
                   icon={<PlusOutlined />}
-                  onClick={() => router.push("/groups/new")}
+                  onClick={() => router.push("/superadmin/groups/new")}
                 >
                   Create First Group
                 </AntButton>
@@ -142,7 +142,7 @@ export default function GroupsPage() {
                     : undefined,
                 }}
                 showActions={user?.role === "SUPERADMIN"}
-                onEdit={(id) => router.push(`/groups/${id}/edit`)}
+                onEdit={(id) => router.push(`/superadmin/groups/${id}/edit`)}
                 onDelete={handleDelete}
               />
             ))}

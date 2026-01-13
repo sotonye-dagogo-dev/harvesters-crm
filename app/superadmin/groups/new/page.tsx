@@ -39,7 +39,7 @@ export default function CreateGroupPage() {
       if (response.ok) {
         const data = await response.json();
         message.success("Group created successfully");
-        router.push(`/groups/${data.data.id}`);
+        router.push(`/superadmin/groups/${data.data.id}`);
       } else {
         const error = await response.json();
         message.error(error.error || "Failed to create group");

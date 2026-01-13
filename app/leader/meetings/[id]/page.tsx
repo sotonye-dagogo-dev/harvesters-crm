@@ -122,19 +122,19 @@ export default function MeetingDetailsPage({
           </p>
         </div>
         <div className="flex gap-2">
-          <Button onClick={() => router.push("/meetings")}>Back</Button>
+          <Button onClick={() => router.push("/leader/meetings")}>Back</Button>
           {canEdit && (
             <>
               <Button
                 icon={<CheckSquareOutlined />}
-                onClick={() => router.push(`/meetings/${params.id}/attendance`)}
+                onClick={() => router.push(`/leader/meetings/${params.id}/attendance`)}
               >
                 Manage Attendance
               </Button>
               <Button
                 type="primary"
                 icon={<EditOutlined />}
-                onClick={() => router.push(`/meetings/${params.id}/edit`)}
+                onClick={() => router.push(`/leader/meetings/${params.id}/edit`)}
               >
                 Edit
               </Button>

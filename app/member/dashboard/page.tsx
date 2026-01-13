@@ -63,17 +63,45 @@ export default function MemberDashboard() {
   const getEngagementColor = (level: string) => {
     switch (level) {
       case "HIGH":
-        return "text-green-600";
+        return "text-green-600 dark:text-green-400";
       case "MEDIUM":
-        return "text-blue-600";
+        return "text-blue-600 dark:text-blue-400";
       case "LOW":
-        return "text-orange-600";
+        return "text-orange-600 dark:text-orange-400";
       case "AT_RISK":
-        return "text-red-600";
+        return "text-red-600 dark:text-red-400";
       default:
-        return "text-gray-600";
+        return "text-gray-600 dark:text-gray-400";
     }
   };
+
+  // Dynamic stats configuration
+  const stats = [
+    {
+      title: "Attendance Rate",
+      value: `${analytics?.attendanceRate?.toFixed(1) || 0}%`,
+      icon: <CalendarOutlined />,
+      color: "text-blue-600 dark:text-blue-400",
+    },
+    {
+      title: "Meetings Attended",
+      value: `${analytics?.meetingsAttended || 0}/${analytics?.totalMeetings || 0}`,
+      icon: <TeamOutlined />,
+      color: "text-green-600 dark:text-green-400",
+    },
+    {
+      title: "Leader Interactions",
+      value: analytics?.totalInteractions || 0,
+      icon: <PhoneOutlined />,
+      color: "text-purple-600 dark:text-purple-400",
+    },
+    {
+      title: "Engagement Level",
+      value: analytics?.engagementLevel || "N/A",
+      icon: <TrophyOutlined />,
+      color: getEngagementColor(analytics?.engagementLevel || ""),
+    },
+  ];
 
   if (loading) {
     return (
@@ -88,17 +116,19 @@ export default function MemberDashboard() {
   return (
     <DashboardLayout role="MEMBER">
       <div className="space-y-6">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
               My Dashboard
             </h2>
-            <p className="text-gray-600">Track your fellowship engagement</p>
+            <p className="text-gray-600 dark:text-gray-400">
+              Track your fellowship engagement
+            </p>
           </div>
           <Button
             type="primary"
             icon={<BarChartOutlined />}
-            onClick={() => router.push("/analytics")}
+            onClick={() => router.push("/member/analytics")}
           >
             View Analytics
           </Button>
@@ -106,46 +136,39 @@ export default function MemberDashboard() {
 
         {user?.groupId ? (
           <>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              <StatCard
-                title="Attendance Rate"
-                value={`${analytics?.attendanceRate?.toFixed(1) || 0}%`}
-                icon={<CalendarOutlined />}
-                color="text-blue-600"
-              />
-              <StatCard
-                title="Meetings Attended"
-                value={`${analytics?.meetingsAttended || 0}/${analytics?.totalMeetings || 0}`}
-                icon={<TeamOutlined />}
-                color="text-green-600"
-              />
-              <StatCard
-                title="Leader Interactions"
-                value={analytics?.totalInteractions || 0}
-                icon={<PhoneOutlined />}
-                color="text-purple-600"
-              />
-              <StatCard
-                title="Engagement Level"
-                value={analytics?.engagementLevel || "N/A"}
-                icon={<TrophyOutlined />}
-                color={getEngagementColor(analytics?.engagementLevel || "")}
-              />
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mx-2 sm:mx-0">
+              {stats.map((stat, index) => (
+                <StatCard
+                  key={index}
+                  title={stat.title}
+                  value={stat.value}
+                  icon={stat.icon}
+                  color={stat.color}
+                />
+              ))}
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <Card title="My Attendance">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mx-2 sm:mx-0">
+              <Card
+                title="My Attendance"
+                className="bg-white dark:bg-slate-800 border-gray-200 dark:border-slate-700"
+              >
                 <div className="text-center py-8">
-                  <div className="text-4xl font-bold text-church-primary mb-2">
+                  <div className="text-4xl font-bold text-church-primary dark:text-green-400 mb-2">
                     {analytics?.attendanceRate?.toFixed(0) || 0}%
                   </div>
-                  <p className="text-gray-600">of meetings attended</p>
+                  <p className="text-gray-600 dark:text-gray-400">
+                    of meetings attended
+                  </p>
                 </div>
               </Card>
 
-              <Card title="Keep Growing!">
+              <Card
+                title="Keep Growing!"
+                className="bg-white dark:bg-slate-800 border-gray-200 dark:border-slate-700"
+              >
                 <div className="py-4 px-2">
-                  <p className="text-gray-700 mb-4">
+                  <p className="text-gray-700 dark:text-gray-300 mb-4">
                     Your engagement level is{" "}
                     <span
                       className={`font-semibold ${getEngagementColor(analytics?.engagementLevel || "")}`}
@@ -153,7 +176,7 @@ export default function MemberDashboard() {
                       {analytics?.engagementLevel || "N/A"}
                     </span>
                   </p>
-                  <ul className="text-sm text-gray-600 space-y-2">
+                  <ul className="text-sm text-gray-600 dark:text-gray-400 space-y-2">
                     <li>✓ Attend fellowship meetings regularly</li>
                     <li>✓ Participate actively in discussions</li>
                     <li>✓ Stay connected with your fellowship leader</li>

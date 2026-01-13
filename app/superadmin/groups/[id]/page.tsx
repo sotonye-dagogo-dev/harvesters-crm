@@ -47,7 +47,7 @@ export default function GroupDetailsPage() {
         setGroup(data.data);
       } else {
         message.error("Group not found");
-        router.push("/groups");
+        router.push("/superadmin/groups");
       }
     } catch (error) {
       message.error("Failed to load group");
@@ -119,7 +119,7 @@ export default function GroupDetailsPage() {
 
           if (response.ok) {
             message.success("Group deleted successfully");
-            router.push("/groups");
+            router.push("/superadmin/groups");
           } else {
             const error = await response.json();
             message.error(error.error || "Failed to delete group");
@@ -169,7 +169,9 @@ export default function GroupDetailsPage() {
           <AntButton
             size="small"
             onClick={() =>
-              router.push(`/groups/${groupId}/member/${record.id}/stats`)
+              router.push(
+                `/superadmin/groups/${groupId}/member/${record.id}/stats`
+              )
             }
           >
             View Stats
@@ -217,28 +219,36 @@ export default function GroupDetailsPage() {
             <p className="text-gray-600 mt-1">{group.description}</p>
           </div>
           {user?.role === "SUPERADMIN" && (
-            <div className="flex gap-2">
+            <div className="flex flex-wrap gap-2">
               <AntButton
                 icon={<BarChartOutlined />}
-                onClick={() => router.push(`/groups/${groupId}/reports`)}
+                onClick={() =>
+                  router.push(`/superadmin/groups/${groupId}/reports`)
+                }
               >
                 View Reports
               </AntButton>
               <AntButton
                 icon={<UserSwitchOutlined />}
-                onClick={() => router.push(`/groups/${groupId}/assign-leader`)}
+                onClick={() =>
+                  router.push(`/superadmin/groups/${groupId}/assign-leader`)
+                }
               >
                 Assign Leader
               </AntButton>
               <AntButton
                 icon={<UserAddOutlined />}
-                onClick={() => router.push(`/groups/${groupId}/add-member`)}
+                onClick={() =>
+                  router.push(`/superadmin/groups/${groupId}/add-member`)
+                }
               >
                 Add Member
               </AntButton>
               <AntButton
                 icon={<EditOutlined />}
-                onClick={() => router.push(`/groups/${groupId}/edit`)}
+                onClick={() =>
+                  router.push(`/superadmin/groups/${groupId}/edit`)
+                }
               >
                 Edit
               </AntButton>
@@ -253,24 +263,24 @@ export default function GroupDetailsPage() {
           )}
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mx-2 sm:mx-0">
           <StatCard
             title="Total Members"
             value={group.memberCount}
             icon={<UserAddOutlined />}
-            color="text-blue-600"
+            color="text-blue-600 dark:text-blue-400"
           />
           <StatCard
             title="Recent Meetings"
             value={group.recentMeetings?.length || 0}
             icon={<CalendarOutlined />}
-            color="text-green-600"
+            color="text-green-600 dark:text-green-400"
           />
           <StatCard
             title="Attendance Rate"
             value={`${group.attendanceRate?.toFixed(0) || 0}%`}
             icon={<CalendarOutlined />}
-            color="text-purple-600"
+            color="text-purple-600 dark:text-purple-400"
           />
         </div>
 

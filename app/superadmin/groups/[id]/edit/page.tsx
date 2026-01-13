@@ -170,7 +170,9 @@ export default function EditGroupPage({ params }: { params: { id: string } }) {
           </Form.Item>
 
           <div className="flex gap-2 justify-end">
-            <Button onClick={() => router.push(`/groups/${params.id}`)}>
+            <Button
+              onClick={() => router.push(`/superadmin/groups/${params.id}`)}
+            >
               Cancel
             </Button>
             <Button

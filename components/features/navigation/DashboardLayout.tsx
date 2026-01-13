@@ -399,7 +399,7 @@ export default function DashboardLayout({
               <AppHeader
                 title={`Welcome, ${user?.firstName || "User"}`}
                 actions={
-                  <div className="flex items-center gap-5">
+                  <div className="w-full flex items-center gap-5">
                     <ThemeToggle />
                     {role && (
                       <span className="text-sm font-semibold text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-slate-800 px-4 py-2 rounded-full shadow-sm">

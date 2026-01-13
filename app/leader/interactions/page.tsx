@@ -184,7 +184,7 @@ export default function InteractionsPage() {
           <AntButton
             type="primary"
             icon={<PlusOutlined />}
-            onClick={() => router.push("/interactions/new")}
+            onClick={() => router.push(\"/leader/interactions/new\")}
           >
             Log Interaction
           </AntButton>
@@ -226,7 +226,7 @@ export default function InteractionsPage() {
               user.groupId ? (
                 <AntButton
                   type="primary"
-                  onClick={() => router.push("/interactions/new")}
+                  onClick={() => router.push(\"/leader/interactions/new\")}
                 >
                   Log Interaction
                 </AntButton>

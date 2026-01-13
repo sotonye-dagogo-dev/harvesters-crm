@@ -53,7 +53,7 @@ export default function AssignLeaderPage({
     } catch (error) {
       message.error("Failed to load data");
       console.error(error);
-      router.push(`/groups/${params.id}`);
+      router.push(`/superadmin/groups/${params.id}`);
     } finally {
       setLoading(false);
     }
@@ -115,7 +115,7 @@ export default function AssignLeaderPage({
       }
 
       message.success("Leader assigned successfully");
-      router.push(`/groups/${params.id}`);
+      router.push(`/superadmin/groups/${params.id}`);
     } catch (error: any) {
       message.error(error.message || "Failed to assign leader");
       console.error(error);
@@ -267,7 +267,9 @@ export default function AssignLeaderPage({
           </div>
 
           <div className="flex gap-2 justify-end pt-4">
-            <Button onClick={() => router.push(`/groups/${params.id}`)}>
+            <Button
+              onClick={() => router.push(`/superadmin/groups/${params.id}`)}
+            >
               Cancel
             </Button>
             <Button

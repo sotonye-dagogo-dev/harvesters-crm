@@ -55,6 +55,68 @@ export default function SuperadminDashboard() {
     fetchAnalytics();
   }, []);
 
+  // Dynamic stats configuration
+  const stats = [
+    {
+      title: "Total Members",
+      value: analytics?.totalUsers || 0,
+      icon: <UserOutlined />,
+      color: "text-blue-600 dark:text-blue-400",
+    },
+    {
+      title: "Total Groups",
+      value: analytics?.totalGroups || 0,
+      icon: <TeamOutlined />,
+      color: "text-green-600 dark:text-green-400",
+    },
+    {
+      title: "Recent Meetings",
+      value: analytics?.recentMeetings || 0,
+      icon: <CalendarOutlined />,
+      color: "text-purple-600 dark:text-purple-400",
+    },
+    {
+      title: "Recent Interactions",
+      value: analytics?.recentInteractions || 0,
+      icon: <PhoneOutlined />,
+      color: "text-orange-600 dark:text-orange-400",
+    },
+  ];
+
+  // Dynamic active metrics configuration
+  const activeMetrics = [
+    {
+      title: "Active Members",
+      value: analytics?.activeUsers || 0,
+      description: "Members are actively engaged",
+    },
+    {
+      title: "Active Groups",
+      value: analytics?.activeGroups || 0,
+      description: "Groups meeting regularly",
+    },
+  ];
+
+  // Quick actions configuration
+  const quickActions = [
+    {
+      label: "Church-Wide Analytics",
+      icon: <BarChartOutlined />,
+      onClick: () => router.push("/superadmin/analytics"),
+      type: "primary" as const,
+    },
+    {
+      label: "Interest Insights",
+      icon: <PieChartOutlined />,
+      onClick: () => router.push("/superadmin/interests"),
+    },
+    {
+      label: "Manage Groups",
+      icon: <TeamOutlined />,
+      onClick: () => router.push("/superadmin/groups"),
+    },
+  ];
+
   if (loading) {
     return (
       <DashboardLayout role="SUPERADMIN">
@@ -87,61 +149,35 @@ export default function SuperadminDashboard() {
           </Button>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          <StatCard
-            title="Total Members"
-            value={analytics?.totalUsers || 0}
-            icon={<UserOutlined />}
-            color="text-blue-600 dark:text-blue-400"
-          />
-          <StatCard
-            title="Total Groups"
-            value={analytics?.totalGroups || 0}
-            icon={<TeamOutlined />}
-            color="text-green-600 dark:text-green-400"
-          />
-          <StatCard
-            title="Recent Meetings"
-            value={analytics?.recentMeetings || 0}
-            icon={<CalendarOutlined />}
-            color="text-purple-600 dark:text-purple-400"
-          />
-          <StatCard
-            title="Recent Interactions"
-            value={analytics?.recentInteractions || 0}
-            icon={<PhoneOutlined />}
-            color="text-orange-600 dark:text-orange-400"
-          />
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mx-2 sm:mx-0">
+          {stats.map((stat, index) => (
+            <StatCard
+              key={index}
+              title={stat.title}
+              value={stat.value}
+              icon={stat.icon}
+              color={stat.color}
+            />
+          ))}
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">
-          <Card
-            title="Active Members"
-            className="h-full bg-white dark:bg-slate-800 border-gray-200 dark:border-slate-700"
-          >
-            <div className="text-center py-8">
-              <div className="text-4xl font-bold text-church-primary dark:text-green-400 mb-2">
-                {analytics?.activeUsers || 0}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6 mx-2 sm:mx-0">
+          {activeMetrics.map((metric, index) => (
+            <Card
+              key={index}
+              title={metric.title}
+              className="h-full bg-white dark:bg-slate-800 border-gray-200 dark:border-slate-700"
+            >
+              <div className="text-center py-8">
+                <div className="text-4xl font-bold text-church-primary dark:text-green-400 mb-2">
+                  {metric.value}
+                </div>
+                <p className="text-gray-600 dark:text-gray-400">
+                  {metric.description}
+                </p>
               </div>
-              <p className="text-gray-600 dark:text-gray-400">
-                Members are actively engaged
-              </p>
-            </div>
-          </Card>
-
-          <Card
-            title="Active Groups"
-            className="h-full bg-white dark:bg-slate-800 border-gray-200 dark:border-slate-700"
-          >
-            <div className="text-center py-8">
-              <div className="text-4xl font-bold text-church-primary dark:text-green-400 mb-2">
-                {analytics?.activeGroups || 0}
-              </div>
-              <p className="text-gray-600 dark:text-gray-400">
-                Groups meeting regularly
-              </p>
-            </div>
-          </Card>
+            </Card>
+          ))}
         </div>
 
         {/* Quick Actions */}
@@ -149,32 +185,19 @@ export default function SuperadminDashboard() {
           title="Quick Actions"
           className="mt-6 bg-white dark:bg-slate-800 border-gray-200 dark:border-slate-700"
         >
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            <Button
-              type="primary"
-              size="large"
-              block
-              icon={<BarChartOutlined />}
-              onClick={() => router.push("/superadmin/analytics")}
-            >
-              Church-Wide Analytics
-            </Button>
-            <Button
-              size="large"
-              block
-              icon={<PieChartOutlined />}
-              onClick={() => router.push("/superadmin/interests")}
-            >
-              Interest Insights
-            </Button>
-            <Button
-              size="large"
-              block
-              icon={<TeamOutlined />}
-              onClick={() => router.push("/superadmin/groups")}
-            >
-              Manage Groups
-            </Button>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mx-2 sm:mx-0">
+            {quickActions.map((action, index) => (
+              <Button
+                key={index}
+                type={action.type || "default"}
+                size="large"
+                block
+                icon={action.icon}
+                onClick={action.onClick}
+              >
+                {action.label}
+              </Button>
+            ))}
           </div>
         </Card>
       </div>

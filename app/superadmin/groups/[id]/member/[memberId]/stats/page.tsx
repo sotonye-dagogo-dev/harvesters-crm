@@ -189,7 +189,7 @@ export default function MemberStatsPage() {
     <div className="p-6 max-w-6xl mx-auto">
       <div className="mb-6">
         <button
-          onClick={() => router.push(`/groups/${groupId}`)}
+          onClick={() => router.push(`/superadmin/groups/${groupId}`)}
           className="flex items-center gap-2 text-primary-600 hover:text-primary-700 mb-4"
         >
           <ArrowLeftOutlined />

@@ -222,7 +222,7 @@ export default function EditMeetingPage({
           </Form.Item>
 
           <div className="flex gap-2 justify-end">
-            <Button onClick={() => router.push(`/meetings/${params.id}`)}>
+            <Button onClick={() => router.push(`/leader/meetings/${params.id}`)}>
               Cancel
             </Button>
             <Button
