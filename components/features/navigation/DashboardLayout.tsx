@@ -1,11 +1,10 @@
 "use client";
 
 import { Layout, Menu, Drawer, Dropdown } from "antd";
-import { ReactNode, useState, useEffect } from "react";
+import { ReactNode, useState, useEffect, useLayoutEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
-import { useTheme } from "next-themes";
 import {
   DashboardOutlined,
   TeamOutlined,
@@ -44,14 +43,20 @@ export default function DashboardLayout({
   const { user, logout } = useAuth();
   const pathname = usePathname();
   const router = useRouter();
-  const { theme, resolvedTheme } = useTheme();
 
   // Use prop role if provided, otherwise use user role from auth context
   const role = propRole || (user?.role as "SUPERADMIN" | "LEADER" | "MEMBER");
 
-  // Detect mobile screen and set mounted flag
-  useEffect(() => {
+  // Set mounted flag to prevent hydration mismatch
+  // This is intentional to avoid hydration issues with dynamic content
+  useLayoutEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setMounted(true);
+    return () => setMounted(false);
+  }, []);
+
+  // Detect mobile screen
+  useEffect(() => {
     const checkMobile = () => {
       setIsMobile(window.innerWidth < 768);
     };
@@ -286,7 +291,7 @@ export default function DashboardLayout({
       danger: true,
     },
   ];
-Determine logo to use based on theme (dark-bg logo for dark sidebar, white-bg logo for light sidebar)
+  // Determine logo to use based on theme (dark-bg logo for dark sidebar, white-bg logo for light sidebar)
   // Since sidebar has dark background, we use the dark-bg logo (white text)
   const logoSrc = "/logo/dark-bg-harvesters-Logo.jpg";
 
@@ -319,8 +324,7 @@ Determine logo to use based on theme (dark-bg logo for dark sidebar, white-bg lo
                 priority
               />
             )}
-          </div
-          </h1>
+          </div>
         )}
       </div>
 

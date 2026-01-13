@@ -189,7 +189,7 @@ export default function LeaderDashboard() {
                 No Group Assigned
               </h3>
               <p className="text-gray-500">
-                You haven't been assigned to lead a group yet.
+                You haven&apos;t been assigned to lead a group yet.
               </p>
               <p className="text-gray-500 text-sm mt-2">
                 Contact your administrator for group assignment.
