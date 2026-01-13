@@ -39,11 +39,15 @@ export default function DashboardLayout({
 
   // Menu items based on role
   const getMenuItems = () => {
+    // Return empty array if no role is available
+    if (!role) return [];
+    
+    const rolePath = role.toLowerCase();
     const commonItems = [
       {
         key: "dashboard",
         icon: <DashboardOutlined />,
-        label: <Link href={`/${role.toLowerCase()}/dashboard`}>Dashboard</Link>,
+        label: <Link href={`/${rolePath}/dashboard`}>Dashboard</Link>,
       },
     ];
 
