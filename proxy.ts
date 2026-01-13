@@ -10,8 +10,13 @@ const publicRoutes = [
   "/forgot-password",
   "/about",
   "/contact",
+  "/terms",
+  "/privacy",
   "/unregister-sw.html",
 ];
+
+// Define shared authenticated routes (accessible to all logged-in users)
+const sharedAuthRoutes = ["/profile"];
 
 // Define role-based routes
 const roleRoutes = {
@@ -50,6 +55,11 @@ export async function proxy(request: NextRequest) {
 
     if (!user) {
       throw new Error("Invalid token");
+    }
+
+    // Allow shared authenticated routes
+    if (sharedAuthRoutes.some((route) => pathname.startsWith(route))) {
+      return NextResponse.next();
     }
 
     // Check role-based access

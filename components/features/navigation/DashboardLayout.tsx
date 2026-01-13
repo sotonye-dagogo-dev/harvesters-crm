@@ -340,14 +340,17 @@ export default function DashboardLayout({
   );
 
   return (
-    <Layout style={{ minHeight: "100vh" }}>
-      {/* Desktop Sidebar (Fixed) */}
+    <Layout
+      style={{ minHeight: "100vh" }}
+      className="bg-gradient-to-br from-gray-50 via-white to-gray-100 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950"
+    >
+      {/* Desktop Sidebar (Static - pushes content) */}
       {!isMobile && (
         <Sider
           collapsible
           collapsed={collapsed}
           onCollapse={(value) => setCollapsed(value)}
-          className="!fixed !left-0 !top-0 !bottom-0 !h-screen !z-10 !bg-gradient-to-b !from-green-800 !via-green-700 !to-green-900 dark:!from-slate-900 dark:!via-slate-800 dark:!to-slate-950 shadow-2xl"
+          className="!bg-gradient-to-b !from-green-800 !via-green-700 !to-green-900 dark:!from-slate-900 dark:!via-slate-800 dark:!to-slate-950 shadow-2xl !sticky !top-0 !left-0 !h-screen !overflow-y-auto"
           width={280}
           collapsedWidth={80}
           aria-label="Main navigation sidebar"
@@ -380,11 +383,7 @@ export default function DashboardLayout({
         {sidebarContent}
       </Drawer>
 
-      <Layout
-        className={
-          !isMobile && !collapsed ? "ml-[280px]" : !isMobile ? "ml-[80px]" : ""
-        }
-      >
+      <Layout className="bg-gradient-to-br from-gray-50 via-white to-gray-100 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950">
         <Header className="!bg-gradient-to-r !from-gray-50 !via-white !to-gray-100 dark:!from-slate-950 dark:!via-slate-900 dark:!to-slate-950 !p-0 shadow-sm border-b border-gray-200 dark:border-slate-800 !sticky !top-0 !z-[5]">
           <div className="h-full flex items-center justify-between px-6">
             <div className="flex items-center gap-4">

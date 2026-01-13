@@ -3,8 +3,15 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "@/providers/AuthProvider";
 import DashboardLayout from "@/components/features/navigation/DashboardLayout";
-import { Card, Descriptions, Spin, Button as AntButton, message } from "antd";
-import { EditOutlined } from "@ant-design/icons";
+import {
+  Card,
+  Descriptions,
+  Spin,
+  Button as AntButton,
+  message,
+  Tag,
+} from "antd";
+import { EditOutlined, LockOutlined } from "@ant-design/icons";
 import ProfileAvatar from "@/components/features/users/ProfileAvatar";
 import { useRouter } from "next/navigation";
 
@@ -23,8 +30,10 @@ export default function ProfilePage() {
         if (response.ok) {
           const data = await response.json();
           setProfile(data.data);
+        } else {
+          message.error("Failed to load profile");
         }
-      } catch (error) {
+      } catch {
         message.error("Failed to load profile");
       } finally {
         setLoading(false);
@@ -36,7 +45,7 @@ export default function ProfilePage() {
 
   if (loading) {
     return (
-      <DashboardLayout role={user?.role || "MEMBER"}>
+      <DashboardLayout role={user?.role}>
         <div className="flex items-center justify-center h-96">
           <Spin size="large" />
         </div>
@@ -46,28 +55,59 @@ export default function ProfilePage() {
 
   if (!profile) {
     return (
-      <DashboardLayout role={user?.role || "MEMBER"}>
+      <DashboardLayout role={user?.role}>
         <div className="text-center py-12">
-          <p className="text-gray-500">Profile not found</p>
+          <p className="text-gray-500 dark:text-gray-400">Profile not found</p>
         </div>
       </DashboardLayout>
     );
   }
 
+  const getRoleBadge = (role: string) => {
+    switch (role) {
+      case "SUPERADMIN":
+        return <Tag color="red">Super Administrator</Tag>;
+      case "LEADER":
+        return <Tag color="blue">Group Leader</Tag>;
+      case "MEMBER":
+        return <Tag color="green">Member</Tag>;
+      default:
+        return null;
+    }
+  };
+
+  const getChangePasswordRoute = () => {
+    const rolePath = user?.role?.toLowerCase() || "member";
+    return `/${rolePath}/profile/change-password`;
+  };
+
+  const getEditProfileRoute = () => {
+    const rolePath = user?.role?.toLowerCase() || "member";
+    return `/${rolePath}/profile/edit`;
+  };
+
   return (
-    <DashboardLayout role={user?.role || "MEMBER"}>
+    <DashboardLayout role={user?.role}>
       <div className="space-y-6">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between flex-wrap gap-4">
           <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
             My Profile
           </h2>
-          <AntButton
-            type="primary"
-            icon={<EditOutlined />}
-            onClick={() => router.push("/member/profile/edit")}
-          >
-            Edit Profile
-          </AntButton>
+          <div className="flex gap-3">
+            <AntButton
+              icon={<LockOutlined />}
+              onClick={() => router.push(getChangePasswordRoute())}
+            >
+              Change Password
+            </AntButton>
+            <AntButton
+              type="primary"
+              icon={<EditOutlined />}
+              onClick={() => router.push(getEditProfileRoute())}
+            >
+              Edit Profile
+            </AntButton>
+          </div>
         </div>
 
         <Card className="max-w-4xl bg-white dark:bg-slate-800">
@@ -85,19 +125,7 @@ export default function ProfilePage() {
               <p className="text-gray-600 dark:text-gray-400">
                 {profile.email}
               </p>
-              <div className="mt-2">
-                <span
-                  className={`inline-block px-3 py-1 text-sm font-medium rounded-full ${
-                    profile.role === "SUPERADMIN"
-                      ? "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400"
-                      : profile.role === "LEADER"
-                        ? "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400"
-                        : "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400"
-                  }`}
-                >
-                  {profile.role}
-                </span>
-              </div>
+              <div className="mt-2">{getRoleBadge(profile.role)}</div>
             </div>
           </div>
 

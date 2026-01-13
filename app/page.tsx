@@ -38,7 +38,7 @@ export default function Home() {
         <ThemeToggle />
       </div>
 
-      <div className="container mx-auto px-4 py-12 sm:px-6 lg:px-8">
+      <div className="w-full mx-auto px-4 py-12 sm:px-6 lg:px-8">
         <div className="max-w-5xl mx-auto">
           {/* Hero Section - Reduced and Centered */}
           <div className="text-center mb-16 space-y-6">

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useAuth } from "@/providers/AuthProvider";
+import DashboardLayout from "@/components/features/navigation/DashboardLayout";
 import {
   Card,
   Progress,
@@ -84,19 +85,23 @@ export default function GroupAnalyticsPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <Spin size="large" />
-      </div>
+      <DashboardLayout role="LEADER">
+        <div className="flex items-center justify-center h-96">
+          <Spin size="large" />
+        </div>
+      </DashboardLayout>
     );
   }
 
   if (!analytics) {
     return (
-      <div className="p-8">
-        <Card>
-          <Empty description="Analytics data not available" />
-        </Card>
-      </div>
+      <DashboardLayout role="LEADER">
+        <div className="text-center py-12">
+          <Card className="bg-white dark:bg-slate-800">
+            <Empty description="Analytics data not available" />
+          </Card>
+        </div>
+      </DashboardLayout>
     );
   }
 
@@ -206,169 +211,177 @@ export default function GroupAnalyticsPage() {
   ];
 
   return (
-    <div className="p-4 md:p-8 max-w-7xl mx-auto">
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900 mb-2">
-          Group Analytics Dashboard
-        </h1>
-        <p className="text-gray-600">{analytics.groupName}</p>
-      </div>
+    <DashboardLayout role="LEADER">
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+            Group Analytics Dashboard
+          </h1>
+          <p className="text-gray-600 dark:text-gray-400">
+            {analytics.groupName}
+          </p>
+        </div>
 
-      {/* Alert for At-Risk Members */}
-      {analytics.atRiskMembers > 0 && (
-        <Alert
-          title="Attention Needed"
-          description={`${analytics.atRiskMembers} member${analytics.atRiskMembers !== 1 ? "s" : ""} ${analytics.atRiskMembers !== 1 ? "are" : "is"} at risk of disengagement. Consider reaching out with a call or follow-up.`}
-          type="warning"
-          icon={<WarningOutlined />}
-          showIcon
-          className="mb-6"
-        />
-      )}
-
-      {/* Key Metrics */}
-      <Row gutter={[16, 16]} className="mb-6">
-        <Col xs={24} sm={12} lg={6}>
-          <StatCard
-            title="Total Members"
-            value={analytics.totalMembers}
-            icon={<TeamOutlined />}
-            color="text-blue-600"
-            description="In your group"
-          />
-        </Col>
-        <Col xs={24} sm={12} lg={6}>
-          <StatCard
-            title="Active Members"
-            value={analytics.activeMembers}
-            icon={<TrophyOutlined />}
-            color="text-green-600"
-            description={`${((analytics.activeMembers / analytics.totalMembers) * 100).toFixed(0)}% of total`}
-          />
-        </Col>
-        <Col xs={24} sm={12} lg={6}>
-          <StatCard
-            title="At Risk Members"
-            value={analytics.atRiskMembers}
+        {/* Alert for At-Risk Members */}
+        {analytics.atRiskMembers > 0 && (
+          <Alert
+            message="Attention Needed"
+            description={`${analytics.atRiskMembers} member${analytics.atRiskMembers !== 1 ? "s" : ""} ${analytics.atRiskMembers !== 1 ? "are" : "is"} at risk of disengagement. Consider reaching out with a call or follow-up.`}
+            type="warning"
             icon={<WarningOutlined />}
-            color="text-red-600"
-            description="Need attention"
+            showIcon
+            className="bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-800"
           />
-        </Col>
-        <Col xs={24} sm={12} lg={6}>
-          <StatCard
-            title="Total Meetings"
-            value={analytics.totalMeetings}
-            icon={<CalendarOutlined />}
-            color="text-purple-600"
-            description="All time"
-          />
-        </Col>
-      </Row>
+        )}
 
-      {/* Group Performance Card */}
-      <Card title="Group Performance Overview" className="mb-6">
-        <Row gutter={24}>
-          <Col xs={24} md={8}>
-            <div className="text-center p-4">
-              <div className="text-sm text-gray-600 mb-2">
-                Average Attendance Rate
-              </div>
-              <Progress
-                type="circle"
-                percent={Math.round(analytics.averageAttendance)}
-                size={120}
-                strokeColor={
-                  analytics.averageAttendance >= 70
-                    ? "#52c41a"
-                    : analytics.averageAttendance >= 50
-                      ? "#1890ff"
-                      : "#ff4d4f"
-                }
-              />
-            </div>
+        {/* Key Metrics */}
+        <Row gutter={[16, 16]}>
+          <Col xs={24} sm={12} lg={6}>
+            <StatCard
+              title="Total Members"
+              value={analytics.totalMembers}
+              icon={<TeamOutlined />}
+              color="text-blue-600"
+              description="In your group"
+            />
           </Col>
-          <Col xs={24} md={8}>
-            <div className="text-center p-4">
-              <div className="text-sm text-gray-600 mb-2">
-                Meeting Frequency Adherence
-              </div>
-              <Progress
-                type="circle"
-                percent={Math.round(analytics.meetingFrequencyAdherence)}
-                size={120}
-                strokeColor={
-                  analytics.meetingFrequencyAdherence >= 80
-                    ? "#52c41a"
-                    : analytics.meetingFrequencyAdherence >= 60
-                      ? "#faad14"
-                      : "#ff4d4f"
-                }
-              />
-              <div className="text-xs text-gray-500 mt-2">
-                {analytics.meetingFrequencyAdherence >= 80
-                  ? "On track"
-                  : analytics.meetingFrequencyAdherence >= 60
-                    ? "Needs improvement"
-                    : "Behind schedule"}
-              </div>
-            </div>
+          <Col xs={24} sm={12} lg={6}>
+            <StatCard
+              title="Active Members"
+              value={analytics.activeMembers}
+              icon={<TrophyOutlined />}
+              color="text-green-600"
+              description={`${((analytics.activeMembers / analytics.totalMembers) * 100).toFixed(0)}% of total`}
+            />
           </Col>
-          <Col xs={24} md={8}>
-            <div className="text-center p-4">
-              <div className="text-sm text-gray-600 mb-2">Recent Trend</div>
-              <div className="flex flex-col items-center gap-2">
-                <RiseOutlined
-                  className={`text-5xl ${
-                    analytics.recentTrend === "improving"
-                      ? "text-green-500"
-                      : analytics.recentTrend === "stable"
-                        ? "text-blue-500"
-                        : "text-red-500"
-                  }`}
-                  style={{
-                    transform:
-                      analytics.recentTrend === "declining"
-                        ? "rotate(180deg)"
-                        : analytics.recentTrend === "stable"
-                          ? "rotate(90deg)"
-                          : "none",
-                  }}
-                />
-                <Tag
-                  color={
-                    analytics.recentTrend === "improving"
-                      ? "success"
-                      : analytics.recentTrend === "stable"
-                        ? "processing"
-                        : "error"
-                  }
-                  className="text-sm"
-                >
-                  {analytics.recentTrend.charAt(0).toUpperCase() +
-                    analytics.recentTrend.slice(1)}
-                </Tag>
-              </div>
-            </div>
+          <Col xs={24} sm={12} lg={6}>
+            <StatCard
+              title="At Risk Members"
+              value={analytics.atRiskMembers}
+              icon={<WarningOutlined />}
+              color="text-red-600"
+              description="Need attention"
+            />
+          </Col>
+          <Col xs={24} sm={12} lg={6}>
+            <StatCard
+              title="Total Meetings"
+              value={analytics.totalMeetings}
+              icon={<CalendarOutlined />}
+              color="text-purple-600"
+              description="All time"
+            />
           </Col>
         </Row>
-      </Card>
 
-      {/* Member Performance Table */}
-      <Card title="Member Performance Breakdown">
-        <Table
-          columns={columns}
-          dataSource={analytics.memberPerformance}
-          rowKey={(record) => record.member.id}
-          pagination={{
-            pageSize: 20,
-            showTotal: (total) => `${total} member${total !== 1 ? "s" : ""}`,
-          }}
-          locale={{
-            emptyText: <Empty description="No member data available" />,
-          }}
-        />
-      </Card>
-    </div>
+        {/* Group Performance Card */}
+        <Card title="Group Performance Overview" className="mb-6">
+          <Row gutter={24}>
+            <Col xs={24} md={8}>
+              <div className="text-center p-4">
+                <div className="text-sm text-gray-600 mb-2">
+                  Average Attendance Rate
+                </div>
+                <Progress
+                  type="circle"
+                  percent={Math.round(analytics.averageAttendance)}
+                  size={120}
+                  strokeColor={
+                    analytics.averageAttendance >= 70
+                      ? "#52c41a"
+                      : analytics.averageAttendance >= 50
+                        ? "#1890ff"
+                        : "#ff4d4f"
+                  }
+                />
+              </div>
+            </Col>
+            <Col xs={24} md={8}>
+              <div className="text-center p-4">
+                <div className="text-sm text-gray-600 mb-2">
+                  Meeting Frequency Adherence
+                </div>
+                <Progress
+                  type="circle"
+                  percent={Math.round(analytics.meetingFrequencyAdherence)}
+                  size={120}
+                  strokeColor={
+                    analytics.meetingFrequencyAdherence >= 80
+                      ? "#52c41a"
+                      : analytics.meetingFrequencyAdherence >= 60
+                        ? "#faad14"
+                        : "#ff4d4f"
+                  }
+                />
+                <div className="text-xs text-gray-500 mt-2">
+                  {analytics.meetingFrequencyAdherence >= 80
+                    ? "On track"
+                    : analytics.meetingFrequencyAdherence >= 60
+                      ? "Needs improvement"
+                      : "Behind schedule"}
+                </div>
+              </div>
+            </Col>
+            <Col xs={24} md={8}>
+              <div className="text-center p-4">
+                <div className="text-sm text-gray-600 mb-2">Recent Trend</div>
+                <div className="flex flex-col items-center gap-2">
+                  <RiseOutlined
+                    className={`text-5xl ${
+                      analytics.recentTrend === "improving"
+                        ? "text-green-500"
+                        : analytics.recentTrend === "stable"
+                          ? "text-blue-500"
+                          : "text-red-500"
+                    }`}
+                    style={{
+                      transform:
+                        analytics.recentTrend === "declining"
+                          ? "rotate(180deg)"
+                          : analytics.recentTrend === "stable"
+                            ? "rotate(90deg)"
+                            : "none",
+                    }}
+                  />
+                  <Tag
+                    color={
+                      analytics.recentTrend === "improving"
+                        ? "success"
+                        : analytics.recentTrend === "stable"
+                          ? "processing"
+                          : "error"
+                    }
+                    className="text-sm"
+                  >
+                    {analytics.recentTrend.charAt(0).toUpperCase() +
+                      analytics.recentTrend.slice(1)}
+                  </Tag>
+                </div>
+              </div>
+            </Col>
+          </Row>
+        </Card>
+
+        {/* Member Performance Table */}
+        <Card
+          title="Member Performance Breakdown"
+          className="bg-white dark:bg-slate-800"
+        >
+          <Table
+            columns={columns}
+            dataSource={analytics.memberPerformance}
+            rowKey={(record) => record.member.id}
+            pagination={{
+              pageSize: 20,
+              showTotal: (total) => `${total} member${total !== 1 ? "s" : ""}`,
+            }}
+            locale={{
+              emptyText: <Empty description="No member data available" />,
+            }}
+            className="[&_.ant-table]:bg-white dark:[&_.ant-table]:bg-slate-800 [&_.ant-table-thead>tr>th]:bg-gray-50 dark:[&_.ant-table-thead>tr>th]:bg-slate-700 [&_.ant-table-thead>tr>th]:text-gray-900 dark:[&_.ant-table-thead>tr>th]:text-white [&_.ant-table-tbody>tr>td]:bg-white dark:[&_.ant-table-tbody>tr>td]:bg-slate-800 [&_.ant-table-tbody>tr>td]:text-gray-900 dark:[&_.ant-table-tbody>tr>td]:text-gray-200 [&_.ant-table-tbody>tr:hover>td]:bg-gray-50 dark:[&_.ant-table-tbody>tr:hover>td]:bg-slate-700"
+          />
+        </Card>
+      </div>
+    </DashboardLayout>
   );
 }

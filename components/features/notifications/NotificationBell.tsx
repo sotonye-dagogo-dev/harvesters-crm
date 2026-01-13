@@ -10,24 +10,6 @@ export default function NotificationBell() {
   const router = useRouter();
   const [notifications, setNotifications] = useState<appNotification[]>([]);
 
-  useEffect(() => {
-    // Only fetch notifications when page becomes visible (instead of polling)
-    const handleVisibilityChange = () => {
-      if (document.visibilityState === "visible") {
-        fetchNotifications();
-      }
-    };
-
-    document.addEventListener("visibilitychange", handleVisibilityChange);
-
-    // Initial fetch
-    fetchNotifications();
-
-    return () => {
-      document.removeEventListener("visibilitychange", handleVisibilityChange);
-    };
-  }, []);
-
   const fetchNotifications = async () => {
     try {
       const response = await fetch("/api/notifications");
@@ -47,6 +29,25 @@ export default function NotificationBell() {
       console.error("Failed to fetch notifications:", error);
     }
   };
+
+  useEffect(() => {
+    // Only fetch notifications when page becomes visible (instead of polling)
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "visible") {
+        fetchNotifications();
+      }
+    };
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    // Initial fetch - intentionally fetching data on mount
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    fetchNotifications();
+
+    return () => {
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
+  }, []);
 
   const handleMarkAsRead = async (
     notificationId: string,
@@ -115,6 +116,7 @@ export default function NotificationBell() {
               onClick={() => handleNotificationClick(notification)}
               actions={[
                 <AntButton
+                  key={`mark-read-${notification.id}`}
                   type="text"
                   size="small"
                   icon={<CheckOutlined />}
