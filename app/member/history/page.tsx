@@ -122,43 +122,47 @@ export default function MemberHistoryPage() {
         {/* Statistics */}
         <Row gutter={[16, 16]}>
           <Col xs={24} sm={12} lg={6}>
-            <Card className="shadow-lg hover:shadow-xl transition-all duration-300">
+            <Card className="shadow-lg hover:shadow-xl transition-all duration-300 bg-white dark:bg-slate-800 border-gray-200 dark:border-slate-700">
               <Statistic
                 title="Total Meetings"
                 value={stats.totalMeetings}
                 prefix={<CalendarOutlined />}
                 valueStyle={{ color: "#1B4B3E" }}
+                className="[&_.ant-statistic-title]:text-gray-600 [&_.ant-statistic-title]:dark:text-gray-400"
               />
             </Card>
           </Col>
           <Col xs={24} sm={12} lg={6}>
-            <Card className="shadow-lg hover:shadow-xl transition-all duration-300">
+            <Card className="shadow-lg hover:shadow-xl transition-all duration-300 bg-white dark:bg-slate-800 border-gray-200 dark:border-slate-700">
               <Statistic
                 title="Attended"
                 value={stats.attended}
                 prefix={<CheckCircleOutlined />}
                 valueStyle={{ color: "#52c41a" }}
+                className="[&_.ant-statistic-title]:text-gray-600 [&_.ant-statistic-title]:dark:text-gray-400"
               />
             </Card>
           </Col>
           <Col xs={24} sm={12} lg={6}>
-            <Card className="shadow-lg hover:shadow-xl transition-all duration-300">
+            <Card className="shadow-lg hover:shadow-xl transition-all duration-300 bg-white dark:bg-slate-800 border-gray-200 dark:border-slate-700">
               <Statistic
                 title="Missed"
                 value={stats.missed}
                 prefix={<CloseCircleOutlined />}
                 valueStyle={{ color: "#ff4d4f" }}
+                className="[&_.ant-statistic-title]:text-gray-600 [&_.ant-statistic-title]:dark:text-gray-400"
               />
             </Card>
           </Col>
           <Col xs={24} sm={12} lg={6}>
-            <Card className="shadow-lg hover:shadow-xl transition-all duration-300">
+            <Card className="shadow-lg hover:shadow-xl transition-all duration-300 bg-white dark:bg-slate-800 border-gray-200 dark:border-slate-700">
               <Statistic
                 title="Attendance Rate"
                 value={stats.attendanceRate}
                 suffix="%"
                 prefix={<TrophyOutlined />}
                 valueStyle={{ color: "#1890ff" }}
+                className="[&_.ant-statistic-title]:text-gray-600 [&_.ant-statistic-title]:dark:text-gray-400"
               />
             </Card>
           </Col>
@@ -167,12 +171,12 @@ export default function MemberHistoryPage() {
         {/* Timeline History */}
         <Card
           title={
-            <span className="flex items-center gap-2 text-xl">
+            <span className="flex items-center gap-2 text-xl text-gray-900 dark:text-white">
               <CalendarOutlined />
               Meeting Timeline
             </span>
           }
-          className="shadow-xl"
+          className="shadow-xl bg-white dark:bg-slate-800 border-gray-200 dark:border-slate-700"
         >
           {history.length === 0 ? (
             <Empty description="No participation history found" />

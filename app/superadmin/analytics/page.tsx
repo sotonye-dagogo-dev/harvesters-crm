@@ -344,10 +344,13 @@ export default function ChurchAnalyticsPage() {
         </Row>
 
         {/* Overall Engagement Card */}
-        <Card title="Overall Church Engagement" className="mb-6">
+        <Card
+          title="Overall Church Engagement"
+          className="mb-6 bg-white dark:bg-slate-800 border-gray-200 dark:border-slate-700"
+        >
           <div className="flex flex-col md:flex-row items-center justify-around gap-8">
             <div className="text-center">
-              <div className="text-sm text-gray-600 mb-4">
+              <div className="text-sm text-gray-600 dark:text-gray-400 mb-4">
                 Average Engagement Score
               </div>
               <Progress
@@ -384,11 +387,13 @@ export default function ChurchAnalyticsPage() {
 
             <div className="grid grid-cols-2 gap-8">
               <div className="text-center">
-                <div className="text-3xl font-bold text-green-600">
+                <div className="text-3xl font-bold text-green-600 dark:text-green-500">
                   {analytics.activeMembers}
                 </div>
-                <div className="text-sm text-gray-600 mt-1">Active Members</div>
-                <div className="text-xs text-gray-500 mt-1">
+                <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                  Active Members
+                </div>
+                <div className="text-xs text-gray-500 dark:text-gray-500 mt-1">
                   {(
                     (analytics.activeMembers / analytics.totalMembers) *
                     100
@@ -397,13 +402,13 @@ export default function ChurchAnalyticsPage() {
                 </div>
               </div>
               <div className="text-center">
-                <div className="text-3xl font-bold text-gray-400">
+                <div className="text-3xl font-bold text-gray-400 dark:text-gray-500">
                   {analytics.inactiveMembers}
                 </div>
-                <div className="text-sm text-gray-600 mt-1">
+                <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">
                   Inactive Members
                 </div>
-                <div className="text-xs text-gray-500 mt-1">
+                <div className="text-xs text-gray-500 dark:text-gray-500 mt-1">
                   {(
                     (analytics.inactiveMembers / analytics.totalMembers) *
                     100
@@ -412,11 +417,13 @@ export default function ChurchAnalyticsPage() {
                 </div>
               </div>
               <div className="text-center">
-                <div className="text-3xl font-bold text-red-600">
+                <div className="text-3xl font-bold text-red-600 dark:text-red-500">
                   {analytics.atRiskMembers}
                 </div>
-                <div className="text-sm text-gray-600 mt-1">At Risk</div>
-                <div className="text-xs text-gray-500 mt-1">
+                <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                  At Risk
+                </div>
+                <div className="text-xs text-gray-500 dark:text-gray-500 mt-1">
                   {(
                     (analytics.atRiskMembers / analytics.totalMembers) *
                     100
@@ -425,10 +432,12 @@ export default function ChurchAnalyticsPage() {
                 </div>
               </div>
               <div className="text-center">
-                <div className="text-3xl font-bold text-blue-600">
+                <div className="text-3xl font-bold text-blue-600 dark:text-blue-500">
                   {analytics.totalMeetings}
                 </div>
-                <div className="text-sm text-gray-600 mt-1">Total Meetings</div>
+                <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                  Total Meetings
+                </div>
                 <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                   All groups
                 </div>
@@ -440,7 +449,7 @@ export default function ChurchAnalyticsPage() {
         {/* Group Comparative Performance */}
         <Card
           title="Group Comparative Performance"
-          className="bg-white dark:bg-slate-800"
+          className="bg-white dark:bg-slate-800 border-gray-200 dark:border-slate-700"
         >
           <Table
             columns={columns}

@@ -79,10 +79,10 @@ export default function GroupsPage() {
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-2xl font-bold text-gray-900">
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
               Fellowship Groups
             </h2>
-            <p className="text-gray-600 mt-1">
+            <p className="text-gray-600 dark:text-gray-400 mt-1">
               Manage church fellowship groups and their activities
             </p>
           </div>
@@ -105,7 +105,7 @@ export default function GroupsPage() {
           onChange={(e) => setSearchTerm(e.target.value)}
         />
 
-        <div className="text-sm text-gray-600">
+        <div className="text-sm text-gray-600 dark:text-gray-400">
           Showing {filteredGroups.length} of {groups.length} groups
         </div>
 

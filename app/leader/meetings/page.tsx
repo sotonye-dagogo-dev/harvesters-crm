@@ -79,8 +79,10 @@ export default function MeetingsPage() {
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-2xl font-bold text-gray-900">Meetings</h2>
-            <p className="text-gray-600 mt-1">
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+              Meetings
+            </h2>
+            <p className="text-gray-600 dark:text-gray-400 mt-1">
               Track fellowship meetings and attendance
             </p>
           </div>
@@ -97,7 +99,7 @@ export default function MeetingsPage() {
 
         <Tabs activeKey={activeTab} items={tabItems} onChange={setActiveTab} />
 
-        <div className="text-sm text-gray-600">
+        <div className="text-sm text-gray-600 dark:text-gray-400">
           Showing {filteredMeetings.length} meeting
           {filteredMeetings.length !== 1 ? "s" : ""}
         </div>

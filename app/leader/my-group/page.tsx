@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import DashboardLayout from "@/components/features/navigation/DashboardLayout";
 import { useAuth } from "@/providers/AuthProvider";
@@ -78,15 +78,7 @@ export default function MyGroupPage() {
   const [recentMeetings, setRecentMeetings] = useState<RecentMeeting[]>([]);
   const [memberSummary, setMemberSummary] = useState<MemberSummary[]>([]);
 
-  useEffect(() => {
-    if (user?.groupId) {
-      fetchGroupData();
-    } else {
-      setLoading(false);
-    }
-  }, [user?.groupId]);
-
-  const fetchGroupData = async () => {
+  const fetchGroupData = useCallback(async () => {
     try {
       // Fetch group details
       const groupResponse = await fetch(`/api/groups/${user?.groupId}`);
@@ -104,14 +96,14 @@ export default function MyGroupPage() {
         const meetings = meetingsData.meetings || meetingsData;
 
         // Calculate attendance for each meeting
-        const meetingsWithStats = meetings.map((meeting: any) => {
-          const attendanceCount = meeting.attendees?.length || 0;
+        const meetingsWithStats = meetings.map((meeting: Meeting) => {
+          const attendanceCount =
+            meeting.attendeeCount || meeting.attendeeIds?.length || 0;
           const totalMembers = group?.memberCount || 0;
           return {
             id: meeting.id,
             date: meeting.date,
-            topic: meeting.topic,
-            summary: meeting.summary,
+            notes: meeting.notes || "No notes",
             attendees: attendanceCount,
             totalMembers: totalMembers,
             attendanceRate:
@@ -131,7 +123,7 @@ export default function MyGroupPage() {
 
         // Calculate attendance for each member
         const memberStats = await Promise.all(
-          members.map(async (member: any) => {
+          members.map(async (member: User) => {
             const attendanceResponse = await fetch(
               `/api/meetings?memberId=${member.id}`
             );
@@ -172,21 +164,29 @@ export default function MyGroupPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user?.groupId, group?.memberCount, recentMeetings.length]);
+
+  useEffect(() => {
+    if (user?.groupId) {
+      fetchGroupData();
+    } else {
+      setLoading(false);
+    }
+  }, [user?.groupId, fetchGroupData]);
 
   if (!user?.groupId) {
     return (
       <DashboardLayout role="LEADER">
-        <Card>
+        <Card className="bg-white dark:bg-slate-800 border-gray-200 dark:border-slate-700">
           <div className="text-center py-12">
-            <TeamOutlined className="text-6xl text-gray-300 mb-4" />
-            <h3 className="text-lg font-semibold text-gray-700 mb-2">
+            <TeamOutlined className="text-6xl text-gray-300 dark:text-gray-600 mb-4" />
+            <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-2">
               No Group Assigned
             </h3>
-            <p className="text-gray-500">
-              You haven't been assigned to lead a group yet.
+            <p className="text-gray-500 dark:text-gray-400">
+              You haven&apos;t been assigned to lead a group yet.
             </p>
-            <p className="text-gray-500 text-sm mt-2">
+            <p className="text-gray-500 dark:text-gray-400 text-sm mt-2">
               Contact your administrator for group assignment.
             </p>
           </div>
@@ -208,7 +208,7 @@ export default function MyGroupPage() {
   if (!group) {
     return (
       <DashboardLayout role="LEADER">
-        <Card>
+        <Card className="bg-white dark:bg-slate-800 border-gray-200 dark:border-slate-700">
           <Empty description="Group not found" />
         </Card>
       </DashboardLayout>
@@ -224,9 +224,10 @@ export default function MyGroupPage() {
       sorter: (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime(),
     },
     {
-      title: "Topic",
-      dataIndex: "topic",
-      key: "topic",
+      title: "Notes",
+      dataIndex: "notes",
+      key: "notes",
+      ellipsis: true,
     },
     {
       title: "Attendance",
@@ -353,8 +354,12 @@ export default function MyGroupPage() {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-2xl font-bold text-gray-900">{group.name}</h2>
-            <p className="text-gray-600 mt-1">{group.description}</p>
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+              {group.name}
+            </h2>
+            <p className="text-gray-600 dark:text-gray-400 mt-1">
+              {group.description}
+            </p>
           </div>
           <div className="flex gap-2">
             <AntButton
@@ -409,7 +414,10 @@ export default function MyGroupPage() {
         </Row>
 
         {/* Group Information */}
-        <Card title="Group Information">
+        <Card
+          title="Group Information"
+          className="bg-white dark:bg-slate-800 border-gray-200 dark:border-slate-700"
+        >
           <Descriptions column={{ xs: 1, sm: 2 }} bordered>
             <Descriptions.Item label="Leader">
               {group.leader
@@ -429,7 +437,10 @@ export default function MyGroupPage() {
         </Card>
 
         {/* Quick Actions Panel */}
-        <Card title="Quick Actions">
+        <Card
+          title="Quick Actions"
+          className="bg-white dark:bg-slate-800 border-gray-200 dark:border-slate-700"
+        >
           <Row gutter={[16, 16]}>
             <Col xs={24} sm={12} md={6}>
               <AntButton
@@ -478,6 +489,7 @@ export default function MyGroupPage() {
         {/* Recent Meetings */}
         <Card
           title="Recent Meetings"
+          className="bg-white dark:bg-slate-800 border-gray-200 dark:border-slate-700"
           extra={
             <AntButton type="link" onClick={() => router.push("/meetings")}>
               View All
@@ -511,6 +523,7 @@ export default function MyGroupPage() {
         {/* Member Attendance Summary */}
         <Card
           title="Member Attendance Summary"
+          className="bg-white dark:bg-slate-800 border-gray-200 dark:border-slate-700"
           extra={
             <AntButton type="link" onClick={() => router.push("/members")}>
               View All Members

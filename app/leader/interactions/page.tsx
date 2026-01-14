@@ -160,8 +160,12 @@ export default function InteractionsPage() {
     return (
       <div className="p-6">
         <div className="mb-6">
-          <h2 className="text-2xl font-bold text-gray-900">Interactions</h2>
-          <p className="text-gray-600 mt-1">Loading interactions...</p>
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+            Interactions
+          </h2>
+          <p className="text-gray-600 dark:text-gray-400 mt-1">
+            Loading interactions...
+          </p>
         </div>
         <div className="grid grid-cols-1 gap-6">
           <CardSkeleton count={3} />
@@ -174,8 +178,10 @@ export default function InteractionsPage() {
     <div className="p-6">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900">Interactions</h2>
-          <p className="text-gray-600 mt-1">
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+            Interactions
+          </h2>
+          <p className="text-gray-600 dark:text-gray-400 mt-1">
             Showing {filteredInteractions.length} of {interactions.length}{" "}
             interaction(s)
           </p>
@@ -250,7 +256,7 @@ export default function InteractionsPage() {
             return (
               <Card
                 key={interaction.id}
-                className="hover:shadow-md transition-shadow"
+                className="hover:shadow-md transition-shadow bg-white dark:bg-slate-800 border-gray-200 dark:border-slate-700"
               >
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
@@ -259,16 +265,18 @@ export default function InteractionsPage() {
                       <Tag color={getInteractionColor(interaction.type)}>
                         {interaction.type.replace("_", " ")}
                       </Tag>
-                      <span className="text-gray-500 text-sm">
+                      <span className="text-gray-500 dark:text-gray-400 text-sm">
                         with{" "}
-                        <span className="font-medium">
+                        <span className="font-medium text-gray-900 dark:text-white">
                           {interaction.member.firstName}{" "}
                           {interaction.member.lastName}
                         </span>
                       </span>
                     </div>
-                    <p className="text-gray-700 mb-2">{interaction.notes}</p>
-                    <div className="flex items-center gap-4 text-xs text-gray-500">
+                    <p className="text-gray-700 dark:text-gray-300 mb-2">
+                      {interaction.notes}
+                    </p>
+                    <div className="flex items-center gap-4 text-xs text-gray-500 dark:text-gray-400">
                       <span>
                         By: {interaction.leader.firstName}{" "}
                         {interaction.leader.lastName}

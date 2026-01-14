@@ -68,7 +68,9 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className={`${inter.variable} antialiased`}>
+      <body
+        className={`${inter.variable} antialiased bg-white dark:bg-slate-950`}
+      >
         {/* Skip to main content link for keyboard users */}
         <a
           href="#main-content"
