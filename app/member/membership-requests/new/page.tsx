@@ -101,7 +101,7 @@ export default function NewMembershipRequestPage() {
 
       if (response.ok) {
         message.success("Membership request submitted successfully");
-        router.push("/membership-requests");
+        router.push("/member/membership-requests");
       } else {
         const error = await response.json();
         message.error(error.error || "Failed to submit request");
@@ -121,7 +121,7 @@ export default function NewMembershipRequestPage() {
         <Card>
           <Empty description="Only members can submit membership requests" />
           <div className="text-center mt-4">
-            <AntButton onClick={() => router.push("/dashboard")}>
+            <AntButton onClick={() => router.push("/member/dashboard")}>
               Go to Dashboard
             </AntButton>
           </div>
@@ -141,7 +141,7 @@ export default function NewMembershipRequestPage() {
     <div className="p-4 md:p-8 max-w-3xl mx-auto">
       <AntButton
         icon={<ArrowLeftOutlined />}
-        onClick={() => router.push("/membership-requests")}
+        onClick={() => router.push("/member/membership-requests")}
         className="mb-4"
       >
         Back
@@ -293,7 +293,7 @@ export default function NewMembershipRequestPage() {
               </AntButton>
               <AntButton
                 size="large"
-                onClick={() => router.push("/membership-requests")}
+                onClick={() => router.push("/member/membership-requests")}
               >
                 Cancel
               </AntButton>

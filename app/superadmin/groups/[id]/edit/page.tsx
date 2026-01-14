@@ -36,7 +36,7 @@ export default function EditGroupPage({ params }: { params: { id: string } }) {
     } catch (error) {
       message.error("Failed to load group details");
       console.error(error);
-      router.push("/groups");
+      router.push("/superadmin/groups");
     } finally {
       setLoading(false);
     }
@@ -70,7 +70,7 @@ export default function EditGroupPage({ params }: { params: { id: string } }) {
       }
 
       message.success("Group updated successfully");
-      router.push(`/groups/${params.id}`);
+      router.push(`/superadmin/groups/${params.id}`);
     } catch (error: any) {
       message.error(error.message || "Failed to update group");
       console.error(error);

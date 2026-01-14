@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import DashboardLayout from "@/components/features/navigation/DashboardLayout";
 import { useAuth } from "@/providers/AuthProvider";
@@ -78,7 +78,16 @@ export default function MyGroupPage() {
   const [recentMeetings, setRecentMeetings] = useState<RecentMeeting[]>([]);
   const [memberSummary, setMemberSummary] = useState<MemberSummary[]>([]);
 
-  const fetchGroupData = useCallback(async () => {
+  useEffect(() => {
+    if (user?.groupId) {
+      fetchGroupData();
+    } else {
+      setLoading(false);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.groupId]);
+
+  const fetchGroupData = async () => {
     try {
       // Fetch group details
       const groupResponse = await fetch(`/api/groups/${user?.groupId}`);
@@ -98,12 +107,12 @@ export default function MyGroupPage() {
         // Calculate attendance for each meeting
         const meetingsWithStats = meetings.map((meeting: Meeting) => {
           const attendanceCount =
-            meeting.attendeeCount || meeting.attendeeIds?.length || 0;
+            meeting.attendeeIds?.length || meeting.attendeeCount || 0;
           const totalMembers = group?.memberCount || 0;
           return {
             id: meeting.id,
             date: meeting.date,
-            notes: meeting.notes || "No notes",
+            notes: meeting.notes,
             attendees: attendanceCount,
             totalMembers: totalMembers,
             attendanceRate:
@@ -164,29 +173,21 @@ export default function MyGroupPage() {
     } finally {
       setLoading(false);
     }
-  }, [user?.groupId, group?.memberCount, recentMeetings.length]);
-
-  useEffect(() => {
-    if (user?.groupId) {
-      fetchGroupData();
-    } else {
-      setLoading(false);
-    }
-  }, [user?.groupId, fetchGroupData]);
+  };
 
   if (!user?.groupId) {
     return (
       <DashboardLayout role="LEADER">
-        <Card className="bg-white dark:bg-slate-800 border-gray-200 dark:border-slate-700">
+        <Card>
           <div className="text-center py-12">
-            <TeamOutlined className="text-6xl text-gray-300 dark:text-gray-600 mb-4" />
-            <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-2">
+            <TeamOutlined className="text-6xl text-gray-300 mb-4" />
+            <h3 className="text-lg font-semibold text-gray-700 mb-2">
               No Group Assigned
             </h3>
-            <p className="text-gray-500 dark:text-gray-400">
+            <p className="text-gray-500">
               You haven&apos;t been assigned to lead a group yet.
             </p>
-            <p className="text-gray-500 dark:text-gray-400 text-sm mt-2">
+            <p className="text-gray-500 text-sm mt-2">
               Contact your administrator for group assignment.
             </p>
           </div>
@@ -208,7 +209,7 @@ export default function MyGroupPage() {
   if (!group) {
     return (
       <DashboardLayout role="LEADER">
-        <Card className="bg-white dark:bg-slate-800 border-gray-200 dark:border-slate-700">
+        <Card>
           <Empty description="Group not found" />
         </Card>
       </DashboardLayout>
@@ -224,10 +225,9 @@ export default function MyGroupPage() {
       sorter: (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime(),
     },
     {
-      title: "Notes",
-      dataIndex: "notes",
-      key: "notes",
-      ellipsis: true,
+      title: "Topic",
+      dataIndex: "topic",
+      key: "topic",
     },
     {
       title: "Attendance",
@@ -259,7 +259,7 @@ export default function MyGroupPage() {
       render: (_, record) => (
         <AntButton
           size="small"
-          onClick={() => router.push(`/meetings/${record.id}`)}
+          onClick={() => router.push(`/leader/meetings/${record.id}`)}
         >
           View Details
         </AntButton>
@@ -357,20 +357,18 @@ export default function MyGroupPage() {
             <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
               {group.name}
             </h2>
-            <p className="text-gray-600 dark:text-gray-400 mt-1">
-              {group.description}
-            </p>
+            <p className="text-gray-600 mt-1">{group.description}</p>
           </div>
           <div className="flex gap-2">
             <AntButton
               icon={<ClockCircleOutlined />}
-              onClick={() => router.push("/follow-ups")}
+              onClick={() => router.push("/leader/follow-ups")}
             >
               Follow-ups
             </AntButton>
             <AntButton
               icon={<BarChartOutlined />}
-              onClick={() => router.push("/analytics")}
+              onClick={() => router.push("/leader/analytics")}
             >
               Analytics
             </AntButton>
@@ -414,10 +412,7 @@ export default function MyGroupPage() {
         </Row>
 
         {/* Group Information */}
-        <Card
-          title="Group Information"
-          className="bg-white dark:bg-slate-800 border-gray-200 dark:border-slate-700"
-        >
+        <Card title="Group Information">
           <Descriptions column={{ xs: 1, sm: 2 }} bordered>
             <Descriptions.Item label="Leader">
               {group.leader
@@ -437,10 +432,7 @@ export default function MyGroupPage() {
         </Card>
 
         {/* Quick Actions Panel */}
-        <Card
-          title="Quick Actions"
-          className="bg-white dark:bg-slate-800 border-gray-200 dark:border-slate-700"
-        >
+        <Card title="Quick Actions">
           <Row gutter={[16, 16]}>
             <Col xs={24} sm={12} md={6}>
               <AntButton
@@ -448,7 +440,7 @@ export default function MyGroupPage() {
                 block
                 size="large"
                 icon={<PlusOutlined />}
-                onClick={() => router.push("/meetings/new")}
+                onClick={() => router.push("/leader/meetings/new")}
               >
                 Create Meeting
               </AntButton>
@@ -458,7 +450,7 @@ export default function MyGroupPage() {
                 block
                 size="large"
                 icon={<PhoneOutlined />}
-                onClick={() => router.push("/interactions/new")}
+                onClick={() => router.push("/leader/interactions/new")}
               >
                 Log Interaction
               </AntButton>
@@ -468,7 +460,7 @@ export default function MyGroupPage() {
                 block
                 size="large"
                 icon={<TeamOutlined />}
-                onClick={() => router.push("/members")}
+                onClick={() => router.push("/leader/members")}
               >
                 Manage Members
               </AntButton>
@@ -478,7 +470,7 @@ export default function MyGroupPage() {
                 block
                 size="large"
                 icon={<BarChartOutlined />}
-                onClick={() => router.push("/analytics")}
+                onClick={() => router.push("/leader/analytics")}
               >
                 View Analytics
               </AntButton>
@@ -489,9 +481,11 @@ export default function MyGroupPage() {
         {/* Recent Meetings */}
         <Card
           title="Recent Meetings"
-          className="bg-white dark:bg-slate-800 border-gray-200 dark:border-slate-700"
           extra={
-            <AntButton type="link" onClick={() => router.push("/meetings")}>
+            <AntButton
+              type="link"
+              onClick={() => router.push("/leader/meetings")}
+            >
               View All
             </AntButton>
           }
@@ -523,9 +517,11 @@ export default function MyGroupPage() {
         {/* Member Attendance Summary */}
         <Card
           title="Member Attendance Summary"
-          className="bg-white dark:bg-slate-800 border-gray-200 dark:border-slate-700"
           extra={
-            <AntButton type="link" onClick={() => router.push("/members")}>
+            <AntButton
+              type="link"
+              onClick={() => router.push("/leader/members")}
+            >
               View All Members
             </AntButton>
           }

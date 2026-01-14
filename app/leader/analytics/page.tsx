@@ -275,14 +275,11 @@ export default function GroupAnalyticsPage() {
         </Row>
 
         {/* Group Performance Card */}
-        <Card
-          title="Group Performance Overview"
-          className="mb-6 bg-white dark:bg-slate-800 border-gray-200 dark:border-slate-700"
-        >
+        <Card title="Group Performance Overview" className="mb-6">
           <Row gutter={24}>
             <Col xs={24} md={8}>
               <div className="text-center p-4">
-                <div className="text-sm text-gray-600 dark:text-gray-400 mb-2">
+                <div className="text-sm text-gray-600 mb-2">
                   Average Attendance Rate
                 </div>
                 <Progress
@@ -301,7 +298,7 @@ export default function GroupAnalyticsPage() {
             </Col>
             <Col xs={24} md={8}>
               <div className="text-center p-4">
-                <div className="text-sm text-gray-600 dark:text-gray-400 mb-2">
+                <div className="text-sm text-gray-600 mb-2">
                   Meeting Frequency Adherence
                 </div>
                 <Progress
@@ -327,9 +324,7 @@ export default function GroupAnalyticsPage() {
             </Col>
             <Col xs={24} md={8}>
               <div className="text-center p-4">
-                <div className="text-sm text-gray-600 dark:text-gray-400 mb-2">
-                  Recent Trend
-                </div>
+                <div className="text-sm text-gray-600 mb-2">Recent Trend</div>
                 <div className="flex flex-col items-center gap-2">
                   <RiseOutlined
                     className={`text-5xl ${
@@ -370,7 +365,7 @@ export default function GroupAnalyticsPage() {
         {/* Member Performance Table */}
         <Card
           title="Member Performance Breakdown"
-          className="bg-white dark:bg-slate-800 border-gray-200 dark:border-slate-700"
+          className="bg-white dark:bg-slate-800"
         >
           <Table
             columns={columns}

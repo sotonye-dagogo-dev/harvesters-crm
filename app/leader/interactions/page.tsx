@@ -73,6 +73,7 @@ export default function InteractionsPage() {
 
   useEffect(() => {
     filterInteractions();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [interactions, typeFilter, searchQuery]);
 
   const fetchInteractions = async () => {
@@ -256,7 +257,7 @@ export default function InteractionsPage() {
             return (
               <Card
                 key={interaction.id}
-                className="hover:shadow-md transition-shadow bg-white dark:bg-slate-800 border-gray-200 dark:border-slate-700"
+                className="hover:shadow-md transition-shadow dark:bg-slate-800 dark:border-slate-700"
               >
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
@@ -267,7 +268,7 @@ export default function InteractionsPage() {
                       </Tag>
                       <span className="text-gray-500 dark:text-gray-400 text-sm">
                         with{" "}
-                        <span className="font-medium text-gray-900 dark:text-white">
+                        <span className="font-medium dark:text-gray-200">
                           {interaction.member.firstName}{" "}
                           {interaction.member.lastName}
                         </span>

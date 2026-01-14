@@ -26,6 +26,7 @@ export default function GroupsPage() {
 
   useEffect(() => {
     filterGroups();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchTerm, groups]);
 
   const fetchGroups = async () => {
@@ -35,7 +36,7 @@ export default function GroupsPage() {
         const data = await response.json();
         setGroups(data.data);
       }
-    } catch (error) {
+    } catch {
       message.error("Failed to load groups");
     } finally {
       setLoading(false);
@@ -59,9 +60,10 @@ export default function GroupsPage() {
     setFilteredGroups(filtered);
   };
 
-  const handleDelete = (_groupId: string) => {
+  const handleDelete = (groupId: string) => {
     // Delete functionality to be implemented
     message.info("Delete functionality coming soon");
+    console.log("Delete group:", groupId);
   };
 
   if (loading) {

@@ -2,12 +2,14 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useAuth } from "@/providers/AuthProvider";
 import { Badge, Dropdown, List, Button as AntButton, Empty } from "antd";
 import { BellOutlined, CheckOutlined } from "@ant-design/icons";
 import { format } from "date-fns";
 
 export default function NotificationBell() {
   const router = useRouter();
+  const { user } = useAuth();
   const [notifications, setNotifications] = useState<appNotification[]>([]);
 
   const fetchNotifications = async () => {
@@ -75,11 +77,13 @@ export default function NotificationBell() {
       stopPropagation: () => {},
     } as React.MouseEvent);
 
+    const rolePath = user?.role?.toLowerCase() || "member";
+
     // Navigate based on type
     if (notification.type === "MEETING_REMINDER" && notification.relatedId) {
-      router.push(`/meetings/${notification.relatedId}`);
+      router.push(`/${rolePath}/meetings/${notification.relatedId}`);
     } else if (notification.type === "REQUEST_STATUS") {
-      router.push("/membership-requests");
+      router.push(`/${rolePath}/membership-requests`);
     } else if (notification.type === "ROLE_ASSIGNMENT") {
       router.push("/profile");
     }
@@ -93,7 +97,10 @@ export default function NotificationBell() {
           <AntButton
             type="link"
             size="small"
-            onClick={() => router.push("/notifications")}
+            onClick={() => {
+              const rolePath = user?.role?.toLowerCase() || "member";
+              router.push(`/${rolePath}/notifications`);
+            }}
           >
             View All
           </AntButton>

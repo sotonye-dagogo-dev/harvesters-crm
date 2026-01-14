@@ -142,12 +142,8 @@ export default function MemberAnalyticsPage() {
                   }
                   format={(percent) => (
                     <div className="flex flex-col items-center">
-                      <div className="text-3xl font-bold text-gray-900 dark:text-white">
-                        {percent}
-                      </div>
-                      <div className="text-sm text-gray-500 dark:text-gray-400">
-                        Score
-                      </div>
+                      <div className="text-3xl font-bold">{percent}</div>
+                      <div className="text-sm text-gray-500">Score</div>
                     </div>
                   )}
                 />
@@ -160,10 +156,10 @@ export default function MemberAnalyticsPage() {
                   >
                     {engagementLevel.level}
                   </Tag>
-                  <p className="text-gray-600 dark:text-gray-400 mt-4">
+                  <p className="text-gray-600 mt-4">
                     Your engagement score is calculated based on:
                   </p>
-                  <ul className="text-sm text-gray-600 dark:text-gray-400 mt-2 space-y-1">
+                  <ul className="text-sm text-gray-600 mt-2 space-y-1">
                     <li>• Meeting attendance (50%)</li>
                     <li>• Leader interactions (30%)</li>
                     <li>• Membership duration (20%)</li>
@@ -219,10 +215,7 @@ export default function MemberAnalyticsPage() {
         </Row>
 
         {/* Attendance Breakdown */}
-        <Card
-          title="Attendance Breakdown"
-          className="mb-6 bg-white dark:bg-slate-800 border-gray-200 dark:border-slate-700"
-        >
+        <Card title="Attendance Breakdown" className="mb-6">
           <Row gutter={24}>
             <Col xs={24} md={12}>
               <Statistic
@@ -230,15 +223,12 @@ export default function MemberAnalyticsPage() {
                 value={analytics.totalMeetings}
                 prefix={<CalendarOutlined />}
                 valueStyle={{ color: "#1B4B3E" }}
-                className="[&_.ant-statistic-title]:text-gray-600 [&_.ant-statistic-title]:dark:text-gray-400"
               />
             </Col>
             <Col xs={24} md={12}>
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
-                  <span className="text-gray-600 dark:text-gray-400">
-                    Attended
-                  </span>
+                  <span className="text-gray-600">Attended</span>
                   <div className="flex items-center gap-2">
                     <Progress
                       percent={analytics.attendancePercentage}
@@ -252,9 +242,7 @@ export default function MemberAnalyticsPage() {
                   </div>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-gray-600 dark:text-gray-400">
-                    Missed
-                  </span>
+                  <span className="text-gray-600">Missed</span>
                   <div className="flex items-center gap-2">
                     <Progress
                       percent={
@@ -279,11 +267,7 @@ export default function MemberAnalyticsPage() {
         </Card>
 
         {/* Recent Activity Timeline */}
-        <Card
-          title="Recent Activity"
-          extra={<RiseOutlined />}
-          className="bg-white dark:bg-slate-800 border-gray-200 dark:border-slate-700"
-        >
+        <Card title="Recent Activity" extra={<RiseOutlined />}>
           {analytics.recentActivity && analytics.recentActivity.length > 0 ? (
             <Timeline
               items={analytics.recentActivity.map((activity) => ({

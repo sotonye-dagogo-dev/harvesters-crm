@@ -76,16 +76,6 @@ export default function ProfilePage() {
     }
   };
 
-  const getChangePasswordRoute = () => {
-    const rolePath = user?.role?.toLowerCase() || "member";
-    return `/${rolePath}/profile/change-password`;
-  };
-
-  const getEditProfileRoute = () => {
-    const rolePath = user?.role?.toLowerCase() || "member";
-    return `/${rolePath}/profile/edit`;
-  };
-
   return (
     <DashboardLayout role={user?.role}>
       <div className="space-y-6">
@@ -96,14 +86,14 @@ export default function ProfilePage() {
           <div className="flex gap-3">
             <AntButton
               icon={<LockOutlined />}
-              onClick={() => router.push(getChangePasswordRoute())}
+              onClick={() => router.push("/profile/change-password")}
             >
               Change Password
             </AntButton>
             <AntButton
               type="primary"
               icon={<EditOutlined />}
-              onClick={() => router.push(getEditProfileRoute())}
+              onClick={() => router.push("/profile/edit")}
             >
               Edit Profile
             </AntButton>

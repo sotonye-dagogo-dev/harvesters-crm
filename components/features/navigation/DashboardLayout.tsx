@@ -21,7 +21,7 @@ import {
   CloseOutlined,
 } from "@ant-design/icons";
 import { useAuth } from "@/providers/AuthProvider";
-import { AppHeader, AppFooter } from "@/components/ui/Layout";
+import { AppHeader } from "@/components/ui/Layout";
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
 import type { MenuProps } from "antd";
 
@@ -292,13 +292,13 @@ export default function DashboardLayout({
     },
   ];
   // Determine logo to use based on theme (dark-bg logo for dark sidebar, white-bg logo for light sidebar)
-  // Use appropriate logo based on theme and sidebar background
+  // Since sidebar has dark background, we use the dark-bg logo (white text)
   const logoSrc = "/logo/dark-bg-harvesters-Logo.jpg";
 
   // Sidebar content (shared between desktop and mobile)
   const sidebarContent = (
     <>
-      <div className="h-20 flex items-center justify-center border-b border-gray-200 dark:border-white/10 backdrop-blur-sm px-4">
+      <div className="h-20 flex items-center justify-center border-b border-white/10 backdrop-blur-sm px-4">
         {!collapsed || isMobile ? (
           <div className="flex items-center justify-center w-full">
             {mounted && (
@@ -313,7 +313,7 @@ export default function DashboardLayout({
             )}
           </div>
         ) : (
-          <div className="w-12 h-12 rounded-xl flex items-center justify-center bg-gray-100 dark:bg-white/10 backdrop-blur-sm">
+          <div className="w-12 h-12 rounded-xl flex items-center justify-center bg-white/10 backdrop-blur-sm">
             {mounted && (
               <Image
                 src={logoSrc}
@@ -329,11 +329,11 @@ export default function DashboardLayout({
       </div>
 
       <Menu
-        theme="light"
+        theme="dark"
         mode="inline"
         selectedKeys={getSelectedKeys()}
         items={getMenuItems()}
-        className="!bg-transparent !border-r-0 mt-4 px-2 [&_.ant-menu-item]:rounded-xl [&_.ant-menu-item]:mb-2 [&_.ant-menu-item]:text-gray-700 dark:[&_.ant-menu-item]:text-white [&_.ant-menu-item:hover]:bg-gray-100 dark:[&_.ant-menu-item:hover]:bg-white/10 [&_.ant-menu-item-selected]:bg-green-50 dark:[&_.ant-menu-item-selected]:bg-white/20 [&_.ant-menu-item-selected]:text-green-700 dark:[&_.ant-menu-item-selected]:text-white [&_.ant-menu-item-selected]:shadow-lg [&_.ant-menu-submenu-title]:rounded-xl [&_.ant-menu-submenu-title]:text-gray-700 dark:[&_.ant-menu-submenu-title]:text-white [&_.ant-menu-submenu-title:hover]:bg-gray-100 dark:[&_.ant-menu-submenu-title:hover]:bg-white/10"
+        className="!bg-transparent !border-r-0 mt-4 px-2 [&_.ant-menu-item]:rounded-xl [&_.ant-menu-item]:mb-2 [&_.ant-menu-item:hover]:bg-white/10 [&_.ant-menu-item-selected]:bg-white/20 [&_.ant-menu-item-selected]:shadow-lg [&_.ant-menu-submenu-title]:rounded-xl [&_.ant-menu-submenu-title:hover]:bg-white/10"
         aria-label="Dashboard navigation menu"
       />
     </>
@@ -342,15 +342,15 @@ export default function DashboardLayout({
   return (
     <Layout
       style={{ minHeight: "100vh" }}
-      className="bg-gradient-to-br from-gray-50 via-white to-gray-100 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950"
+      className="bg-white dark:bg-slate-950"
     >
-      {/* Desktop Sidebar (Static - pushes content) */}
+      {/* Desktop Sidebar (Fixed position) */}
       {!isMobile && (
         <Sider
           collapsible
           collapsed={collapsed}
           onCollapse={(value) => setCollapsed(value)}
-          className="!bg-white dark:!bg-gradient-to-b dark:!from-green-800 dark:!via-green-700 dark:!to-green-900 !shadow-lg dark:!shadow-2xl !sticky !top-0 !left-0 !h-screen !overflow-y-auto !border-r !border-gray-200 dark:!border-green-900"
+          className="!bg-gradient-to-b !from-green-800 !via-green-700 !to-green-900 dark:!from-slate-900 dark:!via-slate-800 dark:!to-slate-950 shadow-2xl !fixed !left-0 !top-0 !h-screen !overflow-y-auto !z-10"
           width={280}
           collapsedWidth={80}
           aria-label="Main navigation sidebar"
@@ -369,12 +369,12 @@ export default function DashboardLayout({
           body: { padding: 0 },
           header: { display: "none" },
         }}
-        className="[&_.ant-drawer-body]:!bg-white dark:[&_.ant-drawer-body]:!bg-gradient-to-b dark:[&_.ant-drawer-body]:!from-green-800 dark:[&_.ant-drawer-body]:!via-green-700 dark:[&_.ant-drawer-body]:!to-green-900"
+        className="[&_.ant-drawer-body]:!bg-gradient-to-b [&_.ant-drawer-body]:!from-green-800 [&_.ant-drawer-body]:!via-green-700 [&_.ant-drawer-body]:!to-green-900 dark:[&_.ant-drawer-body]:!from-slate-900 dark:[&_.ant-drawer-body]:!via-slate-800 dark:[&_.ant-drawer-body]:!to-slate-950"
       >
         <div className="flex justify-end p-4">
           <button
             onClick={() => setMobileDrawerOpen(false)}
-            className="text-gray-700 dark:text-white/80 hover:text-gray-900 dark:hover:text-white text-2xl p-2 hover:bg-gray-100 dark:hover:bg-white/10 rounded-lg transition-colors"
+            className="text-white/80 hover:text-white text-2xl p-2 hover:bg-white/10 rounded-lg transition-colors"
             aria-label="Close menu"
           >
             <CloseOutlined />
@@ -383,8 +383,14 @@ export default function DashboardLayout({
         {sidebarContent}
       </Drawer>
 
-      <Layout className="bg-gradient-to-br from-gray-50 via-white to-gray-100 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950">
-        <Header className="!bg-white dark:!bg-slate-900 !p-0 shadow-sm border-b border-gray-200 dark:border-slate-800 !sticky !top-0 !z-[5]">
+      <Layout
+        className="bg-white dark:bg-slate-950"
+        style={{
+          marginLeft: !isMobile ? (collapsed ? 80 : 280) : 0,
+          transition: "margin-left 0.2s",
+        }}
+      >
+        <Header className="!bg-white dark:!bg-slate-900 !p-0 shadow-sm border-b border-gray-200 dark:border-slate-700 !sticky !top-0 !z-[5]">
           <div className="h-full flex items-center justify-between px-6">
             <div className="flex items-center gap-4">
               {isMobile && (
@@ -429,15 +435,110 @@ export default function DashboardLayout({
           </div>
         </Header>
 
-        <Content className="overflow-y-auto h-[calc(100vh-64px)] bg-gray-50 dark:bg-slate-950">
-          <div className="p-6 md:p-8 max-w-7xl mx-auto">
-            <main id="main-content" tabIndex={-1} aria-label="Main content">
-              {children}
-            </main>
-          </div>
-        </Content>
+        <Content
+          className="overflow-y-auto bg-gray-50 dark:bg-slate-950"
+          style={{ height: "calc(100vh - 64px)" }}
+        >
+          <main
+            id="main-content"
+            tabIndex={-1}
+            aria-label="Main content"
+            className="p-6 md:p-8"
+          >
+            <div className="max-w-7xl mx-auto">{children}</div>
+          </main>
 
-        <AppFooter />
+          {/* Footer with public links */}
+          <footer className="mt-16 border-t border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 py-8 px-6">
+            <div className="max-w-7xl mx-auto">
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
+                <div className="space-y-3">
+                  <h3 className="font-semibold text-gray-900 dark:text-white">
+                    About
+                  </h3>
+                  <ul className="space-y-2 text-sm">
+                    <li>
+                      <Link
+                        href="/about"
+                        className="text-gray-600 dark:text-gray-400 hover:text-green-600 dark:hover:text-green-400 transition-colors"
+                      >
+                        About Us
+                      </Link>
+                    </li>
+                    <li>
+                      <Link
+                        href="/contact"
+                        className="text-gray-600 dark:text-gray-400 hover:text-green-600 dark:hover:text-green-400 transition-colors"
+                      >
+                        Contact
+                      </Link>
+                    </li>
+                  </ul>
+                </div>
+                <div className="space-y-3">
+                  <h3 className="font-semibold text-gray-900 dark:text-white">
+                    Resources
+                  </h3>
+                  <ul className="space-y-2 text-sm">
+                    <li>
+                      <Link
+                        href="/terms"
+                        className="text-gray-600 dark:text-gray-400 hover:text-green-600 dark:hover:text-green-400 transition-colors"
+                      >
+                        Terms of Service
+                      </Link>
+                    </li>
+                    <li>
+                      <Link
+                        href="/privacy"
+                        className="text-gray-600 dark:text-gray-400 hover:text-green-600 dark:hover:text-green-400 transition-colors"
+                      >
+                        Privacy Policy
+                      </Link>
+                    </li>
+                  </ul>
+                </div>
+                <div className="space-y-3">
+                  <h3 className="font-semibold text-gray-900 dark:text-white">
+                    Support
+                  </h3>
+                  <ul className="space-y-2 text-sm">
+                    <li>
+                      <a
+                        href="mailto:support@harvestersintl.org"
+                        className="text-gray-600 dark:text-gray-400 hover:text-green-600 dark:hover:text-green-400 transition-colors"
+                      >
+                        Email Support
+                      </a>
+                    </li>
+                    <li>
+                      <Link
+                        href="/contact"
+                        className="text-gray-600 dark:text-gray-400 hover:text-green-600 dark:hover:text-green-400 transition-colors"
+                      >
+                        Help Center
+                      </Link>
+                    </li>
+                  </ul>
+                </div>
+                <div className="space-y-3">
+                  <h3 className="font-semibold text-gray-900 dark:text-white">
+                    Harvesters HICC
+                  </h3>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                    Changing lives by pioneering thriving churches
+                  </p>
+                </div>
+              </div>
+              <div className="pt-6 border-t border-gray-200 dark:border-slate-800 text-center text-sm text-gray-600 dark:text-gray-400">
+                <p>
+                  &copy; {new Date().getFullYear()} Harvesters International
+                  Christian Centre. All rights reserved.
+                </p>
+              </div>
+            </div>
+          </footer>
+        </Content>
       </Layout>
     </Layout>
   );

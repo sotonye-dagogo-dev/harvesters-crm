@@ -262,7 +262,7 @@ export default function MembershipRequestsPage() {
             <AntButton
               type="primary"
               icon={<PlusOutlined />}
-              onClick={() => router.push("/membership-requests/new")}
+              onClick={() => router.push("/member/membership-requests/new")}
               size="large"
             >
               Submit Request

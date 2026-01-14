@@ -119,11 +119,15 @@ export default function LeaderMembersPage() {
         <div className="space-y-1">
           <div className="flex items-center gap-2 text-sm">
             <MailOutlined className="text-gray-500" />
-            <span className="text-gray-700 dark:text-gray-300">{record.email}</span>
+            <span className="text-gray-700 dark:text-gray-300">
+              {record.email}
+            </span>
           </div>
           <div className="flex items-center gap-2 text-sm">
             <PhoneOutlined className="text-gray-500" />
-            <span className="text-gray-700 dark:text-gray-300">{record.phone}</span>
+            <span className="text-gray-700 dark:text-gray-300">
+              {record.phone}
+            </span>
           </div>
         </div>
       ),
@@ -214,7 +218,7 @@ export default function LeaderMembersPage() {
         </div>
 
         {/* Search and Filters */}
-        <Card className="shadow-lg">
+        <Card className="shadow-lg dark:bg-slate-800 dark:border-slate-700">
           <Input
             placeholder="Search members by name or email..."
             prefix={<SearchOutlined />}

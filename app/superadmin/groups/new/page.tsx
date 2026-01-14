@@ -109,7 +109,7 @@ export default function CreateGroupPage() {
             </Form.Item>
 
             <div className="flex gap-3 justify-end">
-              <AntButton onClick={() => router.push("/groups")}>
+              <AntButton onClick={() => router.push("/superadmin/groups")}>
                 Cancel
               </AntButton>
               <AntButton
