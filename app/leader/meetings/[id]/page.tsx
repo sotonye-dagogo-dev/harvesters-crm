@@ -127,14 +127,18 @@ export default function MeetingDetailsPage({
             <>
               <Button
                 icon={<CheckSquareOutlined />}
-                onClick={() => router.push(`/leader/meetings/${params.id}/attendance`)}
+                onClick={() =>
+                  router.push(`/leader/meetings/${params.id}/attendance`)
+                }
               >
                 Manage Attendance
               </Button>
               <Button
                 type="primary"
                 icon={<EditOutlined />}
-                onClick={() => router.push(`/leader/meetings/${params.id}/edit`)}
+                onClick={() =>
+                  router.push(`/leader/meetings/${params.id}/edit`)
+                }
               >
                 Edit
               </Button>

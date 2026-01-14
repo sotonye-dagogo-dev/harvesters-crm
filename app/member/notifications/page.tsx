@@ -146,12 +146,12 @@ export default function NotificationsPage() {
     if (notification.type === "MEETING_REMINDER" && notification.relatedId) {
       router.push(`/member/meetings/${notification.relatedId}`);
     } else if (
-      notification.type === \"REQUEST_STATUS\" &&
+      notification.type === "REQUEST_STATUS" &&
       notification.relatedId
     ) {
-      router.push(\"/member/membership-requests\");
-    } else if (notification.type === \"ROLE_ASSIGNMENT\") {
-      router.push(\"/member/profile\");
+      router.push("/member/membership-requests");
+    } else if (notification.type === "ROLE_ASSIGNMENT") {
+      router.push("/member/profile");
     }
   };
 
