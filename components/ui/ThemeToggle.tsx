@@ -8,6 +8,17 @@ import { Button } from "antd";
 export function ThemeToggle() {
   const [mounted, setMounted] = useState(false);
   const { theme, setTheme } = useTheme();
+  // function to also toggle dark class for body
+  const toggleDarkClass = (isDark: boolean) => {
+    if (isDark) {
+      document.body.classList.add("dark");
+      // set media prefered color scheme and style color scheme to dark
+      document.documentElement.style.setProperty("color-scheme", "dark");
+    } else {
+      document.body.classList.remove("dark");
+      document.documentElement.style.setProperty("color-scheme", "light");  
+    }
+  }
 
   // Prevent hydration mismatch - using setTimeout to avoid cascading renders
   useEffect(() => {
@@ -36,7 +47,10 @@ export function ThemeToggle() {
           <MoonOutlined className="text-lg text-blue-600" />
         )
       }
-      onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+      onClick={() => {
+        setTheme(theme === "dark" ? "light" : "dark");
+        toggleDarkClass(theme !== "dark")
+      }}
       className="flex items-center justify-center h-10 w-10 rounded-full shadow-md hover:shadow-lg transition-all duration-300 hover:scale-110 bg-white dark:bg-slate-800"
       aria-label={`Switch to ${theme === "dark" ? "light" : "dark"} mode`}
     />

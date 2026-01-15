@@ -32,18 +32,18 @@ export default function Home() {
   }
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-green-50 via-white to-amber-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950">
+    <main className="min-h-screen ">
       {/* Theme Toggle - Fixed Position */}
       <div className="fixed top-6 right-6 z-50">
         <ThemeToggle />
       </div>
 
-      <div className="w-full mx-auto px-4 py-12 sm:px-6 lg:px-8">
-        <div className="max-w-5xl mx-auto">
+      <div className="w-full mx-auto">
+        <div className="w-full mx-auto flex flex-col gap-6 items-center justify-center px-4 py-12 sm:px-6 lg:px-8">
           {/* Hero Section - Reduced and Centered */}
-          <div className="text-center mb-16 space-y-6">
+          <div className="text-center mb-16 flex flex-col gap-6">
             <div className="inline-block px-4 py-2 bg-green-100 dark:bg-green-900/30 rounded-full">
-              <span className="text-sm font-medium text-green-800 dark:text-green-300">
+              <span className="text-sm font-medium text-green-900 dark:text-green-300">
                 Changing Lives | Pioneering Thriving Churches
               </span>
             </div>
@@ -55,10 +55,12 @@ export default function Home() {
               </span>
             </h1>
 
-            <p className="text-xl sm:text-2xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto leading-relaxed">
-              Connect people with God and influence culture through thriving
-              small groups at Harvesters International Christian Centre.
-            </p>
+            <div className="px-8 md:px-16">
+              <p className="text-center text-xl sm:text-2xl text-gray-600 dark:text-gray-300 leading-relaxed">
+                Connect people with God and influence culture through thriving
+                small groups at Harvesters International Christian Centre.
+              </p>
+            </div>
 
             {/* Primary CTA Buttons */}
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center pt-4 max-w-md mx-auto sm:max-w-none">
@@ -86,7 +88,7 @@ export default function Home() {
           </div>
 
           {/* Benefits Section - Simplified */}
-          <div className="bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm rounded-3xl p-8 sm:p-12 border border-gray-200 dark:border-slate-700">
+          <div className="w-5/6 mx-auto bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm rounded-3xl p-8 sm:p-12 border border-gray-200 dark:border-slate-700">
             <h2 className="text-3xl sm:text-4xl font-bold text-center text-gray-900 dark:text-white mb-4">
               Our Small Groups Platform
             </h2>
