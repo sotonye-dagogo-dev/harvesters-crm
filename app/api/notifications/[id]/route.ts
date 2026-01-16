@@ -73,7 +73,7 @@ export async function DELETE(
     const decoded = verifyToken(token);
     if (!decoded || !decoded.success) {
       return NextResponse.json(
-        { error: decoded && !decoded.success ? decoded.message : \"Unauthorized\" },
+        { error: decoded && !decoded.success ? decoded.message : "Unauthorized" },
         { status: 401 }
       );
     }
