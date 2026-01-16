@@ -18,45 +18,93 @@ export const registerSchema = z
   .object({
     firstName: z
       .string()
-      .min(VALIDATION_RULES.NAME_MIN_LENGTH, "First name is too short")
-      .max(VALIDATION_RULES.NAME_MAX_LENGTH, "First name is too long"),
+      .min(
+        VALIDATION_RULES.NAME_MIN_LENGTH,
+        `First name must be at least ${VALIDATION_RULES.NAME_MIN_LENGTH} characters`
+      )
+      .max(
+        VALIDATION_RULES.NAME_MAX_LENGTH,
+        `First name cannot exceed ${VALIDATION_RULES.NAME_MAX_LENGTH} characters`
+      ),
     lastName: z
       .string()
-      .min(VALIDATION_RULES.NAME_MIN_LENGTH, "Last name is too short")
-      .max(VALIDATION_RULES.NAME_MAX_LENGTH, "Last name is too long"),
+      .min(
+        VALIDATION_RULES.NAME_MIN_LENGTH,
+        `Last name must be at least ${VALIDATION_RULES.NAME_MIN_LENGTH} characters`
+      )
+      .max(
+        VALIDATION_RULES.NAME_MAX_LENGTH,
+        `Last name cannot exceed ${VALIDATION_RULES.NAME_MAX_LENGTH} characters`
+      ),
     email: z
       .string()
-      .email("Invalid email address")
-      .max(VALIDATION_RULES.EMAIL_MAX_LENGTH, "Email is too long"),
+      .email("Please enter a valid email address (e.g., john@example.com)")
+      .max(
+        VALIDATION_RULES.EMAIL_MAX_LENGTH,
+        `Email cannot exceed ${VALIDATION_RULES.EMAIL_MAX_LENGTH} characters`
+      ),
     password: z
       .string()
       .min(
         VALIDATION_RULES.PASSWORD_MIN_LENGTH,
-        `Password must be at least ${VALIDATION_RULES.PASSWORD_MIN_LENGTH} characters`
+        `Password must be at least ${VALIDATION_RULES.PASSWORD_MIN_LENGTH} characters for security`
       )
-      .max(VALIDATION_RULES.PASSWORD_MAX_LENGTH, "Password is too long"),
+      .max(
+        VALIDATION_RULES.PASSWORD_MAX_LENGTH,
+        `Password cannot exceed ${VALIDATION_RULES.PASSWORD_MAX_LENGTH} characters`
+      ),
     confirmPassword: z.string().optional(),
     phone: z
       .string()
-      .min(VALIDATION_RULES.PHONE_MIN_LENGTH, "Phone number is too short")
-      .max(VALIDATION_RULES.PHONE_MAX_LENGTH, "Phone number is too long")
-      .regex(/^[0-9+\-\s()]+$/, "Invalid phone number"),
+      .min(
+        VALIDATION_RULES.PHONE_MIN_LENGTH,
+        `Phone number must be at least ${VALIDATION_RULES.PHONE_MIN_LENGTH} digits`
+      )
+      .max(
+        VALIDATION_RULES.PHONE_MAX_LENGTH,
+        `Phone number cannot exceed ${VALIDATION_RULES.PHONE_MAX_LENGTH} digits`
+      )
+      .regex(
+        /^[0-9+\-\s()]+$/,
+        "Phone number can only contain numbers, spaces, and + - ( )"
+      ),
     whatsappPhone: z
       .string()
-      .min(VALIDATION_RULES.PHONE_MIN_LENGTH, "Phone number is too short")
-      .max(VALIDATION_RULES.PHONE_MAX_LENGTH, "Phone number is too long")
-      .regex(/^[0-9+\-\s()]+$/, "Invalid phone number")
+      .min(
+        VALIDATION_RULES.PHONE_MIN_LENGTH,
+        `WhatsApp number must be at least ${VALIDATION_RULES.PHONE_MIN_LENGTH} digits`
+      )
+      .max(
+        VALIDATION_RULES.PHONE_MAX_LENGTH,
+        `WhatsApp number cannot exceed ${VALIDATION_RULES.PHONE_MAX_LENGTH} digits`
+      )
+      .regex(
+        /^[0-9+\-\s()]+$/,
+        "WhatsApp number can only contain numbers, spaces, and + - ( )"
+      )
       .optional()
       .or(z.literal("")),
-    dateOfBirth: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Invalid date format"),
-    gender: z.enum(["MALE", "FEMALE"]),
+    dateOfBirth: z
+      .string()
+      .regex(/^\d{4}-\d{2}-\d{2}$/, "Date must be in YYYY-MM-DD format"),
+    gender: z
+      .enum(["MALE", "FEMALE"])
+      .refine((val) => val === "MALE" || val === "FEMALE", {
+        message: "Please select Male or Female",
+      }),
     address: z.string().min(1, "Address is required"),
     location: z.string().optional(),
     age: z
       .number()
-      .int()
-      .min(VALIDATION_RULES.AGE_MIN, "Age is too low")
-      .max(VALIDATION_RULES.AGE_MAX, "Age is too high")
+      .int("Age must be a whole number")
+      .min(
+        VALIDATION_RULES.AGE_MIN,
+        `You must be at least ${VALIDATION_RULES.AGE_MIN} years old`
+      )
+      .max(
+        VALIDATION_RULES.AGE_MAX,
+        `Age cannot exceed ${VALIDATION_RULES.AGE_MAX} years`
+      )
       .optional()
       .or(z.nan()),
     maritalStatus: z.enum([
@@ -83,38 +131,74 @@ export const registerSchema = z
   );
 
 export const loginSchema = z.object({
-  email: z.string().email("Invalid email address"),
-  password: z.string().min(1, "Password is required"),
+  email: z.string().email("Please enter a valid email address"),
+  password: z.string().min(1, "Password is required to log in"),
   remember: z.boolean().optional(),
 });
 
 export const updateProfileSchema = z.object({
   firstName: z
     .string()
-    .min(VALIDATION_RULES.NAME_MIN_LENGTH, "First name is too short")
-    .max(VALIDATION_RULES.NAME_MAX_LENGTH, "First name is too long"),
+    .min(
+      VALIDATION_RULES.NAME_MIN_LENGTH,
+      `First name must be at least ${VALIDATION_RULES.NAME_MIN_LENGTH} characters`
+    )
+    .max(
+      VALIDATION_RULES.NAME_MAX_LENGTH,
+      `First name cannot exceed ${VALIDATION_RULES.NAME_MAX_LENGTH} characters`
+    ),
   lastName: z
     .string()
-    .min(VALIDATION_RULES.NAME_MIN_LENGTH, "Last name is too short")
-    .max(VALIDATION_RULES.NAME_MAX_LENGTH, "Last name is too long"),
+    .min(
+      VALIDATION_RULES.NAME_MIN_LENGTH,
+      `Last name must be at least ${VALIDATION_RULES.NAME_MIN_LENGTH} characters`
+    )
+    .max(
+      VALIDATION_RULES.NAME_MAX_LENGTH,
+      `Last name cannot exceed ${VALIDATION_RULES.NAME_MAX_LENGTH} characters`
+    ),
   phone: z
     .string()
-    .min(VALIDATION_RULES.PHONE_MIN_LENGTH, "Phone number is too short")
-    .max(VALIDATION_RULES.PHONE_MAX_LENGTH, "Phone number is too long")
-    .regex(/^[0-9+\-\s()]+$/, "Invalid phone number"),
+    .min(
+      VALIDATION_RULES.PHONE_MIN_LENGTH,
+      `Phone number must be at least ${VALIDATION_RULES.PHONE_MIN_LENGTH} digits`
+    )
+    .max(
+      VALIDATION_RULES.PHONE_MAX_LENGTH,
+      `Phone number cannot exceed ${VALIDATION_RULES.PHONE_MAX_LENGTH} digits`
+    )
+    .regex(
+      /^[0-9+\-\s()]+$/,
+      "Phone number can only contain numbers, spaces, and + - ( )"
+    ),
   whatsappPhone: z
     .string()
-    .min(VALIDATION_RULES.PHONE_MIN_LENGTH, "Phone number is too short")
-    .max(VALIDATION_RULES.PHONE_MAX_LENGTH, "Phone number is too long")
-    .regex(/^[0-9+\-\s()]+$/, "Invalid phone number")
+    .min(
+      VALIDATION_RULES.PHONE_MIN_LENGTH,
+      `WhatsApp number must be at least ${VALIDATION_RULES.PHONE_MIN_LENGTH} digits`
+    )
+    .max(
+      VALIDATION_RULES.PHONE_MAX_LENGTH,
+      `WhatsApp number cannot exceed ${VALIDATION_RULES.PHONE_MAX_LENGTH} digits`
+    )
+    .regex(
+      /^[0-9+\-\s()]+$/,
+      "WhatsApp number can only contain numbers, spaces, and + - ( )"
+    )
     .optional()
     .or(z.literal("")),
   location: z.string().optional(),
   age: z
     .number()
-    .int()
-    .min(VALIDATION_RULES.AGE_MIN, "Age is too low")
-    .max(VALIDATION_RULES.AGE_MAX, "Age is too high")
+    .int("Age must be a whole number")
+    .min(
+      VALIDATION_RULES.AGE_MIN,
+      `Age must be at least ${VALIDATION_RULES.AGE_MIN} years`
+    )
+    .max(
+      VALIDATION_RULES.AGE_MAX,
+      `Age cannot exceed ${VALIDATION_RULES.AGE_MAX} years`
+    )
     .optional()
     .or(z.nan()),
   maritalStatus: z
@@ -388,11 +472,22 @@ export function validateData<T>(
       const errors: Record<string, string> = {};
       error.issues.forEach((err) => {
         const path = err.path.join(".");
+        // Provide more context in error messages
         errors[path] = err.message;
       });
       return { success: false, errors };
     }
-    return { success: false, errors: { _general: "Validation failed" } };
+    // Handle unexpected errors
+    console.error("Validation error:", error);
+    return {
+      success: false,
+      errors: {
+        _general:
+          error instanceof Error
+            ? `Validation failed: ${error.message}`
+            : "Validation failed due to an unexpected error",
+      },
+    };
   }
 }
 

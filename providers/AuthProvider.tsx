@@ -78,10 +78,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       });
 
       const data = await response.json();
-      console.log("AuthProvider: Login response:", data);
+      // console.log("AuthProvider: Login response:", data);
 
       if (!response.ok) {
-        throw new Error(data.error || "Login failed");
+        throw new Error(data.error || data.message || data.error?.message || "Login failed");
       }
 
       setUser(data.data.user);

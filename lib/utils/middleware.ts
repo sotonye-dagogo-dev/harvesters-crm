@@ -1,53 +1,88 @@
-import { NextRequest } from "next/server";
 import { getAccessToken, verifyAccessToken } from "@/lib/utils/auth";
 import { userDb } from "@/lib/data/database";
 import { unauthorizedResponse } from "@/lib/utils/api";
 
-export async function getAuthenticatedUser(_request?: NextRequest) {
+export async function getAuthenticatedUser() {
   const token = await getAccessToken();
   if (!token) {
     return {
-      success: false,
-      message: "No access token provided.",
-      error: unauthorizedResponse("No access token provided"),
+      error: unauthorizedResponse(
+        "No access token provided. Please log in to continue."
+      ),
     };
   }
-  const decoded = verifyAccessToken(token);
-  if (!decoded || (decoded as any).success === false) {
-    return {
-      success: false,
-      message: (decoded as any)?.message || "Invalid or expired access token.",
-      error: unauthorizedResponse("Invalid or expired access token"),
-    };
-  }
-  const user = userDb.findById((decoded as any).userId);
-  if (!user || !user.isActive) {
-    return {
-      success: false,
-      message: "User not found or inactive.",
-      error: unauthorizedResponse("User not found or inactive"),
-    };
-  }
-  return { success: true, user };
-}
 
-export async function requireRole(roles: UserRole[], request?: NextRequest) {
-  const authResult = await getAuthenticatedUser(request);
-  if (!authResult.success)
-    return { error: authResult.error, message: authResult.message };
-  const user = authResult.user;
-  if (!user)
+  const decoded = verifyAccessToken(token);
+
+  // Check if decoded is an error response
+  if (
+    !decoded ||
+    (typeof decoded === "object" &&
+      "success" in decoded &&
+      decoded.success === false)
+  ) {
+    const errorMessage =
+      decoded && typeof decoded === "object" && "message" in decoded
+        ? String(decoded.message)
+        : "Invalid or expired access token. Please log in again.";
     return {
-      error: unauthorizedResponse("User not found"),
-      message: "User not found",
+      error: unauthorizedResponse(errorMessage),
     };
-  if (!roles.includes(user.role)) {
+  }
+
+  // At this point, decoded should be the valid token payload
+  const tokenPayload = decoded as {
+    userId: string;
+    email: string;
+    role: UserRole;
+  };
+
+  const user = userDb.findById(tokenPayload.userId);
+  if (!user) {
     return {
       error: unauthorizedResponse(
-        "You do not have permission to perform this action"
+        "User account not found. Please contact support."
       ),
-      message: "You do not have permission to perform this action",
     };
   }
+
+  if (!user.isActive) {
+    return {
+      error: unauthorizedResponse(
+        "Your account has been deactivated. Please contact church leadership for assistance."
+      ),
+    };
+  }
+
+  return { user };
+}
+
+export async function requireRole(roles: UserRole[]) {
+  const { user, error } = await getAuthenticatedUser();
+  if (error) return { error };
+  if (!user) {
+    return {
+      error: unauthorizedResponse(
+        "Authentication required. Please log in to continue."
+      ),
+    };
+  }
+
+  if (!roles.includes(user.role)) {
+    const requiredRoles = roles.join(" or ");
+    const userRoleName =
+      user.role === "SUPERADMIN"
+        ? "Super Administrator"
+        : user.role === "LEADER"
+          ? "Group Leader"
+          : "Member";
+
+    return {
+      error: unauthorizedResponse(
+        `Access denied. This action requires ${requiredRoles} privileges. Your current role is ${userRoleName}.`
+      ),
+    };
+  }
+
   return { user };
 }

@@ -48,26 +48,24 @@ export function showConfirm({
     onOk: async () => {
       try {
         await onOk();
-      } catch (err: any) {
+      } catch (error) {
         Modal.error({
-          title: "Action Failed",
+          title: "Operation Failed",
           content:
-            err?.message || "An unexpected error occurred. Please try again.",
+            error instanceof Error
+              ? error.message
+              : "An error occurred while performing this action. Please try again.",
+          centered: true,
         });
       }
     },
-    onCancel: onCancel
-      ? async () => {
-          try {
-            await onCancel();
-          } catch (err: any) {
-            Modal.error({
-              title: "Cancel Failed",
-              content: err?.message || "An error occurred while cancelling.",
-            });
-          }
-        }
-      : undefined,
+    onCancel: () => {
+      try {
+        onCancel?.();
+      } catch (error) {
+        console.error("Error in cancel callback:", error);
+      }
+    },
     centered: true,
     maskClosable: true,
   });
@@ -104,25 +102,24 @@ export function showDeleteConfirm({
     onOk: async () => {
       try {
         await onOk();
-      } catch (err: any) {
+      } catch (error) {
         Modal.error({
-          title: "Delete Failed",
-          content: err?.message || `Failed to delete ${itemName}.`,
+          title: `Failed to Delete ${itemName}`,
+          content:
+            error instanceof Error
+              ? error.message
+              : `Unable to delete this ${itemName}. Please try again or contact support if the problem persists.`,
+          centered: true,
         });
       }
     },
-    onCancel: onCancel
-      ? async () => {
-          try {
-            await onCancel();
-          } catch (err: any) {
-            Modal.error({
-              title: "Cancel Failed",
-              content: err?.message || "An error occurred while cancelling.",
-            });
-          }
-        }
-      : undefined,
+    onCancel: () => {
+      try {
+        onCancel?.();
+      } catch (error) {
+        console.error("Error in cancel callback:", error);
+      }
+    },
     centered: true,
     maskClosable: true,
   });
@@ -153,28 +150,8 @@ export function showWarningConfirm({
     okText: "Proceed",
     okType: "primary",
     cancelText: "Cancel",
-    onOk: async () => {
-      try {
-        await onOk();
-      } catch (err: any) {
-        Modal.error({
-          title: "Action Failed",
-          content: err?.message || "An unexpected error occurred.",
-        });
-      }
-    },
-    onCancel: onCancel
-      ? async () => {
-          try {
-            await onCancel();
-          } catch (err: any) {
-            Modal.error({
-              title: "Cancel Failed",
-              content: err?.message || "An error occurred while cancelling.",
-            });
-          }
-        }
-      : undefined,
+    onOk,
+    onCancel,
     centered: true,
     maskClosable: true,
   });
