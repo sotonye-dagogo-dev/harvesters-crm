@@ -24,9 +24,9 @@ export const followUps: Array<{
 let followUpIdCounter = 1;
 
 // GET /api/follow-ups - List all follow-ups for the leader
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
-    const { user, error } = await getAuthenticatedUser(request);
+    const { user, error } = await getAuthenticatedUser();
     if (error) return error;
 
     if (user?.role !== "LEADER" && user?.role !== "SUPERADMIN") {
@@ -68,7 +68,7 @@ export async function GET(request: NextRequest) {
 // POST /api/follow-ups - Create a new follow-up
 export async function POST(request: NextRequest) {
   try {
-    const { user, error } = await getAuthenticatedUser(request);
+    const { user, error } = await getAuthenticatedUser();
     if (error) return error;
 
     if (user?.role !== "LEADER" && user?.role !== "SUPERADMIN") {

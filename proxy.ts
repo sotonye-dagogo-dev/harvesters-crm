@@ -51,9 +51,9 @@ export async function proxy(request: NextRequest) {
 
   try {
     // Verify token
-    const user = await verifyToken(accessToken);
+    const decoded = await verifyToken(accessToken);
 
-    if (!user) {
+    if (!decoded || !decoded.success) {
       throw new Error("Invalid token");
     }
 
@@ -66,12 +66,12 @@ export async function proxy(request: NextRequest) {
     for (const [role, routes] of Object.entries(roleRoutes)) {
       const hasAccess = routes.some((route) => pathname.startsWith(route));
 
-      if (hasAccess && user.role !== role) {
+      if (hasAccess && decoded.role !== role) {
         // User trying to access route they don't have permission for
         const url = request.nextUrl.clone();
 
         // Redirect to appropriate dashboard based on role
-        switch (user.role) {
+        switch (decoded.role) {
           case "SUPERADMIN":
             url.pathname = "/superadmin/dashboard";
             break;

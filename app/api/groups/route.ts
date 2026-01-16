@@ -13,7 +13,7 @@ import { USER_ROLES } from "@/lib/constants";
 // GET /api/groups - List groups
 export async function GET(request: NextRequest) {
   try {
-    const { user, error } = await getAuthenticatedUser(request);
+    const { user, error } = await getAuthenticatedUser();
     if (error) return error;
 
     const searchParams = request.nextUrl.searchParams;
@@ -59,10 +59,10 @@ export async function GET(request: NextRequest) {
 // POST /api/groups - Create group (Superadmin/Leader)
 export async function POST(request: NextRequest) {
   try {
-    const { user, error } = await requireRole(
-      [USER_ROLES.SUPERADMIN as UserRole, USER_ROLES.LEADER as UserRole],
-      request
-    );
+    const { user, error } = await requireRole([
+      USER_ROLES.SUPERADMIN as UserRole,
+      USER_ROLES.LEADER as UserRole,
+    ]);
     if (error) return error;
 
     const body = await request.json();

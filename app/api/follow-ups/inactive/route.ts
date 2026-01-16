@@ -20,9 +20,9 @@ interface InactiveMember {
 }
 
 // GET /api/follow-ups/inactive - Get list of inactive members
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
-    const { user, error } = await getAuthenticatedUser(request);
+    const { user, error } = await getAuthenticatedUser();
     if (error) return error;
 
     if (user?.role !== "LEADER" && user?.role !== "SUPERADMIN") {

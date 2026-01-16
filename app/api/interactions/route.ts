@@ -13,7 +13,7 @@ import { USER_ROLES } from "@/lib/constants";
 // GET /api/interactions - List interactions
 export async function GET(request: NextRequest) {
   try {
-    const { user, error } = await getAuthenticatedUser(request);
+    const { user, error } = await getAuthenticatedUser();
     if (error) return error;
 
     const { searchParams } = new URL(request.url);
@@ -96,7 +96,7 @@ export async function GET(request: NextRequest) {
 // POST /api/interactions - Create interaction
 export async function POST(request: NextRequest) {
   try {
-    const { user, error } = await getAuthenticatedUser(request);
+    const { user, error } = await getAuthenticatedUser();
     if (error) return error;
 
     const body = await request.json();

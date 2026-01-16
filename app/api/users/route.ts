@@ -9,10 +9,7 @@ import { paginatedResponse, handleApiError } from "@/lib/utils/api";
 export async function GET(request: NextRequest) {
   try {
     // Require superadmin role
-    const { error } = await requireRole(
-      [USER_ROLES.SUPERADMIN as UserRole],
-      request
-    );
+    const { error } = await requireRole([USER_ROLES.SUPERADMIN as UserRole]);
     if (error) return error;
 
     const searchParams = request.nextUrl.searchParams;

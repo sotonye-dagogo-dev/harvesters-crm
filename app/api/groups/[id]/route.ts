@@ -13,11 +13,11 @@ import { USER_ROLES } from "@/lib/constants";
 
 // GET /api/groups/[id] - Get group by ID
 export async function GET(
-  request: NextRequest,
+  _request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { user, error } = await getAuthenticatedUser(request);
+    const { user, error } = await getAuthenticatedUser();
     if (error) return error;
 
     const { id } = await params;
@@ -49,7 +49,7 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { user, error } = await getAuthenticatedUser(request);
+    const { user, error } = await getAuthenticatedUser();
     if (error) return error;
 
     const { id } = await params;
@@ -95,14 +95,11 @@ export async function PUT(
 
 // DELETE /api/groups/[id] - Delete group (Superadmin only)
 export async function DELETE(
-  request: NextRequest,
+  _request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { error } = await requireRole(
-      [USER_ROLES.SUPERADMIN as UserRole],
-      request
-    );
+    const { error } = await requireRole([USER_ROLES.SUPERADMIN as UserRole]);
     if (error) return error;
 
     const { id } = await params;

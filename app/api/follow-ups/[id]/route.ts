@@ -17,7 +17,7 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { user, error } = await getAuthenticatedUser(request);
+    const { user, error } = await getAuthenticatedUser();
     if (error) return error;
 
     if (user?.role !== "LEADER" && user?.role !== "SUPERADMIN") {
@@ -67,11 +67,11 @@ export async function PUT(
 
 // DELETE /api/follow-ups/[id] - Delete a follow-up
 export async function DELETE(
-  request: NextRequest,
+  _request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { user, error } = await getAuthenticatedUser(request);
+    const { user, error } = await getAuthenticatedUser();
     if (error) return error;
 
     if (user?.role !== "LEADER" && user?.role !== "SUPERADMIN") {

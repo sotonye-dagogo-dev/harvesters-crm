@@ -11,7 +11,7 @@ import {
 // GET /api/analytics/overview - Get overview analytics
 export async function GET(request: NextRequest) {
   try {
-    const { user, error } = await getAuthenticatedUser(request);
+    const { user, error } = await getAuthenticatedUser();
     if (error) return error;
 
     // Only superadmin can access overview analytics
