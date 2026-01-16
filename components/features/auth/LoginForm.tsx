@@ -133,7 +133,7 @@ export default function LoginForm() {
 
       <div className="mt-8 pt-6 border-t border-gray-200">
         <Text type="secondary" className="text-xs text-center block">
-          By signing in, you agree to our Terms of Service and Privacy Policy
+          By signing in, you agree to our <Link href="/terms" className="text-church-primary hover:text-church-primary/80">Terms of Service</Link> and <Link href="/privacy" className="text-church-primary hover:text-church-primary/80">Privacy Policy</Link>.
         </Text>
       </div>
     </Card>

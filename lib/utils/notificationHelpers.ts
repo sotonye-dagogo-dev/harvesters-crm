@@ -17,20 +17,14 @@ export async function sendMeetingReminder(
   try {
     const meeting = db.meetings.findById(meetingId);
     const group = db.groups.findById(groupId);
-
     if (!meeting || !group) {
-      console.error("Meeting or group not found");
-      return;
+      return { success: false, message: "Meeting or group not found" };
     }
-
-    // Get all group members
     const members = db.users.findAll({ groupId });
     const leaders = db.users.findAll({ groupId });
     const allRecipients = [...members, ...leaders].filter(
       (u) => u.role === "MEMBER" || u.role === "LEADER"
     );
-
-    // Create notification for each member
     for (const member of allRecipients) {
       db.notifications.create(
         member.id,
@@ -40,12 +34,15 @@ export async function sendMeetingReminder(
         meetingId
       );
     }
-
-    console.log(
-      `Sent meeting reminder for meeting ${meetingId} to ${allRecipients.length} members`
-    );
-  } catch (error) {
-    console.error("Error sending meeting reminder:", error);
+    return {
+      success: true,
+      message: `Sent meeting reminder for meeting ${meetingId} to ${allRecipients.length} members`,
+    };
+  } catch (error: any) {
+    return {
+      success: false,
+      message: `Error sending meeting reminder: ${error?.message || error}`,
+    };
   }
 }
 
@@ -59,26 +56,19 @@ export async function sendMembershipRequestNotification(
 ): Promise<void> {
   try {
     const request = db.membershipRequests.findById(requestId);
-
     if (!request) {
-      console.error("Membership request not found");
-      return;
+      return { success: false, message: "Membership request not found" };
     }
-
     const responder = db.users.findById(responderId);
     const toGroup = db.groups.findById(request.toGroupId);
-
     const statusText = status === "APPROVED" ? "approved" : "rejected";
     const title = `Membership Request ${statusText.charAt(0).toUpperCase() + statusText.slice(1)}`;
-
     let message = "";
     if (status === "APPROVED") {
       message = `Your request to join ${toGroup?.name || "the group"} has been approved by ${responder?.firstName || "the leader"}. Welcome to your new fellowship!`;
     } else {
       message = `Your request to join ${toGroup?.name || "the group"} has been declined. Feel free to explore other fellowship groups.`;
     }
-
-    // Notify the requesting member
     db.notifications.create(
       request.memberId,
       NotificationType.REQUEST_STATUS,
@@ -86,12 +76,15 @@ export async function sendMembershipRequestNotification(
       message,
       requestId
     );
-
-    console.log(
-      `Sent ${status} notification for request ${requestId} to member ${request.memberId}`
-    );
-  } catch (error) {
-    console.error("Error sending membership request notification:", error);
+    return {
+      success: true,
+      message: `Sent ${status} notification for request ${requestId} to member ${request.memberId}`,
+    };
+  } catch (error: any) {
+    return {
+      success: false,
+      message: `Error sending membership request notification: ${error?.message || error}`,
+    };
   }
 }
 
@@ -106,22 +99,17 @@ export async function sendRoleAssignmentNotification(
   try {
     const user = db.users.findById(userId);
     const assigner = db.users.findById(assignedBy);
-
     if (!user || !assigner) {
-      console.error("User or assigner not found");
-      return;
+      return { success: false, message: "User or assigner not found" };
     }
-
     const roleDisplayName =
       newRole === "LEADER"
         ? "Group Leader"
         : newRole === "SUPERADMIN"
           ? "Super Administrator"
           : "Member";
-
     const title = "Role Assignment Update";
     const message = `Your role has been updated to ${roleDisplayName} by ${assigner.firstName} ${assigner.lastName}. You now have access to additional features.`;
-
     db.notifications.create(
       userId,
       NotificationType.ROLE_ASSIGNMENT,
@@ -129,10 +117,15 @@ export async function sendRoleAssignmentNotification(
       message,
       userId
     );
-
-    console.log(`Sent role assignment notification to user ${userId}`);
-  } catch (error) {
-    console.error("Error sending role assignment notification:", error);
+    return {
+      success: true,
+      message: `Sent role assignment notification to user ${userId}`,
+    };
+  } catch (error: any) {
+    return {
+      success: false,
+      message: `Error sending role assignment notification: ${error?.message || error}`,
+    };
   }
 }
 
@@ -146,13 +139,9 @@ export async function sendNewMemberNotification(
   try {
     const member = db.users.findById(memberId);
     const group = db.groups.findById(groupId);
-
     if (!member || !group) {
-      console.error("Member or group not found");
-      return;
+      return { success: false, message: "Member or group not found" };
     }
-
-    // Notify the group leader
     if (group.leaderId) {
       db.notifications.create(
         group.leaderId,
@@ -162,8 +151,6 @@ export async function sendNewMemberNotification(
         memberId
       );
     }
-
-    // Notify the member
     db.notifications.create(
       memberId,
       NotificationType.REQUEST_STATUS,
@@ -171,12 +158,15 @@ export async function sendNewMemberNotification(
       `You have successfully joined ${group.name}. Looking forward to seeing you at the next meeting!`,
       groupId
     );
-
-    console.log(
-      `Sent new member notifications for ${memberId} joining ${groupId}`
-    );
-  } catch (error) {
-    console.error("Error sending new member notification:", error);
+    return {
+      success: true,
+      message: `Sent new member notifications for ${memberId} joining ${groupId}`,
+    };
+  } catch (error: any) {
+    return {
+      success: false,
+      message: `Error sending new member notification: ${error?.message || error}`,
+    };
   }
 }
 
@@ -191,15 +181,11 @@ export async function sendMemberRemovedNotification(
   try {
     const member = db.users.findById(memberId);
     const remover = db.users.findById(removedBy);
-
     if (!member) {
-      console.error("Member not found");
-      return;
+      return { success: false, message: "Member not found" };
     }
-
     const title = "Group Membership Update";
     const message = `You have been removed from ${groupName} by ${remover?.firstName || "an administrator"}. Please contact church leadership if you have questions.`;
-
     db.notifications.create(
       memberId,
       NotificationType.REQUEST_STATUS,
@@ -207,10 +193,15 @@ export async function sendMemberRemovedNotification(
       message,
       undefined
     );
-
-    console.log(`Sent member removed notification to ${memberId}`);
-  } catch (error) {
-    console.error("Error sending member removed notification:", error);
+    return {
+      success: true,
+      message: `Sent member removed notification to ${memberId}`,
+    };
+  } catch (error: any) {
+    return {
+      success: false,
+      message: `Error sending member removed notification: ${error?.message || error}`,
+    };
   }
 }
 
@@ -252,25 +243,17 @@ export async function sendNewMembershipRequestNotification(
 ): Promise<void> {
   try {
     const request = db.membershipRequests.findById(requestId);
-
     if (!request) {
-      console.error("Membership request not found");
-      return;
+      return { success: false, message: "Membership request not found" };
     }
-
     const member = db.users.findById(request.memberId);
     const toGroup = db.groups.findById(request.toGroupId);
-
     if (!member || !toGroup) {
-      console.error("Member or target group not found");
-      return;
+      return { success: false, message: "Member or target group not found" };
     }
-
-    // Notify the group leader
     if (toGroup.leaderId) {
       const title = "New Membership Request";
       const message = `${member.firstName} ${member.lastName} has requested to join your group: ${toGroup.name}. Please review and respond.`;
-
       db.notifications.create(
         toGroup.leaderId,
         NotificationType.REQUEST_STATUS,
@@ -278,12 +261,16 @@ export async function sendNewMembershipRequestNotification(
         message,
         requestId
       );
-
-      console.log(
-        `Sent new membership request notification to leader ${toGroup.leaderId}`
-      );
+      return {
+        success: true,
+        message: `Sent new membership request notification to leader ${toGroup.leaderId}`,
+      };
     }
-  } catch (error) {
-    console.error("Error sending new membership request notification:", error);
+    return { success: false, message: "No group leader to notify" };
+  } catch (error: any) {
+    return {
+      success: false,
+      message: `Error sending new membership request notification: ${error?.message || error}`,
+    };
   }
 }

@@ -70,8 +70,12 @@ export function verifyAccessToken(
       role: UserRole;
     };
     return decoded;
-  } catch (error) {
-    return null;
+  } catch (error: any) {
+    return {
+      success: false,
+      message: `Invalid or expired access token: ${error?.message || "Unknown error"}`,
+      error: error?.stack || undefined,
+    };
   }
 }
 
@@ -81,8 +85,12 @@ export function verifyRefreshToken(token: string): { userId: string } | null {
       userId: string;
     };
     return decoded;
-  } catch (error) {
-    return null;
+  } catch (error: any) {
+    return {
+      success: false,
+      message: `Invalid or expired refresh token: ${error?.message || "Unknown error"}`,
+      error: error?.stack || undefined,
+    };
   }
 }
 
@@ -137,17 +145,27 @@ export async function getRefreshToken(): Promise<string | undefined> {
 
 export async function getCurrentUser(): Promise<AuthUser | null> {
   const token = await getAccessToken();
-  if (!token) return null;
+  if (!token) {
+    return {
+      success: false,
+      message: "No access token provided. Please log in again.",
+    } as any;
+  }
 
   const decoded = verifyAccessToken(token);
-  if (!decoded) return null;
+  if (!decoded || (decoded as any).success === false) {
+    return {
+      success: false,
+      message: (decoded as any)?.message || "Invalid or expired access token.",
+    } as any;
+  }
 
   // In a real app, you'd fetch the user from the database
   // For now, we'll return a minimal user object
   return {
-    id: decoded.userId,
-    email: decoded.email,
-    role: decoded.role,
+    id: (decoded as any).userId,
+    email: (decoded as any).email,
+    role: (decoded as any).role,
   } as AuthUser;
 }
 

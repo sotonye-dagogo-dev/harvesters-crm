@@ -17,7 +17,7 @@ interface ConfirmOptions {
 
 /**
  * Show confirmation dialog for destructive actions
- * 
+ *
  * @example
  * showConfirm({
  *   title: 'Delete User',
@@ -45,8 +45,29 @@ export function showConfirm({
     okText,
     cancelText,
     okType,
-    onOk,
-    onCancel,
+    onOk: async () => {
+      try {
+        await onOk();
+      } catch (err: any) {
+        Modal.error({
+          title: "Action Failed",
+          content:
+            err?.message || "An unexpected error occurred. Please try again.",
+        });
+      }
+    },
+    onCancel: onCancel
+      ? async () => {
+          try {
+            await onCancel();
+          } catch (err: any) {
+            Modal.error({
+              title: "Cancel Failed",
+              content: err?.message || "An error occurred while cancelling.",
+            });
+          }
+        }
+      : undefined,
     centered: true,
     maskClosable: true,
   });
@@ -54,7 +75,7 @@ export function showConfirm({
 
 /**
  * Show delete confirmation dialog
- * 
+ *
  * @example
  * showDeleteConfirm({
  *   title: 'Delete Meeting',
@@ -80,8 +101,28 @@ export function showDeleteConfirm({
     okText: "Delete",
     okType: "danger",
     cancelText: "Cancel",
-    onOk,
-    onCancel,
+    onOk: async () => {
+      try {
+        await onOk();
+      } catch (err: any) {
+        Modal.error({
+          title: "Delete Failed",
+          content: err?.message || `Failed to delete ${itemName}.`,
+        });
+      }
+    },
+    onCancel: onCancel
+      ? async () => {
+          try {
+            await onCancel();
+          } catch (err: any) {
+            Modal.error({
+              title: "Cancel Failed",
+              content: err?.message || "An error occurred while cancelling.",
+            });
+          }
+        }
+      : undefined,
     centered: true,
     maskClosable: true,
   });
@@ -89,7 +130,7 @@ export function showDeleteConfirm({
 
 /**
  * Show warning confirmation dialog
- * 
+ *
  * @example
  * showWarningConfirm({
  *   title: 'Remove Member',
@@ -112,8 +153,28 @@ export function showWarningConfirm({
     okText: "Proceed",
     okType: "primary",
     cancelText: "Cancel",
-    onOk,
-    onCancel,
+    onOk: async () => {
+      try {
+        await onOk();
+      } catch (err: any) {
+        Modal.error({
+          title: "Action Failed",
+          content: err?.message || "An unexpected error occurred.",
+        });
+      }
+    },
+    onCancel: onCancel
+      ? async () => {
+          try {
+            await onCancel();
+          } catch (err: any) {
+            Modal.error({
+              title: "Cancel Failed",
+              content: err?.message || "An error occurred while cancelling.",
+            });
+          }
+        }
+      : undefined,
     centered: true,
     maskClosable: true,
   });

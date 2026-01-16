@@ -38,8 +38,8 @@ export function errorResponse(
   return NextResponse.json(
     {
       success: false,
-      message,
-      error,
+      message: message || "An error occurred.",
+      error: error || undefined,
     },
     { status }
   );
@@ -124,10 +124,11 @@ export function paginatedResponse<T>(
 
 export function handleApiError(error: unknown): NextResponse<ApiResponse> {
   console.error("API Error:", error);
-
   if (error instanceof Error) {
-    return serverErrorResponse(error.message);
+    return serverErrorResponse(error.message || "Internal server error");
   }
-
-  return serverErrorResponse();
+  if (typeof error === "string") {
+    return serverErrorResponse(error);
+  }
+  return serverErrorResponse("Unknown error occurred");
 }

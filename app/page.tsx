@@ -48,9 +48,10 @@ export default function Home() {
               </span>
             </div>
 
-            <h1 className="text-5xl sm:text-6xl md:text-7xl font-bold text-gray-900 dark:text-white leading-tight">
-              Harvesters{" "}
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-green-600 to-emerald-600 dark:from-green-400 dark:to-emerald-400">
+            <h1 className="text-5xl text-gray-900 dark:text-gray-100 sm:text-6xl md:text-7xl font-bold leading-tight">
+              Harvesters
+              {" "}
+              <span className="text-transparent bg-clip-text bg-linear-to-r from-green-600 to-emerald-600 dark:from-green-400 dark:to-emerald-400">
                 Small Groups CRM
               </span>
             </h1>
@@ -88,7 +89,7 @@ export default function Home() {
           </div>
 
           {/* Benefits Section - Simplified */}
-          <div className="w-5/6 mx-auto bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm rounded-3xl p-8 sm:p-12 border border-gray-200 dark:border-slate-700">
+          <div className="w-5/6 mx-auto bg-slate-300/30 dark:bg-slate-800/60 backdrop-blur-sm rounded-3xl p-8 sm:p-12 border border-gray-200 dark:border-slate-700">
             <h2 className="text-3xl sm:text-4xl font-bold text-center text-gray-900 dark:text-white mb-4">
               Our Small Groups Platform
             </h2>
