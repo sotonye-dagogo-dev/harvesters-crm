@@ -22,8 +22,12 @@ export async function POST() {
 
     // Verify refresh token
     const decoded = verifyRefreshToken(refreshToken);
-    if (!decoded) {
-      return unauthorizedResponse("Invalid or expired refresh token");
+    if (!decoded || !decoded.success) {
+      return unauthorizedResponse(
+        decoded && !decoded.success
+          ? decoded.message
+          : "Invalid or expired refresh token"
+      );
     }
 
     // Find user

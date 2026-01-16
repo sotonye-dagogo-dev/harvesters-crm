@@ -15,8 +15,14 @@ export async function GET(_request: NextRequest) {
     }
 
     const decoded = verifyToken(token);
-    if (!decoded) {
-      return NextResponse.json({ error: "Invalid token" }, { status: 401 });
+    if (!decoded || !decoded.success) {
+      return NextResponse.json(
+        {
+          error:
+            decoded && !decoded.success ? decoded.message : "Invalid token",
+        },
+        { status: 401 }
+      );
     }
 
     const user = db.users.findById(decoded.userId);

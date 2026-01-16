@@ -13,8 +13,11 @@ export async function POST(request: NextRequest) {
     }
 
     const decoded = verifyToken(token.value);
-    if (!decoded || decoded.role !== "LEADER") {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    if (!decoded || !decoded.success || decoded.role !== "LEADER") {
+      return NextResponse.json(
+        { error: decoded && !decoded.success ? decoded.message : "Forbidden" },
+        { status: 403 }
+      );
     }
 
     const { followUps } = await request.json();

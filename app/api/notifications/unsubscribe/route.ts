@@ -13,8 +13,13 @@ export async function POST(request: NextRequest) {
     }
 
     const decoded = verifyToken(token);
-    if (!decoded) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    if (!decoded || !decoded.success) {
+      return NextResponse.json(
+        {
+          error: decoded && !decoded.success ? decoded.message : "Unauthorized",
+        },
+        { status: 401 }
+      );
     }
 
     const { endpoint } = await request.json();
