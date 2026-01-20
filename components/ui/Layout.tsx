@@ -10,8 +10,8 @@ interface AppHeaderProps {
 
 export function AppHeader({ title, actions }: AppHeaderProps) {
   return (
-    <Header className="bg-white dark:bg-slate-800 border-b border-gray-200 dark:border-slate-700 px-6 flex items-center justify-between h-16">
-      <h1 className="text-xl font-semibold text-gray-900 dark:text-white m-0">
+    <Header className="!w-full !text-white !px-2 !flex !items-center !justify-center !gap-4 !h-16">
+      <h1 className="text-xl font-semibold m-0">
         {title}
       </h1>
       {actions && <div className="flex items-center gap-4">{actions}</div>}

@@ -292,8 +292,11 @@ export default function DashboardLayout({
     },
   ];
   // Determine logo to use based on theme (dark-bg logo for dark sidebar, white-bg logo for light sidebar)
-  // Since sidebar has dark background, we use the dark-bg logo (white text)
-  const logoSrc = "/logo/dark-bg-harvesters-Logo.jpg";
+  const logoSrc = mounted
+    ? document.body.classList.contains("dark")
+      ? "/logo/white-bg-harvesters-Logo.jpg"
+      : "/logo/dark-bg-harvesters-Logo.jpg"
+    : "/logo/dark-bg-harvesters-Logo.jpg";
 
   // Sidebar content (shared between desktop and mobile)
   const sidebarContent = (
@@ -307,7 +310,7 @@ export default function DashboardLayout({
                 alt="Harvesters International Christian Centre"
                 width={180}
                 height={60}
-                className="object-contain"
+                className="object-contain rounded-lg"
                 priority
               />
             )}
@@ -391,12 +394,12 @@ export default function DashboardLayout({
         }}
       >
         <Header className="!bg-white dark:!bg-slate-900 !p-0 shadow-sm border-b border-gray-200 dark:border-slate-700 !sticky !top-0 !z-[5]">
-          <div className="h-full flex items-center justify-between px-6">
-            <div className="flex items-center gap-4">
+          <div className="w-full h-full flex items-center justify-center">
+            <div className="w-full flex items-center">
               {isMobile && (
                 <button
                   onClick={() => setMobileDrawerOpen(true)}
-                  className="text-gray-700 dark:text-gray-200 text-2xl p-2 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
+                  className="text-gray-700 dark:text-gray-200 text-2xl mx-auto p-2 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
                   aria-label="Open menu"
                 >
                   <MenuOutlined />
@@ -405,10 +408,10 @@ export default function DashboardLayout({
               <AppHeader
                 title={`Welcome, ${user?.firstName || "User"}`}
                 actions={
-                  <div className="w-full flex items-center gap-5">
+                  <div className="w-full flex flex-row-reverse justify-start md:justify-center items-center gap-5">
                     <ThemeToggle />
                     {role && (
-                      <span className="text-sm font-semibold text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-slate-800 px-4 py-2 rounded-full shadow-sm">
+                      <span className="hidden md:inline text-sm font-semibold text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-slate-800 px-4 py-2 rounded-full shadow-sm">
                         {role === "SUPERADMIN"
                           ? "Super Admin"
                           : role.charAt(0) + role.slice(1).toLowerCase()}
