@@ -242,6 +242,7 @@ export default function LeaderMembersPage() {
             columns={columns}
             dataSource={filteredMembers}
             rowKey="id"
+            scroll={{ x: 1000 }}
             pagination={{
               pageSize: 10,
               showSizeChanger: true,

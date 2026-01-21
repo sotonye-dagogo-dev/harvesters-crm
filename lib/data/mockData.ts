@@ -542,6 +542,100 @@ export const mockMeetings: Meeting[] = [
     createdAt: getDateString(19),
     updatedAt: getDateString(19),
   },
+  {
+    id: "meeting-9",
+    groupId: "group-3",
+    date: getDateString(33).split("T")[0],
+    startTime: "19:00",
+    endTime: "20:30",
+    attendeeCount: 2,
+    attendeeIds: ["user-member-7", "user-member-8"],
+    screenshotUrl: undefined,
+    notes:
+      "Spiritual warfare and prayer strategies. Ebuka absent due to travel. Powerful prayer session.",
+    createdById: "user-leader-3",
+    createdAt: getDateString(33),
+    updatedAt: getDateString(33),
+  },
+
+  // More meetings for Group 1 (Youth Fellowship)
+  {
+    id: "meeting-10",
+    groupId: "group-1",
+    date: getDateString(56).split("T")[0],
+    startTime: "18:00",
+    endTime: "19:30",
+    attendeeCount: 3,
+    attendeeIds: ["user-member-1", "user-member-2", "user-member-3"],
+    screenshotUrl: undefined,
+    notes:
+      "Career development and God's calling. Discussed finding purpose in our professions.",
+    createdById: "user-leader-1",
+    createdAt: getDateString(56),
+    updatedAt: getDateString(56),
+  },
+  {
+    id: "meeting-11",
+    groupId: "group-1",
+    date: getDateString(70).split("T")[0],
+    startTime: "18:00",
+    endTime: "19:30",
+    attendeeCount: 2,
+    attendeeIds: ["user-member-1", "user-member-2"],
+    screenshotUrl: undefined,
+    notes:
+      "Financial stewardship and wisdom. Only 2 members present due to end of semester exams.",
+    createdById: "user-leader-1",
+    createdAt: getDateString(70),
+    updatedAt: getDateString(70),
+  },
+
+  // More meetings for Group 2 (Women's Fellowship)
+  {
+    id: "meeting-12",
+    groupId: "group-2",
+    date: getDateString(35).split("T")[0],
+    startTime: "10:00",
+    endTime: "11:30",
+    attendeeCount: 3,
+    attendeeIds: ["user-member-4", "user-member-5", "user-member-6"],
+    screenshotUrl: undefined,
+    notes:
+      "Marriage enrichment session. Great testimonies and practical advice shared.",
+    createdById: "user-leader-2",
+    createdAt: getDateString(35),
+    updatedAt: getDateString(35),
+  },
+  {
+    id: "meeting-13",
+    groupId: "group-2",
+    date: getDateString(49).split("T")[0],
+    startTime: "10:00",
+    endTime: "11:30",
+    attendeeCount: 2,
+    attendeeIds: ["user-member-4", "user-member-6"],
+    screenshotUrl: undefined,
+    notes:
+      "Esther was absent due to work commitment. Discussed raising godly children.",
+    createdById: "user-leader-2",
+    createdAt: getDateString(49),
+    updatedAt: getDateString(49),
+  },
+  {
+    id: "meeting-14",
+    groupId: "group-2",
+    date: getDateString(63).split("T")[0],
+    startTime: "10:00",
+    endTime: "11:30",
+    attendeeCount: 3,
+    attendeeIds: ["user-member-4", "user-member-5", "user-member-6"],
+    screenshotUrl: undefined,
+    notes:
+      "Beauty and modesty from a biblical perspective. Very engaging discussion!",
+    createdById: "user-leader-2",
+    createdAt: getDateString(63),
+    updatedAt: getDateString(63),
+  },
 ];
 
 // ============================================================================
@@ -549,13 +643,14 @@ export const mockMeetings: Meeting[] = [
 // ============================================================================
 
 export const mockInteractions: Interaction[] = [
+  // Recent interactions
   {
     id: "interaction-1",
     leaderId: "user-leader-1",
     memberId: "user-member-2",
     type: "FOLLOW_UP" as InteractionType,
     notes:
-      "Called to check why Samuel missed the last meeting. He had an exam.",
+      "Called to check why Samuel missed the last meeting. He had an exam coming up. Encouraged him and prayed together.",
     timestamp: getDateString(27),
     createdAt: getDateString(27),
   },
@@ -565,7 +660,7 @@ export const mockInteractions: Interaction[] = [
     memberId: "user-member-5",
     type: "CHECK_IN" as InteractionType,
     notes:
-      "Casual check-in. Esther shared she's doing well, just busy with work.",
+      "Casual check-in. Esther shared she's doing well, just busy with work. We discussed work-life balance.",
     timestamp: getDateString(20),
     createdAt: getDateString(20),
   },
@@ -574,7 +669,8 @@ export const mockInteractions: Interaction[] = [
     leaderId: "user-leader-3",
     memberId: "user-member-8",
     type: "CALL" as InteractionType,
-    notes: "Discussed his business challenges and prayed together.",
+    notes:
+      "Discussed his business challenges. Prayed together for breakthrough and wisdom in decision-making.",
     timestamp: getDateString(9),
     createdAt: getDateString(9),
   },
@@ -583,9 +679,121 @@ export const mockInteractions: Interaction[] = [
     leaderId: "user-leader-1",
     memberId: "user-member-1",
     type: "FOLLOW_UP" as InteractionType,
-    notes: "Followed up on her school project. She's doing great!",
+    notes:
+      "Followed up on her school project. She's doing great and excited about graduation!",
     timestamp: getDateString(5),
     createdAt: getDateString(5),
+  },
+
+  // Older interactions for better history
+  {
+    id: "interaction-5",
+    leaderId: "user-leader-1",
+    memberId: "user-member-3",
+    type: "CALL" as InteractionType,
+    notes:
+      "Called to welcome her to the group. She's very excited and looking forward to the next meeting.",
+    timestamp: getDateString(45),
+    createdAt: getDateString(45),
+  },
+  {
+    id: "interaction-6",
+    leaderId: "user-leader-2",
+    memberId: "user-member-4",
+    type: "CHECK_IN" as InteractionType,
+    notes:
+      "Regular check-in. Deborah is doing well spiritually. Discussed her prayer life.",
+    timestamp: getDateString(35),
+    createdAt: getDateString(35),
+  },
+  {
+    id: "interaction-7",
+    leaderId: "user-leader-2",
+    memberId: "user-member-6",
+    type: "FOLLOW_UP" as InteractionType,
+    notes:
+      "Followed up after she shared a testimony. Encouraged her to document it.",
+    timestamp: getDateString(30),
+    createdAt: getDateString(30),
+  },
+  {
+    id: "interaction-8",
+    leaderId: "user-leader-3",
+    memberId: "user-member-7",
+    type: "CHECK_IN" as InteractionType,
+    notes:
+      "Discussed his ministry goals. He wants to be more involved in evangelism.",
+    timestamp: getDateString(25),
+    createdAt: getDateString(25),
+  },
+  {
+    id: "interaction-9",
+    leaderId: "user-leader-3",
+    memberId: "user-member-9",
+    type: "CALL" as InteractionType,
+    notes:
+      "Counseling session about marriage preparation. Had a deep conversation.",
+    timestamp: getDateString(22),
+    createdAt: getDateString(22),
+  },
+  {
+    id: "interaction-10",
+    leaderId: "user-leader-1",
+    memberId: "user-member-2",
+    type: "CHECK_IN" as InteractionType,
+    notes:
+      "Quick check-in on WhatsApp. Samuel is adjusting well to his new internship.",
+    timestamp: getDateString(50),
+    createdAt: getDateString(50),
+  },
+  {
+    id: "interaction-11",
+    leaderId: "user-leader-1",
+    memberId: "user-member-1",
+    type: "CALL" as InteractionType,
+    notes:
+      "Birthday call! Prayed blessing over her new year. She's grateful for the fellowship.",
+    timestamp: getDateString(60),
+    createdAt: getDateString(60),
+  },
+  {
+    id: "interaction-12",
+    leaderId: "user-leader-2",
+    memberId: "user-member-5",
+    type: "FOLLOW_UP" as InteractionType,
+    notes:
+      "Followed up after she missed last meeting due to a family emergency. Family is doing better now.",
+    timestamp: getDateString(40),
+    createdAt: getDateString(40),
+  },
+  {
+    id: "interaction-13",
+    leaderId: "user-leader-2",
+    memberId: "user-member-4",
+    type: "CALL" as InteractionType,
+    notes: "Prayer call for her job interview. She got the job! Glory to God!",
+    timestamp: getDateString(55),
+    createdAt: getDateString(55),
+  },
+  {
+    id: "interaction-14",
+    leaderId: "user-leader-3",
+    memberId: "user-member-8",
+    type: "FOLLOW_UP" as InteractionType,
+    notes:
+      "Checking in on his business expansion plans. Sent him some resources on Christian entrepreneurship.",
+    timestamp: getDateString(38),
+    createdAt: getDateString(38),
+  },
+  {
+    id: "interaction-15",
+    leaderId: "user-leader-3",
+    memberId: "user-member-7",
+    type: "CALL" as InteractionType,
+    notes:
+      "Mentorship call about spiritual leadership. Discussed character development.",
+    timestamp: getDateString(48),
+    createdAt: getDateString(48),
   },
 ];
 
@@ -621,6 +829,50 @@ export const mockMembershipRequests: MembershipRequest[] = [
     respondedById: "user-leader-2",
     responseMessage: "Welcome! We're excited to have you join us.",
   },
+  {
+    id: "request-3",
+    memberId: "user-member-2",
+    fromGroupId: "group-1",
+    toGroupId: "group-3",
+    type: "TRANSFER" as MembershipRequestType,
+    status: "REJECTED" as MembershipRequestStatus,
+    message:
+      "I'm interested in joining the Men's Discipleship group for deeper growth.",
+    requestedAt: getDateString(45),
+    respondedAt: getDateString(40),
+    respondedById: "user-leader-3",
+    responseMessage:
+      "Thank you for your interest. However, you're doing great in your current group. Let's discuss how to support your growth there.",
+  },
+  {
+    id: "request-4",
+    memberId: "user-member-11",
+    fromGroupId: undefined,
+    toGroupId: "group-1",
+    type: "JOIN" as MembershipRequestType,
+    status: "PENDING" as MembershipRequestStatus,
+    message:
+      "I'm a young professional and would love to join this fellowship to connect with peers.",
+    requestedAt: getDateString(4),
+    respondedAt: undefined,
+    respondedById: undefined,
+    responseMessage: undefined,
+  },
+  {
+    id: "request-5",
+    memberId: "user-member-12",
+    fromGroupId: undefined,
+    toGroupId: "group-3",
+    type: "JOIN" as MembershipRequestType,
+    status: "APPROVED" as MembershipRequestStatus,
+    message:
+      "Looking forward to growing with other men in discipleship and accountability.",
+    requestedAt: getDateString(20),
+    respondedAt: getDateString(18),
+    respondedById: "user-leader-3",
+    responseMessage:
+      "Welcome brother! Looking forward to journeying with you in faith.",
+  },
 ];
 
 // ============================================================================
@@ -652,7 +904,7 @@ export const mockNotifications: appNotification[] = [
   {
     id: "notif-3",
     userId: "user-leader-2",
-    type: "REQUEST_STATUS" as NotificationType,
+    type: "NEW_REQUEST" as NotificationType,
     title: "New Membership Request",
     message: "Sarah Benson has requested to join your group.",
     relatedId: "request-1",
@@ -674,9 +926,81 @@ export const mockNotifications: appNotification[] = [
     userId: "user-leader-3",
     type: "MEETING_REMINDER" as NotificationType,
     title: "Upcoming Meeting",
-    message: "Men's Fellowship meeting tomorrow at 6:00 AM. See you there!",
-    relatedId: "meeting-5",
+    message: "Men's Fellowship meeting tomorrow at 7:00 PM. See you there!",
+    relatedId: "meeting-6",
     read: true,
+    createdAt: getDateString(6),
+  },
+  {
+    id: "notif-6",
+    userId: "user-leader-1",
+    type: "FOLLOW_UP_REMINDER" as NotificationType,
+    title: "Follow-up Reminder",
+    message:
+      "Samuel Ojo hasn't attended the last 2 meetings. Consider reaching out.",
+    relatedId: "user-member-2",
+    read: false,
+    createdAt: getDateString(3),
+  },
+  {
+    id: "notif-7",
+    userId: "user-leader-2",
+    type: "MEETING_REMINDER" as NotificationType,
+    title: "Meeting This Saturday",
+    message: "Women's Fellowship meeting at 10:00 AM. Bring your Bibles!",
+    relatedId: "meeting-4",
+    read: true,
+    createdAt: getDateString(8),
+  },
+  {
+    id: "notif-8",
+    userId: "user-member-2",
+    type: "REQUEST_STATUS" as NotificationType,
+    title: "Request Update",
+    message:
+      "Your transfer request has been reviewed. Please check the details.",
+    relatedId: "request-3",
+    read: false,
+    createdAt: getDateString(40),
+  },
+  {
+    id: "notif-9",
+    userId: "user-leader-3",
+    type: "FOLLOW_UP_REMINDER" as NotificationType,
+    title: "Check on Victor",
+    message: "Victor missed the last meeting. Reach out to see how he's doing.",
+    relatedId: "user-member-8",
+    read: false,
+    createdAt: getDateString(11),
+  },
+  {
+    id: "notif-10",
+    userId: "user-member-1",
+    type: "MEETING_REMINDER" as NotificationType,
+    title: "Next Meeting",
+    message: "Don't forget our fellowship meeting this Thursday!",
+    relatedId: "meeting-1",
+    read: true,
+    createdAt: getDateString(16),
+  },
+  {
+    id: "notif-11",
+    userId: "user-leader-1",
+    type: "NEW_REQUEST" as NotificationType,
+    title: "New Member Request",
+    message: "John Doe wants to join the Young Professionals Fellowship.",
+    relatedId: "request-4",
+    read: false,
     createdAt: getDateString(4),
+  },
+  {
+    id: "notif-12",
+    userId: "user-member-12",
+    type: "REQUEST_STATUS" as NotificationType,
+    title: "Welcome to the Family!",
+    message: "Your request to join Men's Discipleship has been approved!",
+    relatedId: "request-5",
+    read: true,
+    createdAt: getDateString(18),
   },
 ];

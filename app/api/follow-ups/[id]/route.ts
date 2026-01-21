@@ -28,7 +28,7 @@ export async function PUT(
     const body = await request.json();
     const { status, outcome } = body;
 
-    const followUpIndex = followUps.findIndex((f: any) => f.id === id);
+    const followUpIndex = followUps.findIndex((f) => f.id === id);
 
     if (followUpIndex === -1) {
       return notFoundResponse("Follow-up not found");
@@ -79,7 +79,7 @@ export async function DELETE(
     }
 
     const { id } = await params;
-    const followUpIndex = followUps.findIndex((f: any) => f.id === id);
+    const followUpIndex = followUps.findIndex((f) => f.id === id);
 
     if (followUpIndex === -1) {
       return notFoundResponse("Follow-up not found");

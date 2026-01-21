@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import DashboardLayout from "@/components/features/navigation/DashboardLayout";
 import { useAuth } from "@/providers/AuthProvider";
@@ -43,6 +43,21 @@ interface Meeting {
   attendees: string[];
 }
 
+interface MeetingFormValues {
+  topic: string;
+  date: Dayjs;
+  summary: string;
+}
+
+interface BiweeklyGeneratorValues {
+  startDate: Dayjs;
+  numberOfWeeks: number;
+  dayOfWeek: string;
+  time: string;
+  topicPrefix: string;
+  summaryTemplate?: string;
+}
+
 export default function MeetingSchedulingPage() {
   const router = useRouter();
   const { user } = useAuth();
@@ -55,30 +70,32 @@ export default function MeetingSchedulingPage() {
   const [generatorForm] = Form.useForm();
   const [saving, setSaving] = useState(false);
 
-  useEffect(() => {
-    if (user?.groupId) {
-      fetchMeetings();
-    } else {
-      setLoading(false);
-    }
-  }, [user?.groupId]);
-
-  const fetchMeetings = async () => {
+  const fetchMeetingsCallback = useCallback(async () => {
     try {
       const response = await fetch(`/api/meetings?groupId=${user?.groupId}`);
       if (response.ok) {
-        const data = await response.json();
-        setMeetings(data.meetings || data);
+        const result = await response.json();
+        // API returns data in result.data
+        const meetingsData = result.data || [];
+        setMeetings(Array.isArray(meetingsData) ? meetingsData : []);
       }
-    } catch (error) {
-      console.error("Failed to fetch meetings:", error);
+    } catch (err) {
+      console.error("Failed to fetch meetings:", err);
       message.error("Failed to load meetings");
     } finally {
       setLoading(false);
     }
-  };
+  }, [user?.groupId]);
 
-  const handleCreateMeeting = async (values: any) => {
+  useEffect(() => {
+    if (user?.groupId) {
+      fetchMeetingsCallback();
+    } else {
+      setLoading(false);
+    }
+  }, [user?.groupId, fetchMeetingsCallback]);
+
+  const handleCreateMeeting = async (values: MeetingFormValues) => {
     setSaving(true);
     try {
       const response = await fetch("/api/meetings", {
@@ -95,19 +112,21 @@ export default function MeetingSchedulingPage() {
         message.success("Meeting created successfully");
         setIsModalVisible(false);
         form.resetFields();
-        fetchMeetings();
+        fetchMeetingsCallback();
       } else {
-        const error = await response.json();
-        message.error(error.error || "Failed to create meeting");
+        const err = await response.json();
+        message.error(err.error || "Failed to create meeting");
       }
-    } catch (error) {
+    } catch {
       message.error("An error occurred");
     } finally {
       setSaving(false);
     }
   };
 
-  const handleGenerateBiweeklySchedule = async (values: any) => {
+  const handleGenerateBiweeklySchedule = async (
+    values: BiweeklyGeneratorValues
+  ) => {
     setSaving(true);
     try {
       const {
@@ -119,7 +138,13 @@ export default function MeetingSchedulingPage() {
         summaryTemplate,
       } = values;
 
-      const meetings: any[] = [];
+      const meetings: Array<{
+        topic: string;
+        date: string;
+        summary: string;
+        groupId: string;
+        status: string;
+      }> = [];
       const start = dayjs(startDate);
 
       // Find the first occurrence of the selected day of week
@@ -142,7 +167,7 @@ export default function MeetingSchedulingPage() {
           topic: `${topicPrefix} - Week ${i * 2 + 1}`,
           date: meetingDateTime.toISOString(),
           summary: summaryTemplate || "Biweekly fellowship meeting",
-          groupId: user?.groupId,
+          groupId: user!.groupId!,
           status: "UPCOMING",
         });
       }
@@ -165,14 +190,14 @@ export default function MeetingSchedulingPage() {
         );
         setIsGeneratorVisible(false);
         generatorForm.resetFields();
-        fetchMeetings();
+        fetchMeetingsCallback();
       } else {
         message.warning(
           `Created ${successCount} of ${meetings.length} meetings`
         );
-        fetchMeetings();
+        fetchMeetingsCallback();
       }
-    } catch (error) {
+    } catch {
       message.error("Failed to generate meetings");
     } finally {
       setSaving(false);
@@ -180,7 +205,7 @@ export default function MeetingSchedulingPage() {
   };
 
   const getMeetingsForDate = (date: Dayjs) => {
-    return meetings.filter((meeting) =>
+    return meetings?.filter((meeting) =>
       dayjs(meeting.date).isSame(date, "day")
     );
   };
@@ -194,7 +219,7 @@ export default function MeetingSchedulingPage() {
       <ul className="space-y-1">
         {dayMeetings.map((meeting) => (
           <li key={meeting.id}>
-            <Tooltip title={meeting.topic}>
+            <Tooltip title={meeting.topic || "Untitled Meeting"}>
               <Badge
                 status={
                   meeting.status === "COMPLETED"
@@ -206,8 +231,10 @@ export default function MeetingSchedulingPage() {
                 text={
                   <span className="text-xs truncate block max-w-[100px]">
                     {dayjs(meeting.date).format("HH:mm")} -{" "}
-                    {meeting.topic.substring(0, 15)}
-                    {meeting.topic.length > 15 ? "..." : ""}
+                    {meeting.topic
+                      ? meeting.topic.substring(0, 15)
+                      : "Untitled"}
+                    {(meeting.topic?.length || 0) > 15 ? "..." : ""}
                   </span>
                 }
               />

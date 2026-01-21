@@ -4,7 +4,8 @@ import { getAuthenticatedUser } from "@/lib/utils/middleware";
 import { handleApiError, successResponse } from "@/lib/utils/api";
 import { differenceInDays } from "date-fns";
 
-interface InactiveMember {
+// Internal interface for inactive member tracking
+interface InactiveMemberInternal {
   id: string;
   firstName: string;
   lastName: string;
@@ -39,7 +40,7 @@ export async function GET(_request: NextRequest) {
     const allMeetings = db.meetings.findAll();
     const allInteractions = db.interactions.findAll();
 
-    const inactiveMembers: InactiveMember[] = [];
+    const inactiveMembers: InactiveMemberInternal[] = [];
     const now = new Date();
 
     groupMembers.forEach((member) => {

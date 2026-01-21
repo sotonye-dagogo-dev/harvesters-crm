@@ -62,63 +62,29 @@ export function generateTokens(user: AuthUser): AuthTokens {
 
 export function verifyAccessToken(
   token: string
-):
-  | { success: true; userId: string; email: string; role: UserRole }
-  | { success: false; message: string } {
+): { userId: string; email: string; role: UserRole } | null {
   try {
     const decoded = jwt.verify(token, ACCESS_TOKEN_SECRET) as {
       userId: string;
       email: string;
       role: UserRole;
     };
-    return { success: true, ...decoded };
-  } catch (error: unknown) {
-    if (error instanceof jwt.TokenExpiredError) {
-      return {
-        success: false,
-        message: "Your session has expired. Please log in again.",
-      };
-    }
-    if (error instanceof jwt.JsonWebTokenError) {
-      return {
-        success: false,
-        message:
-          "Invalid authentication token. Please log in again to continue.",
-      };
-    }
-    return {
-      success: false,
-      message: "Authentication failed. Please try logging in again.",
-    };
+    return decoded;
+  } catch (error: any) {
+    console.error(`Invalid or expired access token: ${error?.message || "Unknown error"}`);
+    return null;
   }
 }
 
-export function verifyRefreshToken(
-  token: string
-): { success: true; userId: string } | { success: false; message: string } {
+export function verifyRefreshToken(token: string): { userId: string } | null {
   try {
     const decoded = jwt.verify(token, REFRESH_TOKEN_SECRET) as {
       userId: string;
     };
-    return { success: true, ...decoded };
-  } catch (error: unknown) {
-    if (error instanceof jwt.TokenExpiredError) {
-      return {
-        success: false,
-        message:
-          "Your refresh token has expired. Please log in again to continue.",
-      };
-    }
-    if (error instanceof jwt.JsonWebTokenError) {
-      return {
-        success: false,
-        message: "Invalid refresh token. Please log in again.",
-      };
-    }
-    return {
-      success: false,
-      message: "Session refresh failed. Please log in again.",
-    };
+    return decoded;
+  } catch (error: any) {
+    console.error(`Invalid or expired refresh token: ${error?.message || "Unknown error"}`);
+    return null;
   }
 }
 
@@ -173,10 +139,14 @@ export async function getRefreshToken(): Promise<string | undefined> {
 
 export async function getCurrentUser(): Promise<AuthUser | null> {
   const token = await getAccessToken();
-  if (!token) return null;
+  if (!token) {
+    return null;
+  }
 
   const decoded = verifyAccessToken(token);
-  if (!decoded || !decoded.success) return null;
+  if (!decoded) {
+    return null;
+  }
 
   // In a real app, you'd fetch the user from the database
   // For now, we'll return a minimal user object

@@ -8,7 +8,7 @@ import {
 } from "@/lib/utils/api";
 
 // In-memory storage for follow-ups (replace with database in production)
-export const followUps: Array<{
+interface FollowUp {
   id: string;
   leaderId: string;
   memberId: string;
@@ -19,7 +19,9 @@ export const followUps: Array<{
   outcome?: string;
   createdAt: Date;
   completedAt: Date | null;
-}> = [];
+}
+
+export const followUps: FollowUp[] = [];
 
 let followUpIdCounter = 1;
 

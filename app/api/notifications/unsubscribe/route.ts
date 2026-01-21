@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { verifyToken } from "@/lib/utils/auth";
+import { getAuthenticatedUser } from "@/lib/utils/middleware";
 
 /**
  * POST /api/notifications/unsubscribe
@@ -7,26 +7,14 @@ import { verifyToken } from "@/lib/utils/auth";
  */
 export async function POST(request: NextRequest) {
   try {
-    const token = request.cookies.get("accessToken")?.value;
-    if (!token) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const decoded = verifyToken(token);
-    if (!decoded || !decoded.success) {
-      return NextResponse.json(
-        {
-          error: decoded && !decoded.success ? decoded.message : "Unauthorized",
-        },
-        { status: 401 }
-      );
-    }
+    const { user, error } = await getAuthenticatedUser();
+    if (error) return error;
 
     const { endpoint } = await request.json();
 
     // In a real app, you would remove this subscription from the database
     console.log("[Push Notifications] User unsubscribed:", {
-      userId: decoded.userId,
+      userId: user!.id,
       endpoint,
     });
 

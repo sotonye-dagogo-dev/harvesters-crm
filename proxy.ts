@@ -53,7 +53,7 @@ export async function proxy(request: NextRequest) {
     // Verify token
     const decoded = await verifyToken(accessToken);
 
-    if (!decoded || !decoded.success) {
+    if (!decoded) {
       throw new Error("Invalid token");
     }
 

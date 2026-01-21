@@ -299,6 +299,7 @@ export default function MemberStatsPage() {
               dataSource={attendanceData}
               columns={columns}
               rowKey={(record) => record.meeting.id}
+              scroll={{ x: 1000 }}
               pagination={{ pageSize: 10 }}
             />
           )}

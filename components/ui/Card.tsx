@@ -14,13 +14,42 @@ export default function Card({
 }: CardProps) {
   return (
     <AntCard
-      className={`shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-0.5 rounded-xl border border-gray-100 dark:border-slate-700 ${className}`}
+      className={`shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-0.5 rounded-xl border border-gray-100 dark:border-slate-700 overflow-hidden ${className}`}
       {...props}
     >
       {children}
     </AntCard>
   );
 }
+
+// Scrollable card for content that may overflow
+interface ScrollableCardProps extends CardProps {
+  maxHeight?: string;
+}
+
+// Dynamic maxHeight requires inline style - ESLint exception approved
+/* eslint-disable @next/next/no-inline-styles */
+export function ScrollableCard({
+  children,
+  className = "",
+  maxHeight = "600px",
+  ...props
+}: ScrollableCardProps) {
+  return (
+    <AntCard
+      className={`shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-0.5 rounded-xl border border-gray-100 dark:border-slate-700 overflow-hidden ${className}`}
+      {...props}
+    >
+      <div
+        className="overflow-x-auto overflow-y-auto"
+        style={{ maxHeight: maxHeight }}
+      >
+        {children}
+      </div>
+    </AntCard>
+  );
+}
+/* eslint-enable @next/next/no-inline-styles */
 
 interface StatCardProps {
   title: string;

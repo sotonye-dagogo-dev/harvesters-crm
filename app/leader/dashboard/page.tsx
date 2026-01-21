@@ -17,12 +17,39 @@ import { Spin, Button, message } from "antd";
 import { useAuth } from "@/providers/AuthProvider";
 import FollowUpReminderWidget from "@/components/features/communications/FollowUpReminderWidget";
 
+interface Member {
+  id: string;
+  name: string;
+  email?: string;
+  phone?: string;
+}
+
+export interface Engagement {
+  memberId: string;
+  score: number;
+  lastActivity: string;
+}
 interface GroupAnalytics {
-  totalMembers: number;
-  totalMeetings: number;
-  recentMeetings: number;
-  recentInteractions: number;
-  averageAttendance: number;
+  group: {
+    id: string;
+    name: string;
+    description: string;
+    leader: {
+      id: string;
+      name: string;
+    };
+  };
+  summary: {
+    totalMembers: number;
+    totalMeetings: number;
+    totalInteractions: number;
+    averageAttendance: number;
+    attendanceRate: number;
+  };
+  memberEngagement: Engagement[];
+  interactionsByType: Record<string, number>;
+  atRiskMembers: Member[];
+  highlyEngagedMembers: Member[];
 }
 
 export default function LeaderDashboard() {
@@ -43,16 +70,27 @@ export default function LeaderDashboard() {
         const response = await fetch(`/api/analytics/groups/${user.groupId}`);
 
         if (!response.ok) {
-          throw new Error("Failed to fetch analytics");
+          const errorData = await response.json().catch(() => ({}));
+          const errorMessage =
+            errorData.error || `HTTP error! status: ${response.status}`;
+          console.error("Analytics API error:", errorMessage);
+          throw new Error(errorMessage);
         }
 
         const result = await response.json();
-        // Handle both data.data and direct data formats
-        setAnalytics(result.data || result);
+        // API returns data in result.data
+        if (result.data) {
+          setAnalytics(result.data);
+        } else {
+          console.error("No data in analytics response:", result);
+          throw new Error("Invalid response format from analytics API");
+        }
       } catch (error) {
         console.error("Failed to fetch analytics:", error);
+        const errorMessage =
+          error instanceof Error ? error.message : "Unknown error";
         message.error(
-          "Failed to load dashboard data. Please refresh the page."
+          `Failed to load dashboard data: ${errorMessage}. Please refresh the page.`
         );
       } finally {
         setLoading(false);
@@ -66,25 +104,25 @@ export default function LeaderDashboard() {
   const stats = [
     {
       title: "Group Members",
-      value: analytics?.totalMembers || 0,
+      value: analytics?.summary.totalMembers || 0,
       icon: <UserOutlined />,
       color: "text-blue-600 dark:text-blue-400",
     },
     {
       title: "Total Meetings",
-      value: analytics?.totalMeetings || 0,
+      value: analytics?.summary.totalMeetings || 0,
       icon: <CalendarOutlined />,
       color: "text-green-600 dark:text-green-400",
     },
     {
-      title: "Recent Meetings",
-      value: analytics?.recentMeetings || 0,
-      icon: <CalendarOutlined />,
+      title: "Attendance Rate",
+      value: `${analytics?.summary.attendanceRate || 0}%`,
+      icon: <TeamOutlined />,
       color: "text-purple-600 dark:text-purple-400",
     },
     {
-      title: "Recent Interactions",
-      value: analytics?.recentInteractions || 0,
+      title: "Total Interactions",
+      value: analytics?.summary.totalInteractions || 0,
       icon: <PhoneOutlined />,
       color: "text-orange-600 dark:text-orange-400",
     },
@@ -178,10 +216,10 @@ export default function LeaderDashboard() {
             >
               <div className="text-center py-8">
                 <div className="text-4xl font-bold text-church-primary dark:text-green-400 mb-2">
-                  {analytics?.averageAttendance?.toFixed(1) || "0"}%
+                  {analytics?.summary.averageAttendance?.toFixed(1) || "0"}
                 </div>
                 <p className="text-gray-600 dark:text-gray-400">
-                  Group attendance rate
+                  Average members per meeting
                 </p>
               </div>
             </Card>

@@ -15,19 +15,11 @@ import { useRouter } from "next/navigation";
 import Card from "@/components/ui/Card";
 import { Spin, Button } from "antd";
 
-interface AnalyticsData {
-  totalUsers: number;
-  totalGroups: number;
-  recentMeetings: number;
-  recentInteractions: number;
-  activeUsers: number;
-  activeGroups: number;
-}
-
 export default function SuperadminDashboard() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
-  const [analytics, setAnalytics] = useState<AnalyticsData | null>(null);
+  const [analytics, setAnalytics] =
+    useState<SuperadminDashboardAnalytics | null>(null);
 
   useEffect(() => {
     const fetchAnalytics = async () => {

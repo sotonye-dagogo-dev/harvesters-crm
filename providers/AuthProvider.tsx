@@ -7,7 +7,9 @@ import {
   useEffect,
   ReactNode,
 } from "react";
-import { useRouter } from "next/navigation";import { message } from "antd";import { USER_ROLES } from "@/lib/constants";
+import { useRouter } from "next/navigation";
+import { App } from "antd";
+import { USER_ROLES } from "@/lib/constants";
 
 interface AuthContextType {
   user: User | null;
@@ -40,6 +42,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
+  const { message } = App.useApp();
 
   // Check authentication status on mount
   useEffect(() => {
@@ -81,7 +84,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // console.log("AuthProvider: Login response:", data);
 
       if (!response.ok) {
-        throw new Error(data.error || data.message || data.error?.message || "Login failed");
+        throw new Error(
+          data.error || data.message || data.error?.message || "Login failed"
+        );
       }
 
       setUser(data.data.user);

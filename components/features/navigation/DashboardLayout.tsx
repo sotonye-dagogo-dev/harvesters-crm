@@ -23,6 +23,7 @@ import {
 import { useAuth } from "@/providers/AuthProvider";
 import { AppHeader } from "@/components/ui/Layout";
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
+import { useTheme } from "next-themes";
 import type { MenuProps } from "antd";
 
 const { Sider, Content, Header } = Layout;
@@ -41,8 +42,16 @@ export default function DashboardLayout({
   const [isMobile, setIsMobile] = useState(false);
   const [mounted, setMounted] = useState(false);
   const { user, logout } = useAuth();
+  const { theme } = useTheme();
   const pathname = usePathname();
   const router = useRouter();
+
+  // Determine logo to use dynamically based on theme
+  const logoSrc = mounted
+    ? theme === "dark"
+      ? "/logo/dark-bg-harvesters-Logo.jpg"
+      : "/logo/white-bg-harvesters-Logo.jpg"
+    : "/logo/dark-bg-harvesters-Logo.jpg"; // Fallback for SSR
 
   // Use prop role if provided, otherwise use user role from auth context
   const role = propRole || (user?.role as "SUPERADMIN" | "LEADER" | "MEMBER");
@@ -291,12 +300,6 @@ export default function DashboardLayout({
       danger: true,
     },
   ];
-  // Determine logo to use based on theme (dark-bg logo for dark sidebar, white-bg logo for light sidebar)
-  const logoSrc = mounted
-    ? document.body.classList.contains("dark")
-      ? "/logo/white-bg-harvesters-Logo.jpg"
-      : "/logo/dark-bg-harvesters-Logo.jpg"
-    : "/logo/dark-bg-harvesters-Logo.jpg";
 
   // Sidebar content (shared between desktop and mobile)
   const sidebarContent = (
@@ -367,7 +370,7 @@ export default function DashboardLayout({
         placement="left"
         open={mobileDrawerOpen}
         onClose={() => setMobileDrawerOpen(false)}
-        width={280}
+        size="default"
         styles={{
           body: { padding: 0 },
           header: { display: "none" },

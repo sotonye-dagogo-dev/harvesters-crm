@@ -365,6 +365,190 @@ interface ChurchWideAnalytics {
 }
 
 // ============================================================================
+// API-SPECIFIC RESPONSE TYPES
+// ============================================================================
+
+// Member Dashboard & Analytics
+interface MemberDashboardAnalytics {
+  attendanceRate: number;
+  totalMeetings: number;
+  meetingsAttended: number;
+  totalInteractions: number;
+  engagementLevel: "HIGH" | "MEDIUM" | "LOW" | "AT_RISK";
+}
+
+interface MemberAnalyticsResponse {
+  attendancePercentage: number;
+  totalMeetings: number;
+  attendedMeetings: number;
+  missedMeetings: number;
+  interactionCount: number;
+  lastInteractionDate: string | null;
+  engagementScore: number;
+  memberSince: string;
+  recentActivity: Array<{
+    id: string;
+    type: string;
+    title: string;
+    date: string;
+    status?: string;
+  }>;
+}
+
+// Group/Leader Dashboard & Analytics
+interface GroupDashboardAnalytics {
+  group: {
+    id: string;
+    name: string;
+    description: string;
+    leader: {
+      id: string;
+      name: string;
+    };
+  };
+  summary: {
+    totalMembers: number;
+    totalMeetings: number;
+    totalInteractions: number;
+    averageAttendance: number;
+    attendanceRate: number;
+  };
+  memberEngagement: Array<{
+    memberId: string;
+    memberName: string;
+    totalMeetings: number;
+    meetingsAttended: number;
+    attendanceRate: number;
+    totalInteractions: number;
+    lastAttendance?: string;
+  }>;
+  interactionsByType: Record<string, number>;
+  atRiskMembers: Array<{
+    memberId: string;
+    memberName: string;
+    attendanceRate: number;
+    lastAttendance?: string;
+  }>;
+  highlyEngagedMembers: Array<{
+    memberId: string;
+    memberName: string;
+    attendanceRate: number;
+    totalInteractions: number;
+  }>;
+}
+
+interface LeaderAnalyticsResponse {
+  groupName: string;
+  totalMembers: number;
+  activeMembers: number;
+  atRiskMembers: number;
+  averageAttendance: number;
+  totalMeetings: number;
+  meetingFrequencyAdherence: number;
+  memberPerformance: Array<{
+    member: User;
+    attendanceRate: number;
+    meetingsAttended: number;
+    totalMeetings: number;
+    engagementScore: number;
+    status: "excellent" | "good" | "fair" | "at-risk";
+  }>;
+  recentTrend: "improving" | "stable" | "declining";
+}
+
+// Superadmin Dashboard & Analytics
+interface SuperadminDashboardAnalytics {
+  totalUsers: number;
+  totalGroups: number;
+  recentMeetings: number;
+  recentInteractions: number;
+  activeUsers: number;
+  activeGroups: number;
+}
+
+interface SuperadminAnalyticsOverview {
+  overview: {
+    totalUsers: number;
+    totalGroups: number;
+    totalMeetings: number;
+    totalInteractions: number;
+    activeUsers: number;
+    activeGroups: number;
+    inactiveUsers: number;
+  };
+  engagementMetrics: {
+    overallAttendanceRate: number;
+    averageGroupSize: number;
+    averageMeetingsPerGroup: number;
+    totalInteractionsLastMonth: number;
+  };
+  atRiskMembers: Array<{
+    id: string;
+    name: string;
+    groupId: string;
+    groupName: string;
+    attendanceRate: number;
+    lastMeeting?: string;
+    lastInteraction?: string;
+  }>;
+  topPerformingGroups: Array<{
+    groupId: string;
+    groupName: string;
+    leaderName: string;
+    attendanceRate: number;
+    memberCount: number;
+    meetingCount: number;
+  }>;
+  interestDistribution: Record<string, number>;
+}
+
+// Follow-up Types
+interface FollowUpReminder {
+  id: string;
+  memberId: string;
+  memberName: string;
+  groupId: string;
+  lastMeetingDate?: string;
+  lastInteractionDate?: string;
+  daysSinceLastContact: number;
+  attendanceRate: number;
+  status: "overdue" | "due_soon" | "at_risk";
+  priority: "high" | "medium" | "low";
+}
+
+interface InactiveMember {
+  id: string;
+  name: string;
+  email: string;
+  phone: string;
+  groupId: string;
+  groupName: string;
+  lastAttendance?: string;
+  lastInteraction?: string;
+  daysSinceLastAttendance: number;
+  totalMeetingsMissed: number;
+  attendanceRate: number;
+}
+
+// Meeting History
+interface MeetingHistory {
+  meetings: Meeting[];
+  attendanceRecords: Array<{
+    meetingId: string;
+    date: string;
+    groupName: string;
+    attended: boolean;
+    notes?: string;
+  }>;
+  summary: {
+    totalMeetings: number;
+    attended: number;
+    missed: number;
+    attendanceRate: number;
+  };
+}
+
+// ============================================================================
 // AUTH TYPES
 // ============================================================================
 

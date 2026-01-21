@@ -1,6 +1,6 @@
 "use client";
 
-import { ConfigProvider, theme } from "antd";
+import { App, ConfigProvider, theme } from "antd";
 import { useTheme } from "next-themes";
 import { ReactNode, useEffect, useState } from "react";
 
@@ -48,7 +48,7 @@ export function AntdProvider({ children }: AntdProviderProps) {
         },
       }}
     >
-      {children}
+      <App>{children}</App>
     </ConfigProvider>
   );
 }

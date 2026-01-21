@@ -472,7 +472,7 @@ export default function UserActivityLogsPage() {
             columns={columns}
             rowKey="id"
             pagination={false}
-            scroll={{ x: true }}
+            scroll={{ x: 1200 }}
           />
           <Pagination
             total={filteredActivities.length}

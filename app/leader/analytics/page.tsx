@@ -21,34 +21,26 @@ import {
   TrophyOutlined,
   WarningOutlined,
   RiseOutlined,
-  CheckCircleOutlined,
 } from "@ant-design/icons";
 import { StatCard } from "@/components/ui/Card";
 import type { ColumnsType } from "antd/es/table";
 
 interface MemberPerformance {
-  member: User;
-  attendanceRate: number;
-  meetingsAttended: number;
+  memberId: string;
+  memberName: string;
   totalMeetings: number;
-  engagementScore: number;
-  status: "excellent" | "good" | "fair" | "at-risk";
+  meetingsAttended: number;
+  attendanceRate: number;
+  totalInteractions: number;
+  lastAttendance?: string;
 }
 
 export default function GroupAnalyticsPage() {
   const { user } = useAuth();
   const [loading, setLoading] = useState(true);
-  const [analytics, setAnalytics] = useState<{
-    groupName: string;
-    totalMembers: number;
-    activeMembers: number;
-    atRiskMembers: number;
-    averageAttendance: number;
-    totalMeetings: number;
-    meetingFrequencyAdherence: number;
-    memberPerformance: MemberPerformance[];
-    recentTrend: "improving" | "stable" | "declining";
-  } | null>(null);
+  const [analytics, setAnalytics] = useState<LeaderAnalyticsResponse | null>(
+    null
+  );
 
   useEffect(() => {
     if (user?.groupId) {
@@ -60,8 +52,8 @@ export default function GroupAnalyticsPage() {
     try {
       const response = await fetch(`/api/analytics/group/${user?.groupId}`);
       if (response.ok) {
-        const data = await response.json();
-        setAnalytics(data);
+        const result = await response.json();
+        setAnalytics(result.data);
       } else {
         message.error("Failed to load analytics");
       }
@@ -111,13 +103,11 @@ export default function GroupAnalyticsPage() {
       key: "member",
       render: (_, record) => (
         <div>
-          <div className="font-medium">
-            {record.member.firstName} {record.member.lastName}
-          </div>
-          <div className="text-sm text-gray-500">{record.member.email}</div>
+          <div className="font-medium">{record.memberName}</div>
+          <div className="text-sm text-gray-500">{record.memberId}</div>
         </div>
       ),
-      sorter: (a, b) => a.member.firstName.localeCompare(b.member.firstName),
+      sorter: (a, b) => a.memberName.localeCompare(b.memberName),
     },
     {
       title: "Attendance",
@@ -147,66 +137,11 @@ export default function GroupAnalyticsPage() {
       sorter: (a, b) => a.attendanceRate - b.attendanceRate,
     },
     {
-      title: "Engagement",
-      key: "engagement",
+      title: "Interactions",
+      key: "interactions",
       align: "center" as const,
-      render: (_, record) => (
-        <div className="flex items-center justify-center gap-2">
-          <Progress
-            type="circle"
-            percent={record.engagementScore}
-            size={50}
-            strokeColor={
-              record.engagementScore >= 80
-                ? "#52c41a"
-                : record.engagementScore >= 60
-                  ? "#1890ff"
-                  : record.engagementScore >= 40
-                    ? "#faad14"
-                    : "#ff4d4f"
-            }
-          />
-        </div>
-      ),
-      sorter: (a, b) => a.engagementScore - b.engagementScore,
-    },
-    {
-      title: "Status",
-      key: "status",
-      align: "center" as const,
-      render: (_, record) => {
-        const statusConfig = {
-          excellent: {
-            label: "Excellent",
-            color: "success",
-            icon: <CheckCircleOutlined />,
-          },
-          good: {
-            label: "Good",
-            color: "processing",
-            icon: <CheckCircleOutlined />,
-          },
-          fair: { label: "Fair", color: "warning", icon: <WarningOutlined /> },
-          "at-risk": {
-            label: "At Risk",
-            color: "error",
-            icon: <WarningOutlined />,
-          },
-        };
-        const config = statusConfig[record.status];
-        return (
-          <Tag icon={config.icon} color={config.color}>
-            {config.label}
-          </Tag>
-        );
-      },
-      filters: [
-        { text: "Excellent", value: "excellent" },
-        { text: "Good", value: "good" },
-        { text: "Fair", value: "fair" },
-        { text: "At Risk", value: "at-risk" },
-      ],
-      onFilter: (value, record) => record.status === value,
+      dataIndex: "totalInteractions",
+      sorter: (a, b) => a.totalInteractions - b.totalInteractions,
     },
   ];
 
@@ -369,8 +304,13 @@ export default function GroupAnalyticsPage() {
         >
           <Table
             columns={columns}
-            dataSource={analytics.memberPerformance}
-            rowKey={(record) => record.member.id}
+            dataSource={
+              (analytics as any).memberEngagement ||
+              analytics.memberPerformance ||
+              []
+            }
+            rowKey={(record: any) => record.memberId || record.member?.id}
+            scroll={{ x: 1200 }}
             pagination={{
               pageSize: 20,
               showTotal: (total) => `${total} member${total !== 1 ? "s" : ""}`,

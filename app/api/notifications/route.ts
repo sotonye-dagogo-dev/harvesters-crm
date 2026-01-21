@@ -1,24 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/data/database";
-import { verifyToken } from "@/lib/utils/auth";
+import { getAuthenticatedUser } from "@/lib/utils/middleware";
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
-    const token = request.cookies.get("accessToken")?.value;
-    if (!token) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const decoded = verifyToken(token);
-    if (!decoded || !decoded.success) {
-      return NextResponse.json(
-        { error: decoded && !decoded.success ? decoded.message : "Invalid token" },
-        { status: 401 }
-      );
-    }
+    const { user, error } = await getAuthenticatedUser();
+    if (error) return error;
 
     // Get all notifications for the user
-    const notifications = db.notifications.findByUserId(decoded.userId);
+    const notifications = db.notifications.findByUserId(user!.id);
 
     return NextResponse.json(notifications);
   } catch (error) {
@@ -32,18 +22,8 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const token = request.cookies.get("accessToken")?.value;
-    if (!token) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const decoded = verifyToken(token);
-    if (!decoded || !decoded.success) {
-      return NextResponse.json(
-        { error: decoded && !decoded.success ? decoded.message : "Invalid token" },
-        { status: 401 }
-      );
-    }
+    const { error } = await getAuthenticatedUser();
+    if (error) return error;
 
     const body = await request.json();
     const { userId, type, title, message, relatedId } = body;

@@ -1,23 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
-import { cookies } from "next/headers";
-import { verifyToken } from "@/lib/utils/auth";
 import { db } from "@/lib/data/database";
+import { getAuthenticatedUser } from "@/lib/utils/middleware";
 
 export async function POST(request: NextRequest) {
   try {
-    const cookieStore = await cookies();
-    const token = cookieStore.get("accessToken");
+    const { user, error } = await getAuthenticatedUser();
+    if (error) return error;
 
-    if (!token) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const decoded = verifyToken(token.value);
-    if (!decoded || !decoded.success || decoded.role !== "LEADER") {
-      return NextResponse.json(
-        { error: decoded && !decoded.success ? decoded.message : "Forbidden" },
-        { status: 403 }
-      );
+    if (user?.role !== "LEADER") {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
     const { followUps } = await request.json();
@@ -31,7 +22,7 @@ export async function POST(request: NextRequest) {
 
     // Create notifications for overdue follow-ups
     const notifications = followUps.map((followUp: any) => ({
-      userId: decoded.userId,
+      userId: user!.id,
       type: NotificationType.FOLLOW_UP_REMINDER,
       title: "Overdue Follow-up Reminder",
       message: `Follow-up with ${followUp.memberName} is ${followUp.daysOverdue} day${followUp.daysOverdue !== 1 ? "s" : ""} overdue`,

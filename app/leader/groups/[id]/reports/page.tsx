@@ -536,6 +536,7 @@ export default function AttendanceReportsPage() {
           columns={memberColumns}
           dataSource={memberStats}
           rowKey={(record) => record.member.id}
+          scroll={{ x: 1200 }}
           pagination={{
             pageSize: 20,
             showTotal: (total) => `${total} member${total !== 1 ? "s" : ""}`,
@@ -552,6 +553,7 @@ export default function AttendanceReportsPage() {
           columns={meetingColumns}
           dataSource={meetingSummaries}
           rowKey={(record) => record.meeting.id}
+          scroll={{ x: 1200 }}
           pagination={{
             pageSize: 20,
             showTotal: (total) => `${total} meeting${total !== 1 ? "s" : ""}`,

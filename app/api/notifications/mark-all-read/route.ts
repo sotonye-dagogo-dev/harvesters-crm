@@ -1,24 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/data/database";
-import { verifyToken } from "@/lib/utils/auth";
+import { getAuthenticatedUser } from "@/lib/utils/middleware";
 
 export async function POST(request: NextRequest) {
   try {
-    const token = request.cookies.get("accessToken")?.value;
-    if (!token) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const decoded = verifyToken(token);
-    if (!decoded || !decoded.success) {
-      return NextResponse.json(
-        {
-          error:
-            decoded && !decoded.success ? decoded.message : "Invalid token",
-        },
-        { status: 401 }
-      );
-    }
+    const { user, error } = await getAuthenticatedUser();
+    if (error) return error;
 
     const body = await request.json();
     const { notificationIds } = body;
@@ -33,7 +20,7 @@ export async function POST(request: NextRequest) {
     // Mark all notifications as read
     notificationIds.forEach((id: string) => {
       const notification = db.notifications.findById(id);
-      if (notification && notification.userId === decoded.userId) {
+      if (notification && notification.userId === user!.id) {
         db.notifications.markAsRead(id);
       }
     });

@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { cookies } from "next/headers";
-import { verifyToken } from "@/lib/utils/auth";
 import { db } from "@/lib/data/database";
+import { getAuthenticatedUser } from "@/lib/utils/middleware";
 import { differenceInDays } from "date-fns";
 
 export async function GET(
@@ -9,29 +8,10 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const cookieStore = await cookies();
-    const token = cookieStore.get("accessToken");
-
-    if (!token) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const decoded = await verifyToken(token.value);
-    if (!decoded || !decoded.success) {
-      return NextResponse.json(
-        {
-          error: decoded && !decoded.success ? decoded.message : "Unauthorized",
-        },
-        { status: 401 }
-      );
-    }
+    const { user, error } = await getAuthenticatedUser();
+    if (error) return error;
 
     const { id } = await params;
-
-    const user = db.users.findById(decoded.userId);
-    if (!user) {
-      return NextResponse.json({ error: "User not found" }, { status: 404 });
-    }
 
     const group = db.groups.findById(id);
 

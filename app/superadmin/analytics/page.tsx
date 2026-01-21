@@ -446,6 +446,7 @@ export default function ChurchAnalyticsPage() {
             columns={columns}
             dataSource={analytics.groupPerformance}
             rowKey={(record) => record.group.id}
+            scroll={{ x: 1200 }}
             pagination={{
               pageSize: 20,
               showTotal: (total) => `${total} group${total !== 1 ? "s" : ""}`,

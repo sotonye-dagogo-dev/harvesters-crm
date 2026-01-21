@@ -1,31 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/data/database";
-import { verifyToken } from "@/lib/utils/auth";
+import { getAuthenticatedUser } from "@/lib/utils/middleware";
 
 export async function GET(
-  request: NextRequest,
+  _request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const token = request.cookies.get("accessToken")?.value;
-    if (!token) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const decoded = verifyToken(token);
-    if (!decoded || !decoded.success) {
-      return NextResponse.json(
-        {
-          error: decoded && !decoded.success ? decoded.message : "Unauthorized",
-        },
-        { status: 401 }
-      );
-    }
+    const { user, error } = await getAuthenticatedUser();
+    if (error) return error;
 
     const { id } = await params;
 
     // Check if user can view this member's analytics
-    const user = db.users.findById(decoded.userId);
     if (!user) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }

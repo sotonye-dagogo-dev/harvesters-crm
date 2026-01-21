@@ -37,6 +37,7 @@ export default function GroupDetailsPage() {
   useEffect(() => {
     fetchGroupDetails();
     fetchMembers();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [groupId]);
 
   const fetchGroupDetails = async () => {
@@ -49,7 +50,7 @@ export default function GroupDetailsPage() {
         message.error("Group not found");
         router.push("/superadmin/groups");
       }
-    } catch (error) {
+    } catch {
       message.error("Failed to load group");
     } finally {
       setLoading(false);
@@ -63,7 +64,7 @@ export default function GroupDetailsPage() {
         const data = await response.json();
         setMembers(data.data);
       }
-    } catch (error) {
+    } catch {
       console.error("Failed to load members");
     }
   };
@@ -89,7 +90,7 @@ export default function GroupDetailsPage() {
             const error = await response.json();
             message.error(error.error || "Failed to remove member");
           }
-        } catch (error) {
+        } catch {
           message.error("An error occurred");
         }
       },
@@ -124,7 +125,7 @@ export default function GroupDetailsPage() {
             const error = await response.json();
             message.error(error.error || "Failed to delete group");
           }
-        } catch (error) {
+        } catch {
           message.error("An error occurred while deleting the group");
         }
       },
@@ -308,6 +309,7 @@ export default function GroupDetailsPage() {
             dataSource={members}
             columns={columns}
             rowKey="id"
+            scroll={{ x: 1000 }}
             pagination={{ pageSize: 10 }}
           />
         </Card>

@@ -364,6 +364,7 @@ export default function InterestInsightsPage() {
                     dataSource={analytics.interestDistribution}
                     columns={distributionColumns}
                     rowKey="interest"
+                    scroll={{ x: 800 }}
                     pagination={{ pageSize: 15 }}
                   />
                 </Card>
@@ -386,6 +387,7 @@ export default function InterestInsightsPage() {
                     dataSource={analytics.groupAffinityScores}
                     columns={affinityColumns}
                     rowKey="groupId"
+                    scroll={{ x: 1000 }}
                     pagination={{ pageSize: 10 }}
                   />
                 </Card>
@@ -419,6 +421,7 @@ export default function InterestInsightsPage() {
                       dataSource={analytics.memberSuggestions}
                       columns={suggestionColumns}
                       rowKey="memberId"
+                      scroll={{ x: 1200 }}
                       pagination={{ pageSize: 10 }}
                     />
                   )}

@@ -30,23 +30,9 @@ import { StatCard } from "@/components/ui/Card";
 export default function MemberAnalyticsPage() {
   const { user } = useAuth();
   const [loading, setLoading] = useState(true);
-  const [analytics, setAnalytics] = useState<{
-    attendancePercentage: number;
-    totalMeetings: number;
-    attendedMeetings: number;
-    missedMeetings: number;
-    interactionCount: number;
-    lastInteractionDate: string | null;
-    engagementScore: number;
-    memberSince: string;
-    recentActivity: Array<{
-      id: string;
-      type: string;
-      title: string;
-      date: string;
-      status?: string;
-    }>;
-  } | null>(null);
+  const [analytics, setAnalytics] = useState<MemberAnalyticsResponse | null>(
+    null
+  );
 
   useEffect(() => {
     if (user) {

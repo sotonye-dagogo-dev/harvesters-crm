@@ -15,18 +15,12 @@ import Card from "@/components/ui/Card";
 import { Spin, Button, message } from "antd";
 import { useAuth } from "@/providers/AuthProvider";
 
-interface MemberAnalytics {
-  attendanceRate: number;
-  totalMeetings: number;
-  meetingsAttended: number;
-  totalInteractions: number;
-  engagementLevel: "HIGH" | "MEDIUM" | "LOW" | "AT_RISK";
-}
-
 export default function MemberDashboard() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
-  const [analytics, setAnalytics] = useState<MemberAnalytics | null>(null);
+  const [analytics, setAnalytics] = useState<MemberDashboardAnalytics | null>(
+    null
+  );
   const { user } = useAuth();
 
   useEffect(() => {
@@ -45,8 +39,8 @@ export default function MemberDashboard() {
         }
 
         const result = await response.json();
-        // Handle both data.data and direct data formats
-        setAnalytics(result.data || result);
+        // API returns data in result.data
+        setAnalytics(result.data);
       } catch (error) {
         console.error("Failed to fetch analytics:", error);
         message.error(

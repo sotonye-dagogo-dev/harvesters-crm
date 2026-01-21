@@ -378,6 +378,7 @@ export default function AttendanceHistoryPage() {
           columns={columns}
           dataSource={filteredData}
           rowKey={(record) => record.meeting.id}
+          scroll={{ x: 1200 }}
           pagination={{
             pageSize: 20,
             showTotal: (total) => `${total} meeting${total !== 1 ? "s" : ""}`,

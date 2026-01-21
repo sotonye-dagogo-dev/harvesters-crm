@@ -442,6 +442,7 @@ export default function FollowUpManagementPage() {
             dataSource={inactiveMembers}
             columns={inactiveMembersColumns}
             rowKey="id"
+            scroll={{ x: 1000 }}
             pagination={{ pageSize: 10 }}
           />
         </Card>
@@ -452,6 +453,7 @@ export default function FollowUpManagementPage() {
             dataSource={followUps}
             columns={followUpsColumns}
             rowKey="id"
+            scroll={{ x: 1000 }}
             pagination={{ pageSize: 10 }}
           />
         </Card>
