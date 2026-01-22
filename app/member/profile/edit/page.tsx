@@ -58,7 +58,7 @@ export default function EditProfilePage() {
       if (response.ok) {
         message.success("Profile updated successfully");
         await refreshUser();
-        router.push("/profile");
+        router.push("/member/profile");
       } else {
         const error = await response.json();
         message.error(error.error || "Failed to update profile");
@@ -205,7 +205,7 @@ export default function EditProfilePage() {
             </Form.Item>
 
             <div className="flex gap-3 justify-end">
-              <AntButton onClick={() => router.push("/profile")}>
+              <AntButton onClick={() => router.push("/member/profile")}>
                 Cancel
               </AntButton>
               <AntButton

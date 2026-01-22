@@ -1,5 +1,5 @@
 import { NextRequest } from "next/server";
-import { meetingDb, groupDb } from "@/lib/data/database";
+import { meetingDb, groupDb, userDb } from "@/lib/data/database";
 import { getAuthenticatedUser } from "@/lib/utils/middleware";
 import { updateMeetingSchema } from "@/lib/utils/validation";
 import {
@@ -40,7 +40,38 @@ export async function GET(
       );
     }
 
-    return successResponse(meeting);
+    // Build MeetingWithDetails response
+    const leader = group?.leaderId ? userDb.findById(group.leaderId) : null;
+    const creator = meeting.createdById
+      ? userDb.findById(meeting.createdById)
+      : null;
+
+    const meetingWithDetails = {
+      ...meeting,
+      group: group
+        ? {
+            id: group.id,
+            name: group.name,
+            leaderId: group.leaderId,
+            leader: leader
+              ? {
+                  id: leader.id,
+                  name: leader.firstName + " " + leader.lastName,
+                }
+              : undefined,
+          }
+        : undefined,
+      createdBy: creator
+        ? {
+            id: creator.id,
+            firstName: creator.firstName,
+            lastName: creator.lastName,
+            email: creator.email,
+          }
+        : undefined,
+    };
+
+    return successResponse(meetingWithDetails);
   } catch (error) {
     return handleApiError(error);
   }

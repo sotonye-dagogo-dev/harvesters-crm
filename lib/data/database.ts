@@ -9,19 +9,43 @@ import {
 } from "./mockData";
 
 // ============================================================================
-// IN-MEMORY DATABASE
+// IN-MEMORY DATABASE (SINGLETON PATTERN)
 // ============================================================================
 
 // Deep clone to avoid mutations
 const cloneData = <T>(data: T): T => JSON.parse(JSON.stringify(data));
 
-// Initialize data stores
-let users: User[] = cloneData(mockUsers);
-let groups: Group[] = cloneData(mockGroups);
-let meetings: Meeting[] = cloneData(mockMeetings);
-let interactions: Interaction[] = cloneData(mockInteractions);
-let membershipRequests: MembershipRequest[] = cloneData(mockMembershipRequests);
-let notifications: appNotification[] = cloneData(mockNotifications);
+// Use globalThis to persist data across hot reloads in development
+const globalForDb = globalThis as unknown as {
+  dbStore?: {
+    users: User[];
+    groups: Group[];
+    meetings: Meeting[];
+    interactions: Interaction[];
+    membershipRequests: MembershipRequest[];
+    notifications: appNotification[];
+  };
+};
+
+// Initialize or reuse existing data stores
+if (!globalForDb.dbStore) {
+  globalForDb.dbStore = {
+    users: cloneData(mockUsers),
+    groups: cloneData(mockGroups),
+    meetings: cloneData(mockMeetings),
+    interactions: cloneData(mockInteractions),
+    membershipRequests: cloneData(mockMembershipRequests),
+    notifications: cloneData(mockNotifications),
+  };
+}
+
+// Reference the global store
+let users = globalForDb.dbStore.users;
+const groups = globalForDb.dbStore.groups;
+const meetings = globalForDb.dbStore.meetings;
+const interactions = globalForDb.dbStore.interactions;
+const membershipRequests = globalForDb.dbStore.membershipRequests;
+let notifications = globalForDb.dbStore.notifications;
 
 // Helper to generate IDs
 const generateId = () =>
@@ -92,6 +116,7 @@ export const userDb = {
     };
 
     users.push(newUser);
+    globalForDb.dbStore!.users = users; // Ensure global store is updated
 
     // Update group member count if assigned
     if (newUser.groupId) {
@@ -222,6 +247,7 @@ export const groupDb = {
     };
 
     groups.push(newGroup);
+    globalForDb.dbStore!.groups = groups; // Ensure global store is updated
     return newGroup;
   },
 
@@ -249,8 +275,10 @@ export const groupDb = {
       }
       return u;
     });
+    globalForDb.dbStore!.users = users; // Sync users update
 
     groups.splice(index, 1);
+    globalForDb.dbStore!.groups = groups; // Ensure global store is updated
     return true;
   },
 
@@ -334,6 +362,7 @@ export const meetingDb = {
       date: data.date,
       startTime: data.startTime,
       endTime: data.endTime,
+      topic: data.topic,
       attendeeCount: data.attendeeCount || data.attendeeIds?.length || 0,
       attendeeIds: data.attendeeIds || [],
       screenshotUrl: data.screenshotUrl,
@@ -344,6 +373,7 @@ export const meetingDb = {
     };
 
     meetings.push(newMeeting);
+    globalForDb.dbStore!.meetings = meetings; // Ensure global store is updated
     return newMeeting;
   },
 
@@ -365,6 +395,7 @@ export const meetingDb = {
     if (index === -1) return false;
 
     meetings.splice(index, 1);
+    globalForDb.dbStore!.meetings = meetings; // Ensure global store is updated
     return true;
   },
 };
@@ -412,6 +443,7 @@ export const interactionDb = {
     };
 
     interactions.push(newInteraction);
+    globalForDb.dbStore!.interactions = interactions; // Ensure global store is updated
     return newInteraction;
   },
 
@@ -435,6 +467,7 @@ export const interactionDb = {
     if (index === -1) return false;
 
     interactions.splice(index, 1);
+    globalForDb.dbStore!.interactions = interactions; // Ensure global store is updated
     return true;
   },
 };
@@ -493,6 +526,7 @@ export const membershipRequestDb = {
     };
 
     membershipRequests.push(newRequest);
+    globalForDb.dbStore!.membershipRequests = membershipRequests; // Ensure global store is updated
     return newRequest;
   },
 
@@ -523,6 +557,7 @@ export const membershipRequestDb = {
     if (index === -1) return false;
 
     membershipRequests.splice(index, 1);
+    globalForDb.dbStore!.membershipRequests = membershipRequests; // Ensure global store is updated
     return true;
   },
 };
@@ -568,6 +603,7 @@ export const notificationDb = {
     };
 
     notifications.push(newNotification);
+    globalForDb.dbStore!.notifications = notifications; // Ensure global store is updated
     return newNotification;
   },
 
@@ -586,6 +622,7 @@ export const notificationDb = {
       }
       return n;
     });
+    globalForDb.dbStore!.notifications = notifications; // Ensure global store is updated
     return true;
   },
 
@@ -594,6 +631,7 @@ export const notificationDb = {
     if (index === -1) return false;
 
     notifications.splice(index, 1);
+    globalForDb.dbStore!.notifications = notifications; // Ensure global store is updated
     return true;
   },
 };

@@ -80,7 +80,7 @@ export default function MeetingCard({
         <div className="flex items-start justify-between">
           <div>
             <Link
-              href={`/meetings/${meeting.id}`}
+              href={`/leader/meetings/${meeting.id}`}
               className="text-lg font-semibold text-gray-900 hover:text-church-primary"
             >
               {meeting.groupName || "Group Meeting"}

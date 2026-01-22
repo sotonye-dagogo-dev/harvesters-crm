@@ -38,7 +38,7 @@ export default function LeaderRequestsPage() {
   useEffect(() => {
     if (user?.role === "LEADER" && !user.groupId) {
       message.warning("You are not assigned to a group");
-      router.push("/dashboard");
+      router.push("/leader/dashboard");
       return;
     }
     fetchRequests();

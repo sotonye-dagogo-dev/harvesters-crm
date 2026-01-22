@@ -86,7 +86,7 @@ export default function LogInteractionPage() {
       }
 
       message.success("Interaction logged successfully");
-      router.push("/interactions");
+      router.push("/leader/interactions");
     } catch (error: any) {
       message.error(error.message || "Failed to log interaction");
       console.error(error);
@@ -103,7 +103,10 @@ export default function LogInteractionPage() {
           <p className="text-gray-500">
             Only group leaders can log interactions
           </p>
-          <Button type="primary" onClick={() => router.push("/dashboard")}>
+          <Button
+            type="primary"
+            onClick={() => router.push("/leader/dashboard")}
+          >
             Back to Dashboard
           </Button>
         </Card>
@@ -123,7 +126,7 @@ export default function LogInteractionPage() {
         <Button
           type="primary"
           className="mt-4"
-          onClick={() => router.push("/dashboard")}
+          onClick={() => router.push("/leader/dashboard")}
         >
           Back to Dashboard
         </Button>
@@ -239,7 +242,9 @@ export default function LogInteractionPage() {
           </Form.Item>
 
           <div className="flex gap-3 justify-end">
-            <Button onClick={() => router.push("/interactions")}>Cancel</Button>
+            <Button onClick={() => router.push("/leader/interactions")}>
+              Cancel
+            </Button>
             <Button
               type="primary"
               htmlType="submit"

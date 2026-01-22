@@ -33,16 +33,14 @@ export default function ManageAttendancePage() {
   const [groupMembers, setGroupMembers] = useState<User[]>([]);
   const [attendeeIds, setAttendeeIds] = useState<string[]>([]);
 
-  useEffect(() => {
-    fetchData();
-  }, [meetingId]);
-
   const fetchData = async () => {
     try {
       // Fetch meeting details
       const meetingRes = await fetch(`/api/meetings/${meetingId}`);
       if (!meetingRes.ok) throw new Error("Failed to fetch meeting");
-      const meetingData: MeetingWithDetails = await meetingRes.json();
+      const meetingResult = await meetingRes.json();
+      const meetingData: MeetingWithDetails =
+        meetingResult.data || meetingResult;
       setMeeting(meetingData);
       setAttendeeIds(meetingData.attendeeIds || []);
 
@@ -51,16 +49,22 @@ export default function ManageAttendancePage() {
         `/api/groups/${meetingData.groupId}/members`
       );
       if (!membersRes.ok) throw new Error("Failed to fetch members");
-      const membersData: User[] = await membersRes.json();
+      const membersResult = await membersRes.json();
+      const membersData: User[] = membersResult.data || membersResult;
       setGroupMembers(membersData);
     } catch (error) {
       message.error("Failed to load attendance data");
       console.error(error);
-      router.push("/meetings");
+      router.push("/leader/meetings");
     } finally {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    fetchData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [meetingId]);
 
   const handleToggleAttendance = (memberId: string) => {
     setAttendeeIds((prev) =>
@@ -84,7 +88,7 @@ export default function ManageAttendancePage() {
     // Check if user can manage attendance
     const canManage =
       user?.role === "SUPERADMIN" ||
-      (user?.role === "LEADER" && meeting.group.leaderId === user.id);
+      (user?.role === "LEADER" && meeting.group?.leaderId === user.id);
 
     if (!canManage) {
       message.error("You don't have permission to manage attendance");
@@ -114,9 +118,11 @@ export default function ManageAttendancePage() {
       }
 
       message.success("Attendance saved successfully");
-      router.push(`/meetings/${meetingId}`);
-    } catch (error: any) {
-      message.error(error.message || "Failed to save attendance");
+      router.push(`/leader/meetings/${meetingId}`);
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : "Failed to save attendance";
+      message.error(errorMessage);
       console.error(error);
     } finally {
       setSaving(false);
@@ -137,18 +143,18 @@ export default function ManageAttendancePage() {
 
   const canManage =
     user?.role === "SUPERADMIN" ||
-    (user?.role === "LEADER" && meeting.group.leaderId === user.id);
+    (user?.role === "LEADER" && meeting.group?.leaderId === user.id);
 
   if (!canManage) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <Card>
           <p className="text-gray-500">
-            You don't have permission to manage attendance for this meeting
+            You don&apos;t have permission to manage attendance for this meeting
           </p>
           <Button
             type="primary"
-            onClick={() => router.push(`/meetings/${meetingId}`)}
+            onClick={() => router.push(`/leader/meetings/${meetingId}`)}
           >
             Back to Meeting
           </Button>

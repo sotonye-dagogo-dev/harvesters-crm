@@ -8,7 +8,7 @@ const ACCESS_TOKEN_SECRET =
   process.env.JWT_ACCESS_SECRET || "dev-access-secret-key";
 const REFRESH_TOKEN_SECRET =
   process.env.JWT_REFRESH_SECRET || "dev-refresh-secret-key";
-const ACCESS_TOKEN_EXPIRY = "15m";
+const ACCESS_TOKEN_EXPIRY = "8h";
 const REFRESH_TOKEN_EXPIRY = "7d";
 
 // ============================================================================
@@ -71,7 +71,9 @@ export function verifyAccessToken(
     };
     return decoded;
   } catch (error: any) {
-    console.error(`Invalid or expired access token: ${error?.message || "Unknown error"}`);
+    console.error(
+      `Invalid or expired access token: ${error?.message || "Unknown error"}`
+    );
     return null;
   }
 }
@@ -83,7 +85,9 @@ export function verifyRefreshToken(token: string): { userId: string } | null {
     };
     return decoded;
   } catch (error: any) {
-    console.error(`Invalid or expired refresh token: ${error?.message || "Unknown error"}`);
+    console.error(
+      `Invalid or expired refresh token: ${error?.message || "Unknown error"}`
+    );
     return null;
   }
 }

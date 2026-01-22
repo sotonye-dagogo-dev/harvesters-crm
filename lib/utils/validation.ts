@@ -300,6 +300,11 @@ export const createMeetingSchema = z.object({
   date: z.string().min(1, "Date is required"),
   startTime: z.string().min(1, "Start time is required"),
   endTime: z.string().min(1, "End time is required"),
+  topic: z
+    .string()
+    .min(1, "Topic is required")
+    .max(200, "Topic is too long")
+    .optional(),
   attendanceMethod: z.enum(["count", "checklist"]),
   attendeeCount: z.number().int().min(0).optional(),
   attendeeIds: z.array(z.string()).optional(),

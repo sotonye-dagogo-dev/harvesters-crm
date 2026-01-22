@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { use, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/providers/AuthProvider";
 import {
@@ -27,8 +27,9 @@ import { format } from "date-fns";
 export default function MeetingDetailsPage({
   params,
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }) {
+  const { id } = use(params);
   const router = useRouter();
   const { user } = useAuth();
   const [meeting, setMeeting] = useState<MeetingWithDetails | null>(null);
@@ -36,13 +37,16 @@ export default function MeetingDetailsPage({
 
   useEffect(() => {
     fetchMeetingDetails();
-  }, [params.id]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id]);
 
   const fetchMeetingDetails = async () => {
     try {
-      const res = await fetch(`/api/meetings/${params.id}`);
+      const res = await fetch(`/api/meetings/${id}`);
       if (!res.ok) throw new Error("Failed to fetch meeting");
-      const data = await res.json();
+      const result = await res.json();
+      // Handle successResponse wrapper
+      const data = result.data || result;
       setMeeting(data);
     } catch (error) {
       message.error("Failed to load meeting details");
@@ -62,14 +66,14 @@ export default function MeetingDetailsPage({
       cancelText: "Cancel",
       onOk: async () => {
         try {
-          const res = await fetch(`/api/meetings/${params.id}`, {
+          const res = await fetch(`/api/meetings/${id}`, {
             method: "DELETE",
           });
 
           if (!res.ok) throw new Error("Failed to delete meeting");
 
           message.success("Meeting deleted successfully");
-          router.push("/meetings");
+          router.push("/leader/meetings");
         } catch (error) {
           message.error("Failed to delete meeting");
           console.error(error);
@@ -91,7 +95,10 @@ export default function MeetingDetailsPage({
       <div className="flex items-center justify-center min-h-screen">
         <Card>
           <p className="text-gray-500">Meeting not found</p>
-          <Button type="primary" onClick={() => router.push("/meetings")}>
+          <Button
+            type="primary"
+            onClick={() => router.push("/leader/meetings")}
+          >
             Back to Meetings
           </Button>
         </Card>
@@ -101,7 +108,7 @@ export default function MeetingDetailsPage({
 
   const canEdit =
     user?.role === "SUPERADMIN" ||
-    (user?.role === "LEADER" && meeting.group.leaderId === user.id);
+    (user?.role === "LEADER" && meeting.group?.leaderId === user.id);
 
   const duration =
     new Date(`1970-01-01T${meeting.endTime}`).getTime() -
@@ -127,8 +134,10 @@ export default function MeetingDetailsPage({
             <>
               <Button
                 icon={<CheckSquareOutlined />}
-                onClick={() =>
-                  router.push(`/leader/meetings/${params.id}/attendance`)
+                onClick={async () =>
+                  router.push(
+                    `/leader/meetings/${(await params).id}/attendance`
+                  )
                 }
               >
                 Manage Attendance
@@ -136,8 +145,8 @@ export default function MeetingDetailsPage({
               <Button
                 type="primary"
                 icon={<EditOutlined />}
-                onClick={() =>
-                  router.push(`/leader/meetings/${params.id}/edit`)
+                onClick={async () =>
+                  router.push(`/leader/meetings/${(await params).id}/edit`)
                 }
               >
                 Edit
@@ -199,10 +208,12 @@ export default function MeetingDetailsPage({
               <Tag color="blue">{meeting.attendeeCount} members</Tag>
             </Descriptions.Item>
             <Descriptions.Item label="Group" span={2}>
-              {meeting.group.name}
+              {meeting.group?.name || "Unknown Group"}
             </Descriptions.Item>
             <Descriptions.Item label="Created By" span={2}>
-              {meeting.createdBy.firstName} {meeting.createdBy.lastName}
+              {meeting.createdBy
+                ? `${meeting.createdBy.firstName} ${meeting.createdBy.lastName}`
+                : "Unknown"}
             </Descriptions.Item>
             <Descriptions.Item label="Created At" span={2}>
               {format(new Date(meeting.createdAt), "MMMM d, yyyy 'at' h:mm a")}

@@ -250,7 +250,7 @@ export default function AttendanceReportsPage() {
         <Card>
           <Empty description="You don't have permission to view this page" />
           <div className="text-center mt-4">
-            <AntButton onClick={() => router.push("/dashboard")}>
+            <AntButton onClick={() => router.push("/leader/dashboard")}>
               Go to Dashboard
             </AntButton>
           </div>

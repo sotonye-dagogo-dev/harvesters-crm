@@ -41,7 +41,7 @@ export default function UserDetailsPage() {
         setUser(data.data);
       } else {
         message.error("User not found");
-        router.push("/users");
+        router.push("/superadmin/users");
       }
     } catch (error) {
       message.error("Failed to load user");

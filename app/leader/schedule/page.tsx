@@ -98,13 +98,19 @@ export default function MeetingSchedulingPage() {
   const handleCreateMeeting = async (values: MeetingFormValues) => {
     setSaving(true);
     try {
+      const meetingDateTime = dayjs(values.date);
       const response = await fetch("/api/meetings", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          ...values,
-          date: values.date.toISOString(),
           groupId: user?.groupId,
+          date: meetingDateTime.format("YYYY-MM-DD"),
+          startTime: meetingDateTime.format("HH:mm"),
+          endTime: meetingDateTime.add(2, "hours").format("HH:mm"),
+          topic: values.topic,
+          attendanceMethod: "count" as const,
+          attendeeCount: 0,
+          notes: values.summary,
         }),
       });
 
@@ -177,7 +183,16 @@ export default function MeetingSchedulingPage() {
         fetch("/api/meetings", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(meeting),
+          body: JSON.stringify({
+            groupId: meeting.groupId,
+            date: meeting.date,
+            startTime: time,
+            endTime: dayjs(time, "HH:mm").add(2, "hours").format("HH:mm"),
+            topic: meeting.topic,
+            attendanceMethod: "count",
+            attendeeCount: 0,
+            notes: meeting.summary,
+          }),
         })
       );
 
@@ -216,8 +231,8 @@ export default function MeetingSchedulingPage() {
     if (dayMeetings.length === 0) return null;
 
     return (
-      <ul className="space-y-1">
-        {dayMeetings.map((meeting) => (
+      <ul className="space-y-0.5 sm:space-y-1">
+        {dayMeetings.slice(0, 2).map((meeting) => (
           <li key={meeting.id}>
             <Tooltip title={meeting.topic || "Untitled Meeting"}>
               <Badge
@@ -229,18 +244,22 @@ export default function MeetingSchedulingPage() {
                       : "processing"
                 }
                 text={
-                  <span className="text-xs truncate block max-w-[100px]">
-                    {dayjs(meeting.date).format("HH:mm")} -{" "}
-                    {meeting.topic
-                      ? meeting.topic.substring(0, 15)
-                      : "Untitled"}
-                    {(meeting.topic?.length || 0) > 15 ? "..." : ""}
+                  <span className="text-[10px] sm:text-xs truncate block max-w-[50px] sm:max-w-[100px]">
+                    <span className="hidden sm:inline">
+                      {dayjs(meeting.date).format("HH:mm")} -{" "}
+                    </span>
+                    {meeting.topic?.substring(0, 12) || "Untitled"}
                   </span>
                 }
               />
             </Tooltip>
           </li>
         ))}
+        {dayMeetings.length > 2 && (
+          <li className="text-[10px] sm:text-xs text-gray-500">
+            +{dayMeetings.length - 2} more
+          </li>
+        )}
       </ul>
     );
   };
@@ -278,24 +297,28 @@ export default function MeetingSchedulingPage() {
     <DashboardLayout role="LEADER">
       <div className="space-y-6">
         {/* Header */}
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div>
-            <h2 className="text-2xl font-bold text-gray-900">
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
               Meeting Schedule
             </h2>
-            <p className="text-gray-600">Plan and manage your group meetings</p>
+            <p className="text-gray-600 dark:text-gray-400">
+              Plan and manage your group meetings
+            </p>
           </div>
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2 w-full sm:w-auto">
             <AntButton
               type="primary"
               icon={<PlusOutlined />}
               onClick={() => setIsModalVisible(true)}
+              className="flex-1 sm:flex-initial"
             >
               Create Meeting
             </AntButton>
             <AntButton
               icon={<ThunderboltOutlined />}
               onClick={() => setIsGeneratorVisible(true)}
+              className="flex-1 sm:flex-initial"
             >
               Generate Schedule
             </AntButton>
@@ -303,18 +326,19 @@ export default function MeetingSchedulingPage() {
         </div>
 
         {/* Calendar View */}
-        <Card>
+        <Card className="overflow-x-auto">
           <Calendar
             value={selectedDate}
             onSelect={handleDateSelect}
             cellRender={dateCellRender}
+            className="[&_.ant-picker-calendar-date-content]:h-auto [&_.ant-picker-cell]:p-1 sm:[&_.ant-picker-cell]:p-2"
             headerRender={({ value, onChange }) => (
-              <div className="flex items-center justify-between mb-4 px-4">
-                <div className="flex items-center gap-4">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-4 px-2 sm:px-4">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4 w-full sm:w-auto">
                   <h3 className="text-lg font-semibold">
                     {value.format("MMMM YYYY")}
                   </h3>
-                  <div className="flex gap-2">
+                  <div className="flex gap-2 flex-wrap">
                     <AntButton
                       size="small"
                       onClick={() => onChange(value.subtract(1, "month"))}
@@ -332,7 +356,7 @@ export default function MeetingSchedulingPage() {
                     </AntButton>
                   </div>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="hidden sm:flex items-center gap-2 flex-wrap">
                   <Badge status="processing" text="Upcoming" />
                   <Badge status="success" text="Completed" />
                   <Badge status="error" text="Cancelled" />
@@ -374,7 +398,7 @@ export default function MeetingSchedulingPage() {
                 <Card
                   key={meeting.id}
                   size="small"
-                  className="bg-gray-50"
+                  className="bg-gray-50 dark:bg-gray-800"
                   extra={
                     <Tag
                       color={
@@ -393,24 +417,40 @@ export default function MeetingSchedulingPage() {
                           <CalendarOutlined />
                         )
                       }
+                      className="hidden sm:inline-flex"
                     >
                       {meeting.status}
                     </Tag>
                   }
                 >
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <h4 className="font-semibold text-base mb-2">
+                  <div className="flex flex-col sm:flex-row items-start justify-between gap-3">
+                    <div className="flex-1 w-full">
+                      <h4 className="font-semibold text-base mb-2 break-words">
                         {meeting.topic}
                       </h4>
-                      <div className="text-sm text-gray-600 mb-2">
+                      <div className="text-sm text-gray-600 dark:text-gray-400 mb-2">
                         <ClockCircleOutlined className="mr-2" />
                         {dayjs(meeting.date).format("h:mm A")}
                       </div>
-                      <p className="text-sm text-gray-700">{meeting.summary}</p>
+                      <p className="text-sm text-gray-700 dark:text-gray-300 break-words">
+                        {meeting.summary}
+                      </p>
+                      <Tag
+                        color={
+                          meeting.status === "COMPLETED"
+                            ? "green"
+                            : meeting.status === "CANCELLED"
+                              ? "red"
+                              : "blue"
+                        }
+                        className="mt-2 sm:hidden"
+                      >
+                        {meeting.status}
+                      </Tag>
                     </div>
                     <AntButton
                       type="link"
+                      className="w-full sm:w-auto"
                       onClick={() =>
                         router.push(`/leader/meetings/${meeting.id}`)
                       }

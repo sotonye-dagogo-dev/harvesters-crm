@@ -65,7 +65,7 @@ export default function EditInteractionPage() {
     } catch (error) {
       message.error("Failed to load interaction details");
       console.error(error);
-      router.push("/interactions");
+      router.push("/leader/interactions");
     } finally {
       setLoading(false);
     }
@@ -111,7 +111,7 @@ export default function EditInteractionPage() {
       }
 
       message.success("Interaction updated successfully");
-      router.push("/interactions");
+      router.push("/leader/interactions");
     } catch (error: any) {
       message.error(error.message || "Failed to update interaction");
       console.error(error);
@@ -143,7 +143,10 @@ export default function EditInteractionPage() {
           <p className="text-gray-500">
             You don't have permission to edit this interaction
           </p>
-          <Button type="primary" onClick={() => router.push("/interactions")}>
+          <Button
+            type="primary"
+            onClick={() => router.push("/leader/interactions")}
+          >
             Back to Interactions
           </Button>
         </Card>
@@ -252,7 +255,9 @@ export default function EditInteractionPage() {
           </Form.Item>
 
           <div className="flex gap-3 justify-end">
-            <Button onClick={() => router.push("/interactions")}>Cancel</Button>
+            <Button onClick={() => router.push("/leader/interactions")}>
+              Cancel
+            </Button>
             <Button
               type="primary"
               htmlType="submit"

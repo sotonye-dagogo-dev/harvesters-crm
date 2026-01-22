@@ -59,7 +59,7 @@ export default function ChurchAnalyticsPage() {
     if (user?.role === "SUPERADMIN") {
       fetchAnalytics();
     } else {
-      router.push("/dashboard");
+      router.push("/superadmin/dashboard");
     }
   }, [user]);
 

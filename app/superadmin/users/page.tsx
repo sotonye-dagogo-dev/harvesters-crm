@@ -171,7 +171,7 @@ export default function UsersPage() {
           <AntButton
             type="primary"
             icon={<PlusOutlined />}
-            onClick={() => router.push("/users/new")}
+            onClick={() => router.push("/superadmin/users/new")}
           >
             Add User
           </AntButton>

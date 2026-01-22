@@ -30,6 +30,7 @@ export default function CreateMeetingPage() {
     date: dayjs.Dayjs;
     startTime: dayjs.Dayjs;
     endTime: dayjs.Dayjs;
+    topic?: string;
     attendeeCount: number;
     notes?: string;
     screenshot?: string;
@@ -46,9 +47,11 @@ export default function CreateMeetingPage() {
         date: values.date.toISOString(),
         startTime: values.startTime.format("HH:mm"),
         endTime: values.endTime.format("HH:mm"),
+        topic: values.topic,
+        attendanceMethod: "count" as const,
         attendeeCount: values.attendeeCount,
         notes: values.notes,
-        screenshot: values.screenshot,
+        screenshotUrl: values.screenshot,
       };
 
       const response = await fetch("/api/meetings", {
@@ -102,6 +105,10 @@ export default function CreateMeetingPage() {
               rules={[{ required: true, message: "Please select a date" }]}
             >
               <DatePicker style={{ width: "100%" }} format="MMMM D, YYYY" />
+            </Form.Item>
+
+            <Form.Item label="Meeting Topic (Optional)" name="topic">
+              <AntInput placeholder="e.g., Prayer and Worship Night" />
             </Form.Item>
 
             <div className="grid grid-cols-2 gap-4">
@@ -169,7 +176,7 @@ export default function CreateMeetingPage() {
             </Form.Item>
 
             <div className="flex gap-3 justify-end">
-              <AntButton onClick={() => router.push("/meetings")}>
+              <AntButton onClick={() => router.push("/leader/meetings")}>
                 Cancel
               </AntButton>
               <AntButton

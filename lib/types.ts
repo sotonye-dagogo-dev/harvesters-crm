@@ -176,6 +176,7 @@ interface Meeting {
   date: string; // ISO date
   startTime: string;
   endTime: string;
+  topic?: string; // Meeting topic/title
   attendeeCount: number;
   attendeeIds: string[];
   screenshotUrl?: string; // Cloudinary URL or base64
@@ -196,6 +197,7 @@ interface CreateMeetingInput {
   date: string;
   startTime: string;
   endTime: string;
+  topic?: string;
   attendeeCount?: number;
   attendeeIds?: string[];
   screenshotUrl?: string;
@@ -206,6 +208,7 @@ interface UpdateMeetingInput {
   date?: string;
   startTime?: string;
   endTime?: string;
+  topic?: string;
   attendeeCount?: number;
   attendeeIds?: string[];
   screenshotUrl?: string;

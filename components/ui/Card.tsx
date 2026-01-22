@@ -49,7 +49,6 @@ export function ScrollableCard({
     </AntCard>
   );
 }
-/* eslint-enable @next/next/no-inline-styles */
 
 interface StatCardProps {
   title: string;

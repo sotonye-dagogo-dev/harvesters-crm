@@ -38,7 +38,7 @@ export default function ChangePasswordPage() {
       if (response.ok) {
         message.success("Password changed successfully");
         form.resetFields();
-        router.push("/profile");
+        router.push("/member/profile");
       } else {
         const error = await response.json();
         message.error(error.error || "Failed to change password");
@@ -112,7 +112,7 @@ export default function ChangePasswordPage() {
             </Form.Item>
 
             <div className="flex gap-3 justify-end mt-6">
-              <AntButton onClick={() => router.push("/profile")}>
+              <AntButton onClick={() => router.push("/member/profile")}>
                 Cancel
               </AntButton>
               <AntButton

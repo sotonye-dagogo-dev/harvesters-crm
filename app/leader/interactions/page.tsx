@@ -148,7 +148,10 @@ export default function InteractionsPage() {
           title="Access Denied"
           description="Only group leaders can view and manage interactions"
           action={
-            <AntButton type="primary" onClick={() => router.push("/dashboard")}>
+            <AntButton
+              type="primary"
+              onClick={() => router.push("/leader/dashboard")}
+            >
               Back to Dashboard
             </AntButton>
           }
