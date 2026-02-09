@@ -1,5 +1,6 @@
 "use client";
 
+import { UserRole } from "@/lib/types";
 import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import DashboardLayout from "@/components/features/navigation/DashboardLayout";
@@ -192,7 +193,7 @@ export default function MyGroupPage() {
 
   if (!user?.groupId) {
     return (
-      <DashboardLayout role="LEADER">
+      <DashboardLayout role={UserRole.SMALL_GROUP_LEADER}>
         <PageEmpty
           icon={<TeamOutlined />}
           title="No Group Assigned"
@@ -204,7 +205,7 @@ export default function MyGroupPage() {
 
   if (loading) {
     return (
-      <DashboardLayout role="LEADER">
+      <DashboardLayout role={UserRole.SMALL_GROUP_LEADER}>
         <PageLoading message="Loading group data..." />
       </DashboardLayout>
     );
@@ -212,7 +213,7 @@ export default function MyGroupPage() {
 
   if (!group) {
     return (
-      <DashboardLayout role="LEADER">
+      <DashboardLayout role={UserRole.SMALL_GROUP_LEADER}>
         <PageEmpty title="Group not found" />
       </DashboardLayout>
     );
@@ -351,7 +352,7 @@ export default function MyGroupPage() {
   ).length;
 
   return (
-    <DashboardLayout role="LEADER">
+    <DashboardLayout role={UserRole.SMALL_GROUP_LEADER}>
       <PageContainer>
         <PageHeader
           title={group.name}

@@ -16,6 +16,7 @@ import { SaveOutlined } from "@ant-design/icons";
 import { useRouter } from "next/navigation";
 import ProfileAvatar from "@/components/features/users/ProfileAvatar";
 import MockFileUpload from "@/components/ui/MockFileUpload";
+import { UserRole } from "@/lib/types";
 
 export default function EditProfilePage() {
   const { user, refreshUser } = useAuth();
@@ -72,7 +73,7 @@ export default function EditProfilePage() {
 
   if (loading) {
     return (
-      <DashboardLayout role={user?.role || "MEMBER"}>
+      <DashboardLayout role={user?.role || UserRole.MEMBER}>
         <div className="flex items-center justify-center h-96">
           <Spin size="large" />
         </div>
@@ -81,7 +82,7 @@ export default function EditProfilePage() {
   }
 
   return (
-    <DashboardLayout role={user?.role || "MEMBER"}>
+    <DashboardLayout role={user?.role || UserRole.MEMBER}>
       <div className="space-y-6">
         <div>
           <h2 className="text-2xl font-bold text-gray-900">Edit Profile</h2>

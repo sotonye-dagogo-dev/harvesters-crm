@@ -26,7 +26,9 @@ export async function GET(
     }
 
     // Check permissions
-    const group = groupDb.findById(membershipRequest.toGroupId);
+    const group = membershipRequest.toGroupId
+      ? groupDb.findById(membershipRequest.toGroupId)
+      : undefined;
     const canView =
       user?.role === USER_ROLES.SUPERADMIN ||
       group?.leaderId === user?.id ||

@@ -1,5 +1,6 @@
 "use client";
 
+import { UserRole } from "@/lib/types";
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import DashboardLayout from "@/components/features/navigation/DashboardLayout";
@@ -195,7 +196,7 @@ export default function MyGroupPage() {
                       <span className="text-gray-900 dark:text-white">
                         {member.firstName} {member.lastName}
                       </span>
-                      {member.role === "LEADER" && (
+                      {member.role === UserRole.SMALL_GROUP_LEADER && (
                         <Tag color="blue">Leader</Tag>
                       )}
                     </div>

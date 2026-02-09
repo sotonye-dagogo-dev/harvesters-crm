@@ -1,8 +1,10 @@
 "use client";
 
+import { UserRole } from "@/lib/types";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/providers/AuthProvider";
+import DashboardLayout from "@/components/features/navigation/DashboardLayout";
 import { Card, Select, Button, message, Spin, Alert, Avatar, Tag } from "antd";
 import { UserSwitchOutlined, UserOutlined } from "@ant-design/icons";
 
@@ -21,6 +23,7 @@ export default function AssignLeaderPage({
 
   useEffect(() => {
     fetchData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [params.id]);
 
   const fetchData = async () => {
@@ -40,8 +43,8 @@ export default function AssignLeaderPage({
       const potential = usersData.filter(
         (u: User) =>
           u.isActive &&
-          (u.role === "LEADER" ||
-            u.role === "SUPERADMIN" ||
+          (u.role === UserRole.SMALL_GROUP_LEADER ||
+            u.role === UserRole.SUPERADMIN ||
             u.groupId === params.id)
       );
       setPotentialLeaders(potential);
@@ -68,7 +71,7 @@ export default function AssignLeaderPage({
     if (!group) return;
 
     // Only superadmin can assign leaders
-    if (user?.role !== "SUPERADMIN") {
+    if (user?.role !== UserRole.SUPERADMIN) {
       message.error("You don't have permission to assign group leaders");
       return;
     }
@@ -99,13 +102,13 @@ export default function AssignLeaderPage({
       const selectedUser = potentialLeaders.find(
         (u) => u.id === selectedLeaderId
       );
-      if (selectedUser && selectedUser.role === "MEMBER") {
+      if (selectedUser && selectedUser.role === UserRole.MEMBER) {
         const userRes = await fetch(`/api/users/${selectedLeaderId}`, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             ...selectedUser,
-            role: "LEADER",
+            role: UserRole.SMALL_GROUP_LEADER,
           }),
         });
 
@@ -116,8 +119,10 @@ export default function AssignLeaderPage({
 
       message.success("Leader assigned successfully");
       router.push(`/superadmin/groups/${params.id}`);
-    } catch (error: any) {
-      message.error(error.message || "Failed to assign leader");
+    } catch (error: unknown) {
+      const errorMessage =
+        error instanceof Error ? error.message : "Failed to assign leader";
+      message.error(errorMessage);
       console.error(error);
     } finally {
       setSubmitting(false);
@@ -126,9 +131,11 @@ export default function AssignLeaderPage({
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <Spin size="large" />
-      </div>
+      <DashboardLayout role={UserRole.SUPERADMIN}>
+        <div className="flex items-center justify-center min-h-[60vh]">
+          <Spin size="large" />
+        </div>
+      </DashboardLayout>
     );
   }
 
@@ -136,154 +143,158 @@ export default function AssignLeaderPage({
     return null;
   }
 
-  if (user?.role !== "SUPERADMIN") {
+  if (user?.role !== UserRole.SUPERADMIN) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <Card>
-          <p className="text-gray-500">
-            You don't have permission to assign group leaders
-          </p>
-          <Button
-            type="primary"
-            onClick={() => router.push(`/groups/${params.id}`)}
-          >
-            Back to Group
-          </Button>
-        </Card>
-      </div>
+      <DashboardLayout role={UserRole.SUPERADMIN}>
+        <div className="flex items-center justify-center min-h-[60vh]">
+          <Card>
+            <p className="text-gray-500">
+              You don&apos;t have permission to assign group leaders
+            </p>
+            <Button
+              type="primary"
+              onClick={() => router.push(`/groups/${params.id}`)}
+            >
+              Back to Group
+            </Button>
+          </Card>
+        </div>
+      </DashboardLayout>
     );
   }
 
   return (
-    <div className="p-6 max-w-2xl mx-auto">
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">
-          Assign Group Leader
-        </h1>
-        <p className="text-gray-500 mt-1">
-          Assign or change the leader for {group.name}
-        </p>
-      </div>
+    <DashboardLayout role={UserRole.SUPERADMIN}>
+      <div className="max-w-2xl mx-auto space-y-6">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">
+            Assign Group Leader
+          </h1>
+          <p className="text-gray-500 mt-1">
+            Assign or change the leader for {group.name}
+          </p>
+        </div>
 
-      <Card>
-        <Alert
-          title="Leader Assignment"
-          description="Select a user to be the leader of this group. Leaders can manage meetings, log interactions, and approve membership requests for their group. If you select a member, they will automatically be promoted to the Leader role."
-          type="info"
-          showIcon
-          className="mb-6"
-        />
+        <Card>
+          <Alert
+            title="Leader Assignment"
+            description="Select a user to be the leader of this group. Leaders can manage meetings, log interactions, and approve membership requests for their group. If you select a member, they will automatically be promoted to the Leader role."
+            type="info"
+            showIcon
+            className="mb-6"
+          />
 
-        <div className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Current Leader
-            </label>
-            {group.leader ? (
-              <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                <Avatar
-                  size={40}
-                  icon={<UserOutlined />}
-                  src={group.leader.avatar}
-                >
-                  {group.leader.firstName[0]}
-                  {group.leader.lastName[0]}
-                </Avatar>
-                <div>
-                  <div className="font-medium">
-                    {group.leader.firstName} {group.leader.lastName}
-                  </div>
-                  <div className="text-sm text-gray-500">
-                    {group.leader.email}
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Current Leader
+              </label>
+              {group.leader ? (
+                <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+                  <Avatar
+                    size={40}
+                    icon={<UserOutlined />}
+                    src={group.leader.avatar}
+                  >
+                    {group.leader.firstName[0]}
+                    {group.leader.lastName[0]}
+                  </Avatar>
+                  <div>
+                    <div className="font-medium">
+                      {group.leader.firstName} {group.leader.lastName}
+                    </div>
+                    <div className="text-sm text-gray-500">
+                      {group.leader.email}
+                    </div>
                   </div>
                 </div>
-              </div>
-            ) : (
-              <p className="text-gray-500 italic">No leader assigned</p>
-            )}
-          </div>
+              ) : (
+                <p className="text-gray-500 italic">No leader assigned</p>
+              )}
+            </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Select New Leader
-            </label>
-            <Select
-              size="large"
-              placeholder="Choose a leader for this group"
-              className="w-full"
-              value={selectedLeaderId || undefined}
-              onChange={(value) => setSelectedLeaderId(value)}
-              showSearch
-              optionFilterProp="children"
-              filterOption={(input, option) =>
-                (option?.label ?? "")
-                  .toString()
-                  .toLowerCase()
-                  .includes(input.toLowerCase())
-              }
-              options={potentialLeaders.map((leader) => ({
-                value: leader.id,
-                label: `${leader.firstName} ${leader.lastName} (${leader.role})`,
-                leader: leader,
-              }))}
-              optionRender={(option) => {
-                const leader = option.data.leader as User;
-                return (
-                  <div className="flex items-center gap-3 py-1">
-                    <Avatar
-                      size={32}
-                      icon={<UserOutlined />}
-                      src={leader.avatar}
-                    >
-                      {leader.firstName[0]}
-                      {leader.lastName[0]}
-                    </Avatar>
-                    <div className="flex-1">
-                      <div className="font-medium">
-                        {leader.firstName} {leader.lastName}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Select New Leader
+              </label>
+              <Select
+                size="large"
+                placeholder="Choose a leader for this group"
+                className="w-full"
+                value={selectedLeaderId || undefined}
+                onChange={(value) => setSelectedLeaderId(value)}
+                showSearch
+                optionFilterProp="children"
+                filterOption={(input, option) =>
+                  (option?.label ?? "")
+                    .toString()
+                    .toLowerCase()
+                    .includes(input.toLowerCase())
+                }
+                options={potentialLeaders.map((leader) => ({
+                  value: leader.id,
+                  label: `${leader.firstName} ${leader.lastName} (${leader.role})`,
+                  leader: leader,
+                }))}
+                optionRender={(option) => {
+                  const leader = option.data.leader as User;
+                  return (
+                    <div className="flex items-center gap-3 py-1">
+                      <Avatar
+                        size={32}
+                        icon={<UserOutlined />}
+                        src={leader.avatar}
+                      >
+                        {leader.firstName[0]}
+                        {leader.lastName[0]}
+                      </Avatar>
+                      <div className="flex-1">
+                        <div className="font-medium">
+                          {leader.firstName} {leader.lastName}
+                        </div>
+                        <div className="text-xs text-gray-500">
+                          {leader.email}
+                        </div>
                       </div>
-                      <div className="text-xs text-gray-500">
-                        {leader.email}
-                      </div>
+                      <Tag
+                        color={
+                          leader.role === UserRole.SUPERADMIN
+                            ? "red"
+                            : leader.role === UserRole.SMALL_GROUP_LEADER
+                              ? "blue"
+                              : "green"
+                        }
+                      >
+                        {leader.role}
+                      </Tag>
                     </div>
-                    <Tag
-                      color={
-                        leader.role === "SUPERADMIN"
-                          ? "red"
-                          : leader.role === "LEADER"
-                            ? "blue"
-                            : "green"
-                      }
-                    >
-                      {leader.role}
-                    </Tag>
-                  </div>
-                );
-              }}
-            />
-            <p className="text-sm text-gray-500 mt-2">
-              Showing {potentialLeaders.length} potential leader(s)
-            </p>
-          </div>
+                  );
+                }}
+              />
+              <p className="text-sm text-gray-500 mt-2">
+                Showing {potentialLeaders.length} potential leader(s)
+              </p>
+            </div>
 
-          <div className="flex gap-2 justify-end pt-4">
-            <Button
-              onClick={() => router.push(`/superadmin/groups/${params.id}`)}
-            >
-              Cancel
-            </Button>
-            <Button
-              type="primary"
-              icon={<UserSwitchOutlined />}
-              onClick={handleAssignLeader}
-              loading={submitting}
-              disabled={!selectedLeaderId}
-            >
-              Assign Leader
-            </Button>
+            <div className="flex gap-2 justify-end pt-4">
+              <Button
+                onClick={() => router.push(`/superadmin/groups/${params.id}`)}
+              >
+                Cancel
+              </Button>
+              <Button
+                type="primary"
+                icon={<UserSwitchOutlined />}
+                onClick={handleAssignLeader}
+                loading={submitting}
+                disabled={!selectedLeaderId}
+              >
+                Assign Leader
+              </Button>
+            </div>
           </div>
-        </div>
-      </Card>
-    </div>
+        </Card>
+      </div>
+    </DashboardLayout>
   );
 }

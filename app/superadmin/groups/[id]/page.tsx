@@ -1,5 +1,6 @@
 "use client";
 
+import { UserRole } from "@/lib/types";
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import DashboardLayout from "@/components/features/navigation/DashboardLayout";
@@ -155,7 +156,11 @@ export default function GroupDetailsPage() {
       render: (role: string) => (
         <Tag
           color={
-            role === "SUPERADMIN" ? "red" : role === "LEADER" ? "blue" : "green"
+            role === UserRole.SUPERADMIN
+              ? "red"
+              : role === UserRole.SMALL_GROUP_LEADER
+                ? "blue"
+                : "green"
           }
         >
           {role}
@@ -177,15 +182,16 @@ export default function GroupDetailsPage() {
           >
             View Stats
           </AntButton>
-          {user?.role === "SUPERADMIN" && record.id !== group?.leaderId && (
-            <AntButton
-              size="small"
-              danger
-              onClick={() => handleRemoveMember(record.id)}
-            >
-              Remove
-            </AntButton>
-          )}
+          {user?.role === UserRole.SUPERADMIN &&
+            record.id !== group?.leaderId && (
+              <AntButton
+                size="small"
+                danger
+                onClick={() => handleRemoveMember(record.id)}
+              >
+                Remove
+              </AntButton>
+            )}
         </div>
       ),
     },
@@ -193,7 +199,7 @@ export default function GroupDetailsPage() {
 
   if (loading) {
     return (
-      <DashboardLayout role={user?.role || "SUPERADMIN"}>
+      <DashboardLayout role={user?.role || UserRole.SUPERADMIN}>
         <div className="flex items-center justify-center h-96">
           <Spin size="large" />
         </div>
@@ -203,7 +209,7 @@ export default function GroupDetailsPage() {
 
   if (!group) {
     return (
-      <DashboardLayout role={user?.role || "SUPERADMIN"}>
+      <DashboardLayout role={user?.role || UserRole.SUPERADMIN}>
         <div className="text-center py-12">
           <p className="text-gray-500">Group not found</p>
         </div>
@@ -212,14 +218,14 @@ export default function GroupDetailsPage() {
   }
 
   return (
-    <DashboardLayout role={user?.role || "SUPERADMIN"}>
+    <DashboardLayout role={user?.role || UserRole.SUPERADMIN}>
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
             <h2 className="text-2xl font-bold text-gray-900">{group.name}</h2>
             <p className="text-gray-600 mt-1">{group.description}</p>
           </div>
-          {user?.role === "SUPERADMIN" && (
+          {user?.role === UserRole.SUPERADMIN && (
             <div className="flex flex-wrap gap-2">
               <AntButton
                 icon={<BarChartOutlined />}

@@ -10,6 +10,7 @@ import {
 } from "@/lib/utils/api";
 import { sendNewMembershipRequestNotification } from "@/lib/utils/notificationHelpers";
 import { USER_ROLES } from "@/lib/constants";
+import { MembershipRequestStatus, MembershipRequestType } from "@/lib/types";
 
 const createRequestSchema = z.object({
   groupId: z.string().min(1, "Group ID is required"),
@@ -39,7 +40,7 @@ export async function GET(request: NextRequest) {
       // Superadmin sees all requests
       if (status) filter.status = status;
       if (groupId) filter.groupId = groupId;
-    } else if (user?.role === USER_ROLES.LEADER) {
+    } else if (user?.role === USER_ROLES.SMALL_GROUP_LEADER) {
       // Leaders see requests for their group
       filter.groupId = user.groupId;
       if (status) filter.status = status;
@@ -59,7 +60,9 @@ export async function GET(request: NextRequest) {
     // Enrich with user and group details
     const enrichedRequests = requests.map((request) => {
       const requestedBy = userDb.findById(request.memberId);
-      const group = groupDb.findById(request.toGroupId);
+      const group = request.toGroupId
+        ? groupDb.findById(request.toGroupId)
+        : undefined;
       const processedBy = request.respondedById
         ? userDb.findById(request.respondedById)
         : null;
@@ -147,16 +150,15 @@ export async function POST(request: NextRequest) {
     }
 
     // Create membership request
-    const membershipRequest = membershipRequestDb.create(
-      {
-        type: user.groupId
-          ? ("TRANSFER" as MembershipRequestType)
-          : ("JOIN" as MembershipRequestType),
-        toGroupId: validation.data.groupId,
-        message: validation.data.reason,
-      },
-      user.id
-    );
+    const membershipRequest = membershipRequestDb.create({
+      memberId: user.id,
+      type: user.groupId
+        ? ("TRANSFER" as MembershipRequestType)
+        : ("JOIN" as MembershipRequestType),
+      status: "PENDING" as MembershipRequestStatus,
+      toGroupId: validation.data.groupId,
+      message: validation.data.reason,
+    });
 
     // Send notification to group leader
     await sendNewMembershipRequestNotification(membershipRequest.id);

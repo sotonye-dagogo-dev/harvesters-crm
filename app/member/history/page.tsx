@@ -1,5 +1,6 @@
 "use client";
 
+import { UserRole } from "@/lib/types";
 import { useState, useEffect, useCallback } from "react";
 import DashboardLayout from "@/components/features/navigation/DashboardLayout";
 import {
@@ -95,7 +96,7 @@ export default function MemberHistoryPage() {
 
   if (loading) {
     return (
-      <DashboardLayout role="MEMBER">
+      <DashboardLayout role={UserRole.MEMBER}>
         <div className="flex items-center justify-center min-h-[400px]">
           <Spin size="large" />
         </div>
@@ -104,7 +105,7 @@ export default function MemberHistoryPage() {
   }
 
   return (
-    <DashboardLayout role="MEMBER">
+    <DashboardLayout role={UserRole.MEMBER}>
       <div className="space-y-8">
         {/* Page Header */}
         <div className="bg-gradient-to-r from-green-50 to-blue-50 dark:from-slate-800 dark:to-slate-900 p-6 rounded-2xl shadow-lg border border-gray-200 dark:border-slate-700">

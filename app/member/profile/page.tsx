@@ -7,6 +7,7 @@ import { Card, Descriptions, Spin, Button as AntButton, message } from "antd";
 import { EditOutlined } from "@ant-design/icons";
 import ProfileAvatar from "@/components/features/users/ProfileAvatar";
 import { useRouter } from "next/navigation";
+import { UserRole } from "@/lib/types";
 
 export default function ProfilePage() {
   const { user } = useAuth();
@@ -36,7 +37,7 @@ export default function ProfilePage() {
 
   if (loading) {
     return (
-      <DashboardLayout role={user?.role || "MEMBER"}>
+      <DashboardLayout role={user?.role || UserRole.MEMBER}>
         <div className="flex items-center justify-center h-96">
           <Spin size="large" />
         </div>
@@ -46,7 +47,7 @@ export default function ProfilePage() {
 
   if (!profile) {
     return (
-      <DashboardLayout role={user?.role || "MEMBER"}>
+      <DashboardLayout role={user?.role || UserRole.MEMBER}>
         <div className="text-center py-12">
           <p className="text-gray-500">Profile not found</p>
         </div>
@@ -55,7 +56,7 @@ export default function ProfilePage() {
   }
 
   return (
-    <DashboardLayout role={user?.role || "MEMBER"}>
+    <DashboardLayout role={user?.role || UserRole.MEMBER}>
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
@@ -90,7 +91,7 @@ export default function ProfilePage() {
                   className={`inline-block px-3 py-1 text-sm font-medium rounded-full ${
                     profile.role === "SUPERADMIN"
                       ? "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400"
-                      : profile.role === "LEADER"
+                      : profile.role === UserRole.SMALL_GROUP_LEADER
                         ? "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400"
                         : "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400"
                   }`}

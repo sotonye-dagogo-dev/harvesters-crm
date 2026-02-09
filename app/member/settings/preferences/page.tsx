@@ -1,5 +1,6 @@
 "use client";
 
+import { UserRole } from "@/lib/types";
 import { useState } from "react";
 import { useAuth } from "@/providers/AuthProvider";
 import DashboardLayout from "@/components/features/navigation/DashboardLayout";
@@ -76,7 +77,7 @@ export default function PreferencesPage() {
   };
 
   return (
-    <DashboardLayout role={user?.role || "MEMBER"}>
+    <DashboardLayout role={user?.role || UserRole.MEMBER}>
       <div className="space-y-8">
         <div className="bg-gradient-to-r from-green-50 to-blue-50 dark:from-slate-800 dark:to-slate-900 p-6 rounded-2xl shadow-lg border border-gray-200 dark:border-slate-700">
           <h2 className="text-3xl font-bold text-gray-900 dark:text-white flex items-center gap-3">

@@ -50,7 +50,7 @@ export async function POST(request: NextRequest) {
     const hashedPassword = await bcrypt.hash(password, 12);
 
     // Update user password
-    db.users.updatePassword(user.id, hashedPassword);
+    await db.users.updatePassword(user.id, hashedPassword);
 
     // Delete the used token
     deleteResetToken(token);

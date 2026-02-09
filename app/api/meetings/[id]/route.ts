@@ -28,7 +28,7 @@ export async function GET(
     }
 
     // Check permissions
-    const group = groupDb.findById(meeting.groupId);
+    const group = meeting.groupId ? groupDb.findById(meeting.groupId) : undefined;
     const canView =
       user?.role === USER_ROLES.SUPERADMIN ||
       group?.leaderId === user?.id ||
@@ -101,7 +101,7 @@ export async function PUT(
     }
 
     // Check permissions
-    const group = groupDb.findById(meeting.groupId);
+    const group = meeting.groupId ? groupDb.findById(meeting.groupId) : undefined;
     const canUpdate =
       user?.role === USER_ROLES.SUPERADMIN ||
       group?.leaderId === user?.id ||
@@ -114,7 +114,7 @@ export async function PUT(
     }
 
     // Update meeting
-    const updatedMeeting = meetingDb.update(id, validation.data);
+    const updatedMeeting = meetingDb.update(id, validation.data as Meeting);
     if (!updatedMeeting) {
       return notFoundResponse("Meeting not found");
     }
@@ -142,7 +142,7 @@ export async function DELETE(
     }
 
     // Check permissions
-    const group = groupDb.findById(meeting.groupId);
+    const group = meeting.groupId ? groupDb.findById(meeting.groupId) : undefined;
     const canDelete =
       user?.role === USER_ROLES.SUPERADMIN ||
       group?.leaderId === user?.id ||

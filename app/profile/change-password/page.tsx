@@ -7,6 +7,7 @@ import { Form, Button as AntButton, Card, message } from "antd";
 import { SaveOutlined } from "@ant-design/icons";
 import { useRouter } from "next/navigation";
 import { PasswordInput } from "@/components/ui/Input";
+import { UserRole } from "@/lib/types";
 
 export default function ChangePasswordPage() {
   const { user } = useAuth();
@@ -51,7 +52,7 @@ export default function ChangePasswordPage() {
   };
 
   return (
-    <DashboardLayout role={user?.role || "MEMBER"}>
+    <DashboardLayout role={user?.role || UserRole.MEMBER}>
       <div className="space-y-6">
         <div>
           <h2 className="text-2xl font-bold text-gray-900 dark:text-white">

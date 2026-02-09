@@ -1,10 +1,11 @@
 "use client";
 
 import { Layout, Menu, Drawer, Dropdown } from "antd";
-import { ReactNode, useState, useEffect, useLayoutEffect } from "react";
+import { ReactNode, useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
+import { UserRole } from "@/lib/types";
 import {
   DashboardOutlined,
   TeamOutlined,
@@ -19,9 +20,14 @@ import {
   BellOutlined,
   MenuOutlined,
   CloseOutlined,
+  GlobalOutlined,
+  BankOutlined,
+  ApartmentOutlined,
+  UsergroupAddOutlined,
+  ShareAltOutlined,
+  BarChartOutlined,
 } from "@ant-design/icons";
 import { useAuth } from "@/providers/AuthProvider";
-import { AppHeader } from "@/components/ui/Layout";
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
 import { useTheme } from "next-themes";
 import type { MenuProps } from "antd";
@@ -30,7 +36,7 @@ const { Sider, Content, Header } = Layout;
 
 interface DashboardLayoutProps {
   children: ReactNode;
-  role?: "SUPERADMIN" | "LEADER" | "MEMBER";
+  role?: UserRole;
 }
 
 export default function DashboardLayout({
@@ -40,29 +46,19 @@ export default function DashboardLayout({
   const [collapsed, setCollapsed] = useState(false);
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
-  const [mounted, setMounted] = useState(false);
   const { user, logout } = useAuth();
   const { theme } = useTheme();
   const pathname = usePathname();
   const router = useRouter();
 
   // Determine logo to use dynamically based on theme
-  const logoSrc = mounted
-    ? theme === "dark"
+  const logoSrc =
+    theme === "dark"
       ? "/logo/dark-bg-harvesters-Logo.jpg"
-      : "/logo/white-bg-harvesters-Logo.jpg"
-    : "/logo/dark-bg-harvesters-Logo.jpg"; // Fallback for SSR
+      : "/logo/white-bg-harvesters-Logo.jpg";
 
   // Use prop role if provided, otherwise use user role from auth context
-  const role = propRole || (user?.role as "SUPERADMIN" | "LEADER" | "MEMBER");
-
-  // Set mounted flag to prevent hydration mismatch
-  // This is intentional to avoid hydration issues with dynamic content
-  useLayoutEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setMounted(true);
-    return () => setMounted(false);
-  }, []);
+  const role = propRole || user?.role;
 
   // Detect mobile screen
   useEffect(() => {
@@ -99,7 +95,7 @@ export default function DashboardLayout({
     // Return empty array if no role is available
     if (!role) return [];
 
-    const rolePath = role.toLowerCase();
+    const rolePath = role.toLowerCase().replace("_", "");
     const commonItems = [
       {
         key: "dashboard",
@@ -109,13 +105,38 @@ export default function DashboardLayout({
       },
     ];
 
+    // SUPERADMIN - Full system access
     if (role === "SUPERADMIN") {
       return [
         ...commonItems,
         {
+          key: "zones",
+          icon: <GlobalOutlined />,
+          label: <Link href="/superadmin/zones">Zones</Link>,
+          onClick: handleMenuClick,
+        },
+        {
+          key: "campuses",
+          icon: <BankOutlined />,
+          label: <Link href="/superadmin/campuses">Campuses</Link>,
+          onClick: handleMenuClick,
+        },
+        {
+          key: "departments",
+          icon: <ApartmentOutlined />,
+          label: <Link href="/superadmin/departments">Departments</Link>,
+          onClick: handleMenuClick,
+        },
+        {
           key: "groups",
           icon: <TeamOutlined />,
           label: <Link href="/superadmin/groups">Groups</Link>,
+          onClick: handleMenuClick,
+        },
+        {
+          key: "cells",
+          icon: <UsergroupAddOutlined />,
+          label: <Link href="/superadmin/cells">Cells</Link>,
           onClick: handleMenuClick,
         },
         {
@@ -125,8 +146,20 @@ export default function DashboardLayout({
           onClick: handleMenuClick,
         },
         {
+          key: "meetings",
+          icon: <CalendarOutlined />,
+          label: <Link href="/superadmin/meetings">Meetings</Link>,
+          onClick: handleMenuClick,
+        },
+        {
+          key: "campaigns",
+          icon: <ShareAltOutlined />,
+          label: <Link href="/superadmin/campaigns">Campaigns</Link>,
+          onClick: handleMenuClick,
+        },
+        {
           key: "analytics",
-          icon: <FileTextOutlined />,
+          icon: <BarChartOutlined />,
           label: <Link href="/superadmin/analytics">Analytics</Link>,
           onClick: handleMenuClick,
         },
@@ -163,43 +196,44 @@ export default function DashboardLayout({
       ];
     }
 
-    if (role === "LEADER") {
+    // ZONAL LEADER - Zone-level management
+    if (role === "ZONAL_LEADER") {
       return [
         ...commonItems,
         {
-          key: "my-group",
-          icon: <TeamOutlined />,
-          label: <Link href="/leader/my-group">My Group</Link>,
+          key: "my-zone",
+          icon: <GlobalOutlined />,
+          label: <Link href="/zonalleader/my-zone">My Zone</Link>,
+          onClick: handleMenuClick,
+        },
+        {
+          key: "campuses",
+          icon: <BankOutlined />,
+          label: <Link href="/zonalleader/campuses">Campuses</Link>,
+          onClick: handleMenuClick,
+        },
+        {
+          key: "departments",
+          icon: <ApartmentOutlined />,
+          label: <Link href="/zonalleader/departments">Departments</Link>,
           onClick: handleMenuClick,
         },
         {
           key: "meetings",
           icon: <CalendarOutlined />,
-          label: <Link href="/leader/meetings">Meetings</Link>,
+          label: <Link href="/zonalleader/meetings">Meetings</Link>,
           onClick: handleMenuClick,
         },
         {
-          key: "schedule",
-          icon: <ScheduleOutlined />,
-          label: <Link href="/leader/schedule">Schedule</Link>,
+          key: "campaigns",
+          icon: <ShareAltOutlined />,
+          label: <Link href="/zonalleader/campaigns">Campaigns</Link>,
           onClick: handleMenuClick,
         },
         {
-          key: "follow-ups",
-          icon: <ClockCircleOutlined />,
-          label: <Link href="/leader/follow-ups">Follow-ups</Link>,
-          onClick: handleMenuClick,
-        },
-        {
-          key: "members",
-          icon: <UserOutlined />,
-          label: <Link href="/leader/members">Members</Link>,
-          onClick: handleMenuClick,
-        },
-        {
-          key: "interactions",
-          icon: <PhoneOutlined />,
-          label: <Link href="/leader/interactions">Interactions</Link>,
+          key: "analytics",
+          icon: <BarChartOutlined />,
+          label: <Link href="/zonalleader/analytics">Analytics</Link>,
           onClick: handleMenuClick,
         },
         {
@@ -208,10 +242,10 @@ export default function DashboardLayout({
           label: "Settings",
           children: [
             {
-              key: "meeting-reminders",
+              key: "notifications",
               icon: <BellOutlined />,
               label: (
-                <Link href="/leader/settings/meeting-reminders">
+                <Link href="/zonalleader/settings/notifications">
                   Notifications
                 </Link>
               ),
@@ -235,7 +269,341 @@ export default function DashboardLayout({
       ];
     }
 
-    // MEMBER
+    // CAMPUS ADMIN - Campus-level management
+    if (role === "CAMPUS_ADMIN") {
+      return [
+        ...commonItems,
+        {
+          key: "my-campus",
+          icon: <BankOutlined />,
+          label: <Link href="/campusadmin/my-campus">My Campus</Link>,
+          onClick: handleMenuClick,
+        },
+        {
+          key: "departments",
+          icon: <ApartmentOutlined />,
+          label: <Link href="/campusadmin/departments">Departments</Link>,
+          onClick: handleMenuClick,
+        },
+        {
+          key: "groups",
+          icon: <TeamOutlined />,
+          label: <Link href="/campusadmin/groups">Groups</Link>,
+          onClick: handleMenuClick,
+        },
+        {
+          key: "cells",
+          icon: <UsergroupAddOutlined />,
+          label: <Link href="/campusadmin/cells">Cells</Link>,
+          onClick: handleMenuClick,
+        },
+        {
+          key: "members",
+          icon: <UserOutlined />,
+          label: <Link href="/campusadmin/members">Members</Link>,
+          onClick: handleMenuClick,
+        },
+        {
+          key: "meetings",
+          icon: <CalendarOutlined />,
+          label: <Link href="/campusadmin/meetings">Meetings</Link>,
+          onClick: handleMenuClick,
+        },
+        {
+          key: "campaigns",
+          icon: <ShareAltOutlined />,
+          label: <Link href="/campusadmin/campaigns">Campaigns</Link>,
+          onClick: handleMenuClick,
+        },
+        {
+          key: "analytics",
+          icon: <BarChartOutlined />,
+          label: <Link href="/campusadmin/analytics">Analytics</Link>,
+          onClick: handleMenuClick,
+        },
+        {
+          key: "settings",
+          icon: <SettingOutlined />,
+          label: "Settings",
+          children: [
+            {
+              key: "notifications",
+              icon: <BellOutlined />,
+              label: (
+                <Link href="/campusadmin/settings/notifications">
+                  Notifications
+                </Link>
+              ),
+              onClick: handleMenuClick,
+            },
+            {
+              key: "profile",
+              icon: <UserOutlined />,
+              label: <Link href="/profile">Profile</Link>,
+              onClick: handleMenuClick,
+            },
+            {
+              key: "logout",
+              icon: <LogoutOutlined />,
+              label: "Logout",
+              onClick: logout,
+              danger: true,
+            },
+          ],
+        },
+      ];
+    }
+
+    // HOD - Department-level management
+    if (role === "HOD") {
+      return [
+        ...commonItems,
+        {
+          key: "my-department",
+          icon: <ApartmentOutlined />,
+          label: <Link href="/hod/my-department">My Department</Link>,
+          onClick: handleMenuClick,
+        },
+        {
+          key: "groups",
+          icon: <TeamOutlined />,
+          label: <Link href="/hod/groups">Groups</Link>,
+          onClick: handleMenuClick,
+        },
+        {
+          key: "cells",
+          icon: <UsergroupAddOutlined />,
+          label: <Link href="/hod/cells">Cells</Link>,
+          onClick: handleMenuClick,
+        },
+        {
+          key: "members",
+          icon: <UserOutlined />,
+          label: <Link href="/hod/members">Members</Link>,
+          onClick: handleMenuClick,
+        },
+        {
+          key: "meetings",
+          icon: <CalendarOutlined />,
+          label: <Link href="/hod/meetings">Meetings</Link>,
+          onClick: handleMenuClick,
+        },
+        {
+          key: "campaigns",
+          icon: <ShareAltOutlined />,
+          label: <Link href="/hod/campaigns">Campaigns</Link>,
+          onClick: handleMenuClick,
+        },
+        {
+          key: "analytics",
+          icon: <BarChartOutlined />,
+          label: <Link href="/hod/analytics">Analytics</Link>,
+          onClick: handleMenuClick,
+        },
+        {
+          key: "settings",
+          icon: <SettingOutlined />,
+          label: "Settings",
+          children: [
+            {
+              key: "notifications",
+              icon: <BellOutlined />,
+              label: (
+                <Link href="/hod/settings/notifications">Notifications</Link>
+              ),
+              onClick: handleMenuClick,
+            },
+            {
+              key: "profile",
+              icon: <UserOutlined />,
+              label: <Link href="/profile">Profile</Link>,
+              onClick: handleMenuClick,
+            },
+            {
+              key: "logout",
+              icon: <LogoutOutlined />,
+              label: "Logout",
+              onClick: logout,
+              danger: true,
+            },
+          ],
+        },
+      ];
+    }
+
+    // SMALL GROUP LEADER - Group-level management
+    if (role === "SMALL_GROUP_LEADER") {
+      return [
+        ...commonItems,
+        {
+          key: "my-group",
+          icon: <TeamOutlined />,
+          label: <Link href="/smallgroupleader/my-group">My Group</Link>,
+          onClick: handleMenuClick,
+        },
+        {
+          key: "cells",
+          icon: <UsergroupAddOutlined />,
+          label: <Link href="/smallgroupleader/cells">Cells</Link>,
+          onClick: handleMenuClick,
+        },
+        {
+          key: "meetings",
+          icon: <CalendarOutlined />,
+          label: <Link href="/smallgroupleader/meetings">Meetings</Link>,
+          onClick: handleMenuClick,
+        },
+        {
+          key: "schedule",
+          icon: <ScheduleOutlined />,
+          label: <Link href="/smallgroupleader/schedule">Schedule</Link>,
+          onClick: handleMenuClick,
+        },
+        {
+          key: "follow-ups",
+          icon: <ClockCircleOutlined />,
+          label: <Link href="/smallgroupleader/follow-ups">Follow-ups</Link>,
+          onClick: handleMenuClick,
+        },
+        {
+          key: "members",
+          icon: <UserOutlined />,
+          label: <Link href="/smallgroupleader/members">Members</Link>,
+          onClick: handleMenuClick,
+        },
+        {
+          key: "interactions",
+          icon: <PhoneOutlined />,
+          label: (
+            <Link href="/smallgroupleader/interactions">Interactions</Link>
+          ),
+          onClick: handleMenuClick,
+        },
+        {
+          key: "campaigns",
+          icon: <ShareAltOutlined />,
+          label: <Link href="/smallgroupleader/campaigns">Campaigns</Link>,
+          onClick: handleMenuClick,
+        },
+        {
+          key: "analytics",
+          icon: <BarChartOutlined />,
+          label: <Link href="/smallgroupleader/analytics">Analytics</Link>,
+          onClick: handleMenuClick,
+        },
+        {
+          key: "settings",
+          icon: <SettingOutlined />,
+          label: "Settings",
+          children: [
+            {
+              key: "meeting-reminders",
+              icon: <BellOutlined />,
+              label: (
+                <Link href="/smallgroupleader/settings/meeting-reminders">
+                  Notifications
+                </Link>
+              ),
+              onClick: handleMenuClick,
+            },
+            {
+              key: "profile",
+              icon: <UserOutlined />,
+              label: <Link href="/profile">Profile</Link>,
+              onClick: handleMenuClick,
+            },
+            {
+              key: "logout",
+              icon: <LogoutOutlined />,
+              label: "Logout",
+              onClick: logout,
+              danger: true,
+            },
+          ],
+        },
+      ];
+    }
+
+    // CELL LEADER - Cell-level management
+    if (role === "CELL_LEADER") {
+      return [
+        ...commonItems,
+        {
+          key: "my-cell",
+          icon: <UsergroupAddOutlined />,
+          label: <Link href="/cellleader/my-cell">My Cell</Link>,
+          onClick: handleMenuClick,
+        },
+        {
+          key: "meetings",
+          icon: <CalendarOutlined />,
+          label: <Link href="/cellleader/meetings">Meetings</Link>,
+          onClick: handleMenuClick,
+        },
+        {
+          key: "schedule",
+          icon: <ScheduleOutlined />,
+          label: <Link href="/cellleader/schedule">Schedule</Link>,
+          onClick: handleMenuClick,
+        },
+        {
+          key: "follow-ups",
+          icon: <ClockCircleOutlined />,
+          label: <Link href="/cellleader/follow-ups">Follow-ups</Link>,
+          onClick: handleMenuClick,
+        },
+        {
+          key: "members",
+          icon: <UserOutlined />,
+          label: <Link href="/cellleader/members">Members</Link>,
+          onClick: handleMenuClick,
+        },
+        {
+          key: "interactions",
+          icon: <PhoneOutlined />,
+          label: <Link href="/cellleader/interactions">Interactions</Link>,
+          onClick: handleMenuClick,
+        },
+        {
+          key: "campaigns",
+          icon: <ShareAltOutlined />,
+          label: <Link href="/cellleader/campaigns">Campaigns</Link>,
+          onClick: handleMenuClick,
+        },
+        {
+          key: "settings",
+          icon: <SettingOutlined />,
+          label: "Settings",
+          children: [
+            {
+              key: "meeting-reminders",
+              icon: <BellOutlined />,
+              label: (
+                <Link href="/cellleader/settings/meeting-reminders">
+                  Notifications
+                </Link>
+              ),
+              onClick: handleMenuClick,
+            },
+            {
+              key: "profile",
+              icon: <UserOutlined />,
+              label: <Link href="/profile">Profile</Link>,
+              onClick: handleMenuClick,
+            },
+            {
+              key: "logout",
+              icon: <LogoutOutlined />,
+              label: "Logout",
+              onClick: logout,
+              danger: true,
+            },
+          ],
+        },
+      ];
+    }
+
+    // MEMBER - Basic access
     return [
       ...commonItems,
       {
@@ -245,9 +613,21 @@ export default function DashboardLayout({
         onClick: handleMenuClick,
       },
       {
+        key: "my-cell",
+        icon: <UsergroupAddOutlined />,
+        label: <Link href="/member/my-cell">My Cell</Link>,
+        onClick: handleMenuClick,
+      },
+      {
         key: "history",
         icon: <FileTextOutlined />,
         label: <Link href="/member/history">My History</Link>,
+        onClick: handleMenuClick,
+      },
+      {
+        key: "campaigns",
+        icon: <ShareAltOutlined />,
+        label: <Link href="/member/campaigns">Campaigns</Link>,
         onClick: handleMenuClick,
       },
       {
@@ -307,29 +687,25 @@ export default function DashboardLayout({
       <div className="h-20 flex items-center justify-center border-b border-white/10 backdrop-blur-sm px-4">
         {!collapsed || isMobile ? (
           <div className="flex items-center justify-center w-full">
-            {mounted && (
-              <Image
-                src={logoSrc}
-                alt="Harvesters International Christian Centre"
-                width={180}
-                height={60}
-                className="object-contain rounded-lg"
-                priority
-              />
-            )}
+            <Image
+              src={logoSrc}
+              alt="Harvesters International Christian Centre"
+              width={180}
+              height={60}
+              className="object-contain rounded-lg"
+              priority
+            />
           </div>
         ) : (
           <div className="w-12 h-12 rounded-xl flex items-center justify-center bg-white/10 backdrop-blur-sm">
-            {mounted && (
-              <Image
-                src={logoSrc}
-                alt="HICC"
-                width={40}
-                height={40}
-                className="object-contain rounded-lg"
-                priority
-              />
-            )}
+            <Image
+              src={logoSrc}
+              alt="HICC"
+              width={40}
+              height={40}
+              className="object-contain rounded-lg"
+              priority
+            />
           </div>
         )}
       </div>
@@ -348,203 +724,109 @@ export default function DashboardLayout({
   return (
     <Layout
       style={{ minHeight: "100vh" }}
-      className="bg-white dark:bg-slate-950"
+      className="bg-gradient-to-br from-slate-50 via-white to-slate-100 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900"
     >
-      {/* Desktop Sidebar (Fixed position) */}
+      {/* Desktop Sidebar */}
       {!isMobile && (
         <Sider
           collapsible
           collapsed={collapsed}
-          onCollapse={(value) => setCollapsed(value)}
-          className="!bg-gradient-to-b !from-green-800 !via-green-700 !to-green-900 dark:!from-slate-900 dark:!via-slate-800 dark:!to-slate-950 shadow-2xl !fixed !left-0 !top-0 !h-screen !overflow-y-auto !z-10"
-          width={280}
-          collapsedWidth={80}
-          aria-label="Main navigation sidebar"
+          onCollapse={setCollapsed}
+          width={260}
+          className="!bg-gradient-to-b !from-indigo-600 !via-indigo-700 !to-indigo-800 dark:!from-indigo-900 dark:!via-indigo-950 dark:!to-gray-950 shadow-2xl !fixed !left-0 !top-0 !bottom-0 !h-screen overflow-auto z-10 transition-all duration-300"
+          trigger={null}
+          theme="dark"
         >
           {sidebarContent}
         </Sider>
       )}
 
-      {/* Mobile Drawer (Overlay) */}
+      {/* Mobile Drawer */}
       <Drawer
+        title={
+          <div className="flex items-center justify-between">
+            <Image
+              src={logoSrc}
+              alt="Harvesters International Christian Centre"
+              width={140}
+              height={50}
+              className="object-contain"
+            />
+            <button
+              onClick={() => setMobileDrawerOpen(false)}
+              className="text-white hover:text-gray-300"
+              aria-label="Close menu"
+            >
+              <CloseOutlined />
+            </button>
+          </div>
+        }
         placement="left"
-        open={mobileDrawerOpen}
+        closable={false}
         onClose={() => setMobileDrawerOpen(false)}
-        size="default"
-        styles={{
-          body: { padding: 0 },
-          header: { display: "none" },
-        }}
-        className="[&_.ant-drawer-body]:!bg-gradient-to-b [&_.ant-drawer-body]:!from-green-800 [&_.ant-drawer-body]:!via-green-700 [&_.ant-drawer-body]:!to-green-900 dark:[&_.ant-drawer-body]:!from-slate-900 dark:[&_.ant-drawer-body]:!via-slate-800 dark:[&_.ant-drawer-body]:!to-slate-950"
+        open={isMobile && mobileDrawerOpen}
+        className="[&_.ant-drawer-header]:!bg-gradient-to-r [&_.ant-drawer-header]:!from-indigo-600 [&_.ant-drawer-header]:!to-indigo-700 [&_.ant-drawer-body]:!bg-gradient-to-b [&_.ant-drawer-body]:!from-indigo-600 [&_.ant-drawer-body]:!via-indigo-700 [&_.ant-drawer-body]:!to-indigo-800 [&_.ant-drawer-body]:!p-0"
+        width={280}
       >
-        <div className="flex justify-end p-4">
-          <button
-            onClick={() => setMobileDrawerOpen(false)}
-            className="text-white/80 hover:text-white text-2xl p-2 hover:bg-white/10 rounded-lg transition-colors"
-            aria-label="Close menu"
-          >
-            <CloseOutlined />
-          </button>
-        </div>
         {sidebarContent}
       </Drawer>
 
       <Layout
-        className="bg-white dark:bg-slate-950"
+        className="transition-all duration-300"
         style={{
-          marginLeft: !isMobile ? (collapsed ? 80 : 280) : 0,
-          transition: "margin-left 0.2s",
+          marginLeft: isMobile ? 0 : collapsed ? 80 : 260,
         }}
       >
-        <Header className="!bg-white dark:!bg-slate-900 !p-0 shadow-sm border-b border-gray-200 dark:border-slate-700 !sticky !top-0 !z-[5]">
-          <div className="w-full h-full flex items-center justify-center">
-            <div className="w-full flex items-center">
+        <Header className="!bg-white dark:!bg-gray-800 !p-0 shadow-sm sticky top-0 z-10 backdrop-blur-sm">
+          <div className="flex items-center justify-between h-16 px-6">
+            <div className="flex items-center gap-4">
               {isMobile && (
                 <button
                   onClick={() => setMobileDrawerOpen(true)}
-                  className="text-gray-700 dark:text-gray-200 text-2xl mx-auto p-2 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
+                  className="text-2xl text-gray-700 dark:text-white hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
                   aria-label="Open menu"
                 >
                   <MenuOutlined />
                 </button>
               )}
-              <AppHeader
-                title={`Welcome, ${user?.firstName || "User"}`}
-                actions={
-                  <div className="w-full flex flex-row-reverse justify-start md:justify-center items-center gap-5">
-                    <ThemeToggle />
-                    {role && (
-                      <span className="hidden md:inline text-sm font-semibold text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-slate-800 px-4 py-2 rounded-full shadow-sm">
-                        {role === "SUPERADMIN"
-                          ? "Super Admin"
-                          : role.charAt(0) + role.slice(1).toLowerCase()}
-                      </span>
-                    )}
-                    <Dropdown
-                      menu={{ items: profileMenuItems }}
-                      trigger={["click"]}
-                      placement="bottomRight"
-                    >
-                      <div
-                        className="w-11 h-11 rounded-full bg-gradient-to-br from-green-600 to-green-800 dark:from-green-700 dark:to-green-900 flex items-center justify-center text-white font-semibold text-base shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 cursor-pointer"
-                        aria-label={`${user?.firstName} ${user?.lastName} profile`}
-                        title={`${user?.firstName} ${user?.lastName}`}
-                      >
-                        {user?.firstName?.[0]}
-                        {user?.lastName?.[0]}
-                      </div>
-                    </Dropdown>
-                  </div>
-                }
-              />
+              {!isMobile && (
+                <button
+                  onClick={() => setCollapsed(!collapsed)}
+                  className="text-2xl text-gray-700 dark:text-white hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
+                  aria-label={collapsed ? "Expand menu" : "Collapse menu"}
+                >
+                  <MenuOutlined />
+                </button>
+              )}
+            </div>
+
+            <div className="flex items-center gap-4">
+              <ThemeToggle />
+              {user && (
+                <Dropdown
+                  menu={{ items: profileMenuItems }}
+                  trigger={["click"]}
+                  placement="bottomRight"
+                >
+                  <button
+                    className="flex items-center gap-2 px-3 py-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                    aria-label="User profile menu"
+                  >
+                    <div className="w-8 h-8 rounded-full bg-indigo-600 dark:bg-indigo-500 flex items-center justify-center text-white font-medium">
+                      {user.firstName?.[0]}
+                      {user.lastName?.[0]}
+                    </div>
+                    <span className="hidden sm:inline text-gray-700 dark:text-white font-medium">
+                      {user.firstName} {user.lastName}
+                    </span>
+                  </button>
+                </Dropdown>
+              )}
             </div>
           </div>
         </Header>
 
-        <Content
-          className="overflow-y-auto bg-gray-50 dark:bg-slate-950"
-          style={{ height: "calc(100vh - 64px)" }}
-        >
-          <main
-            id="main-content"
-            tabIndex={-1}
-            aria-label="Main content"
-            className="p-6 md:p-8"
-          >
-            <div className="max-w-7xl mx-auto">{children}</div>
-          </main>
-
-          {/* Footer with public links */}
-          <footer className="mt-16 border-t border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 py-8 px-6">
-            <div className="max-w-7xl mx-auto">
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
-                <div className="space-y-3">
-                  <h3 className="font-semibold text-gray-900 dark:text-white">
-                    About
-                  </h3>
-                  <ul className="space-y-2 text-sm">
-                    <li>
-                      <Link
-                        href="/about"
-                        className="text-gray-600 dark:text-gray-400 hover:text-green-600 dark:hover:text-green-400 transition-colors"
-                      >
-                        About Us
-                      </Link>
-                    </li>
-                    <li>
-                      <Link
-                        href="/contact"
-                        className="text-gray-600 dark:text-gray-400 hover:text-green-600 dark:hover:text-green-400 transition-colors"
-                      >
-                        Contact
-                      </Link>
-                    </li>
-                  </ul>
-                </div>
-                <div className="space-y-3">
-                  <h3 className="font-semibold text-gray-900 dark:text-white">
-                    Resources
-                  </h3>
-                  <ul className="space-y-2 text-sm">
-                    <li>
-                      <Link
-                        href="/terms"
-                        className="text-gray-600 dark:text-gray-400 hover:text-green-600 dark:hover:text-green-400 transition-colors"
-                      >
-                        Terms of Service
-                      </Link>
-                    </li>
-                    <li>
-                      <Link
-                        href="/privacy"
-                        className="text-gray-600 dark:text-gray-400 hover:text-green-600 dark:hover:text-green-400 transition-colors"
-                      >
-                        Privacy Policy
-                      </Link>
-                    </li>
-                  </ul>
-                </div>
-                <div className="space-y-3">
-                  <h3 className="font-semibold text-gray-900 dark:text-white">
-                    Support
-                  </h3>
-                  <ul className="space-y-2 text-sm">
-                    <li>
-                      <a
-                        href="mailto:support@harvestersintl.org"
-                        className="text-gray-600 dark:text-gray-400 hover:text-green-600 dark:hover:text-green-400 transition-colors"
-                      >
-                        Email Support
-                      </a>
-                    </li>
-                    <li>
-                      <Link
-                        href="/contact"
-                        className="text-gray-600 dark:text-gray-400 hover:text-green-600 dark:hover:text-green-400 transition-colors"
-                      >
-                        Help Center
-                      </Link>
-                    </li>
-                  </ul>
-                </div>
-                <div className="space-y-3">
-                  <h3 className="font-semibold text-gray-900 dark:text-white">
-                    Harvesters HICC
-                  </h3>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">
-                    Changing lives by pioneering thriving churches
-                  </p>
-                </div>
-              </div>
-              <div className="pt-6 border-t border-gray-200 dark:border-slate-800 text-center text-sm text-gray-600 dark:text-gray-400">
-                <p>
-                  &copy; {new Date().getFullYear()} Harvesters International
-                  Christian Centre. All rights reserved.
-                </p>
-              </div>
-            </div>
-          </footer>
-        </Content>
+        <Content className="p-6 min-h-[calc(100vh-64px)]">{children}</Content>
       </Layout>
     </Layout>
   );

@@ -1,3 +1,4 @@
+﻿import { UserRole } from "@/lib/types";
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/data/database";
 import { getAuthenticatedUser } from "@/lib/utils/middleware";
@@ -26,13 +27,13 @@ export async function GET(_request: NextRequest) {
     const { user, error } = await getAuthenticatedUser();
     if (error) return error;
 
-    if (user?.role !== "LEADER" && user?.role !== "SUPERADMIN") {
+    if (user?.role !== UserRole.SMALL_GROUP_LEADER && user?.role !== "SUPERADMIN") {
       return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
     }
 
     // Get leader's group members
     const groupMembers =
-      user.role === "LEADER"
+      user.role === UserRole.SMALL_GROUP_LEADER
         ? db.users.findAll({ groupId: user.groupId })
         : db.users.findAll();
 

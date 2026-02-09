@@ -1,5 +1,6 @@
 "use client";
 
+import { UserRole } from "@/lib/types";
 import { useState } from "react";
 import { useAuth } from "@/providers/AuthProvider";
 import DashboardLayout from "@/components/features/navigation/DashboardLayout";
@@ -76,7 +77,7 @@ export default function SystemNotificationsPage() {
   };
 
   return (
-    <DashboardLayout role={user?.role || "SUPERADMIN"}>
+    <DashboardLayout role={user?.role || UserRole.SUPERADMIN}>
       <div className="space-y-6">
         <div>
           <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-2">

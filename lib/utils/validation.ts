@@ -121,6 +121,13 @@ export const registerSchema = z
     ]),
     interests: z.array(z.string()).optional().default([]),
     groupId: z.string().optional(),
+    campusId: z.string().optional(),
+    zoneId: z.string().optional(),
+    departmentId: z.string().optional(),
+    cellId: z.string().optional(),
+    invitedById: z.string().optional(),
+    inviteCode: z.string().optional(),
+    inviteType: z.string().optional(),
   })
   .refine(
     (data) => !data.confirmPassword || data.password === data.confirmPassword,
@@ -226,7 +233,11 @@ export const updateUserSchema = updateProfileSchema.extend({
   role: z
     .enum([
       USER_ROLES.SUPERADMIN as "SUPERADMIN",
-      USER_ROLES.LEADER as "LEADER",
+      USER_ROLES.ZONAL_LEADER as "ZONAL_LEADER",
+      USER_ROLES.CAMPUS_ADMIN as "CAMPUS_ADMIN",
+      USER_ROLES.HOD as "HOD",
+      USER_ROLES.SMALL_GROUP_LEADER as "SMALL_GROUP_LEADER",
+      USER_ROLES.CELL_LEADER as "CELL_LEADER",
       USER_ROLES.MEMBER as "MEMBER",
     ])
     .optional(),
@@ -268,6 +279,9 @@ export const createGroupSchema = z.object({
     MEETING_FREQUENCY.MONTHLY,
   ]),
   leaderId: z.string().min(1, "Leader is required"),
+  campusId: z.string().optional(),
+  zoneId: z.string().optional(),
+  departmentId: z.string().optional(),
 });
 
 export const updateGroupSchema = z.object({
@@ -289,6 +303,9 @@ export const updateGroupSchema = z.object({
     ])
     .optional(),
   leaderId: z.string().min(1, "Leader is required").optional(),
+  campusId: z.string().optional(),
+  zoneId: z.string().optional(),
+  departmentId: z.string().optional(),
 });
 
 // ============================================================================
@@ -296,7 +313,13 @@ export const updateGroupSchema = z.object({
 // ============================================================================
 
 export const createMeetingSchema = z.object({
-  groupId: z.string().min(1, "Group is required"),
+  title: z.string().min(1, "Title is required").max(200, "Title is too long"),
+  level: z.enum(["ALL", "ZONE", "CAMPUS", "DEPARTMENT", "SMALL_GROUP", "CELL"]),
+  groupId: z.string().optional(),
+  cellId: z.string().optional(),
+  campusId: z.string().optional(),
+  zoneId: z.string().optional(),
+  departmentId: z.string().optional(),
   date: z.string().min(1, "Date is required"),
   startTime: z.string().min(1, "Start time is required"),
   endTime: z.string().min(1, "End time is required"),
@@ -313,12 +336,34 @@ export const createMeetingSchema = z.object({
     .max(VALIDATION_RULES.NOTES_MAX_LENGTH, "Notes are too long")
     .optional(),
   screenshotUrl: z.string().optional(),
+  campusNotes: z
+    .object({
+      cellsHeld: z.number().int().min(0).optional(),
+      firstTimers: z.number().int().min(0).optional(),
+      salvations: z.number().int().min(0).optional(),
+      testimonies: z.array(z.string()).optional(),
+    })
+    .optional(),
 });
 
 export const updateMeetingSchema = z.object({
+  title: z
+    .string()
+    .min(1, "Title is required")
+    .max(200, "Title is too long")
+    .optional(),
+  level: z
+    .enum(["ALL", "ZONE", "CAMPUS", "DEPARTMENT", "SMALL_GROUP", "CELL"])
+    .optional(),
+  groupId: z.string().optional(),
+  cellId: z.string().optional(),
+  campusId: z.string().optional(),
+  zoneId: z.string().optional(),
+  departmentId: z.string().optional(),
   date: z.string().min(1, "Date is required").optional(),
   startTime: z.string().min(1, "Start time is required").optional(),
   endTime: z.string().min(1, "End time is required").optional(),
+  topic: z.string().max(200, "Topic is too long").optional(),
   attendeeCount: z.number().int().min(0).optional(),
   attendeeIds: z.array(z.string()).optional(),
   notes: z
@@ -326,6 +371,14 @@ export const updateMeetingSchema = z.object({
     .max(VALIDATION_RULES.NOTES_MAX_LENGTH, "Notes are too long")
     .optional(),
   screenshotUrl: z.string().optional(),
+  campusNotes: z
+    .object({
+      cellsHeld: z.number().int().min(0).optional(),
+      firstTimers: z.number().int().min(0).optional(),
+      salvations: z.number().int().min(0).optional(),
+      testimonies: z.array(z.string()).optional(),
+    })
+    .optional(),
 });
 
 // ============================================================================
@@ -407,7 +460,11 @@ export const userFiltersSchema = z.object({
   role: z
     .enum([
       USER_ROLES.SUPERADMIN as "SUPERADMIN",
-      USER_ROLES.LEADER as "LEADER",
+      USER_ROLES.ZONAL_LEADER as "ZONAL_LEADER",
+      USER_ROLES.CAMPUS_ADMIN as "CAMPUS_ADMIN",
+      USER_ROLES.HOD as "HOD",
+      USER_ROLES.SMALL_GROUP_LEADER as "SMALL_GROUP_LEADER",
+      USER_ROLES.CELL_LEADER as "CELL_LEADER",
       USER_ROLES.MEMBER as "MEMBER",
     ])
     .optional(),

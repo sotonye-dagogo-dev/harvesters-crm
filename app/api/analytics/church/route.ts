@@ -1,3 +1,4 @@
+import { UserRole } from "@/lib/types";
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/data/database";
 import { differenceInDays } from "date-fns";
@@ -24,7 +25,7 @@ export async function GET(_request: NextRequest) {
 
     // Calculate engagement scores for all members
     const memberEngagementScores = allUsers
-      .filter((u) => u.role === "MEMBER" || u.role === "LEADER")
+      .filter((u) => u.role === "MEMBER" || u.role === UserRole.SMALL_GROUP_LEADER)
       .map((member) => {
         const memberMeetings = allMeetings.filter(
           (m) =>

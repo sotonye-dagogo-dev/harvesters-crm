@@ -2,6 +2,7 @@ import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
 import { cookies } from "next/headers";
 import { USER_ROLES } from "@/lib/constants";
+import { UserRole } from "../types";
 
 // JWT Configuration
 const ACCESS_TOKEN_SECRET =
@@ -180,16 +181,24 @@ export function isSuperadmin(user: AuthUser | null): boolean {
 
 export function isLeader(user: AuthUser | null): boolean {
   return hasRole(user, [
-    USER_ROLES.LEADER as UserRole,
     USER_ROLES.SUPERADMIN as UserRole,
+    USER_ROLES.ZONAL_LEADER as UserRole,
+    USER_ROLES.CAMPUS_ADMIN as UserRole,
+    USER_ROLES.HOD as UserRole,
+    USER_ROLES.SMALL_GROUP_LEADER as UserRole,
+    USER_ROLES.CELL_LEADER as UserRole,
   ]);
 }
 
 export function isMember(user: AuthUser | null): boolean {
   return hasRole(user, [
     USER_ROLES.MEMBER as UserRole,
-    USER_ROLES.LEADER as UserRole,
     USER_ROLES.SUPERADMIN as UserRole,
+    USER_ROLES.ZONAL_LEADER as UserRole,
+    USER_ROLES.CAMPUS_ADMIN as UserRole,
+    USER_ROLES.HOD as UserRole,
+    USER_ROLES.SMALL_GROUP_LEADER as UserRole,
+    USER_ROLES.CELL_LEADER as UserRole,
   ]);
 }
 
@@ -205,5 +214,6 @@ export function canAccessGroup(
 export function canManageGroup(user: AuthUser | null, group: Group): boolean {
   if (!user) return false;
   if (isSuperadmin(user)) return true;
-  return user.role === USER_ROLES.LEADER && group.leaderId === user.id;
+  // Check if user is the group leader (any leadership role)
+  return isLeader(user) && group.leaderId === user.id;
 }

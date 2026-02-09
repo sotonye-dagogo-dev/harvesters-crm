@@ -1,5 +1,6 @@
 "use client";
 
+import { UserRole } from "@/lib/types";
 import DashboardLayout from "@/components/features/navigation/DashboardLayout";
 import { StatCard } from "@/components/ui/Card";
 import {
@@ -154,7 +155,7 @@ export default function LeaderDashboard() {
 
   if (loading) {
     return (
-      <DashboardLayout role="LEADER">
+      <DashboardLayout role={UserRole.SMALL_GROUP_LEADER}>
         <div className="flex items-center justify-center h-96">
           <Spin size="large" />
         </div>
@@ -163,7 +164,7 @@ export default function LeaderDashboard() {
   }
 
   return (
-    <DashboardLayout role="LEADER">
+    <DashboardLayout role={UserRole.SMALL_GROUP_LEADER}>
       <div className="space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>

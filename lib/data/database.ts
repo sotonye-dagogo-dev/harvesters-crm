@@ -1,21 +1,35 @@
 import bcrypt from "bcryptjs";
 import {
+  MembershipRequestStatus,
+  CampaignStatus,
+  MeetingLevel,
+  CampaignInteractionType,
+  InviteLinkType,
+} from "@/lib/types";
+import {
   mockUsers,
   mockGroups,
   mockMeetings,
   mockInteractions,
   mockMembershipRequests,
   mockNotifications,
+  mockCampuses,
+  mockZones,
+  mockDepartments,
+  mockCells,
+  mockCampaigns,
+  mockCampaignInteractions,
+  mockInviteLinks,
+  mockInviteLinkVisits,
 } from "./mockData";
 
 // ============================================================================
 // IN-MEMORY DATABASE (SINGLETON PATTERN)
+// Uses globalThis to survive Next.js hot-reloads in development.
 // ============================================================================
 
-// Deep clone to avoid mutations
 const cloneData = <T>(data: T): T => JSON.parse(JSON.stringify(data));
 
-// Use globalThis to persist data across hot reloads in development
 const globalForDb = globalThis as unknown as {
   dbStore?: {
     users: User[];
@@ -24,10 +38,17 @@ const globalForDb = globalThis as unknown as {
     interactions: Interaction[];
     membershipRequests: MembershipRequest[];
     notifications: appNotification[];
+    campuses: Campus[];
+    zones: Zone[];
+    departments: Department[];
+    cells: Cell[];
+    campaigns: Campaign[];
+    campaignInteractions: CampaignInteraction[];
+    inviteLinks: InviteLink[];
+    inviteLinkVisits: InviteLinkVisit[];
   };
 };
 
-// Initialize or reuse existing data stores
 if (!globalForDb.dbStore) {
   globalForDb.dbStore = {
     users: cloneData(mockUsers),
@@ -36,23 +57,38 @@ if (!globalForDb.dbStore) {
     interactions: cloneData(mockInteractions),
     membershipRequests: cloneData(mockMembershipRequests),
     notifications: cloneData(mockNotifications),
+    campuses: cloneData(mockCampuses),
+    zones: cloneData(mockZones),
+    departments: cloneData(mockDepartments),
+    cells: cloneData(mockCells),
+    campaigns: cloneData(mockCampaigns),
+    campaignInteractions: cloneData(mockCampaignInteractions),
+    inviteLinks: cloneData(mockInviteLinks),
+    inviteLinkVisits: cloneData(mockInviteLinkVisits),
   };
 }
 
-// Reference the global store
-let users = globalForDb.dbStore.users;
+const users = globalForDb.dbStore.users;
 const groups = globalForDb.dbStore.groups;
 const meetings = globalForDb.dbStore.meetings;
 const interactions = globalForDb.dbStore.interactions;
 const membershipRequests = globalForDb.dbStore.membershipRequests;
 let notifications = globalForDb.dbStore.notifications;
+const campuses = globalForDb.dbStore.campuses;
+const zones = globalForDb.dbStore.zones;
+const departments = globalForDb.dbStore.departments;
+const cells = globalForDb.dbStore.cells;
+const campaigns = globalForDb.dbStore.campaigns;
+const campaignInteractions = globalForDb.dbStore.campaignInteractions;
+const inviteLinks = globalForDb.dbStore.inviteLinks;
+const inviteLinkVisits = globalForDb.dbStore.inviteLinkVisits;
 
-// Helper to generate IDs
+// ── Helpers ──────────────────────────────────────────────────────────────────
 const generateId = () =>
   `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-
-// Helper for timestamps
 const now = () => new Date().toISOString();
+const generateCode = () =>
+  Math.random().toString(36).substring(2, 10).toUpperCase();
 
 // ============================================================================
 // USER OPERATIONS
@@ -62,342 +98,625 @@ export const userDb = {
   findAll: (filters?: UserFilters): User[] => {
     let result = [...users];
 
-    if (filters?.role) {
-      result = result.filter((u) => u.role === filters.role);
-    }
-    if (filters?.groupId) {
+    if (filters?.role) result = result.filter((u) => u.role === filters.role);
+    if (filters?.groupId)
       result = result.filter((u) => u.groupId === filters.groupId);
-    }
-    if (filters?.isActive !== undefined) {
+    if (filters?.campusId)
+      result = result.filter((u) => u.campusId === filters.campusId);
+    if (filters?.zoneId)
+      result = result.filter((u) => u.zoneId === filters.zoneId);
+    if (filters?.departmentId)
+      result = result.filter((u) => u.departmentId === filters.departmentId);
+    if (filters?.cellId)
+      result = result.filter((u) => u.cellId === filters.cellId);
+    if (filters?.isActive !== undefined)
       result = result.filter((u) => u.isActive === filters.isActive);
-    }
     if (filters?.search) {
-      const search = filters.search.toLowerCase();
+      const q = filters.search.toLowerCase();
       result = result.filter(
         (u) =>
-          u.firstName.toLowerCase().includes(search) ||
-          u.lastName.toLowerCase().includes(search) ||
-          u.email.toLowerCase().includes(search)
+          u.firstName.toLowerCase().includes(q) ||
+          u.lastName.toLowerCase().includes(q) ||
+          u.email.toLowerCase().includes(q) ||
+          u.phone?.includes(q)
       );
     }
 
     return result;
   },
 
-  findById: (id: string): User | undefined => {
-    return users.find((u) => u.id === id);
-  },
+  findById: (id: string): User | undefined => users.find((u) => u.id === id),
 
-  findByEmail: (email: string): User | undefined => {
-    return users.find((u) => u.email === email);
-  },
+  findByEmail: (email: string): User | undefined =>
+    users.find((u) => u.email.toLowerCase() === email.toLowerCase()),
 
-  create: (data: CreateUserInput): User => {
-    const hashedPassword = bcrypt.hashSync(data.password, 10);
-    const newUser: User = {
+  findByInviteCode: (code: string): User | undefined =>
+    users.find((u) => u.inviteCode === code),
+
+  create: (data: Omit<User, "id" | "createdAt" | "updatedAt">): User => {
+    const user: User = {
+      ...data,
       id: generateId(),
-      email: data.email,
-      password: hashedPassword,
-      firstName: data.firstName,
-      lastName: data.lastName,
-      phone: data.phone,
-      whatsappPhone: data.whatsappPhone,
-      location: data.location,
-      age: data.age,
-      maritalStatus: data.maritalStatus,
-      employmentStatus: data.employmentStatus,
-      interests: data.interests || [],
-      role: "MEMBER" as UserRole,
-      groupId: data.groupId,
-      avatar: undefined,
-      isActive: true,
+      inviteCode: data.inviteCode || generateCode(),
       createdAt: now(),
       updatedAt: now(),
     };
-
-    users.push(newUser);
-    globalForDb.dbStore!.users = users; // Ensure global store is updated
-
-    // Update group member count if assigned
-    if (newUser.groupId) {
-      const group = groups.find((g) => g.id === newUser.groupId);
-      if (group) {
-        group.memberCount++;
-        group.updatedAt = now();
-      }
-    }
-
-    return newUser;
+    users.push(user);
+    return user;
   },
 
-  update: (id: string, data: UpdateUserInput): User | undefined => {
-    const index = users.findIndex((u) => u.id === id);
-    if (index === -1) return undefined;
-
-    const user = users[index];
-    const oldGroupId = user.groupId;
-
-    users[index] = {
-      ...user,
-      ...data,
-      updatedAt: now(),
-    };
-
-    // Update group member counts if group changed
-    if (oldGroupId !== users[index].groupId) {
-      if (oldGroupId) {
-        const oldGroup = groups.find((g) => g.id === oldGroupId);
-        if (oldGroup) {
-          oldGroup.memberCount--;
-          oldGroup.updatedAt = now();
-        }
-      }
-      if (users[index].groupId) {
-        const newGroup = groups.find((g) => g.id === users[index].groupId);
-        if (newGroup) {
-          newGroup.memberCount++;
-          newGroup.updatedAt = now();
-        }
-      }
-    }
-
-    return users[index];
-  },
-
-  updateRole: (id: string, role: UserRole): User | undefined => {
-    const index = users.findIndex((u) => u.id === id);
-    if (index === -1) return undefined;
-
-    users[index].role = role;
-    users[index].updatedAt = now();
-    return users[index];
-  },
-
-  updatePassword: (id: string, hashedPassword: string): User | undefined => {
-    const index = users.findIndex((u) => u.id === id);
-    if (index === -1) return undefined;
-
-    users[index].password = hashedPassword;
-    users[index].updatedAt = now();
-    return users[index];
+  update: (id: string, data: Partial<User>): User | undefined => {
+    const idx = users.findIndex((u) => u.id === id);
+    if (idx === -1) return undefined;
+    users[idx] = { ...users[idx], ...data, updatedAt: now() };
+    return users[idx];
   },
 
   delete: (id: string): boolean => {
-    const index = users.findIndex((u) => u.id === id);
-    if (index === -1) return false;
-
-    const user = users[index];
-
-    // Update group member count
-    if (user.groupId) {
-      const group = groups.find((g) => g.id === user.groupId);
-      if (group) {
-        group.memberCount--;
-        group.updatedAt = now();
-      }
-    }
-
-    users[index].isActive = false;
-    users[index].updatedAt = now();
+    const idx = users.findIndex((u) => u.id === id);
+    if (idx === -1) return false;
+    users.splice(idx, 1);
     return true;
   },
 
-  comparePassword: (password: string, hash: string): boolean => {
-    return bcrypt.compareSync(password, hash);
+  verifyPassword: async (plain: string, hashed: string): Promise<boolean> => {
+    return bcrypt.compare(plain, hashed);
+  },
+
+  hashPassword: async (password: string): Promise<string> => {
+    return bcrypt.hash(password, 10);
+  },
+
+  count: (filters?: UserFilters): number => userDb.findAll(filters).length,
+
+  // Alias methods for compatibility
+  comparePassword: async (plain: string, hashed: string): Promise<boolean> => {
+    return bcrypt.compare(plain, hashed);
+  },
+
+  updatePassword: async (
+    id: string,
+    hashedPassword: string
+  ): Promise<User | undefined> => {
+    return userDb.update(id, { password: hashedPassword });
   },
 };
 
 // ============================================================================
-// GROUP OPERATIONS
+// ZONE OPERATIONS (top-level org unit — contains campuses)
+// ============================================================================
+
+export const zoneDb = {
+  findAll: (filters?: { isActive?: boolean; search?: string }): Zone[] => {
+    let result = [...zones];
+    if (filters?.isActive !== undefined)
+      result = result.filter((z) => z.isActive === filters.isActive);
+    if (filters?.search) {
+      const q = filters.search.toLowerCase();
+      result = result.filter(
+        (z) =>
+          z.name.toLowerCase().includes(q) ||
+          z.description.toLowerCase().includes(q) ||
+          z.region?.toLowerCase().includes(q)
+      );
+    }
+    return result;
+  },
+
+  findById: (id: string): Zone | undefined => zones.find((z) => z.id === id),
+
+  create: (data: CreateZoneInput): Zone => {
+    const zone: Zone = {
+      id: generateId(),
+      ...data,
+      isActive: true,
+      createdAt: now(),
+      updatedAt: now(),
+    };
+    zones.push(zone);
+    return zone;
+  },
+
+  update: (id: string, data: UpdateZoneInput): Zone | undefined => {
+    const idx = zones.findIndex((z) => z.id === id);
+    if (idx === -1) return undefined;
+    zones[idx] = { ...zones[idx], ...data, updatedAt: now() };
+    return zones[idx];
+  },
+
+  delete: (id: string): boolean => {
+    const idx = zones.findIndex((z) => z.id === id);
+    if (idx === -1) return false;
+    zones.splice(idx, 1);
+    return true;
+  },
+
+  getWithDetails: (id: string): ZoneWithDetails | undefined => {
+    const zone = zones.find((z) => z.id === id);
+    if (!zone) return undefined;
+
+    const leader = users.find((u) => u.id === zone.leaderId);
+    const zoneCampuses = campuses.filter((c) => c.zoneId === zone.id);
+    const zoneDepts = departments.filter((d) => d.zoneId === zone.id);
+    const zoneMembers = users.filter((u) => u.zoneId === zone.id);
+    const zoneGroups = groups.filter((g) => g.zoneId === zone.id);
+
+    const toProfile = (u: User): UserProfile => ({
+      id: u.id,
+      email: u.email,
+      firstName: u.firstName,
+      lastName: u.lastName,
+      phone: u.phone,
+      whatsappPhone: u.whatsappPhone,
+      location: u.location,
+      age: u.age,
+      maritalStatus: u.maritalStatus,
+      employmentStatus: u.employmentStatus,
+      interests: u.interests,
+      role: u.role,
+      campusId: u.campusId,
+      zoneId: u.zoneId,
+      departmentId: u.departmentId,
+      groupId: u.groupId,
+      cellId: u.cellId,
+      avatar: u.avatar,
+      isActive: u.isActive,
+      inviteCode: u.inviteCode,
+      createdAt: u.createdAt,
+      updatedAt: u.updatedAt,
+    });
+
+    return {
+      ...zone,
+      leader: leader ? toProfile(leader) : undefined,
+      campuses: zoneCampuses,
+      departments: zoneDepts,
+      groups: zoneGroups,
+      totalCampuses: zoneCampuses.length,
+      totalDepartments: zoneDepts.length,
+      totalMembers: zoneMembers.length,
+    };
+  },
+
+  count: (): number => zones.length,
+};
+
+// ============================================================================
+// CAMPUS OPERATIONS (belong to zones)
+// ============================================================================
+
+export const campusDb = {
+  findAll: (filters?: {
+    zoneId?: string;
+    isActive?: boolean;
+    search?: string;
+  }): Campus[] => {
+    let result = [...campuses];
+    if (filters?.zoneId)
+      result = result.filter((c) => c.zoneId === filters.zoneId);
+    if (filters?.isActive !== undefined)
+      result = result.filter((c) => c.isActive === filters.isActive);
+    if (filters?.search) {
+      const q = filters.search.toLowerCase();
+      result = result.filter(
+        (c) =>
+          c.name.toLowerCase().includes(q) ||
+          c.description.toLowerCase().includes(q) ||
+          c.location.toLowerCase().includes(q)
+      );
+    }
+    return result;
+  },
+
+  findById: (id: string): Campus | undefined =>
+    campuses.find((c) => c.id === id),
+
+  create: (data: CreateCampusInput): Campus => {
+    const campus: Campus = {
+      id: generateId(),
+      ...data,
+      isActive: true,
+      createdAt: now(),
+      updatedAt: now(),
+    };
+    campuses.push(campus);
+    return campus;
+  },
+
+  update: (id: string, data: UpdateCampusInput): Campus | undefined => {
+    const idx = campuses.findIndex((c) => c.id === id);
+    if (idx === -1) return undefined;
+    campuses[idx] = { ...campuses[idx], ...data, updatedAt: now() };
+    return campuses[idx];
+  },
+
+  delete: (id: string): boolean => {
+    const idx = campuses.findIndex((c) => c.id === id);
+    if (idx === -1) return false;
+    campuses.splice(idx, 1);
+    return true;
+  },
+
+  getWithDetails: (id: string): CampusWithDetails | undefined => {
+    const campus = campuses.find((c) => c.id === id);
+    if (!campus) return undefined;
+
+    const zone = zones.find((z) => z.id === campus.zoneId);
+    const admin = users.find((u) => u.id === campus.adminId);
+    const campusDepts = departments.filter((d) => d.campusId === campus.id);
+    const campusGroups = groups.filter((g) => g.campusId === campus.id);
+    const campusCells = cells.filter((c) => c.campusId === campus.id);
+    const campusMembers = users.filter((u) => u.campusId === campus.id);
+
+    const toProfile = (u: User): UserProfile => ({
+      id: u.id,
+      email: u.email,
+      firstName: u.firstName,
+      lastName: u.lastName,
+      phone: u.phone,
+      whatsappPhone: u.whatsappPhone,
+      location: u.location,
+      age: u.age,
+      maritalStatus: u.maritalStatus,
+      employmentStatus: u.employmentStatus,
+      interests: u.interests,
+      role: u.role,
+      campusId: u.campusId,
+      zoneId: u.zoneId,
+      departmentId: u.departmentId,
+      groupId: u.groupId,
+      cellId: u.cellId,
+      avatar: u.avatar,
+      isActive: u.isActive,
+      inviteCode: u.inviteCode,
+      createdAt: u.createdAt,
+      updatedAt: u.updatedAt,
+    });
+
+    return {
+      ...campus,
+      zone: zone as Zone,
+      admin: admin ? toProfile(admin) : undefined,
+      departments: campusDepts,
+      groups: campusGroups,
+      cells: campusCells,
+      totalDepartments: campusDepts.length,
+      totalGroups: campusGroups.length,
+      totalCells: campusCells.length,
+      totalMembers: campusMembers.length,
+    };
+  },
+
+  count: (filters?: { zoneId?: string }): number =>
+    campusDb.findAll(filters).length,
+};
+
+// ============================================================================
+// DEPARTMENT OPERATIONS (belong to campuses)
+// ============================================================================
+
+export const departmentDb = {
+  findAll: (filters?: {
+    campusId?: string;
+    zoneId?: string;
+    isActive?: boolean;
+    search?: string;
+  }): Department[] => {
+    let result = [...departments];
+    if (filters?.campusId)
+      result = result.filter((d) => d.campusId === filters.campusId);
+    if (filters?.zoneId)
+      result = result.filter((d) => d.zoneId === filters.zoneId);
+    if (filters?.isActive !== undefined)
+      result = result.filter((d) => d.isActive === filters.isActive);
+    if (filters?.search) {
+      const q = filters.search.toLowerCase();
+      result = result.filter(
+        (d) =>
+          d.name.toLowerCase().includes(q) ||
+          d.description.toLowerCase().includes(q)
+      );
+    }
+    return result;
+  },
+
+  findById: (id: string): Department | undefined =>
+    departments.find((d) => d.id === id),
+
+  create: (data: CreateDepartmentInput): Department => {
+    const dept: Department = {
+      id: generateId(),
+      ...data,
+      isActive: true,
+      createdAt: now(),
+      updatedAt: now(),
+    };
+    departments.push(dept);
+    return dept;
+  },
+
+  update: (id: string, data: UpdateDepartmentInput): Department | undefined => {
+    const idx = departments.findIndex((d) => d.id === id);
+    if (idx === -1) return undefined;
+    departments[idx] = { ...departments[idx], ...data, updatedAt: now() };
+    return departments[idx];
+  },
+
+  delete: (id: string): boolean => {
+    const idx = departments.findIndex((d) => d.id === id);
+    if (idx === -1) return false;
+    departments.splice(idx, 1);
+    return true;
+  },
+
+  getWithDetails: (id: string): DepartmentWithDetails | undefined => {
+    const dept = departments.find((d) => d.id === id);
+    if (!dept) return undefined;
+
+    const campus = campuses.find((c) => c.id === dept.campusId);
+    const hod = users.find((u) => u.id === dept.hodId);
+    const deptGroups = groups.filter((g) => g.departmentId === dept.id);
+    const deptMembers = users.filter((u) => u.departmentId === dept.id);
+
+    const toProfile = (u: User): UserProfile => ({
+      id: u.id,
+      email: u.email,
+      firstName: u.firstName,
+      lastName: u.lastName,
+      phone: u.phone,
+      whatsappPhone: u.whatsappPhone,
+      location: u.location,
+      age: u.age,
+      maritalStatus: u.maritalStatus,
+      employmentStatus: u.employmentStatus,
+      interests: u.interests,
+      role: u.role,
+      campusId: u.campusId,
+      zoneId: u.zoneId,
+      departmentId: u.departmentId,
+      groupId: u.groupId,
+      cellId: u.cellId,
+      avatar: u.avatar,
+      isActive: u.isActive,
+      inviteCode: u.inviteCode,
+      createdAt: u.createdAt,
+      updatedAt: u.updatedAt,
+    });
+
+    return {
+      ...dept,
+      campus: campus as Campus,
+      hod: hod ? toProfile(hod) : undefined,
+      groups: deptGroups,
+      totalGroups: deptGroups.length,
+      totalMembers: deptMembers.length,
+    };
+  },
+
+  count: (filters?: { campusId?: string; zoneId?: string }): number =>
+    departmentDb.findAll(filters).length,
+};
+
+// ============================================================================
+// GROUP OPERATIONS (small groups)
 // ============================================================================
 
 export const groupDb = {
   findAll: (filters?: GroupFilters): Group[] => {
     let result = [...groups];
-
-    if (filters?.leaderId) {
+    if (filters?.campusId)
+      result = result.filter((g) => g.campusId === filters.campusId);
+    if (filters?.zoneId)
+      result = result.filter((g) => g.zoneId === filters.zoneId);
+    if (filters?.departmentId)
+      result = result.filter((g) => g.departmentId === filters.departmentId);
+    if (filters?.leaderId)
       result = result.filter((g) => g.leaderId === filters.leaderId);
-    }
+    if (filters?.isActive !== undefined)
+      result = result.filter((g) => g.isActive === filters.isActive);
     if (filters?.search) {
-      const search = filters.search.toLowerCase();
+      const q = filters.search.toLowerCase();
       result = result.filter(
         (g) =>
-          g.name.toLowerCase().includes(search) ||
-          g.description.toLowerCase().includes(search)
+          g.name.toLowerCase().includes(q) ||
+          g.description.toLowerCase().includes(q)
       );
     }
-
     return result;
   },
 
-  findById: (id: string): Group | undefined => {
-    return groups.find((g) => g.id === id);
-  },
+  findById: (id: string): Group | undefined => groups.find((g) => g.id === id),
+
+  findByInviteCode: (code: string): Group | undefined =>
+    groups.find((g) => g.inviteCode === code),
 
   create: (data: CreateGroupInput): Group => {
-    const newGroup: Group = {
+    const group: Group = {
       id: generateId(),
-      name: data.name,
-      description: data.description,
-      meetingFrequency: data.meetingFrequency,
-      leaderId: data.leaderId,
+      ...data,
+      campusId: data.campusId || "",
+      zoneId: data.zoneId || "",
+      departmentId: data.departmentId || undefined,
       memberCount: 0,
+      inviteCode: generateCode(),
+      isActive: true,
       createdAt: now(),
       updatedAt: now(),
     };
-
-    groups.push(newGroup);
-    globalForDb.dbStore!.groups = groups; // Ensure global store is updated
-    return newGroup;
+    groups.push(group);
+    return group;
   },
 
-  update: (id: string, data: UpdateGroupInput): Group | undefined => {
-    const index = groups.findIndex((g) => g.id === id);
-    if (index === -1) return undefined;
-
-    groups[index] = {
-      ...groups[index],
-      ...data,
-      updatedAt: now(),
-    };
-
-    return groups[index];
+  update: (id: string, data: Partial<Group>): Group | undefined => {
+    const idx = groups.findIndex((g) => g.id === id);
+    if (idx === -1) return undefined;
+    groups[idx] = { ...groups[idx], ...data, updatedAt: now() };
+    return groups[idx];
   },
 
   delete: (id: string): boolean => {
-    const index = groups.findIndex((g) => g.id === id);
-    if (index === -1) return false;
-
-    // Remove group reference from users
-    users = users.map((u) => {
-      if (u.groupId === id) {
-        return { ...u, groupId: undefined, updatedAt: now() };
-      }
-      return u;
-    });
-    globalForDb.dbStore!.users = users; // Sync users update
-
-    groups.splice(index, 1);
-    globalForDb.dbStore!.groups = groups; // Ensure global store is updated
+    const idx = groups.findIndex((g) => g.id === id);
+    if (idx === -1) return false;
+    groups.splice(idx, 1);
     return true;
   },
 
-  getMembers: (groupId: string): User[] => {
-    return users.filter((u) => u.groupId === groupId);
-  },
+  getMembers: (groupId: string): User[] =>
+    users.filter((u) => u.groupId === groupId),
 
-  addMember: (groupId: string, memberId: string): boolean => {
-    const group = groups.find((g) => g.id === groupId);
-    const user = users.find((u) => u.id === memberId);
-
-    if (!group || !user) return false;
-
-    const oldGroupId = user.groupId;
-
-    // Remove from old group
-    if (oldGroupId) {
-      const oldGroup = groups.find((g) => g.id === oldGroupId);
-      if (oldGroup) {
-        oldGroup.memberCount--;
-        oldGroup.updatedAt = now();
-      }
-    }
-
-    // Add to new group
-    user.groupId = groupId;
-    user.updatedAt = now();
-    group.memberCount++;
-    group.updatedAt = now();
-
-    return true;
-  },
-
-  removeMember: (groupId: string, memberId: string): boolean => {
-    const group = groups.find((g) => g.id === groupId);
-    const user = users.find((u) => u.id === memberId && u.groupId === groupId);
-
-    if (!group || !user) return false;
-
-    user.groupId = undefined;
-    user.updatedAt = now();
-    group.memberCount--;
-    group.updatedAt = now();
-
-    return true;
-  },
+  count: (filters?: GroupFilters): number => groupDb.findAll(filters).length,
 };
 
 // ============================================================================
-// MEETING OPERATIONS
+// CELL OPERATIONS
+// ============================================================================
+
+export const cellDb = {
+  findAll: (filters?: {
+    groupId?: string;
+    campusId?: string;
+    zoneId?: string;
+    departmentId?: string;
+    leaderId?: string;
+    isActive?: boolean;
+    search?: string;
+  }): Cell[] => {
+    let result = [...cells];
+    if (filters?.groupId)
+      result = result.filter((c) => c.groupId === filters.groupId);
+    if (filters?.campusId)
+      result = result.filter((c) => c.campusId === filters.campusId);
+    if (filters?.zoneId)
+      result = result.filter((c) => c.zoneId === filters.zoneId);
+    if (filters?.departmentId)
+      result = result.filter((c) => c.departmentId === filters.departmentId);
+    if (filters?.leaderId)
+      result = result.filter((c) => c.leaderId === filters.leaderId);
+    if (filters?.isActive !== undefined)
+      result = result.filter((c) => c.isActive === filters.isActive);
+    if (filters?.search) {
+      const q = filters.search.toLowerCase();
+      result = result.filter(
+        (c) =>
+          c.name.toLowerCase().includes(q) ||
+          c.description.toLowerCase().includes(q)
+      );
+    }
+    return result;
+  },
+
+  findById: (id: string): Cell | undefined => cells.find((c) => c.id === id),
+
+  findByInviteCode: (code: string): Cell | undefined =>
+    cells.find((c) => c.inviteCode === code),
+
+  create: (data: CreateCellInput): Cell => {
+    const cell: Cell = {
+      id: generateId(),
+      ...data,
+      memberCount: 0,
+      inviteCode: generateCode(),
+      isActive: true,
+      createdAt: now(),
+      updatedAt: now(),
+    };
+    cells.push(cell);
+    return cell;
+  },
+
+  update: (id: string, data: Partial<Cell>): Cell | undefined => {
+    const idx = cells.findIndex((c) => c.id === id);
+    if (idx === -1) return undefined;
+    cells[idx] = { ...cells[idx], ...data, updatedAt: now() };
+    return cells[idx];
+  },
+
+  delete: (id: string): boolean => {
+    const idx = cells.findIndex((c) => c.id === id);
+    if (idx === -1) return false;
+    cells.splice(idx, 1);
+    return true;
+  },
+
+  getMembers: (cellId: string): User[] =>
+    users.filter((u) => u.cellId === cellId),
+
+  count: (filters?: { groupId?: string; campusId?: string }): number =>
+    cellDb.findAll(filters).length,
+};
+
+// ============================================================================
+// MEETING OPERATIONS (hierarchy-level aware)
 // ============================================================================
 
 export const meetingDb = {
   findAll: (filters?: MeetingFilters): Meeting[] => {
     let result = [...meetings];
 
-    if (filters?.groupId) {
+    if (filters?.groupId)
       result = result.filter((m) => m.groupId === filters.groupId);
-    }
-    if (filters?.createdById) {
+    if (filters?.campusId)
+      result = result.filter((m) => m.campusId === filters.campusId);
+    if (filters?.zoneId)
+      result = result.filter((m) => m.zoneId === filters.zoneId);
+    if (filters?.departmentId)
+      result = result.filter((m) => m.departmentId === filters.departmentId);
+    if (filters?.cellId)
+      result = result.filter((m) => m.cellId === filters.cellId);
+    if (filters?.level)
+      result = result.filter((m) => m.level === filters.level);
+    if (filters?.createdById)
       result = result.filter((m) => m.createdById === filters.createdById);
-    }
-    if (filters?.dateFrom) {
-      result = result.filter((m) => m.date >= filters.dateFrom!);
-    }
-    if (filters?.dateTo) {
-      result = result.filter((m) => m.date <= filters.dateTo!);
+    if (filters?.startDate)
+      result = result.filter((m) => m.date >= filters.startDate!);
+    if (filters?.endDate)
+      result = result.filter((m) => m.date <= filters.endDate!);
+    if (filters?.search) {
+      const q = filters.search.toLowerCase();
+      result = result.filter(
+        (m) =>
+          m.title?.toLowerCase().includes(q) ||
+          m.topic?.toLowerCase().includes(q)
+      );
     }
 
-    return result.sort((a, b) => b.date.localeCompare(a.date));
+    // Most recent first
+    result.sort(
+      (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+    );
+    return result;
   },
 
-  findById: (id: string): Meeting | undefined => {
-    return meetings.find((m) => m.id === id);
-  },
+  findById: (id: string): Meeting | undefined =>
+    meetings.find((m) => m.id === id),
 
-  create: (data: CreateMeetingInput, createdById: string): Meeting => {
-    const newMeeting: Meeting = {
+  create: (data: Omit<Meeting, "id" | "createdAt" | "updatedAt">): Meeting => {
+    const meeting: Meeting = {
+      ...data,
       id: generateId(),
-      groupId: data.groupId,
-      date: data.date,
-      startTime: data.startTime,
-      endTime: data.endTime,
-      topic: data.topic,
-      attendeeCount: data.attendeeCount || data.attendeeIds?.length || 0,
-      attendeeIds: data.attendeeIds || [],
-      screenshotUrl: data.screenshotUrl,
-      notes: data.notes,
-      createdById,
       createdAt: now(),
       updatedAt: now(),
     };
-
-    meetings.push(newMeeting);
-    globalForDb.dbStore!.meetings = meetings; // Ensure global store is updated
-    return newMeeting;
+    meetings.push(meeting);
+    return meeting;
   },
 
-  update: (id: string, data: UpdateMeetingInput): Meeting | undefined => {
-    const index = meetings.findIndex((m) => m.id === id);
-    if (index === -1) return undefined;
-
-    meetings[index] = {
-      ...meetings[index],
-      ...data,
-      updatedAt: now(),
-    };
-
-    return meetings[index];
+  update: (id: string, data: Partial<Meeting>): Meeting | undefined => {
+    const idx = meetings.findIndex((m) => m.id === id);
+    if (idx === -1) return undefined;
+    meetings[idx] = { ...meetings[idx], ...data, updatedAt: now() };
+    return meetings[idx];
   },
 
   delete: (id: string): boolean => {
-    const index = meetings.findIndex((m) => m.id === id);
-    if (index === -1) return false;
-
-    meetings.splice(index, 1);
-    globalForDb.dbStore!.meetings = meetings; // Ensure global store is updated
+    const idx = meetings.findIndex((m) => m.id === id);
+    if (idx === -1) return false;
+    meetings.splice(idx, 1);
     return true;
   },
+
+  count: (filters?: MeetingFilters): number =>
+    meetingDb.findAll(filters).length,
 };
 
 // ============================================================================
@@ -407,69 +726,52 @@ export const meetingDb = {
 export const interactionDb = {
   findAll: (filters?: InteractionFilters): Interaction[] => {
     let result = [...interactions];
-
-    if (filters?.leaderId) {
+    if (filters?.leaderId)
       result = result.filter((i) => i.leaderId === filters.leaderId);
-    }
-    if (filters?.memberId) {
+    if (filters?.memberId)
       result = result.filter((i) => i.memberId === filters.memberId);
-    }
-    if (filters?.type) {
-      result = result.filter((i) => i.type === filters.type);
-    }
-    if (filters?.dateFrom) {
-      result = result.filter((i) => i.timestamp >= filters.dateFrom!);
-    }
-    if (filters?.dateTo) {
-      result = result.filter((i) => i.timestamp <= filters.dateTo!);
-    }
+    if (filters?.type) result = result.filter((i) => i.type === filters.type);
+    if (filters?.startDate)
+      result = result.filter((i) => i.timestamp >= filters.startDate!);
+    if (filters?.endDate)
+      result = result.filter((i) => i.timestamp <= filters.endDate!);
 
-    return result.sort((a, b) => b.timestamp.localeCompare(a.timestamp));
+    result.sort(
+      (a, b) =>
+        new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+    );
+    return result;
   },
 
-  findById: (id: string): Interaction | undefined => {
-    return interactions.find((i) => i.id === id);
-  },
+  findById: (id: string): Interaction | undefined =>
+    interactions.find((i) => i.id === id),
 
-  create: (data: CreateInteractionInput, leaderId: string): Interaction => {
-    const newInteraction: Interaction = {
+  create: (data: Omit<Interaction, "id" | "createdAt">): Interaction => {
+    const interaction: Interaction = {
+      ...data,
       id: generateId(),
-      leaderId,
-      memberId: data.memberId,
-      type: data.type,
-      notes: data.notes,
-      timestamp: data.timestamp || now(),
       createdAt: now(),
     };
-
-    interactions.push(newInteraction);
-    globalForDb.dbStore!.interactions = interactions; // Ensure global store is updated
-    return newInteraction;
+    interactions.push(interaction);
+    return interaction;
   },
 
-  update: (
-    id: string,
-    data: UpdateInteractionInput
-  ): Interaction | undefined => {
-    const index = interactions.findIndex((i) => i.id === id);
-    if (index === -1) return undefined;
-
-    interactions[index] = {
-      ...interactions[index],
-      ...data,
-    };
-
-    return interactions[index];
+  update: (id: string, data: Partial<Interaction>): Interaction | undefined => {
+    const idx = interactions.findIndex((i) => i.id === id);
+    if (idx === -1) return undefined;
+    interactions[idx] = { ...interactions[idx], ...data };
+    return interactions[idx];
   },
 
   delete: (id: string): boolean => {
-    const index = interactions.findIndex((i) => i.id === id);
-    if (index === -1) return false;
-
-    interactions.splice(index, 1);
-    globalForDb.dbStore!.interactions = interactions; // Ensure global store is updated
+    const idx = interactions.findIndex((i) => i.id === id);
+    if (idx === -1) return false;
+    interactions.splice(idx, 1);
     return true;
   },
+
+  count: (filters?: InteractionFilters): number =>
+    interactionDb.findAll(filters).length,
 };
 
 // ============================================================================
@@ -477,87 +779,91 @@ export const interactionDb = {
 // ============================================================================
 
 export const membershipRequestDb = {
-  findAll: (filters?: MembershipRequestFilters): MembershipRequest[] => {
+  findAll: (filters?: {
+    memberId?: string;
+    toGroupId?: string;
+    toCellId?: string;
+    toCampusId?: string;
+    toZoneId?: string;
+    status?: string;
+  }): MembershipRequest[] => {
     let result = [...membershipRequests];
-
-    if (filters?.memberId) {
+    if (filters?.memberId)
       result = result.filter((r) => r.memberId === filters.memberId);
-    }
-    if (filters?.toGroupId) {
+    if (filters?.toGroupId)
       result = result.filter((r) => r.toGroupId === filters.toGroupId);
-    }
-    if (filters?.status) {
+    if (filters?.toCellId)
+      result = result.filter((r) => r.toCellId === filters.toCellId);
+    if (filters?.toCampusId)
+      result = result.filter((r) => r.toCampusId === filters.toCampusId);
+    if (filters?.toZoneId)
+      result = result.filter((r) => r.toZoneId === filters.toZoneId);
+    if (filters?.status)
       result = result.filter((r) => r.status === filters.status);
-    }
-    if (filters?.type) {
-      result = result.filter((r) => r.type === filters.type);
-    }
 
-    return result.sort((a, b) => b.requestedAt.localeCompare(a.requestedAt));
+    result.sort(
+      (a, b) =>
+        new Date(b.requestedAt).getTime() - new Date(a.requestedAt).getTime()
+    );
+    return result;
   },
 
-  findById: (id: string): MembershipRequest | undefined => {
-    return membershipRequests.find((r) => r.id === id);
-  },
+  findById: (id: string): MembershipRequest | undefined =>
+    membershipRequests.find((r) => r.id === id),
 
   create: (
-    data: CreateMembershipRequestInput,
-    memberId: string
+    data: Omit<
+      MembershipRequest,
+      "id" | "requestedAt" | "respondedAt" | "respondedById" | "responseMessage"
+    >
   ): MembershipRequest => {
-    const member = users.find((u) => u.id === memberId);
-    const type =
-      data.type ||
-      (member?.groupId
-        ? ("TRANSFER" as MembershipRequestType)
-        : ("JOIN" as MembershipRequestType));
-
-    const newRequest: MembershipRequest = {
+    const request: MembershipRequest = {
+      ...data,
       id: generateId(),
-      memberId,
-      fromGroupId: data.fromGroupId || member?.groupId,
-      toGroupId: data.toGroupId,
-      type,
-      status: "PENDING" as MembershipRequestStatus,
-      message: data.message,
       requestedAt: now(),
       respondedAt: undefined,
       respondedById: undefined,
       responseMessage: undefined,
     };
+    membershipRequests.push(request);
+    return request;
+  },
 
-    membershipRequests.push(newRequest);
-    globalForDb.dbStore!.membershipRequests = membershipRequests; // Ensure global store is updated
-    return newRequest;
+  update: (
+    id: string,
+    data: Partial<MembershipRequest>
+  ): MembershipRequest | undefined => {
+    const idx = membershipRequests.findIndex((r) => r.id === id);
+    if (idx === -1) return undefined;
+    membershipRequests[idx] = { ...membershipRequests[idx], ...data };
+    return membershipRequests[idx];
   },
 
   respond: (
     id: string,
-    data: RespondToRequestInput,
-    respondedById: string
+    status: MembershipRequestStatus,
+    respondedById: string,
+    responseMessage?: string
   ): MembershipRequest | undefined => {
-    const index = membershipRequests.findIndex((r) => r.id === id);
-    if (index === -1) return undefined;
-
-    const request = membershipRequests[index];
-    request.status = data.status;
-    request.respondedAt = now();
-    request.respondedById = respondedById;
-    request.responseMessage = data.responseMessage;
-
-    // If approved, update user's group
-    if (data.status === "APPROVED") {
-      groupDb.addMember(request.toGroupId, request.memberId);
-    }
-
-    return request;
+    const idx = membershipRequests.findIndex((r) => r.id === id);
+    if (idx === -1) return undefined;
+    membershipRequests[idx] = {
+      ...membershipRequests[idx],
+      status,
+      respondedAt: now(),
+      respondedById,
+      responseMessage,
+    };
+    return membershipRequests[idx];
   },
 
-  delete: (id: string): boolean => {
-    const index = membershipRequests.findIndex((r) => r.id === id);
-    if (index === -1) return false;
+  count: (filters?: { toGroupId?: string; status?: string }): number =>
+    membershipRequestDb.findAll(filters).length,
 
-    membershipRequests.splice(index, 1);
-    globalForDb.dbStore!.membershipRequests = membershipRequests; // Ensure global store is updated
+  delete: (id: string): boolean => {
+    const idx = membershipRequests.findIndex((r) => r.id === id);
+    if (idx === -1) return false;
+    membershipRequests.splice(idx, 1);
     return true;
   },
 };
@@ -567,297 +873,588 @@ export const membershipRequestDb = {
 // ============================================================================
 
 export const notificationDb = {
-  findByUserId: (
-    userId: string,
-    unreadOnly: boolean = false
-  ): appNotification[] => {
-    let result = notifications.filter((n) => n.userId === userId);
+  findByUserId: (userId: string): appNotification[] =>
+    notifications
+      .filter((n) => n.userId === userId)
+      .sort(
+        (a, b) =>
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+      ),
 
-    if (unreadOnly) {
-      result = result.filter((n) => !n.read);
-    }
-
-    return result.sort((a, b) => b.createdAt.localeCompare(a.createdAt));
-  },
-
-  findById: (id: string): appNotification | undefined => {
-    return notifications.find((n) => n.id === id);
-  },
+  findById: (id: string): appNotification | undefined =>
+    notifications.find((n) => n.id === id),
 
   create: (
-    userId: string,
-    type: NotificationType,
-    title: string,
-    message: string,
-    relatedId?: string
+    data: Omit<appNotification, "id" | "createdAt" | "read">
   ): appNotification => {
-    const newNotification: appNotification = {
+    const notification: appNotification = {
+      ...data,
       id: generateId(),
-      userId,
-      type,
-      title,
-      message,
-      relatedId,
       read: false,
       createdAt: now(),
     };
-
-    notifications.push(newNotification);
-    globalForDb.dbStore!.notifications = notifications; // Ensure global store is updated
-    return newNotification;
+    notifications.push(notification);
+    return notification;
   },
 
-  markAsRead: (id: string): boolean => {
-    const notification = notifications.find((n) => n.id === id);
-    if (!notification) return false;
-
-    notification.read = true;
-    return true;
+  markAsRead: (id: string): appNotification | undefined => {
+    const idx = notifications.findIndex((n) => n.id === id);
+    if (idx === -1) return undefined;
+    notifications[idx] = { ...notifications[idx], read: true };
+    return notifications[idx];
   },
 
-  markAllAsRead: (userId: string): boolean => {
+  markAllAsRead: (userId: string): number => {
+    let count = 0;
     notifications = notifications.map((n) => {
-      if (n.userId === userId) {
+      if (n.userId === userId && !n.read) {
+        count++;
         return { ...n, read: true };
       }
       return n;
     });
-    globalForDb.dbStore!.notifications = notifications; // Ensure global store is updated
-    return true;
+    if (globalForDb.dbStore) globalForDb.dbStore.notifications = notifications;
+    return count;
   },
 
   delete: (id: string): boolean => {
-    const index = notifications.findIndex((n) => n.id === id);
-    if (index === -1) return false;
-
-    notifications.splice(index, 1);
-    globalForDb.dbStore!.notifications = notifications; // Ensure global store is updated
+    const idx = notifications.findIndex((n) => n.id === id);
+    if (idx === -1) return false;
+    notifications.splice(idx, 1);
     return true;
+  },
+
+  unreadCount: (userId: string): number =>
+    notifications.filter((n) => n.userId === userId && !n.read).length,
+};
+
+// ============================================================================
+// CAMPAIGN OPERATIONS (24-hour status-like updates)
+// ============================================================================
+
+export const campaignDb = {
+  findAll: (filters?: {
+    status?: CampaignStatus;
+    targetLevel?: MeetingLevel;
+    targetCampusId?: string;
+    targetZoneId?: string;
+    createdById?: string;
+    search?: string;
+  }): Campaign[] => {
+    let result = [...campaigns];
+    if (filters?.status)
+      result = result.filter((c) => c.status === filters.status);
+    if (filters?.targetLevel)
+      result = result.filter((c) => c.targetLevel === filters.targetLevel);
+    if (filters?.targetCampusId)
+      result = result.filter(
+        (c) => c.targetCampusId === filters.targetCampusId
+      );
+    if (filters?.targetZoneId)
+      result = result.filter((c) => c.targetZoneId === filters.targetZoneId);
+    if (filters?.createdById)
+      result = result.filter((c) => c.createdById === filters.createdById);
+    if (filters?.search) {
+      const q = filters.search.toLowerCase();
+      result = result.filter(
+        (c) =>
+          c.title.toLowerCase().includes(q) ||
+          c.description.toLowerCase().includes(q)
+      );
+    }
+
+    result.sort(
+      (a, b) =>
+        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+    );
+    return result;
+  },
+
+  findById: (id: string): Campaign | undefined =>
+    campaigns.find((c) => c.id === id),
+
+  /** Return only campaigns currently visible (ACTIVE & not expired). */
+  findActive: (filters?: {
+    targetCampusId?: string;
+    targetZoneId?: string;
+  }): Campaign[] => {
+    const rightNow = new Date().toISOString();
+    let result = campaigns.filter(
+      (c) =>
+        c.status === ("ACTIVE" as CampaignStatus) &&
+        (!c.expiresAt || c.expiresAt > rightNow)
+    );
+    if (filters?.targetCampusId)
+      result = result.filter(
+        (c) => !c.targetCampusId || c.targetCampusId === filters.targetCampusId
+      );
+    if (filters?.targetZoneId)
+      result = result.filter(
+        (c) => !c.targetZoneId || c.targetZoneId === filters.targetZoneId
+      );
+    return result;
+  },
+
+  create: (
+    data: Omit<
+      Campaign,
+      | "id"
+      | "viewCount"
+      | "clickCount"
+      | "shareCount"
+      | "createdAt"
+      | "updatedAt"
+    >
+  ): Campaign => {
+    const campaign: Campaign = {
+      ...data,
+      id: generateId(),
+      viewCount: 0,
+      clickCount: 0,
+      shareCount: 0,
+      createdAt: now(),
+      updatedAt: now(),
+    };
+    campaigns.push(campaign);
+    return campaign;
+  },
+
+  update: (id: string, data: Partial<Campaign>): Campaign | undefined => {
+    const idx = campaigns.findIndex((c) => c.id === id);
+    if (idx === -1) return undefined;
+    campaigns[idx] = { ...campaigns[idx], ...data, updatedAt: now() };
+    return campaigns[idx];
+  },
+
+  delete: (id: string): boolean => {
+    const idx = campaigns.findIndex((c) => c.id === id);
+    if (idx === -1) return false;
+    campaigns.splice(idx, 1);
+    return true;
+  },
+
+  /** Atomically increment view / click / share counters. */
+  incrementCounter: (
+    id: string,
+    counter: "viewCount" | "clickCount" | "shareCount"
+  ): Campaign | undefined => {
+    const idx = campaigns.findIndex((c) => c.id === id);
+    if (idx === -1) return undefined;
+    campaigns[idx] = {
+      ...campaigns[idx],
+      [counter]: (campaigns[idx][counter] || 0) + 1,
+      updatedAt: now(),
+    };
+    return campaigns[idx];
+  },
+
+  /** Auto-expire campaigns past their expiresAt. Returns count expired. */
+  expireStale: (): number => {
+    const rightNow = new Date().toISOString();
+    let expired = 0;
+    campaigns.forEach((c, idx) => {
+      if (
+        c.status === ("ACTIVE" as CampaignStatus) &&
+        c.expiresAt &&
+        c.expiresAt <= rightNow
+      ) {
+        campaigns[idx] = {
+          ...c,
+          status: "EXPIRED" as CampaignStatus,
+          updatedAt: now(),
+        };
+        expired++;
+      }
+    });
+    return expired;
+  },
+
+  count: (filters?: { status?: CampaignStatus }): number =>
+    campaignDb.findAll(filters).length,
+};
+
+// ============================================================================
+// CAMPAIGN INTERACTION OPERATIONS
+// ============================================================================
+
+export const campaignInteractionDb = {
+  findAll: (filters?: {
+    campaignId?: string;
+    userId?: string;
+    type?: CampaignInteractionType;
+    referralCode?: string;
+  }): CampaignInteraction[] => {
+    let result = [...campaignInteractions];
+    if (filters?.campaignId)
+      result = result.filter((ci) => ci.campaignId === filters.campaignId);
+    if (filters?.userId)
+      result = result.filter((ci) => ci.userId === filters.userId);
+    if (filters?.type) result = result.filter((ci) => ci.type === filters.type);
+    if (filters?.referralCode)
+      result = result.filter((ci) => ci.referralCode === filters.referralCode);
+    return result;
+  },
+
+  create: (
+    data: Omit<CampaignInteraction, "id" | "createdAt">
+  ): CampaignInteraction => {
+    const ci: CampaignInteraction = {
+      ...data,
+      id: generateId(),
+      createdAt: now(),
+    };
+    campaignInteractions.push(ci);
+    return ci;
+  },
+
+  countByCampaign: (
+    campaignId: string,
+    type?: CampaignInteractionType
+  ): number => {
+    let result = campaignInteractions.filter(
+      (ci) => ci.campaignId === campaignId
+    );
+    if (type) result = result.filter((ci) => ci.type === type);
+    return result.length;
   },
 };
 
 // ============================================================================
-// ANALYTICS OPERATIONS
+// INVITE LINK OPERATIONS
+// ============================================================================
+
+export const inviteLinkDb = {
+  findAll: (filters?: {
+    createdById?: string;
+    type?: InviteLinkType;
+    targetId?: string;
+    isActive?: boolean;
+  }): InviteLink[] => {
+    let result = [...inviteLinks];
+    if (filters?.createdById)
+      result = result.filter((l) => l.createdById === filters.createdById);
+    if (filters?.type) result = result.filter((l) => l.type === filters.type);
+    if (filters?.targetId)
+      result = result.filter((l) => l.targetId === filters.targetId);
+    if (filters?.isActive !== undefined)
+      result = result.filter((l) => l.isActive === filters.isActive);
+    return result;
+  },
+
+  findById: (id: string): InviteLink | undefined =>
+    inviteLinks.find((l) => l.id === id),
+
+  findByCode: (code: string): InviteLink | undefined =>
+    inviteLinks.find((l) => l.code === code),
+
+  create: (
+    data: Omit<
+      InviteLink,
+      | "id"
+      | "code"
+      | "visitCount"
+      | "conversionCount"
+      | "createdAt"
+      | "updatedAt"
+    >
+  ): InviteLink => {
+    const link: InviteLink = {
+      ...data,
+      id: generateId(),
+      code: `INV-${generateCode()}`,
+      visitCount: 0,
+      conversionCount: 0,
+      createdAt: now(),
+      updatedAt: now(),
+    };
+    inviteLinks.push(link);
+    return link;
+  },
+
+  update: (id: string, data: Partial<InviteLink>): InviteLink | undefined => {
+    const idx = inviteLinks.findIndex((l) => l.id === id);
+    if (idx === -1) return undefined;
+    inviteLinks[idx] = { ...inviteLinks[idx], ...data, updatedAt: now() };
+    return inviteLinks[idx];
+  },
+
+  incrementVisit: (id: string): InviteLink | undefined => {
+    const idx = inviteLinks.findIndex((l) => l.id === id);
+    if (idx === -1) return undefined;
+    inviteLinks[idx] = {
+      ...inviteLinks[idx],
+      visitCount: inviteLinks[idx].visitCount + 1,
+      updatedAt: now(),
+    };
+    return inviteLinks[idx];
+  },
+
+  incrementConversion: (id: string): InviteLink | undefined => {
+    const idx = inviteLinks.findIndex((l) => l.id === id);
+    if (idx === -1) return undefined;
+    inviteLinks[idx] = {
+      ...inviteLinks[idx],
+      conversionCount: inviteLinks[idx].conversionCount + 1,
+      updatedAt: now(),
+    };
+    return inviteLinks[idx];
+  },
+
+  delete: (id: string): boolean => {
+    const idx = inviteLinks.findIndex((l) => l.id === id);
+    if (idx === -1) return false;
+    inviteLinks.splice(idx, 1);
+    return true;
+  },
+
+  count: (filters?: { createdById?: string }): number =>
+    inviteLinkDb.findAll(filters).length,
+};
+
+// ============================================================================
+// INVITE LINK VISIT OPERATIONS
+// ============================================================================
+
+export const inviteLinkVisitDb = {
+  findAll: (filters?: {
+    inviteLinkId?: string;
+    converted?: boolean;
+  }): InviteLinkVisit[] => {
+    let result = [...inviteLinkVisits];
+    if (filters?.inviteLinkId)
+      result = result.filter((v) => v.inviteLinkId === filters.inviteLinkId);
+    if (filters?.converted !== undefined)
+      result = result.filter((v) => v.converted === filters.converted);
+    return result;
+  },
+
+  create: (
+    data: Omit<InviteLinkVisit, "id" | "createdAt">
+  ): InviteLinkVisit => {
+    const visit: InviteLinkVisit = {
+      ...data,
+      id: generateId(),
+      createdAt: now(),
+    };
+    inviteLinkVisits.push(visit);
+    return visit;
+  },
+
+  markConverted: (
+    id: string,
+    convertedUserId: string
+  ): InviteLinkVisit | undefined => {
+    const idx = inviteLinkVisits.findIndex((v) => v.id === id);
+    if (idx === -1) return undefined;
+    inviteLinkVisits[idx] = {
+      ...inviteLinkVisits[idx],
+      converted: true,
+      convertedUserId,
+    };
+    return inviteLinkVisits[idx];
+  },
+};
+
+// ============================================================================
+// ANALYTICS HELPERS
 // ============================================================================
 
 export const analyticsDb = {
-  getMemberAnalytics: (userId: string): MemberAnalytics => {
-    const user = users.find((u) => u.id === userId);
-    if (!user || !user.groupId) {
-      return {
-        userId,
-        attendanceRate: 0,
-        totalMeetings: 0,
-        attendedMeetings: 0,
-        missedMeetings: 0,
-        engagementScore: 0,
-        lastInteraction: undefined,
-        interactionCount: 0,
-        isAtRisk: false,
-      };
-    }
+  /** Church-wide overview stats */
+  getOverview: () => ({
+    totalMembers: users.filter((u) => u.isActive).length,
+    totalZones: zones.filter((z) => z.isActive).length,
+    totalCampuses: campuses.filter((c) => c.isActive).length,
+    totalDepartments: departments.filter((d) => d.isActive).length,
+    totalGroups: groups.filter((g) => g.isActive).length,
+    totalCells: cells.filter((c) => c.isActive).length,
+    totalMeetings: meetings.length,
+    totalInteractions: interactions.length,
+    activeCampaigns: campaigns.filter(
+      (c) => c.status === ("ACTIVE" as CampaignStatus)
+    ).length,
+    pendingRequests: membershipRequests.filter(
+      (r) => r.status === ("PENDING" as MembershipRequestStatus)
+    ).length,
+  }),
 
-    const groupMeetings = meetings.filter((m) => m.groupId === user.groupId);
-    const attendedMeetings = groupMeetings.filter((m) =>
-      m.attendeeIds.includes(userId)
+  /** Stats scoped to a specific zone */
+  getZoneStats: (zoneId: string) => {
+    const zoneCampuses = campuses.filter((c) => c.zoneId === zoneId);
+    const campusIds = zoneCampuses.map((c) => c.id);
+    const zoneMembers = users.filter((u) => u.zoneId === zoneId && u.isActive);
+    const zoneMeetings = meetings.filter((m) => m.zoneId === zoneId);
+    const zoneGroups = groups.filter((g) => g.zoneId === zoneId);
+    const zoneCellsList = cells.filter((c) => c.zoneId === zoneId);
+    return {
+      totalCampuses: zoneCampuses.length,
+      totalMembers: zoneMembers.length,
+      totalGroups: zoneGroups.length,
+      totalCells: zoneCellsList.length,
+      totalMeetings: zoneMeetings.length,
+      campusIds,
+    };
+  },
+
+  /** Stats scoped to a specific campus */
+  getCampusStats: (campusId: string) => {
+    const campusDepts = departments.filter((d) => d.campusId === campusId);
+    const campusGroups = groups.filter((g) => g.campusId === campusId);
+    const campusCells = cells.filter((c) => c.campusId === campusId);
+    const campusMembers = users.filter(
+      (u) => u.campusId === campusId && u.isActive
     );
-    const totalMeetings = groupMeetings.length;
-    const attendedCount = attendedMeetings.length;
-    const missedCount = totalMeetings - attendedCount;
+    const campusMeetings = meetings.filter((m) => m.campusId === campusId);
+    return {
+      totalDepartments: campusDepts.length,
+      totalGroups: campusGroups.length,
+      totalCells: campusCells.length,
+      totalMembers: campusMembers.length,
+      totalMeetings: campusMeetings.length,
+    };
+  },
+
+  /** Stats for a group — attendance rate, meeting count, etc. */
+  getGroupStats: (groupId: string) => {
+    const groupMeetings = meetings.filter((m) => m.groupId === groupId);
+    const groupMembers = users.filter((u) => u.groupId === groupId);
+    const groupInteractions = interactions.filter((i) =>
+      groupMembers.some((m) => m.id === i.memberId)
+    );
+    const totalAttendance = groupMeetings.reduce(
+      (sum, m) => sum + (m.attendeeCount || 0),
+      0
+    );
+    const avgAttendance =
+      groupMeetings.length > 0
+        ? Math.round(totalAttendance / groupMeetings.length)
+        : 0;
     const attendanceRate =
-      totalMeetings > 0 ? (attendedCount / totalMeetings) * 100 : 0;
+      groupMembers.length > 0 && groupMeetings.length > 0
+        ? Math.round(
+            (totalAttendance / (groupMembers.length * groupMeetings.length)) *
+              100
+          )
+        : 0;
+    return {
+      memberCount: groupMembers.length,
+      meetingCount: groupMeetings.length,
+      interactionCount: groupInteractions.length,
+      avgAttendance,
+      attendanceRate: Math.min(attendanceRate, 100),
+    };
+  },
 
-    const memberInteractions = interactions.filter(
-      (i) => i.memberId === userId
+  /** Campaign analytics for a given campaign */
+  getCampaignStats: (campaignId: string) => {
+    const campaign = campaigns.find((c) => c.id === campaignId);
+    if (!campaign) return null;
+    const ciList = campaignInteractions.filter(
+      (ci) => ci.campaignId === campaignId
     );
-    const interactionCount = memberInteractions.length;
-    const lastInteraction = memberInteractions[0]?.timestamp;
-
-    // Calculate engagement score
-    const attendanceScore = attendanceRate * 0.5;
-    const interactionScore = Math.min(interactionCount * 10, 30); // Max 30 points
-    const recentActivityScore = lastInteraction ? 20 : 0;
-    const engagementScore =
-      attendanceScore + interactionScore + recentActivityScore;
-
-    // Check if at risk
-    const recentMeetings = groupMeetings.slice(0, 3);
-    const attendedRecent = recentMeetings.filter((m) =>
-      m.attendeeIds.includes(userId)
+    const views = ciList.filter(
+      (ci) => ci.type === ("VIEW" as CampaignInteractionType)
     ).length;
-    const daysSinceInteraction = lastInteraction
-      ? (Date.now() - new Date(lastInteraction).getTime()) /
-        (1000 * 60 * 60 * 24)
-      : 999;
-    const isAtRisk =
-      attendedRecent === 0 || daysSinceInteraction > 30 || engagementScore < 40;
+    const clicks = ciList.filter(
+      (ci) => ci.type === ("CLICK" as CampaignInteractionType)
+    ).length;
+    const shares = ciList.filter(
+      (ci) => ci.type === ("SHARE" as CampaignInteractionType)
+    ).length;
+    return {
+      campaignId,
+      title: campaign.title,
+      status: campaign.status,
+      totalViews: campaign.viewCount + views,
+      totalClicks: campaign.clickCount + clicks,
+      totalShares: campaign.shareCount + shares,
+      engagementRate:
+        campaign.viewCount + views > 0
+          ? Math.round(
+              ((campaign.clickCount + clicks) / (campaign.viewCount + views)) *
+                100
+            )
+          : 0,
+    };
+  },
+
+  /** Referral / invite link performance */
+  getReferralStats: (userId: string): ReferralStats => {
+    const userLinks = inviteLinks.filter((l) => l.createdById === userId);
+    const totalVisits = userLinks.reduce((s, l) => s + l.visitCount, 0);
+    const totalConversions = userLinks.reduce(
+      (s, l) => s + l.conversionCount,
+      0
+    );
+    const invitees = users
+      .filter((u) => u.invitedById === userId)
+      .map((u) => ({
+        userId: u.id,
+        name: `${u.firstName} ${u.lastName}`,
+        joinedAt: u.createdAt,
+        via: "CAMPAIGN" as InviteLinkType,
+      }));
 
     return {
       userId,
-      attendanceRate,
-      totalMeetings,
-      attendedMeetings: attendedCount,
-      missedMeetings: missedCount,
-      engagementScore,
-      lastInteraction,
-      interactionCount,
-      isAtRisk,
+      totalInvitesSent: userLinks.length,
+      totalVisits,
+      totalConversions,
+      conversionRate:
+        totalVisits > 0
+          ? Math.round((totalConversions / totalVisits) * 100)
+          : 0,
+      topPerformingLink:
+        userLinks.length > 0
+          ? userLinks.sort((a, b) => b.conversionCount - a.conversionCount)[0]
+          : undefined,
+      invitees,
     };
   },
 
-  getGroupAnalytics: (groupId: string): GroupAnalytics => {
-    const group = groups.find((g) => g.id === groupId);
-    if (!group) {
-      return {
-        groupId,
-        attendanceRate: 0,
-        totalMeetings: 0,
-        averageAttendance: 0,
-        memberCount: 0,
-        activeMembers: 0,
-        atRiskMembers: 0,
-        meetingFrequencyAdherence: 0,
-        leaderInteractionRate: 0,
-      };
-    }
-
-    const groupMeetings = meetings.filter((m) => m.groupId === groupId);
-    const totalMeetings = groupMeetings.length;
-    const members = users.filter((u) => u.groupId === groupId);
-    const memberCount = members.length;
-
-    // Calculate attendance rate
-    const totalAttendance = groupMeetings.reduce(
-      (sum, m) => sum + m.attendeeCount,
-      0
+  /** Member engagement score (simple heuristic) */
+  getMemberEngagement: (memberId: string) => {
+    const memberMeetings = meetings.filter((m) =>
+      m.attendeeIds?.includes(memberId)
     );
-    const averageAttendance =
-      totalMeetings > 0 ? totalAttendance / totalMeetings : 0;
-    const attendanceRate =
-      memberCount > 0 && totalMeetings > 0
-        ? (averageAttendance / memberCount) * 100
-        : 0;
-
-    // Active members (attended at least one meeting in last 3)
-    const recentMeetings = groupMeetings.slice(0, 3);
-    const activeMembers = members.filter((m) =>
-      recentMeetings.some((meeting) => meeting.attendeeIds.includes(m.id))
-    ).length;
-
-    // At-risk members
-    const atRiskMembers = members.filter((m) => {
-      const analytics = analyticsDb.getMemberAnalytics(m.id);
-      return analytics.isAtRisk;
-    }).length;
-
-    // Leader interaction rate
-    const leaderInteractions = interactions.filter(
-      (i) => i.leaderId === group.leaderId
+    const memberInteractions = interactions.filter(
+      (i) => i.memberId === memberId
     );
-    const leaderInteractionRate =
-      memberCount > 0 ? (leaderInteractions.length / memberCount) * 100 : 0;
-
-    // Meeting frequency adherence (simplified)
-    const meetingFrequencyAdherence = 85; // Mock value
-
+    const recentMeetings = memberMeetings.filter(
+      (m) => new Date(m.date).getTime() > Date.now() - 30 * 24 * 60 * 60 * 1000
+    );
+    // Score: meetings attended * 10 + interactions * 5 + recent bonus
+    const score =
+      memberMeetings.length * 10 +
+      memberInteractions.length * 5 +
+      recentMeetings.length * 15;
     return {
-      groupId,
-      attendanceRate,
-      totalMeetings,
-      averageAttendance,
-      memberCount,
-      activeMembers,
-      atRiskMembers,
-      meetingFrequencyAdherence,
-      leaderInteractionRate,
-    };
-  },
-
-  getChurchWideAnalytics: (): ChurchWideAnalytics => {
-    const totalMembers = users.filter((u) => u.role === "MEMBER").length;
-    const activeMembers = users.filter(
-      (u) => u.role === "MEMBER" && u.isActive
-    ).length;
-    const inactiveMembers = totalMembers - activeMembers;
-    const totalGroups = groups.length;
-    const totalMeetings = meetings.length;
-
-    // Overall attendance rate
-    const allGroupAnalytics = groups.map((g) =>
-      analyticsDb.getGroupAnalytics(g.id)
-    );
-    const overallAttendanceRate =
-      allGroupAnalytics.reduce((sum, a) => sum + a.attendanceRate, 0) /
-      Math.max(totalGroups, 1);
-
-    // Average engagement score
-    const allMemberAnalytics = users
-      .filter((u) => u.role === "MEMBER" && u.groupId)
-      .map((u) => analyticsDb.getMemberAnalytics(u.id));
-    const averageEngagementScore =
-      allMemberAnalytics.reduce((sum, a) => sum + a.engagementScore, 0) /
-      Math.max(allMemberAnalytics.length, 1);
-
-    // At-risk member count
-    const atRiskMemberCount = allMemberAnalytics.filter(
-      (a) => a.isAtRisk
-    ).length;
-
-    // Interest distribution
-    const interestDistribution: Record<string, number> = {};
-    users.forEach((u) => {
-      u.interests.forEach((interest) => {
-        interestDistribution[interest] =
-          (interestDistribution[interest] || 0) + 1;
-      });
-    });
-
-    // Group performance
-    const groupPerformance = groups.map((g) => {
-      const analytics = analyticsDb.getGroupAnalytics(g.id);
-      return {
-        groupId: g.id,
-        groupName: g.name,
-        attendanceRate: analytics.attendanceRate,
-        memberCount: analytics.memberCount,
-      };
-    });
-
-    // Active groups (had meeting in last 30 days)
-    const thirtyDaysAgo = new Date();
-    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-    const recentMeetings = meetings.filter(
-      (m) => new Date(m.date) > thirtyDaysAgo
-    );
-    const activeGroupIds = new Set(recentMeetings.map((m) => m.groupId));
-    const activeGroups = activeGroupIds.size;
-
-    return {
-      totalMembers,
-      activeMembers,
-      inactiveMembers,
-      totalGroups,
-      activeGroups,
-      totalMeetings,
-      overallAttendanceRate,
-      averageEngagementScore,
-      atRiskMemberCount,
-      interestDistribution,
-      groupPerformance,
+      memberId,
+      totalMeetingsAttended: memberMeetings.length,
+      totalInteractions: memberInteractions.length,
+      recentActivity: recentMeetings.length,
+      engagementScore: Math.min(score, 100),
     };
   },
 };
 
 // ============================================================================
-// EXPORT DATABASE API
+// Combined Database Export (for backward compatibility)
 // ============================================================================
-
 export const db = {
   users: userDb,
+  zones: zoneDb,
+  campuses: campusDb,
+  departments: departmentDb,
   groups: groupDb,
+  cells: cellDb,
   meetings: meetingDb,
   interactions: interactionDb,
   membershipRequests: membershipRequestDb,
   notifications: notificationDb,
+  campaigns: campaignDb,
+  campaignInteractions: campaignInteractionDb,
+  inviteLinks: inviteLinkDb,
+  inviteLinkVisits: inviteLinkVisitDb,
   analytics: analyticsDb,
 };

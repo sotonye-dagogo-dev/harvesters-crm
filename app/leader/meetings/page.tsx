@@ -9,6 +9,7 @@ import MeetingCard from "@/components/features/meetings/MeetingCard";
 import EmptyState from "@/components/ui/EmptyState";
 import { CardSkeleton } from "@/components/ui/LoadingSkeleton";
 import { useRouter } from "next/navigation";
+import { UserRole } from "@/lib/types";
 
 export default function MeetingsPage() {
   const { user } = useAuth();
@@ -59,14 +60,14 @@ export default function MeetingsPage() {
 
   if (loading) {
     return (
-      <DashboardLayout role={user?.role || "LEADER"}>
+      <DashboardLayout role={user?.role || UserRole.SMALL_GROUP_LEADER}>
         <CardSkeleton count={6} />
       </DashboardLayout>
     );
   }
 
   const canCreateMeeting =
-    user?.role === "LEADER" || user?.role === "SUPERADMIN";
+    user?.role === UserRole.SMALL_GROUP_LEADER || user?.role === "SUPERADMIN";
 
   const tabItems = [
     { key: "all", label: "All Meetings" },
@@ -75,7 +76,7 @@ export default function MeetingsPage() {
   ];
 
   return (
-    <DashboardLayout role={user?.role || "LEADER"}>
+    <DashboardLayout role={user?.role || UserRole.SMALL_GROUP_LEADER}>
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
@@ -131,7 +132,14 @@ export default function MeetingsPage() {
             {filteredMeetings.map((meeting) => (
               <MeetingCard
                 key={meeting.id}
-                meeting={meeting}
+                meeting={{
+                  id: meeting.id,
+                  groupId: meeting.groupId || '',
+                  date: meeting.date,
+                  attendeeCount: meeting.attendeeCount,
+                  screenshotUrl: meeting.screenshotUrl,
+                  notes: meeting.notes,
+                }}
                 showActions={canCreateMeeting}
                 onEdit={(id) => router.push(`/leader/meetings/${id}/edit`)}
                 onDelete={() => message.info("Delete coming soon")}

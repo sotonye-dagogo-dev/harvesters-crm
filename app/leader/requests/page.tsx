@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/providers/AuthProvider";
+import DashboardLayout from "@/components/features/navigation/DashboardLayout";
 import {
   Card,
   Button as AntButton,
@@ -25,6 +26,7 @@ import {
 } from "@ant-design/icons";
 import { format } from "date-fns";
 import EmptyState from "@/components/ui/EmptyState";
+import { UserRole } from "@/lib/types";
 
 const { TabPane } = Tabs;
 
@@ -36,12 +38,13 @@ export default function LeaderRequestsPage() {
   const [processingId, setProcessingId] = useState<string | null>(null);
 
   useEffect(() => {
-    if (user?.role === "LEADER" && !user.groupId) {
+    if (user?.role === UserRole.SMALL_GROUP_LEADER && !user.groupId) {
       message.warning("You are not assigned to a group");
       router.push("/leader/dashboard");
       return;
     }
     fetchRequests();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
 
   const fetchRequests = async () => {
@@ -144,9 +147,11 @@ export default function LeaderRequestsPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <Spin size="large" />
-      </div>
+      <DashboardLayout role={UserRole.SMALL_GROUP_LEADER}>
+        <div className="flex items-center justify-center min-h-[60vh]">
+          <Spin size="large" />
+        </div>
+      </DashboardLayout>
     );
   }
 
@@ -269,7 +274,7 @@ export default function LeaderRequestsPage() {
             {request.message && (
               <div className="bg-gray-50 p-3 rounded-md mb-3">
                 <p className="text-sm text-gray-700 italic">
-                  "{request.message}"
+                  &ldquo;{request.message}&rdquo;
                 </p>
               </div>
             )}
@@ -310,8 +315,9 @@ export default function LeaderRequestsPage() {
   };
 
   return (
-    <div className="p-4 md:p-8 max-w-6xl mx-auto">
-      <div className="mb-6">
+    <DashboardLayout role={UserRole.SMALL_GROUP_LEADER}>
+      <div className="max-w-6xl mx-auto space-y-6">
+        <div>
         <h1 className="text-2xl font-bold text-gray-900 mb-2">
           Membership Requests
         </h1>
@@ -365,6 +371,7 @@ export default function LeaderRequestsPage() {
           )}
         </TabPane>
       </Tabs>
-    </div>
+      </div>
+    </DashboardLayout>
   );
 }

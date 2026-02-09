@@ -1,3 +1,4 @@
+ 
 // ============================================================================
 // GLOBAL TYPES FOR CHURCH FELLOWSHIP CRM
 // ============================================================================
@@ -10,18 +11,22 @@
 // ENUMS
 // ============================================================================
 
-enum UserRole {
+export enum UserRole {
   SUPERADMIN = "SUPERADMIN",
-  LEADER = "LEADER",
+  ZONAL_LEADER = "ZONAL_LEADER",
+  CAMPUS_ADMIN = "CAMPUS_ADMIN",
+  HOD = "HOD",
+  SMALL_GROUP_LEADER = "SMALL_GROUP_LEADER",
+  CELL_LEADER = "CELL_LEADER",
   MEMBER = "MEMBER",
 }
 
-enum Gender {
+export enum Gender {
   MALE = "MALE",
   FEMALE = "FEMALE",
 }
 
-enum EmploymentStatus {
+export enum EmploymentStatus {
   STUDENT = "STUDENT",
   SELF_EMPLOYED = "SELF_EMPLOYED",
   EMPLOYED = "EMPLOYED",
@@ -29,52 +34,344 @@ enum EmploymentStatus {
   RETIRED = "RETIRED",
 }
 
-enum MaritalStatus {
+export enum MaritalStatus {
   SINGLE = "SINGLE",
   MARRIED = "MARRIED",
   DIVORCED = "DIVORCED",
   WIDOWED = "WIDOWED",
 }
 
-enum MeetingFrequency {
+export enum MeetingFrequency {
   WEEKLY = "WEEKLY",
   BIWEEKLY = "BIWEEKLY",
   MONTHLY = "MONTHLY",
 }
 
-enum InteractionType {
+export enum InteractionType {
   CALL = "CALL",
   FOLLOW_UP = "FOLLOW_UP",
   CHECK_IN = "CHECK_IN",
 }
 
-enum MembershipRequestType {
+export enum MembershipRequestType {
   JOIN = "JOIN",
   TRANSFER = "TRANSFER",
 }
 
-enum MembershipRequestStatus {
+export enum MembershipRequestStatus {
   PENDING = "PENDING",
   APPROVED = "APPROVED",
   REJECTED = "REJECTED",
 }
 
-enum NotificationType {
+export enum NotificationType {
   MEETING_REMINDER = "MEETING_REMINDER",
   REQUEST_STATUS = "REQUEST_STATUS",
   ROLE_ASSIGNMENT = "ROLE_ASSIGNMENT",
   FOLLOW_UP_REMINDER = "FOLLOW_UP_REMINDER",
   NEW_REQUEST = "NEW_REQUEST",
+  CAMPAIGN_NEW = "CAMPAIGN_NEW",
+  REFERRAL_CONVERSION = "REFERRAL_CONVERSION",
+}
+
+export enum CampaignStatus {
+  DRAFT = "DRAFT",
+  ACTIVE = "ACTIVE",
+  EXPIRED = "EXPIRED",
+  ARCHIVED = "ARCHIVED",
+}
+
+export enum CampaignMediaType {
+  IMAGE = "IMAGE",
+  VIDEO = "VIDEO",
+  LINK = "LINK",
+  TEXT = "TEXT",
+}
+
+export enum CampaignInteractionType {
+  VIEW = "VIEW",
+  CLICK = "CLICK",
+  SHARE = "SHARE",
+  SCREENSHOT = "SCREENSHOT",
+  SKIP = "SKIP",
+  BACK = "BACK",
+  LINK_CLICK = "LINK_CLICK",
+}
+
+export enum MeetingLevel {
+  ALL = "ALL",
+  ZONE = "ZONE",
+  CAMPUS = "CAMPUS",
+  DEPARTMENT = "DEPARTMENT",
+  SMALL_GROUP = "SMALL_GROUP",
+  CELL = "CELL",
+}
+
+export enum InviteLinkType {
+  CAMPUS = "CAMPUS",
+  ZONE = "ZONE",
+  DEPARTMENT = "DEPARTMENT",
+  SMALL_GROUP = "SMALL_GROUP",
+  CELL = "CELL",
+  MEETING = "MEETING",
+  CAMPAIGN = "CAMPAIGN",
 }
 
 // ============================================================================
-// USER TYPES
+// HIERARCHY LEVEL - ordered from highest to lowest
+// ============================================================================
+
+export const HIERARCHY_ORDER: Record<UserRole, number> = {
+  [UserRole.SUPERADMIN]: 0,
+  [UserRole.ZONAL_LEADER]: 1,
+  [UserRole.CAMPUS_ADMIN]: 2,
+  [UserRole.HOD]: 3,
+  [UserRole.SMALL_GROUP_LEADER]: 4,
+  [UserRole.CELL_LEADER]: 5,
+  [UserRole.MEMBER]: 6,
+};
+
+// ============================================================================
+// GLOBAL TYPE DECLARATIONS
+// ============================================================================
+// All interfaces and types below are globally available without imports
+// ============================================================================
+
+declare global {
+  // ============================================================================
+  // ORGANIZATIONAL UNIT TYPES
+  // ============================================================================
+
+  interface Campus {
+  id: string;
+  name: string;
+  description: string;
+  location: string;
+  country: string;
+  zoneId: string;
+  adminId: string;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+interface Zone {
+  id: string;
+  name: string;
+  description: string;
+  region?: string;
+  leaderId: string;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+interface Department {
+  id: string;
+  name: string;
+  description: string;
+  campusId: string;
+  zoneId?: string;
+  hodId: string;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+interface SmallGroup {
+  id: string;
+  name: string;
+  description: string;
+  campusId: string;
+  zoneId: string;
+  departmentId?: string;
+  leaderId: string;
+  meetingFrequency: MeetingFrequency;
+  memberCount: number;
+  inviteCode?: string;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+interface Cell {
+  id: string;
+  name: string;
+  description: string;
+  campusId: string;
+  zoneId: string;
+  departmentId?: string;
+  groupId: string;
+  leaderId: string;
+  meetingFrequency: MeetingFrequency;
+  memberCount: number;
+  inviteCode?: string;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+// ============================================================================
+// ORG UNIT WITH DETAILS
+// ============================================================================
+
+interface CampusWithDetails extends Campus {
+  zone: Zone;
+  admin?: UserProfile;
+  departments: Department[];
+  groups: SmallGroup[];
+  cells: Cell[];
+  totalMembers: number;
+  totalGroups: number;
+  totalCells: number;
+  totalDepartments: number;
+}
+
+interface ZoneWithDetails extends Zone {
+  leader?: UserProfile;
+  campuses: Campus[];
+  departments: Department[];
+  groups: SmallGroup[];
+  totalMembers: number;
+  totalCampuses: number;
+  totalDepartments: number;
+}
+
+interface DepartmentWithDetails extends Department {
+  campus: Campus;
+  zone?: Zone;
+  hod?: UserProfile;
+  groups: SmallGroup[];
+  totalMembers: number;
+  totalGroups: number;
+}
+
+interface SmallGroupWithDetails extends SmallGroup {
+  campus: Campus;
+  zone: Zone;
+  department?: Department;
+  leader?: UserProfile;
+  members: UserProfile[];
+  cells: Cell[];
+  recentMeetings: Meeting[];
+  attendanceRate?: number;
+}
+
+interface CellWithDetails extends Cell {
+  campus: Campus;
+  zone: Zone;
+  department?: Department;
+  group: SmallGroup;
+  leader?: UserProfile;
+  members: UserProfile[];
+  recentMeetings: Meeting[];
+  attendanceRate?: number;
+}
+
+// ============================================================================
+// CREATE/UPDATE INPUTS FOR ORG UNITS
+// ============================================================================
+
+interface CreateCampusInput {
+  name: string;
+  description: string;
+  location: string;
+  country: string;
+  zoneId: string;
+  adminId: string;
+}
+
+interface UpdateCampusInput {
+  name?: string;
+  description?: string;
+  location?: string;
+  country?: string;
+  zoneId?: string;
+  adminId?: string;
+  isActive?: boolean;
+}
+
+interface CreateZoneInput {
+  name: string;
+  description: string;
+  region?: string;
+  leaderId: string;
+}
+
+interface UpdateZoneInput {
+  name?: string;
+  description?: string;
+  region?: string;
+  leaderId?: string;
+  isActive?: boolean;
+}
+
+interface CreateDepartmentInput {
+  name: string;
+  description: string;
+  campusId: string;
+  zoneId?: string;
+  hodId: string;
+}
+
+interface UpdateDepartmentInput {
+  name?: string;
+  description?: string;
+  campusId?: string;
+  zoneId?: string;
+  hodId?: string;
+  isActive?: boolean;
+}
+
+interface CreateSmallGroupInput {
+  name: string;
+  description: string;
+  campusId: string;
+  zoneId: string;
+  departmentId?: string;
+  leaderId: string;
+  meetingFrequency: MeetingFrequency;
+}
+
+interface UpdateSmallGroupInput {
+  name?: string;
+  description?: string;
+  departmentId?: string;
+  leaderId?: string;
+  meetingFrequency?: MeetingFrequency;
+  inviteCode?: string;
+  isActive?: boolean;
+}
+
+interface CreateCellInput {
+  name: string;
+  description: string;
+  campusId: string;
+  zoneId: string;
+  departmentId?: string;
+  groupId: string;
+  leaderId: string;
+  meetingFrequency: MeetingFrequency;
+}
+
+interface UpdateCellInput {
+  name?: string;
+  description?: string;
+  departmentId?: string;
+  leaderId?: string;
+  meetingFrequency?: MeetingFrequency;
+  inviteCode?: string;
+  isActive?: boolean;
+}
+
+// ============================================================================
+// USER TYPES (UPDATED FOR HIERARCHY)
 // ============================================================================
 
 interface User {
   id: string;
   email: string;
-  password: string; // Bcrypt hashed
+  password: string;
   firstName: string;
   lastName: string;
   phone: string;
@@ -85,15 +382,25 @@ interface User {
   employmentStatus?: EmploymentStatus;
   interests: string[];
   role: UserRole;
+  campusId?: string;
+  zoneId?: string;
+  departmentId?: string;
   groupId?: string;
-  avatar?: string; // Cloudinary URL or base64 in mock
+  cellId?: string;
+  avatar?: string;
   isActive: boolean;
+  invitedById?: string;
+  inviteCode?: string;
   createdAt: string;
   updatedAt: string;
 }
 
 interface UserProfile extends Omit<User, "password"> {
-  group?: Group;
+  campus?: Campus;
+  zone?: Zone;
+  department?: Department;
+  group?: SmallGroup;
+  cell?: Cell;
   attendanceRate?: number;
   engagementScore?: number;
 }
@@ -110,7 +417,13 @@ interface CreateUserInput {
   maritalStatus?: MaritalStatus;
   employmentStatus?: EmploymentStatus;
   interests?: string[];
+  campusId?: string;
+  zoneId?: string;
+  departmentId?: string;
   groupId?: string;
+  cellId?: string;
+  invitedById?: string;
+  inviteCode?: string;
 }
 
 interface UpdateUserInput {
@@ -124,30 +437,26 @@ interface UpdateUserInput {
   employmentStatus?: EmploymentStatus;
   interests?: string[];
   avatar?: string;
-  // Admin fields
+  campusId?: string;
+  zoneId?: string;
+  departmentId?: string;
   groupId?: string;
+  cellId?: string;
   isActive?: boolean;
   role?: UserRole;
 }
 
 // ============================================================================
-// GROUP TYPES
+// GROUP TYPES (BACKWARD COMPAT - MAPS TO SmallGroup)
 // ============================================================================
 
-interface Group {
-  id: string;
-  name: string;
-  description: string;
-  meetingFrequency: MeetingFrequency;
-  leaderId: string;
-  memberCount: number;
-  createdAt: string;
-  updatedAt: string;
-}
+// Group is an alias for SmallGroup (maintained for backward compatibility)
+type Group = SmallGroup;
 
 interface GroupWithDetails extends Group {
-  leader: UserProfile;
+  leader?: UserProfile;
   members: UserProfile[];
+  cells: Cell[];
   recentMeetings: Meeting[];
   attendanceRate?: number;
 }
@@ -157,6 +466,9 @@ interface CreateGroupInput {
   description: string;
   meetingFrequency: MeetingFrequency;
   leaderId: string;
+  campusId?: string;
+  zoneId?: string;
+  departmentId?: string;
 }
 
 interface UpdateGroupInput {
@@ -164,36 +476,67 @@ interface UpdateGroupInput {
   description?: string;
   meetingFrequency?: MeetingFrequency;
   leaderId?: string;
+  campusId?: string;
+  zoneId?: string;
+  departmentId?: string;
+  inviteCode?: string;
+  isActive?: boolean;
 }
 
 // ============================================================================
-// MEETING TYPES
+// MEETING TYPES (UPDATED FOR HIERARCHY)
 // ============================================================================
 
 interface Meeting {
   id: string;
-  groupId: string;
-  date: string; // ISO date
+  title?: string;
+  date: string;
   startTime: string;
   endTime: string;
-  topic?: string; // Meeting topic/title
+  topic?: string;
   attendeeCount: number;
   attendeeIds: string[];
-  screenshotUrl?: string; // Cloudinary URL or base64
+  screenshotUrl?: string;
   notes?: string;
   createdById: string;
+  level: MeetingLevel;
+  campusId?: string;
+  zoneId?: string;
+  departmentId?: string;
+  groupId?: string;
+  cellId?: string;
+  isBroadcast?: boolean;
+  isTemplate?: boolean;
+  targetGroupIds?: string[];
+  targetCellIds?: string[];
+  templateId?: string;
+  campusNotes?: CampusMeetingNotes;
   createdAt: string;
   updatedAt: string;
 }
 
+interface CampusMeetingNotes {
+  totalCells?: number;
+  cellsHeld?: number;
+  newGroups?: number;
+  firstTimers?: number;
+  testimonies?: string[];
+  salvations?: number;
+  additionalNotes?: string;
+}
+
 interface MeetingWithDetails extends Meeting {
-  group: Group;
+  campus?: Campus;
+  zone?: Zone;
+  department?: Department;
+  group?: Group;
+  cell?: Cell;
   createdBy: UserProfile;
   attendees: UserProfile[];
 }
 
 interface CreateMeetingInput {
-  groupId: string;
+  title?: string;
   date: string;
   startTime: string;
   endTime: string;
@@ -202,9 +545,21 @@ interface CreateMeetingInput {
   attendeeIds?: string[];
   screenshotUrl?: string;
   notes?: string;
+  level: MeetingLevel;
+  campusId?: string;
+  zoneId?: string;
+  departmentId?: string;
+  groupId?: string;
+  cellId?: string;
+  isBroadcast?: boolean;
+  isTemplate?: boolean;
+  targetGroupIds?: string[];
+  targetCellIds?: string[];
+  campusNotes?: CampusMeetingNotes;
 }
 
 interface UpdateMeetingInput {
+  title?: string;
   date?: string;
   startTime?: string;
   endTime?: string;
@@ -213,6 +568,8 @@ interface UpdateMeetingInput {
   attendeeIds?: string[];
   screenshotUrl?: string;
   notes?: string;
+  level?: MeetingLevel;
+  campusNotes?: CampusMeetingNotes;
 }
 
 // ============================================================================
@@ -243,6 +600,11 @@ interface Interaction {
   type: InteractionType;
   notes?: string;
   timestamp: string;
+  groupId?: string;
+  cellId?: string;
+  campusId?: string;
+  zoneId?: string;
+  departmentId?: string;
   createdAt: string;
 }
 
@@ -272,7 +634,12 @@ interface MembershipRequest {
   id: string;
   memberId: string;
   fromGroupId?: string;
-  toGroupId: string;
+  fromCellId?: string;
+  toGroupId?: string;
+  toCellId?: string;
+  toCampusId?: string;
+  toZoneId?: string;
+  toDepartmentId?: string;
   type: MembershipRequestType;
   status: MembershipRequestStatus;
   message?: string;
@@ -285,13 +652,20 @@ interface MembershipRequest {
 interface MembershipRequestWithDetails extends MembershipRequest {
   member: UserProfile;
   fromGroup?: Group;
-  toGroup: Group;
+  toGroup?: Group;
+  fromCell?: Cell;
+  toCell?: Cell;
   respondedBy?: UserProfile;
 }
 
 interface CreateMembershipRequestInput {
-  toGroupId: string;
+  toGroupId?: string;
+  toCellId?: string;
+  toCampusId?: string;
+  toZoneId?: string;
+  toDepartmentId?: string;
   fromGroupId?: string;
+  fromCellId?: string;
   type: MembershipRequestType;
   message?: string;
 }
@@ -311,7 +685,7 @@ interface appNotification {
   type: NotificationType;
   title: string;
   message: string;
-  relatedId?: string; // Meeting ID, Request ID, etc.
+  relatedId?: string;
   read: boolean;
   createdAt: string;
 }
@@ -321,7 +695,160 @@ interface NotificationWithDetails extends appNotification {
 }
 
 // ============================================================================
-// ANALYTICS TYPES
+// CAMPAIGN TYPES
+// ============================================================================
+
+interface CampaignMedia {
+  id: string;
+  type: CampaignMediaType;
+  url: string;
+  thumbnailUrl?: string;
+  altText?: string;
+  order: number;
+}
+
+interface Campaign {
+  id: string;
+  title: string;
+  description: string;
+  content: string;
+  media: CampaignMedia[];
+  mediaType?: CampaignMediaType; // Primary media type for simplified access
+  mediaUrl?: string; // Primary media URL for simplified access
+  thumbnailUrl?: string; // Primary thumbnail URL for simplified access
+  ctaText?: string;
+  ctaUrl?: string;
+  createdById: string;
+  status: CampaignStatus;
+  targetAudience?: string[]; // Target audience categories
+  publishedAt?: string;
+  expiresAt?: string;
+  metaTitle?: string;
+  metaDescription?: string;
+  metaImage?: string;
+  targetLevel?: MeetingLevel;
+  targetCampusId?: string;
+  targetZoneId?: string;
+  targetDepartmentId?: string;
+  targetGroupId?: string;
+  targetCellId?: string;
+  viewCount: number;
+  likeCount?: number; // Number of likes
+  clickCount: number;
+  shareCount: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+interface CampaignWithDetails extends Campaign {
+  createdBy: UserProfile;
+  interactions: CampaignInteraction[];
+  isActive: boolean;
+}
+
+interface CampaignInteraction {
+  id: string;
+  campaignId: string;
+  userId?: string;
+  type: CampaignInteractionType;
+  referralCode?: string;
+  metadata?: Record<string, unknown>;
+  createdAt: string;
+}
+
+interface CreateCampaignInput {
+  title: string;
+  description: string;
+  content: string;
+  media?: CampaignMedia[];
+  ctaText?: string;
+  ctaUrl?: string;
+  metaTitle?: string;
+  metaDescription?: string;
+  metaImage?: string;
+  targetLevel?: MeetingLevel;
+  targetCampusId?: string;
+  targetZoneId?: string;
+  publishImmediately?: boolean;
+}
+
+interface UpdateCampaignInput {
+  title?: string;
+  description?: string;
+  content?: string;
+  media?: CampaignMedia[];
+  ctaText?: string;
+  ctaUrl?: string;
+  metaTitle?: string;
+  metaDescription?: string;
+  metaImage?: string;
+  targetLevel?: MeetingLevel;
+  targetCampusId?: string;
+  targetZoneId?: string;
+  targetDepartmentId?: string;
+  targetGroupId?: string;
+  targetCellId?: string;
+  status?: CampaignStatus;
+  expiresAt?: string;
+}
+
+// ============================================================================
+// REFERRAL / INVITE LINK TYPES
+// ============================================================================
+
+interface InviteLink {
+  id: string;
+  code: string;
+  createdById: string;
+  type: InviteLinkType;
+  targetId: string;
+  assignRole?: UserRole;
+  expiresAt?: string;
+  maxUses?: number;
+  isActive: boolean;
+  visitCount: number;
+  conversionCount: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+interface InviteLinkVisit {
+  id: string;
+  inviteLinkId: string;
+  visitorUserId?: string;
+  visitorIp?: string;
+  referrer?: string;
+  userAgent?: string;
+  ipAddress?: string;
+  converted: boolean;
+  convertedUserId?: string;
+  createdAt: string;
+}
+
+interface ReferralStats {
+  userId: string;
+  totalInvitesSent: number;
+  totalVisits: number;
+  totalConversions: number;
+  conversionRate: number;
+  topPerformingLink?: InviteLink;
+  invitees: Array<{
+    userId: string;
+    name: string;
+    joinedAt: string;
+    via: InviteLinkType;
+  }>;
+}
+
+interface CreateInviteLinkInput {
+  type: InviteLinkType;
+  targetId: string;
+  assignRole?: UserRole;
+  expiresAt?: string;
+}
+
+// ============================================================================
+// ANALYTICS TYPES (UPDATED FOR HIERARCHY)
 // ============================================================================
 
 interface MemberAnalytics {
@@ -348,17 +875,35 @@ interface GroupAnalytics {
   leaderInteractionRate: number;
 }
 
-interface ChurchWideAnalytics {
+interface CampusAnalytics {
+  campusId: string;
+  campusName: string;
+  zoneId: string;
+  zoneName: string;
   totalMembers: number;
-  activeMembers: number;
-  inactiveMembers: number;
+  totalDepartments: number;
   totalGroups: number;
-  activeGroups: number;
+  totalCells: number;
   totalMeetings: number;
   overallAttendanceRate: number;
-  averageEngagementScore: number;
-  atRiskMemberCount: number;
-  interestDistribution: Record<string, number>;
+  zonePerformance: Array<{
+    zoneId: string;
+    zoneName: string;
+    attendanceRate: number;
+    memberCount: number;
+  }>;
+  campusMeetingSummary?: CampusMeetingNotes;
+}
+
+interface ZoneAnalytics {
+  zoneId: string;
+  zoneName: string;
+  totalCampuses: number;
+  totalMembers: number;
+  totalGroups: number;
+  totalCells: number;
+  totalMeetings: number;
+  attendanceRate: number;
   groupPerformance: Array<{
     groupId: string;
     groupName: string;
@@ -367,11 +912,69 @@ interface ChurchWideAnalytics {
   }>;
 }
 
+interface HierarchyAnalytics {
+  level: MeetingLevel;
+  entityId: string;
+  entityName: string;
+  period: string;
+  totalMeetings: number;
+  averageAttendance: number;
+  attendanceRate: number;
+  totalMembers: number;
+  activeMembers: number;
+  atRiskMembers: number;
+  trendData: Array<{
+    date: string;
+    attendance: number;
+    meetings: number;
+  }>;
+}
+
+interface ChurchWideAnalytics {
+  totalMembers: number;
+  activeMembers: number;
+  inactiveMembers: number;
+  totalCampuses: number;
+  totalZones: number;
+  totalDepartments: number;
+  totalGroups: number;
+  totalCells: number;
+  activeGroups: number;
+  totalMeetings: number;
+  overallAttendanceRate: number;
+  averageEngagementScore: number;
+  atRiskMemberCount: number;
+  interestDistribution: Record<string, number>;
+  campusPerformance: Array<{
+    campusId: string;
+    campusName: string;
+    attendanceRate: number;
+    memberCount: number;
+    groupCount: number;
+  }>;
+  groupPerformance: Array<{
+    groupId: string;
+    groupName: string;
+    attendanceRate: number;
+    memberCount: number;
+  }>;
+  campaignStats: {
+    totalCampaigns: number;
+    activeCampaigns: number;
+    totalViews: number;
+    totalShares: number;
+  };
+  referralStats: {
+    totalReferrals: number;
+    totalConversions: number;
+    conversionRate: number;
+  };
+}
+
 // ============================================================================
 // API-SPECIFIC RESPONSE TYPES
 // ============================================================================
 
-// Member Dashboard & Analytics
 interface MemberDashboardAnalytics {
   attendanceRate: number;
   totalMeetings: number;
@@ -398,7 +1001,6 @@ interface MemberAnalyticsResponse {
   }>;
 }
 
-// Group/Leader Dashboard & Analytics
 interface GroupDashboardAnalytics {
   group: {
     id: string;
@@ -459,20 +1061,27 @@ interface LeaderAnalyticsResponse {
   recentTrend: "improving" | "stable" | "declining";
 }
 
-// Superadmin Dashboard & Analytics
 interface SuperadminDashboardAnalytics {
   totalUsers: number;
+  totalCampuses: number;
+  totalZones: number;
   totalGroups: number;
+  totalCells: number;
   recentMeetings: number;
   recentInteractions: number;
   activeUsers: number;
   activeGroups: number;
+  activeCampaigns: number;
 }
 
 interface SuperadminAnalyticsOverview {
   overview: {
     totalUsers: number;
+    totalCampuses: number;
+    totalZones: number;
+    totalDepartments: number;
     totalGroups: number;
+    totalCells: number;
     totalMeetings: number;
     totalInteractions: number;
     activeUsers: number;
@@ -490,6 +1099,7 @@ interface SuperadminAnalyticsOverview {
     name: string;
     groupId: string;
     groupName: string;
+    campusName: string;
     attendanceRate: number;
     lastMeeting?: string;
     lastInteraction?: string;
@@ -498,14 +1108,21 @@ interface SuperadminAnalyticsOverview {
     groupId: string;
     groupName: string;
     leaderName: string;
+    campusName: string;
     attendanceRate: number;
     memberCount: number;
     meetingCount: number;
   }>;
+  campusPerformance: Array<{
+    campusId: string;
+    campusName: string;
+    memberCount: number;
+    groupCount: number;
+    attendanceRate: number;
+  }>;
   interestDistribution: Record<string, number>;
 }
 
-// Follow-up Types
 interface FollowUpReminder {
   id: string;
   memberId: string;
@@ -526,6 +1143,7 @@ interface InactiveMember {
   phone: string;
   groupId: string;
   groupName: string;
+  campusName?: string;
   lastAttendance?: string;
   lastInteraction?: string;
   daysSinceLastAttendance: number;
@@ -533,7 +1151,6 @@ interface InactiveMember {
   attendanceRate: number;
 }
 
-// Meeting History
 interface MeetingHistory {
   meetings: Meeting[];
   attendanceRecords: Array<{
@@ -549,6 +1166,60 @@ interface MeetingHistory {
     missed: number;
     attendanceRate: number;
   };
+}
+
+// ============================================================================
+// CAMPAIGN ANALYTICS
+// ============================================================================
+
+interface CampaignAnalytics {
+  campaignId: string;
+  title: string;
+  totalViews: number;
+  uniqueViews: number;
+  totalClicks: number;
+  totalShares: number;
+  totalScreenshots: number;
+  skipCount: number;
+  backCount: number;
+  engagementRate: number;
+  sharesByUser: Array<{
+    userId: string;
+    userName: string;
+    shareCount: number;
+    visitsGenerated: number;
+    conversions: number;
+  }>;
+  interactionTimeline: Array<{
+    timestamp: string;
+    type: CampaignInteractionType;
+    count: number;
+  }>;
+}
+
+// ============================================================================
+// DATA VISUALIZATION TYPES
+// ============================================================================
+
+interface ChartDataPoint {
+  label: string;
+  value: number;
+  color?: string;
+}
+
+interface TimeSeriesData {
+  date: string;
+  value: number;
+  category?: string;
+}
+
+interface PerformanceMetric {
+  label: string;
+  current: number;
+  previous: number;
+  change: number;
+  changePercent: number;
+  trend: "up" | "down" | "stable";
 }
 
 // ============================================================================
@@ -570,7 +1241,11 @@ interface AuthTokens {
 }
 
 interface AuthUser extends Omit<User, "password"> {
+  campus?: Campus;
+  zone?: Zone;
+  department?: Department;
   group?: Group;
+  cell?: Cell;
 }
 
 interface AuthState {
@@ -650,7 +1325,11 @@ interface RegisterFormValues {
   maritalStatus?: MaritalStatus;
   employmentStatus?: EmploymentStatus;
   interests?: string[];
+  campusId?: string;
+  zoneId?: string;
   groupId?: string;
+  cellId?: string;
+  inviteCode?: string;
 }
 
 interface ProfileFormValues {
@@ -669,18 +1348,37 @@ interface GroupFormValues {
   name: string;
   description: string;
   meetingFrequency: MeetingFrequency;
+  campusId?: string;
+  zoneId?: string;
+  departmentId?: string;
   leaderId?: string;
 }
 
 interface MeetingFormValues {
+  title?: string;
   date: string;
   startTime: string;
   endTime: string;
+  level: MeetingLevel;
   attendanceMethod: "count" | "checklist";
   attendeeCount?: number;
   attendeeIds?: string[];
   notes?: string;
   screenshot?: File | string;
+  campusNotes?: CampusMeetingNotes;
+}
+
+interface CampaignFormValues {
+  title: string;
+  description: string;
+  content: string;
+  media?: File[];
+  ctaText?: string;
+  ctaUrl?: string;
+  targetLevel?: MeetingLevel;
+  targetCampusId?: string;
+  targetZoneId?: string;
+  publishImmediately?: boolean;
 }
 
 interface InteractionFormValues {
@@ -691,7 +1389,8 @@ interface InteractionFormValues {
 }
 
 interface MembershipRequestFormValues {
-  toGroupId: string;
+  toGroupId?: string;
+  toCellId?: string;
   message?: string;
 }
 
@@ -701,21 +1400,45 @@ interface MembershipRequestFormValues {
 
 interface UserFilters {
   role?: UserRole;
+  campusId?: string;
+  zoneId?: string;
+  departmentId?: string;
   groupId?: string;
+  cellId?: string;
   isActive?: boolean;
   search?: string;
 }
 
 interface GroupFilters {
+  campusId?: string;
+  zoneId?: string;
+  departmentId?: string;
   leaderId?: string;
   search?: string;
+  isActive?: boolean;
 }
 
 interface MeetingFilters {
+  level?: MeetingLevel;
+  campusId?: string;
+  zoneId?: string;
+  departmentId?: string;
   groupId?: string;
+  cellId?: string;
   dateFrom?: string;
   dateTo?: string;
+  startDate?: string;
+  endDate?: string;
+  search?: string;
   createdById?: string;
+}
+
+interface CampaignFilters {
+  status?: CampaignStatus;
+  createdById?: string;
+  targetLevel?: MeetingLevel;
+  targetCampusId?: string;
+  search?: string;
 }
 
 interface InteractionFilters {
@@ -724,11 +1447,14 @@ interface InteractionFilters {
   type?: InteractionType;
   dateFrom?: string;
   dateTo?: string;
+  startDate?: string;
+  endDate?: string;
 }
 
 interface MembershipRequestFilters {
   memberId?: string;
   toGroupId?: string;
+  toCellId?: string;
   status?: MembershipRequestStatus;
   type?: MembershipRequestType;
 }
@@ -750,3 +1476,11 @@ interface QueryOptions {
   sort?: SortOptions;
   pagination?: PaginationOptions;
 }
+
+} // End of declare global
+
+// ============================================================================
+// MODULE EXPORTS (for use as values, not types)
+// ============================================================================
+// Export statement to ensure this file is treated as a module
+export {};

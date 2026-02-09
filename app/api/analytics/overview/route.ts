@@ -78,7 +78,9 @@ export async function GET(request: NextRequest) {
     // Meeting frequency by group
     const meetingsByGroup = meetings.reduce(
       (acc, m) => {
-        acc[m.groupId] = (acc[m.groupId] || 0) + 1;
+        if (m.groupId) {
+          acc[m.groupId] = (acc[m.groupId] || 0) + 1;
+        }
         return acc;
       },
       {} as Record<string, number>

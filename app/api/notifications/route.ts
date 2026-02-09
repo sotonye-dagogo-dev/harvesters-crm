@@ -37,13 +37,13 @@ export async function POST(request: NextRequest) {
     }
 
     // Create notification
-    const notification = db.notifications.create(
+    const notification = db.notifications.create({
       userId,
       type,
       title,
       message,
-      relatedId
-    );
+      relatedId,
+    });
 
     return NextResponse.json(notification, { status: 201 });
   } catch (error) {

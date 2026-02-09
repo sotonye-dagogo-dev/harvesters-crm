@@ -10,6 +10,7 @@ import {
   handleApiError,
 } from "@/lib/utils/api";
 import { USER_ROLES } from "@/lib/constants";
+import { InteractionType } from "@/lib/types";
 
 // GET /api/interactions/[id] - Get interaction by ID
 export async function GET(

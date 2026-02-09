@@ -9,6 +9,7 @@ import GroupCard from "@/components/features/groups/GroupCard";
 import EmptyState from "@/components/ui/EmptyState";
 import { CardSkeleton } from "@/components/ui/LoadingSkeleton";
 import { useRouter } from "next/navigation";
+import { UserRole } from "@/lib/types";
 
 const { Search } = Input;
 
@@ -68,16 +69,16 @@ export default function GroupsPage() {
 
   if (loading) {
     return (
-      <DashboardLayout role={user?.role || "SUPERADMIN"}>
+      <DashboardLayout role={user?.role || UserRole.SUPERADMIN}>
         <CardSkeleton count={6} />
       </DashboardLayout>
     );
   }
 
-  const canCreateGroup = user?.role === "SUPERADMIN" || user?.role === "LEADER";
+  const canCreateGroup = user?.role === "SUPERADMIN" || user?.role === UserRole.SMALL_GROUP_LEADER;
 
   return (
-    <DashboardLayout role={user?.role || "SUPERADMIN"}>
+    <DashboardLayout role={user?.role || UserRole.SUPERADMIN}>
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>

@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { UserRole, Gender, EmploymentStatus, MaritalStatus } from "@/lib/types";
+import { useState, useEffect } from "react";
 import {
   Form,
   Input,
@@ -12,19 +13,39 @@ import {
   Select,
   DatePicker,
   Checkbox,
+  Spin,
+  Tag,
+  Empty,
 } from "antd";
 import {
   UserOutlined,
   MailOutlined,
   LockOutlined,
   PhoneOutlined,
+  TeamOutlined,
+  CheckCircleOutlined,
 } from "@ant-design/icons";
 import Link from "next/link";
 import { useAuth } from "@/providers/AuthProvider";
+import { useSearchParams } from "next/navigation";
 import dayjs from "dayjs";
 
 const { Title, Text } = Typography;
 const { Option } = Select;
+
+interface GroupSuggestion {
+  id: string;
+  name: string;
+  description: string;
+  memberCount: number;
+  meetingFrequency: string;
+  leader: {
+    id: string;
+    name: string;
+  } | null;
+  matchReasons: string[];
+  score: number;
+}
 
 interface RegisterFormValues {
   email: string;
@@ -40,6 +61,7 @@ interface RegisterFormValues {
   maritalStatus: MaritalStatus;
   interests: string[];
   acceptTerms: boolean;
+  selectedGroupId?: string; // For group selection
 }
 
 const INTEREST_OPTIONS = [
@@ -59,22 +81,99 @@ const INTEREST_OPTIONS = [
 
 export default function RegisterForm() {
   const [form] = Form.useForm();
+  const searchParams = useSearchParams();
   const [currentStep, setCurrentStep] = useState(0);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { register } = useAuth();
 
-  const steps = [
-    { title: "Account", content: "Login credentials" },
-    { title: "Personal", content: "Basic information" },
-    { title: "Details", content: "Additional info" },
-  ];
+  // Invite parameters from URL
+  const inviteGroupId = searchParams.get("groupId");
+  const inviteCode = searchParams.get("inviteCode");
+  const inviteType = searchParams.get("type"); // "leader" or "member"
+
+  // Group suggestions
+  const [groupSuggestions, setGroupSuggestions] = useState<GroupSuggestion[]>(
+    []
+  );
+  const [loadingSuggestions, setLoadingSuggestions] = useState(false);
+  const [selectedGroupForRequest, setSelectedGroupForRequest] = useState<
+    string | null
+  >(null);
+  const [inviteGroupName, setInviteGroupName] = useState<string | null>(null);
+
+  // Check if invitation is valid
+  useEffect(() => {
+    if (inviteGroupId && inviteCode) {
+      // Verify invite and get group name
+      fetch(`/api/groups/${inviteGroupId}`)
+        .then((res) => res.json())
+        .then((result) => {
+          const group = result.data || result;
+          if (group.inviteCode === inviteCode) {
+            setInviteGroupName(group.name);
+          }
+        })
+        .catch((err) => console.error("Failed to verify invite:", err));
+    }
+  }, [inviteGroupId, inviteCode]);
+
+  // Determine steps based on invite status
+  const hasInvite = !!(inviteGroupId && inviteCode);
+
+  const steps = hasInvite
+    ? [
+        { title: "Account", content: "Login credentials" },
+        { title: "Personal", content: "Basic information" },
+        { title: "Details", content: "Additional info" },
+      ]
+    : [
+        { title: "Account", content: "Login credentials" },
+        { title: "Personal", content: "Basic information" },
+        { title: "Details", content: "Additional info" },
+        { title: "Group", content: "Join a group" },
+      ];
+
+  // Fetch group suggestions when reaching the group step (only if no invite)
+  const fetchGroupSuggestions = async () => {
+    if (hasInvite) return; // Skip if user has invite link
+
+    const formValues = form.getFieldsValue();
+    const location = formValues.address || "";
+    const interests = formValues.interests || [];
+    const campus = ""; // Can be added as a form field if needed
+
+    setLoadingSuggestions(true);
+    try {
+      const params = new URLSearchParams();
+      if (location) params.append("location", location);
+      if (interests.length > 0) params.append("interests", interests.join(","));
+      if (campus) params.append("campus", campus);
+
+      const res = await fetch(`/api/groups/suggestions?${params.toString()}`);
+      const result = await res.json();
+
+      if (result.success) {
+        setGroupSuggestions(result.data.suggestions || []);
+      }
+    } catch (err) {
+      console.error("Failed to fetch group suggestions:", err);
+    } finally {
+      setLoadingSuggestions(false);
+    }
+  };
 
   const next = async () => {
     try {
       // Validate current step fields
       const fieldsToValidate = getStepFields(currentStep);
       await form.validateFields(fieldsToValidate);
+
+      // Fetch suggestions when moving to group step
+      if (currentStep === 2 && !hasInvite) {
+        await fetchGroupSuggestions();
+      }
+
       setCurrentStep(currentStep + 1);
       setError(null);
     } catch (err) {
@@ -88,27 +187,56 @@ export default function RegisterForm() {
   };
 
   const getStepFields = (step: number): string[] => {
-    switch (step) {
-      case 0:
-        return ["email", "password", "confirmPassword"];
-      case 1:
-        return [
-          "firstName",
-          "lastName",
-          "phone",
-          "dateOfBirth",
-          "gender",
-          "address",
-        ];
-      case 2:
-        return [
-          "employmentStatus",
-          "maritalStatus",
-          "interests",
-          "acceptTerms",
-        ];
-      default:
-        return [];
+    if (hasInvite) {
+      // Without group selection step
+      switch (step) {
+        case 0:
+          return ["email", "password", "confirmPassword"];
+        case 1:
+          return [
+            "firstName",
+            "lastName",
+            "phone",
+            "dateOfBirth",
+            "gender",
+            "address",
+          ];
+        case 2:
+          return [
+            "employmentStatus",
+            "maritalStatus",
+            "interests",
+            "acceptTerms",
+          ];
+        default:
+          return [];
+      }
+    } else {
+      // With group selection step
+      switch (step) {
+        case 0:
+          return ["email", "password", "confirmPassword"];
+        case 1:
+          return [
+            "firstName",
+            "lastName",
+            "phone",
+            "dateOfBirth",
+            "gender",
+            "address",
+          ];
+        case 2:
+          return [
+            "employmentStatus",
+            "maritalStatus",
+            "interests",
+            "acceptTerms",
+          ];
+        case 3:
+          return []; // Group selection is optional
+        default:
+          return [];
+      }
     }
   };
 
@@ -140,7 +268,8 @@ export default function RegisterForm() {
         throw new Error("You must be at least 13 years old to register");
       }
 
-      await register({
+      // Prepare registration data
+      const registrationData = {
         email: values.email,
         password: values.password,
         firstName: values.firstName,
@@ -152,7 +281,34 @@ export default function RegisterForm() {
         employmentStatus: values.employmentStatus,
         maritalStatus: values.maritalStatus,
         interests: values.interests || [],
-      });
+        // Include invite parameters if present
+        ...(inviteGroupId &&
+          inviteCode && {
+            groupId: inviteGroupId,
+            inviteCode,
+            inviteType,
+          }),
+      };
+
+      await register(registrationData);
+
+      // If user selected a group (without invite), create membership request
+      if (!hasInvite && selectedGroupForRequest) {
+        try {
+          await fetch("/api/membership-requests", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              groupId: selectedGroupForRequest,
+              type: "JOIN",
+            }),
+          });
+        } catch (err) {
+          console.error("Failed to create membership request:", err);
+          // Don't fail registration if request fails
+        }
+      }
+
       // Redirect is handled by AuthProvider
     } catch (err) {
       setError(
@@ -457,6 +613,86 @@ export default function RegisterForm() {
           </>
         );
 
+      case 3:
+        // Group Selection Step (only shown if no invite)
+        return (
+          <>
+            <div className="text-center mb-6">
+              <TeamOutlined className="text-5xl text-church-primary mb-2" />
+              <Title level={4}>Join a Small Group</Title>
+              <Text type="secondary">
+                Select a group that matches your interests and location
+                (optional)
+              </Text>
+            </div>
+
+            {loadingSuggestions ? (
+              <div className="text-center py-8">
+                <Spin size="large" tip="Finding groups for you..." />
+              </div>
+            ) : groupSuggestions.length > 0 ? (
+              <div className="space-y-4">
+                {groupSuggestions.map((suggestion) => (
+                  <Card
+                    key={suggestion.id}
+                    hoverable
+                    className={`cursor-pointer transition-all ${
+                      selectedGroupForRequest === suggestion.id
+                        ? "border-church-primary border-2 bg-church-primary/5"
+                        : "border-gray-200"
+                    }`}
+                    onClick={() => setSelectedGroupForRequest(suggestion.id)}
+                  >
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-2">
+                          <Text strong className="text-lg">
+                            {suggestion.name}
+                          </Text>
+                          {selectedGroupForRequest === suggestion.id && (
+                            <CheckCircleOutlined className="text-church-primary text-xl" />
+                          )}
+                        </div>
+                        <Text type="secondary" className="block mb-2">
+                          {suggestion.description}
+                        </Text>
+                        <div className="flex flex-wrap gap-2 mb-2">
+                          {suggestion.matchReasons.map((reason, idx) => (
+                            <Tag key={idx} color="blue">
+                              {reason}
+                            </Tag>
+                          ))}
+                        </div>
+                        <div className="flex items-center gap-4 text-sm text-gray-600">
+                          <span>
+                            <TeamOutlined /> {suggestion.memberCount} members
+                          </span>
+                          <span>{suggestion.meetingFrequency}</span>
+                          {suggestion.leader && (
+                            <span>Led by {suggestion.leader.name}</span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </Card>
+                ))}
+                <Button
+                  type="link"
+                  onClick={() => setSelectedGroupForRequest(null)}
+                  className="w-full"
+                >
+                  Skip - I&apos;ll choose a group later
+                </Button>
+              </div>
+            ) : (
+              <Empty
+                description="No group suggestions available. You can browse and join groups after registration."
+                className="py-8"
+              />
+            )}
+          </>
+        );
+
       default:
         return null;
     }
@@ -474,11 +710,27 @@ export default function RegisterForm() {
         <Text type="secondary">Create your account to get started</Text>
       </div>
 
+      {/* Invite Banner */}
+      {inviteGroupName && (
+        <Alert
+          message={`You've been invited to join ${inviteGroupName}`}
+          description={
+            inviteType === UserRole.SMALL_GROUP_LEADER
+              ? "You will be assigned as the group leader after registration"
+              : "You will be automatically added to this group after registration"
+          }
+          type="success"
+          showIcon
+          icon={<TeamOutlined />}
+          className="mb-6"
+        />
+      )}
+
       <Steps current={currentStep} items={steps} className="mb-8" />
 
       {error && (
         <Alert
-          title={error}
+          message={error}
           type="error"
           showIcon
           closable
@@ -504,6 +756,11 @@ export default function RegisterForm() {
         <div className={currentStep === 2 ? "block" : "hidden"}>
           {renderStepContent(2)}
         </div>
+        {!hasInvite && (
+          <div className={currentStep === 3 ? "block" : "hidden"}>
+            {renderStepContent(3)}
+          </div>
+        )}
 
         <div className="flex justify-between mt-8">
           {currentStep > 0 && (

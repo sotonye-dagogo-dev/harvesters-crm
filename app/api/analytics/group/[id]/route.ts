@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/data/database";
 import { getAuthenticatedUser } from "@/lib/utils/middleware";
 import { differenceInDays } from "date-fns";
+import { isLeadershipRole, USER_ROLES } from "@/lib/constants";
 
 export async function GET(
   _request: NextRequest,
@@ -21,8 +22,8 @@ export async function GET(
 
     // Permission check: Only leaders of the group or superadmins
     if (
-      user.role !== "SUPERADMIN" &&
-      (user.role !== "LEADER" || user.groupId !== id)
+      user.role !== USER_ROLES.SUPERADMIN &&
+      (!isLeadershipRole(user.role) || user.groupId !== id)
     ) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }

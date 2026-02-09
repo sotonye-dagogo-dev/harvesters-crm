@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-
+import DashboardLayout from "@/components/features/navigation/DashboardLayout";
 import {
   List,
   Button as AntButton,
@@ -23,6 +23,7 @@ import {
 } from "@ant-design/icons";
 import { format } from "date-fns";
 import EmptyState from "@/components/ui/EmptyState";
+import { UserRole } from "@/lib/types";
 
 const { TabPane } = Tabs;
 
@@ -74,7 +75,7 @@ export default function NotificationsPage() {
       } else {
         message.error("Failed to mark as read");
       }
-    } catch (error) {
+    } catch {
       message.error("An error occurred");
     } finally {
       setMarkingRead(null);
@@ -101,7 +102,7 @@ export default function NotificationsPage() {
       } else {
         message.error("Failed to mark all as read");
       }
-    } catch (error) {
+    } catch {
       message.error("An error occurred");
     }
   };
@@ -118,7 +119,7 @@ export default function NotificationsPage() {
       } else {
         message.error("Failed to delete notification");
       }
-    } catch (error) {
+    } catch {
       message.error("An error occurred");
     }
   };
@@ -157,17 +158,20 @@ export default function NotificationsPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <Spin size="large" />
-      </div>
+      <DashboardLayout role={UserRole.MEMBER}>
+        <div className="flex items-center justify-center min-h-[60vh]">
+          <Spin size="large" />
+        </div>
+      </DashboardLayout>
     );
   }
 
   const unreadNotifications = notifications.filter((n) => !n.read);
 
   return (
-    <div className="p-4 md:p-8 max-w-4xl mx-auto">
-      <div className="mb-6">
+    <DashboardLayout role={UserRole.MEMBER}>
+      <div className="max-w-4xl mx-auto space-y-6">
+        <div>
         <div className="flex items-center justify-between mb-4">
           <div>
             <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
@@ -195,7 +199,7 @@ export default function NotificationsPage() {
         <EmptyState
           icon={<BellOutlined />}
           title="No Notifications"
-          description="You don't have any notifications yet. We'll notify you about meetings, requests, and important updates."
+          description="You don&apos;t have any notifications yet. We&apos;ll notify you about meetings, requests, and important updates."
         />
       ) : (
         <Tabs defaultActiveKey="all">
@@ -210,6 +214,7 @@ export default function NotificationsPage() {
                   actions={[
                     !notification.read && (
                       <AntButton
+                        key="mark-read"
                         type="text"
                         size="small"
                         icon={<CheckOutlined />}
@@ -223,6 +228,7 @@ export default function NotificationsPage() {
                       </AntButton>
                     ),
                     <AntButton
+                      key="delete"
                       type="text"
                       danger
                       size="small"
@@ -295,6 +301,7 @@ export default function NotificationsPage() {
                     onClick={() => handleNotificationClick(notification)}
                     actions={[
                       <AntButton
+                        key="mark-read"
                         type="text"
                         size="small"
                         icon={<CheckOutlined />}
@@ -307,6 +314,7 @@ export default function NotificationsPage() {
                         Mark Read
                       </AntButton>,
                       <AntButton
+                        key="delete"
                         type="text"
                         danger
                         size="small"
@@ -358,6 +366,7 @@ export default function NotificationsPage() {
           </TabPane>
         </Tabs>
       )}
-    </div>
+      </div>
+    </DashboardLayout>
   );
 }

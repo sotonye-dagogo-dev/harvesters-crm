@@ -1,5 +1,6 @@
 "use client";
 
+import { UserRole } from "@/lib/types";
 import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import DashboardLayout from "@/components/features/navigation/DashboardLayout";
@@ -272,7 +273,7 @@ export default function MeetingSchedulingPage() {
 
   if (!user?.groupId) {
     return (
-      <DashboardLayout role="LEADER">
+      <DashboardLayout role={UserRole.SMALL_GROUP_LEADER}>
         <Card>
           <Empty
             description="You are not assigned to a group"
@@ -285,7 +286,7 @@ export default function MeetingSchedulingPage() {
 
   if (loading) {
     return (
-      <DashboardLayout role="LEADER">
+      <DashboardLayout role={UserRole.SMALL_GROUP_LEADER}>
         <div className="flex items-center justify-center h-96">
           <Spin size="large" />
         </div>
@@ -294,7 +295,7 @@ export default function MeetingSchedulingPage() {
   }
 
   return (
-    <DashboardLayout role="LEADER">
+    <DashboardLayout role={UserRole.SMALL_GROUP_LEADER}>
       <div className="space-y-6">
         {/* Header */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">

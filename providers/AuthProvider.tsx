@@ -10,6 +10,7 @@ import {
 import { useRouter } from "next/navigation";
 import { App } from "antd";
 import { USER_ROLES } from "@/lib/constants";
+import { UserRole, Gender, EmploymentStatus, MaritalStatus } from "@/lib/types";
 
 interface AuthContextType {
   user: User | null;
@@ -166,7 +167,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     switch (role) {
       case USER_ROLES.SUPERADMIN:
         return "/superadmin/dashboard";
-      case USER_ROLES.LEADER:
+      case USER_ROLES.SMALL_GROUP_LEADER:
         return "/leader/dashboard";
       case USER_ROLES.MEMBER:
         return "/member/dashboard";

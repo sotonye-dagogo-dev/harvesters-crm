@@ -1,3 +1,4 @@
+﻿import { UserRole } from "@/lib/types";
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/data/database";
 import { getAuthenticatedUser } from "@/lib/utils/middleware";
@@ -31,7 +32,7 @@ export async function GET(_request: NextRequest) {
     const { user, error } = await getAuthenticatedUser();
     if (error) return error;
 
-    if (user?.role !== "LEADER" && user?.role !== "SUPERADMIN") {
+    if (user?.role !== UserRole.SMALL_GROUP_LEADER && user?.role !== "SUPERADMIN") {
       return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
     }
 
@@ -73,7 +74,7 @@ export async function POST(request: NextRequest) {
     const { user, error } = await getAuthenticatedUser();
     if (error) return error;
 
-    if (user?.role !== "LEADER" && user?.role !== "SUPERADMIN") {
+    if (user?.role !== UserRole.SMALL_GROUP_LEADER && user?.role !== "SUPERADMIN") {
       return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
     }
 
@@ -90,7 +91,7 @@ export async function POST(request: NextRequest) {
       return badRequestResponse("Member not found");
     }
 
-    if (user.role === "LEADER" && member.groupId !== user.groupId) {
+    if (user.role === UserRole.SMALL_GROUP_LEADER && member.groupId !== user.groupId) {
       return NextResponse.json(
         { error: "Can only create follow-ups for your group members" },
         { status: 403 }

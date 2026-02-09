@@ -1,5 +1,6 @@
 "use client";
 
+import { UserRole } from "@/lib/types";
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import DashboardLayout from "@/components/features/navigation/DashboardLayout";
@@ -74,10 +75,14 @@ export default function MembersPage() {
       dataIndex: "role",
       key: "role",
       render: (role: UserRole) => {
-        const colors = {
-          SUPERADMIN: "red",
-          LEADER: "blue",
-          MEMBER: "green",
+        const colors: Record<UserRole, string> = {
+          [UserRole.SUPERADMIN]: "red",
+          [UserRole.ZONAL_LEADER]: "purple",
+          [UserRole.CAMPUS_ADMIN]: "geekblue",
+          [UserRole.HOD]: "blue",
+          [UserRole.SMALL_GROUP_LEADER]: "cyan",
+          [UserRole.CELL_LEADER]: "lime",
+          [UserRole.MEMBER]: "green",
         };
         return <Tag color={colors[role]}>{role}</Tag>;
       },

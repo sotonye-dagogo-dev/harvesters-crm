@@ -1,6 +1,8 @@
 import { Metadata } from "next";
+import { Suspense } from "react";
 import RegisterForm from "@/components/features/auth/RegisterForm";
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
+import { Spin } from "antd";
 
 export const metadata: Metadata = {
   title: "Register - Church Fellowship CRM",
@@ -16,7 +18,15 @@ export default function RegisterPage() {
       </div>
 
       <div className="w-full max-w-2xl">
-        <RegisterForm />
+        <Suspense
+          fallback={
+            <div className="flex justify-center items-center min-h-[400px]">
+              <Spin size="large" />
+            </div>
+          }
+        >
+          <RegisterForm />
+        </Suspense>
       </div>
     </div>
   );

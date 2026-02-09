@@ -1,5 +1,6 @@
 "use client";
 
+import { UserRole } from "@/lib/types";
 import { useEffect, useState } from "react";
 import { useAuth } from "@/providers/AuthProvider";
 import DashboardLayout from "@/components/features/navigation/DashboardLayout";
@@ -77,7 +78,7 @@ export default function GroupAnalyticsPage() {
 
   if (loading) {
     return (
-      <DashboardLayout role="LEADER">
+      <DashboardLayout role={UserRole.SMALL_GROUP_LEADER}>
         <div className="flex items-center justify-center h-96">
           <Spin size="large" />
         </div>
@@ -87,7 +88,7 @@ export default function GroupAnalyticsPage() {
 
   if (!analytics) {
     return (
-      <DashboardLayout role="LEADER">
+      <DashboardLayout role={UserRole.SMALL_GROUP_LEADER}>
         <div className="text-center py-12">
           <Card className="bg-white dark:bg-slate-800">
             <Empty description="Analytics data not available" />
@@ -146,7 +147,7 @@ export default function GroupAnalyticsPage() {
   ];
 
   return (
-    <DashboardLayout role="LEADER">
+    <DashboardLayout role={UserRole.SMALL_GROUP_LEADER}>
       <div className="space-y-6">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">

@@ -1,5 +1,6 @@
 "use client";
 
+import { UserRole } from "@/lib/types";
 import { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { useAuth } from "@/providers/AuthProvider";
@@ -76,8 +77,9 @@ export default function EditInteractionPage() {
 
     // Check if user can edit this interaction
     const canEdit =
-      user?.role === "SUPERADMIN" ||
-      (user?.role === "LEADER" && interaction.leaderId === user.id);
+      user?.role === UserRole.SUPERADMIN ||
+      (user?.role === UserRole.SMALL_GROUP_LEADER &&
+        interaction.leaderId === user.id);
 
     if (!canEdit) {
       message.error("You don't have permission to edit this interaction");
@@ -133,8 +135,9 @@ export default function EditInteractionPage() {
   }
 
   const canEdit =
-    user?.role === "SUPERADMIN" ||
-    (user?.role === "LEADER" && interaction.leaderId === user.id);
+    user?.role === UserRole.SUPERADMIN ||
+    (user?.role === UserRole.SMALL_GROUP_LEADER &&
+      interaction.leaderId === user.id);
 
   if (!canEdit) {
     return (

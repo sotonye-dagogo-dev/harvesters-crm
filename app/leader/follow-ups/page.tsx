@@ -1,5 +1,6 @@
 "use client";
 
+import { UserRole } from "@/lib/types";
 import { useEffect, useState } from "react";
 import { useAuth } from "@/providers/AuthProvider";
 import DashboardLayout from "@/components/features/navigation/DashboardLayout";
@@ -355,7 +356,7 @@ export default function FollowUpManagementPage() {
 
   if (loading) {
     return (
-      <DashboardLayout role={user?.role || "LEADER"}>
+      <DashboardLayout role={user?.role || UserRole.SMALL_GROUP_LEADER}>
         <div className="p-6">
           <h2 className="text-2xl font-bold text-gray-900 mb-6">
             Follow-up Management
@@ -377,7 +378,7 @@ export default function FollowUpManagementPage() {
   ).length;
 
   return (
-    <DashboardLayout role={user?.role || "LEADER"}>
+    <DashboardLayout role={user?.role || UserRole.SMALL_GROUP_LEADER}>
       <div className="p-6">
         <div className="mb-6">
           <h2 className="text-2xl font-bold text-gray-900">

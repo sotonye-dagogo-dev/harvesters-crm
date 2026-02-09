@@ -1,3 +1,4 @@
+import { UserRole } from "@/lib/types";
 import { Card } from "antd";
 import { MailOutlined, PhoneOutlined } from "@ant-design/icons";
 import Link from "next/link";
@@ -9,7 +10,7 @@ interface UserCardProps {
     lastName: string;
     email: string;
     phone?: string;
-    role: "SUPERADMIN" | "LEADER" | "MEMBER";
+    role: UserRole;
     isActive?: boolean;
   };
   showActions?: boolean;
@@ -25,13 +26,21 @@ export default function UserCard({
   onDeactivate,
   onAssignGroup,
 }: UserCardProps) {
-  const getRoleBadgeColor = (role: string) => {
+  const getRoleBadgeColor = (role: UserRole) => {
     switch (role) {
-      case "SUPERADMIN":
+      case UserRole.SUPERADMIN:
         return "bg-red-100 text-red-800";
-      case "LEADER":
+      case UserRole.ZONAL_LEADER:
+        return "bg-purple-100 text-purple-800";
+      case UserRole.CAMPUS_ADMIN:
+        return "bg-indigo-100 text-indigo-800";
+      case UserRole.HOD:
         return "bg-blue-100 text-blue-800";
-      case "MEMBER":
+      case UserRole.SMALL_GROUP_LEADER:
+        return "bg-cyan-100 text-cyan-800";
+      case UserRole.CELL_LEADER:
+        return "bg-teal-100 text-teal-800";
+      case UserRole.MEMBER:
         return "bg-green-100 text-green-800";
       default:
         return "bg-gray-100 text-gray-800";

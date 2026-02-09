@@ -6,6 +6,7 @@ import {
   notFoundResponse,
   badRequestResponse,
 } from "@/lib/utils/api";
+import { isLeadershipRole, USER_ROLES } from "@/lib/constants";
 
 // Import followUps from parent route (in production, this would be from database)
 // For now, we'll create a shared storage module
@@ -20,7 +21,7 @@ export async function PUT(
     const { user, error } = await getAuthenticatedUser();
     if (error) return error;
 
-    if (user?.role !== "LEADER" && user?.role !== "SUPERADMIN") {
+    if (!isLeadershipRole(user?.role ?? '')) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
     }
 
@@ -37,7 +38,7 @@ export async function PUT(
     const followUp = followUps[followUpIndex];
 
     // Verify ownership
-    if (followUp.leaderId !== user.id && user.role !== "SUPERADMIN") {
+    if (followUp.leaderId !== user.id && user.role !== USER_ROLES.SUPERADMIN) {
       return NextResponse.json(
         { error: "Can only update your own follow-ups" },
         { status: 403 }
@@ -74,7 +75,7 @@ export async function DELETE(
     const { user, error } = await getAuthenticatedUser();
     if (error) return error;
 
-    if (user?.role !== "LEADER" && user?.role !== "SUPERADMIN") {
+    if (!isLeadershipRole(user?.role ?? '')) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
     }
 
@@ -88,7 +89,7 @@ export async function DELETE(
     const followUp = followUps[followUpIndex];
 
     // Verify ownership
-    if (followUp.leaderId !== user.id && user.role !== "SUPERADMIN") {
+    if (followUp.leaderId !== user.id && user.role !== USER_ROLES.SUPERADMIN) {
       return NextResponse.json(
         { error: "Can only delete your own follow-ups" },
         { status: 403 }

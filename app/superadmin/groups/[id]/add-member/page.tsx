@@ -1,8 +1,10 @@
 "use client";
 
+import { UserRole } from "@/lib/types";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/providers/AuthProvider";
+import DashboardLayout from "@/components/features/navigation/DashboardLayout";
 import { Card, Select, Button, message, Spin, Empty, Avatar } from "antd";
 import { UserAddOutlined, UserOutlined } from "@ant-design/icons";
 
@@ -17,6 +19,7 @@ export default function AddMemberPage({ params }: { params: { id: string } }) {
 
   useEffect(() => {
     fetchData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [params.id]);
 
   const fetchData = async () => {
@@ -57,8 +60,9 @@ export default function AddMemberPage({ params }: { params: { id: string } }) {
 
     // Check if user can add members to this group
     const canAdd =
-      user?.role === "SUPERADMIN" ||
-      (user?.role === "LEADER" && group.leaderId === user.id);
+      user?.role === UserRole.SUPERADMIN ||
+      (user?.role === UserRole.SMALL_GROUP_LEADER &&
+        group.leaderId === user.id);
 
     if (!canAdd) {
       message.error("You don't have permission to add members to this group");
@@ -81,8 +85,10 @@ export default function AddMemberPage({ params }: { params: { id: string } }) {
 
       message.success("Member added successfully");
       router.push(`/groups/${params.id}`);
-    } catch (error: any) {
-      message.error(error.message || "Failed to add member");
+    } catch (error: unknown) {
+      const errorMessage =
+        error instanceof Error ? error.message : "Failed to add member";
+      message.error(errorMessage);
       console.error(error);
     } finally {
       setSubmitting(false);
@@ -91,9 +97,11 @@ export default function AddMemberPage({ params }: { params: { id: string } }) {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <Spin size="large" />
-      </div>
+      <DashboardLayout role={UserRole.SUPERADMIN}>
+        <div className="flex items-center justify-center min-h-[60vh]">
+          <Spin size="large" />
+        </div>
+      </DashboardLayout>
     );
   }
 
@@ -102,120 +110,124 @@ export default function AddMemberPage({ params }: { params: { id: string } }) {
   }
 
   const canAdd =
-    user?.role === "SUPERADMIN" ||
-    (user?.role === "LEADER" && group.leaderId === user.id);
+    user?.role === UserRole.SUPERADMIN ||
+    (user?.role === UserRole.SMALL_GROUP_LEADER && group.leaderId === user.id);
 
   if (!canAdd) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <Card>
-          <p className="text-gray-500">
-            You don't have permission to add members to this group
-          </p>
-          <Button
-            type="primary"
-            onClick={() => router.push(`/groups/${params.id}`)}
-          >
-            Back to Group
-          </Button>
-        </Card>
-      </div>
-    );
-  }
-
-  return (
-    <div className="p-6 max-w-2xl mx-auto">
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">Add Member</h1>
-        <p className="text-gray-500 mt-1">Add a member to {group.name}</p>
-      </div>
-
-      <Card>
-        {availableMembers.length === 0 ? (
-          <Empty
-            description="No available members without a group"
-            image={Empty.PRESENTED_IMAGE_SIMPLE}
-          >
+      <DashboardLayout role={UserRole.SUPERADMIN}>
+        <div className="flex items-center justify-center min-h-[60vh]">
+          <Card>
+            <p className="text-gray-500">
+              You don&apos;t have permission to add members to this group
+            </p>
             <Button
               type="primary"
               onClick={() => router.push(`/groups/${params.id}`)}
             >
               Back to Group
             </Button>
-          </Empty>
-        ) : (
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Select Member
-              </label>
-              <Select
-                size="large"
-                placeholder="Choose a member to add"
-                className="w-full"
-                value={selectedMemberId || undefined}
-                onChange={(value) => setSelectedMemberId(value)}
-                showSearch
-                optionFilterProp="children"
-                filterOption={(input, option) =>
-                  (option?.label ?? "")
-                    .toString()
-                    .toLowerCase()
-                    .includes(input.toLowerCase())
-                }
-                options={availableMembers.map((member) => ({
-                  value: member.id,
-                  label: `${member.firstName} ${member.lastName} (${member.email})`,
-                  member: member,
-                }))}
-                optionRender={(option) => {
-                  const member = option.data.member as User;
-                  return (
-                    <div className="flex items-center gap-3 py-1">
-                      <Avatar
-                        size={32}
-                        icon={<UserOutlined />}
-                        src={member.avatar}
-                      >
-                        {member.firstName[0]}
-                        {member.lastName[0]}
-                      </Avatar>
-                      <div>
-                        <div className="font-medium">
-                          {member.firstName} {member.lastName}
-                        </div>
-                        <div className="text-xs text-gray-500">
-                          {member.email}
-                        </div>
-                      </div>
-                    </div>
-                  );
-                }}
-              />
-              <p className="text-sm text-gray-500 mt-2">
-                Showing {availableMembers.length} member(s) without a group
-              </p>
-            </div>
+          </Card>
+        </div>
+      </DashboardLayout>
+    );
+  }
 
-            <div className="flex gap-2 justify-end pt-4">
-              <Button
-                onClick={() => router.push(`/superadmin/groups/${params.id}`)}
-              >
-                Cancel
-              </Button>
+  return (
+    <DashboardLayout role={UserRole.SUPERADMIN}>
+      <div className="max-w-2xl mx-auto space-y-6">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">Add Member</h1>
+          <p className="text-gray-500 mt-1">Add a member to {group.name}</p>
+        </div>
+
+        <Card>
+          {availableMembers.length === 0 ? (
+            <Empty
+              description="No available members without a group"
+              image={Empty.PRESENTED_IMAGE_SIMPLE}
+            >
               <Button
                 type="primary"
-                icon={<UserAddOutlined />}
-                onClick={handleAddMember}
-                loading={submitting}
-                disabled={!selectedMemberId}
+                onClick={() => router.push(`/groups/${params.id}`)}
               >
-                Add Member
+                Back to Group
               </Button>
+            </Empty>
+          ) : (
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Select Member
+                </label>
+                <Select
+                  size="large"
+                  placeholder="Choose a member to add"
+                  className="w-full"
+                  value={selectedMemberId || undefined}
+                  onChange={(value) => setSelectedMemberId(value)}
+                  showSearch
+                  optionFilterProp="children"
+                  filterOption={(input, option) =>
+                    (option?.label ?? "")
+                      .toString()
+                      .toLowerCase()
+                      .includes(input.toLowerCase())
+                  }
+                  options={availableMembers.map((member) => ({
+                    value: member.id,
+                    label: `${member.firstName} ${member.lastName} (${member.email})`,
+                    member: member,
+                  }))}
+                  optionRender={(option) => {
+                    const member = option.data.member as User;
+                    return (
+                      <div className="flex items-center gap-3 py-1">
+                        <Avatar
+                          size={32}
+                          icon={<UserOutlined />}
+                          src={member.avatar}
+                        >
+                          {member.firstName[0]}
+                          {member.lastName[0]}
+                        </Avatar>
+                        <div>
+                          <div className="font-medium">
+                            {member.firstName} {member.lastName}
+                          </div>
+                          <div className="text-xs text-gray-500">
+                            {member.email}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  }}
+                />
+                <p className="text-sm text-gray-500 mt-2">
+                  Showing {availableMembers.length} member(s) without a group
+                </p>
+              </div>
+
+              <div className="flex gap-2 justify-end pt-4">
+                <Button
+                  onClick={() => router.push(`/superadmin/groups/${params.id}`)}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="primary"
+                  icon={<UserAddOutlined />}
+                  onClick={handleAddMember}
+                  loading={submitting}
+                  disabled={!selectedMemberId}
+                >
+                  Add Member
+                </Button>
+              </div>
             </div>
-          </div>
-        )}
-      </Card>
-    </div>
+          )}
+        </Card>
+      </div>
+    </DashboardLayout>
   );
 }

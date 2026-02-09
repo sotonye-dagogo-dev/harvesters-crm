@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/providers/AuthProvider";
+import DashboardLayout from "@/components/features/navigation/DashboardLayout";
 import {
   Button as AntButton,
   message,
@@ -25,6 +26,7 @@ import {
 import { format } from "date-fns";
 import EmptyState from "@/components/ui/EmptyState";
 import { CardSkeleton } from "@/components/ui/LoadingSkeleton";
+import { UserRole } from "@/lib/types";
 
 const { Search } = Input;
 
@@ -140,9 +142,9 @@ export default function InteractionsPage() {
     }
   };
 
-  if (user?.role !== "LEADER" && user?.role !== "SUPERADMIN") {
+  if (user?.role !== UserRole.SMALL_GROUP_LEADER && user?.role !== "SUPERADMIN") {
     return (
-      <div className="p-6">
+      <DashboardLayout role={user?.role || UserRole.SMALL_GROUP_LEADER}>
         <EmptyState
           icon={<SearchOutlined />}
           title="Access Denied"
@@ -156,31 +158,34 @@ export default function InteractionsPage() {
             </AntButton>
           }
         />
-      </div>
+      </DashboardLayout>
     );
   }
 
   if (loading) {
     return (
-      <div className="p-6">
-        <div className="mb-6">
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-            Interactions
-          </h2>
-          <p className="text-gray-600 dark:text-gray-400 mt-1">
-            Loading interactions...
-          </p>
+      <DashboardLayout role={UserRole.SMALL_GROUP_LEADER}>
+        <div className="space-y-6">
+          <div>
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+              Interactions
+            </h2>
+            <p className="text-gray-600 dark:text-gray-400 mt-1">
+              Loading interactions...
+            </p>
+          </div>
+          <div className="grid grid-cols-1 gap-6">
+            <CardSkeleton count={3} />
+          </div>
         </div>
-        <div className="grid grid-cols-1 gap-6">
-          <CardSkeleton count={3} />
-        </div>
-      </div>
+      </DashboardLayout>
     );
   }
 
   return (
-    <div className="p-6">
-      <div className="flex items-center justify-between mb-6">
+    <DashboardLayout role={UserRole.SMALL_GROUP_LEADER}>
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
             Interactions
@@ -202,7 +207,7 @@ export default function InteractionsPage() {
       </div>
 
       {/* Filters */}
-      <div className="flex gap-4 mb-6">
+      <div className="flex gap-4">
         <Search
           placeholder="Search by member name or notes..."
           allowClear
@@ -255,7 +260,7 @@ export default function InteractionsPage() {
           {filteredInteractions.map((interaction) => {
             const canEdit =
               user?.role === "SUPERADMIN" ||
-              (user?.role === "LEADER" && interaction.leaderId === user.id);
+              (user?.role === UserRole.SMALL_GROUP_LEADER && interaction.leaderId === user.id);
 
             return (
               <Card
@@ -323,6 +328,7 @@ export default function InteractionsPage() {
           })}
         </div>
       )}
-    </div>
+      </div>
+    </DashboardLayout>
   );
 }

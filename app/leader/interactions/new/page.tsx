@@ -1,5 +1,6 @@
 "use client";
 
+import { UserRole } from "@/lib/types";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/providers/AuthProvider";
@@ -47,7 +48,7 @@ export default function LogInteractionPage() {
 
   // Fetch members when component mounts
   useState(() => {
-    if (user?.role === "LEADER" && user.groupId) {
+    if (user?.role === UserRole.SMALL_GROUP_LEADER && user.groupId) {
       fetchGroupMembers();
     }
   });
@@ -96,7 +97,7 @@ export default function LogInteractionPage() {
   };
 
   // Check if user is a leader
-  if (user?.role !== "LEADER" && user?.role !== "SUPERADMIN") {
+  if (user?.role !== UserRole.SMALL_GROUP_LEADER && user?.role !== "SUPERADMIN") {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <Card>

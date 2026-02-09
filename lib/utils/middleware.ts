@@ -1,3 +1,4 @@
+import { UserRole } from "@/lib/types";
 import { getAccessToken, verifyAccessToken } from "@/lib/utils/auth";
 import { userDb } from "@/lib/data/database";
 import { unauthorizedResponse } from "@/lib/utils/api";
@@ -71,9 +72,9 @@ export async function requireRole(roles: UserRole[]) {
   if (!roles.includes(user.role)) {
     const requiredRoles = roles.join(" or ");
     const userRoleName =
-      user.role === "SUPERADMIN"
+      user.role === UserRole.SUPERADMIN
         ? "Super Administrator"
-        : user.role === "LEADER"
+        : user.role === UserRole.SMALL_GROUP_LEADER
           ? "Group Leader"
           : "Member";
 

@@ -14,6 +14,7 @@ import {
 import { EditOutlined, LockOutlined } from "@ant-design/icons";
 import ProfileAvatar from "@/components/features/users/ProfileAvatar";
 import { useRouter } from "next/navigation";
+import { UserRole } from "@/lib/types";
 
 export default function SuperAdminProfilePage() {
   const { user } = useAuth();
@@ -45,7 +46,7 @@ export default function SuperAdminProfilePage() {
 
   if (loading) {
     return (
-      <DashboardLayout role="SUPERADMIN">
+      <DashboardLayout role={UserRole.SUPERADMIN}>
         <div className="flex items-center justify-center h-96">
           <Spin size="large" />
         </div>
@@ -55,7 +56,7 @@ export default function SuperAdminProfilePage() {
 
   if (!profile) {
     return (
-      <DashboardLayout role="SUPERADMIN">
+      <DashboardLayout role={UserRole.SUPERADMIN}>
         <div className="text-center py-12">
           <p className="text-gray-500 dark:text-gray-400">Profile not found</p>
         </div>
@@ -64,7 +65,7 @@ export default function SuperAdminProfilePage() {
   }
 
   return (
-    <DashboardLayout role="SUPERADMIN">
+    <DashboardLayout role={UserRole.SUPERADMIN}>
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <h2 className="text-2xl font-bold text-gray-900 dark:text-white">

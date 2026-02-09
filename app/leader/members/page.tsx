@@ -22,6 +22,7 @@ import {
   CheckCircleOutlined,
   CloseCircleOutlined,
 } from "@ant-design/icons";
+import { UserRole } from "@/lib/types";
 
 interface GroupMember {
   id: string;
@@ -193,7 +194,7 @@ export default function LeaderMembersPage() {
 
   if (loading) {
     return (
-      <DashboardLayout role="LEADER">
+      <DashboardLayout role={UserRole.SMALL_GROUP_LEADER}>
         <div className="flex items-center justify-center min-h-[400px]">
           <Spin size="large" />
         </div>
@@ -202,7 +203,7 @@ export default function LeaderMembersPage() {
   }
 
   return (
-    <DashboardLayout role="LEADER">
+    <DashboardLayout role={UserRole.SMALL_GROUP_LEADER}>
       <div className="space-y-8">
         {/* Page Header */}
         <div className="bg-gradient-to-r from-green-50 to-blue-50 dark:from-slate-800 dark:to-slate-900 p-6 rounded-2xl shadow-lg border border-gray-200 dark:border-slate-700">

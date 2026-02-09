@@ -33,6 +33,7 @@ import { CardSkeleton } from "@/components/ui/LoadingSkeleton";
 import Pagination from "@/components/ui/Pagination";
 import dayjs, { Dayjs } from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
+import { UserRole } from "@/lib/types";
 
 dayjs.extend(relativeTime);
 
@@ -240,7 +241,7 @@ export default function UserActivityLogsPage() {
     switch (role) {
       case "SUPERADMIN":
         return "red";
-      case "LEADER":
+      case UserRole.SMALL_GROUP_LEADER:
         return "blue";
       case "MEMBER":
         return "green";
@@ -363,14 +364,14 @@ export default function UserActivityLogsPage() {
 
   if (loading) {
     return (
-      <DashboardLayout role="SUPERADMIN">
+      <DashboardLayout role={UserRole.SUPERADMIN}>
         <CardSkeleton count={3} />
       </DashboardLayout>
     );
   }
 
   return (
-    <DashboardLayout role={user?.role || "SUPERADMIN"}>
+    <DashboardLayout role={user?.role || UserRole.SUPERADMIN}>
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>

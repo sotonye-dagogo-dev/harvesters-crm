@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
+import { UserRole } from "@/lib/types";
 import { verifyToken } from "@/lib/utils/auth";
 
 // Define public routes that don't require authentication
@@ -72,13 +73,13 @@ export async function proxy(request: NextRequest) {
 
         // Redirect to appropriate dashboard based on role
         switch (decoded.role) {
-          case "SUPERADMIN":
+          case UserRole.SUPERADMIN:
             url.pathname = "/superadmin/dashboard";
             break;
-          case "LEADER":
+          case UserRole.SMALL_GROUP_LEADER:
             url.pathname = "/leader/dashboard";
             break;
-          case "MEMBER":
+          case UserRole.MEMBER:
             url.pathname = "/member/dashboard";
             break;
           default:

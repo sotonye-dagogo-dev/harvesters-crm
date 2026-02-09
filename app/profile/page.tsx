@@ -14,6 +14,7 @@ import {
 import { EditOutlined, LockOutlined } from "@ant-design/icons";
 import ProfileAvatar from "@/components/features/users/ProfileAvatar";
 import { useRouter } from "next/navigation";
+import { UserRole } from "@/lib/types";
 
 export default function ProfilePage() {
   const { user } = useAuth();
@@ -67,7 +68,7 @@ export default function ProfilePage() {
     switch (role) {
       case "SUPERADMIN":
         return <Tag color="red">Super Administrator</Tag>;
-      case "LEADER":
+      case UserRole.SMALL_GROUP_LEADER:
         return <Tag color="blue">Group Leader</Tag>;
       case "MEMBER":
         return <Tag color="green">Member</Tag>;

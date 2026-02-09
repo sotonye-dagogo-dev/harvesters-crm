@@ -1,5 +1,6 @@
 "use client";
 
+import { UserRole } from "@/lib/types";
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import DashboardLayout from "@/components/features/navigation/DashboardLayout";
@@ -110,7 +111,7 @@ export default function UserDetailsPage() {
 
   if (loading) {
     return (
-      <DashboardLayout role="SUPERADMIN">
+      <DashboardLayout role={UserRole.SUPERADMIN}>
         <div className="flex items-center justify-center h-96">
           <Spin size="large" />
         </div>
@@ -120,7 +121,7 @@ export default function UserDetailsPage() {
 
   if (!user) {
     return (
-      <DashboardLayout role="SUPERADMIN">
+      <DashboardLayout role={UserRole.SUPERADMIN}>
         <div className="text-center py-12">
           <p className="text-gray-500">User not found</p>
         </div>
@@ -129,7 +130,7 @@ export default function UserDetailsPage() {
   }
 
   return (
-    <DashboardLayout role="SUPERADMIN">
+    <DashboardLayout role={UserRole.SUPERADMIN}>
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <h2 className="text-2xl font-bold text-gray-900">User Details</h2>
@@ -175,9 +176,9 @@ export default function UserDetailsPage() {
               <div className="mt-2 flex gap-2">
                 <Tag
                   color={
-                    user.role === "SUPERADMIN"
+                    user.role === UserRole.SUPERADMIN
                       ? "red"
-                      : user.role === "LEADER"
+                      : user.role === UserRole.SMALL_GROUP_LEADER
                         ? "blue"
                         : "green"
                   }
@@ -241,9 +242,9 @@ export default function UserDetailsPage() {
               style={{ width: "100%" }}
               size="large"
               options={[
-                { label: "Superadmin", value: "SUPERADMIN" },
-                { label: "Leader", value: "LEADER" },
-                { label: "Member", value: "MEMBER" },
+                { label: "Superadmin", value: UserRole.SUPERADMIN },
+                { label: "Leader", value: UserRole.SMALL_GROUP_LEADER },
+                { label: "Member", value: UserRole.MEMBER },
               ]}
             />
           </div>

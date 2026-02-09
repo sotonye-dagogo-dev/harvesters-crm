@@ -5,7 +5,9 @@
  * for various events in the system (meetings, membership requests, role changes).
  */
 
+import { UserRole } from "@/lib/types";
 import { db } from "@/lib/data/database";
+import { NotificationType } from "@/lib/types";
 
 /**
  * Send meeting reminder notification to all group members
@@ -36,7 +38,7 @@ export async function sendMeetingReminder(
     const members = db.users.findAll({ groupId });
     const leaders = db.users.findAll({ groupId });
     const allRecipients = [...members, ...leaders].filter(
-      (u) => u.role === "MEMBER" || u.role === "LEADER"
+      (u) => u.role === "MEMBER" || u.role === UserRole.SMALL_GROUP_LEADER
     );
 
     if (allRecipients.length === 0) {
@@ -48,13 +50,13 @@ export async function sendMeetingReminder(
 
     // Create notification for each member
     for (const member of allRecipients) {
-      db.notifications.create(
-        member.id,
-        NotificationType.MEETING_REMINDER,
-        "Upcoming Group Meeting",
-        `Your ${group.name} meeting is scheduled for ${new Date(meeting.date).toLocaleDateString()} at ${meeting.startTime}`,
-        meetingId
-      );
+      db.notifications.create({
+        userId: member.id,
+        type: NotificationType.MEETING_REMINDER,
+        title: "Upcoming Group Meeting",
+        message: `Your ${group.name} meeting is scheduled for ${new Date(meeting.date).toLocaleDateString()} at ${meeting.startTime}`,
+        relatedId: meetingId,
+      });
     }
 
     return {
@@ -90,6 +92,13 @@ export async function sendMembershipRequestNotification(
       };
     }
 
+    if (!request.toGroupId) {
+      return {
+        success: false,
+        message: `Membership request has no target group.`,
+      };
+    }
+
     const responder = db.users.findById(responderId);
     const toGroup = db.groups.findById(request.toGroupId);
 
@@ -104,13 +113,13 @@ export async function sendMembershipRequestNotification(
     }
 
     // Notify the requesting member
-    db.notifications.create(
-      request.memberId,
-      NotificationType.REQUEST_STATUS,
+    db.notifications.create({
+      userId: request.memberId,
+      type: NotificationType.REQUEST_STATUS,
       title,
-      notificationMessage,
-      requestId
-    );
+      message: notificationMessage,
+      relatedId: requestId,
+    });
 
     return {
       success: true,
@@ -154,7 +163,7 @@ export async function sendRoleAssignmentNotification(
     }
 
     const roleDisplayName =
-      newRole === "LEADER"
+      newRole === UserRole.SMALL_GROUP_LEADER
         ? "Group Leader"
         : newRole === "SUPERADMIN"
           ? "Super Administrator"
@@ -163,13 +172,13 @@ export async function sendRoleAssignmentNotification(
     const title = "Role Assignment Update";
     const notificationMessage = `Your role has been updated to ${roleDisplayName} by ${assigner.firstName} ${assigner.lastName}. You now have access to additional features.`;
 
-    db.notifications.create(
+    db.notifications.create({
       userId,
-      NotificationType.ROLE_ASSIGNMENT,
+      type: NotificationType.ROLE_ASSIGNMENT,
       title,
-      notificationMessage,
-      userId
-    );
+      message: notificationMessage,
+      relatedId: userId,
+    });
 
     return {
       success: true,
@@ -213,23 +222,23 @@ export async function sendNewMemberNotification(
 
     // Notify the group leader
     if (group.leaderId) {
-      db.notifications.create(
-        group.leaderId,
-        NotificationType.REQUEST_STATUS,
-        "New Member Joined",
-        `${member.firstName} ${member.lastName} has joined your group: ${group.name}`,
-        memberId
-      );
+      db.notifications.create({
+        userId: group.leaderId,
+        type: NotificationType.REQUEST_STATUS,
+        title: "New Member Joined",
+        message: `${member.firstName} ${member.lastName} has joined your group: ${group.name}`,
+        relatedId: memberId,
+      });
     }
 
     // Notify the member
-    db.notifications.create(
-      memberId,
-      NotificationType.REQUEST_STATUS,
-      "Welcome to Your Fellowship",
-      `You have successfully joined ${group.name}. Looking forward to seeing you at the next meeting!`,
-      groupId
-    );
+    db.notifications.create({
+      userId: memberId,
+      type: NotificationType.REQUEST_STATUS,
+      title: "Welcome to Your Fellowship",
+      message: `You have successfully joined ${group.name}. Looking forward to seeing you at the next meeting!`,
+      relatedId: groupId,
+    });
 
     return {
       success: true,
@@ -268,13 +277,13 @@ export async function sendMemberRemovedNotification(
     const title = "Group Membership Update";
     const notificationMessage = `You have been removed from ${groupName} by ${remover?.firstName || "an administrator"}. Please contact church leadership if you have questions.`;
 
-    db.notifications.create(
-      memberId,
-      NotificationType.REQUEST_STATUS,
+    db.notifications.create({
+      userId: memberId,
+      type: NotificationType.REQUEST_STATUS,
       title,
-      notificationMessage,
-      undefined
-    );
+      message: notificationMessage,
+      relatedId: undefined,
+    });
 
     return {
       success: true,
@@ -337,6 +346,13 @@ export async function sendNewMembershipRequestNotification(
       };
     }
 
+    if (!request.memberId || !request.toGroupId) {
+      return {
+        success: false,
+        message: `Membership request is missing required information.`,
+      };
+    }
+
     const member = db.users.findById(request.memberId);
     const toGroup = db.groups.findById(request.toGroupId);
 
@@ -359,13 +375,13 @@ export async function sendNewMembershipRequestNotification(
       const title = "New Membership Request";
       const notificationMessage = `${member.firstName} ${member.lastName} has requested to join your group: ${toGroup.name}. Please review and respond.`;
 
-      db.notifications.create(
-        toGroup.leaderId,
-        NotificationType.REQUEST_STATUS,
+      db.notifications.create({
+        userId: toGroup.leaderId,
+        type: NotificationType.REQUEST_STATUS,
         title,
-        notificationMessage,
-        requestId
-      );
+        message: notificationMessage,
+        relatedId: requestId,
+      });
 
       return {
         success: true,

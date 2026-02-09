@@ -12,6 +12,7 @@ import {
 } from "@/lib/utils/api";
 import { sendRoleAssignmentNotification } from "@/lib/utils/notificationHelpers";
 import { USER_ROLES } from "@/lib/constants";
+import { EmploymentStatus, MaritalStatus, UserRole } from "@/lib/types";
 
 // GET /api/users/[id] - Get user by ID
 export async function GET(
@@ -33,7 +34,7 @@ export async function GET(
     const canView =
       currentUser?.id === id ||
       currentUser?.role === USER_ROLES.SUPERADMIN ||
-      (currentUser?.role === USER_ROLES.LEADER &&
+      (currentUser?.role === USER_ROLES.SMALL_GROUP_LEADER &&
         currentUser?.groupId === user.groupId);
 
     if (!canView) {

@@ -1,5 +1,6 @@
 "use client";
 
+import { UserRole } from "@/lib/types";
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import DashboardLayout from "@/components/features/navigation/DashboardLayout";
@@ -84,7 +85,7 @@ export default function MemberDetailPage({
 
   if (loading) {
     return (
-      <DashboardLayout role="LEADER">
+      <DashboardLayout role={UserRole.SMALL_GROUP_LEADER}>
         <div className="flex items-center justify-center min-h-[400px]">
           <Spin size="large" />
         </div>
@@ -94,7 +95,7 @@ export default function MemberDetailPage({
 
   if (!member) {
     return (
-      <DashboardLayout role="LEADER">
+      <DashboardLayout role={UserRole.SMALL_GROUP_LEADER}>
         <Card>
           <div className="text-center py-8">
             <p className="text-gray-500 mb-4">Member not found</p>
@@ -112,7 +113,7 @@ export default function MemberDetailPage({
   }
 
   return (
-    <DashboardLayout role="LEADER">
+    <DashboardLayout role={UserRole.SMALL_GROUP_LEADER}>
       <div className="space-y-8">
         {/* Back Button */}
         <Button

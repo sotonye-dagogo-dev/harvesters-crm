@@ -28,6 +28,7 @@ import {
 } from "@ant-design/icons";
 import { StatCard } from "@/components/ui/Card";
 import type { ColumnsType } from "antd/es/table";
+import { UserRole } from "@/lib/types";
 
 interface GroupPerformance {
   group: Group;
@@ -137,7 +138,7 @@ export default function ChurchAnalyticsPage() {
 
   if (loading) {
     return (
-      <DashboardLayout role="SUPERADMIN">
+      <DashboardLayout role={UserRole.SUPERADMIN}>
         <div className="flex items-center justify-center h-96">
           <Spin size="large" />
         </div>
@@ -147,7 +148,7 @@ export default function ChurchAnalyticsPage() {
 
   if (!analytics) {
     return (
-      <DashboardLayout role="SUPERADMIN">
+      <DashboardLayout role={UserRole.SUPERADMIN}>
         <div className="text-center py-12">
           <Card className="bg-white dark:bg-slate-800">
             <Empty description="Analytics data not available" />
@@ -283,7 +284,7 @@ export default function ChurchAnalyticsPage() {
   ];
 
   return (
-    <DashboardLayout role="SUPERADMIN">
+    <DashboardLayout role={UserRole.SUPERADMIN}>
       <div className="space-y-6">
         <div className="flex items-center justify-between flex-wrap gap-4">
           <div>

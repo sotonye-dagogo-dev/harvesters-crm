@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/providers/AuthProvider";
+import DashboardLayout from "@/components/features/navigation/DashboardLayout";
 import { Card, Button as AntButton, message, Spin, Tag, Modal } from "antd";
 import {
   PlusOutlined,
@@ -13,6 +14,7 @@ import {
 } from "@ant-design/icons";
 import { format } from "date-fns";
 import EmptyState from "@/components/ui/EmptyState";
+import { UserRole } from "@/lib/types";
 
 export default function MembershipRequestsPage() {
   const router = useRouter();
@@ -22,6 +24,7 @@ export default function MembershipRequestsPage() {
 
   useEffect(() => {
     fetchRequests();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const fetchRequests = async () => {
@@ -83,9 +86,11 @@ export default function MembershipRequestsPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <Spin size="large" />
-      </div>
+      <DashboardLayout role={UserRole.MEMBER}>
+        <div className="flex items-center justify-center min-h-[60vh]">
+          <Spin size="large" />
+        </div>
+      </DashboardLayout>
     );
   }
 
@@ -94,8 +99,8 @@ export default function MembershipRequestsPage() {
   const processedRequests = requests.filter((req) => req.status !== "PENDING");
 
   return (
-    <div className="p-4 md:p-8 max-w-5xl mx-auto">
-      <div className="mb-6">
+    <DashboardLayout role={UserRole.MEMBER}>
+      <div className="max-w-5xl mx-auto space-y-6">
         <div className="flex items-center justify-between mb-4">
           <div>
             <h1 className="text-2xl font-bold text-gray-900">
@@ -114,7 +119,6 @@ export default function MembershipRequestsPage() {
             New Request
           </AntButton>
         </div>
-      </div>
 
       {/* Pending Requests */}
       {pendingRequests.length > 0 && (
@@ -257,7 +261,7 @@ export default function MembershipRequestsPage() {
         <EmptyState
           icon={<ClockCircleOutlined />}
           title="No Membership Requests"
-          description="You haven't submitted any membership requests yet. Click the button below to request to join or transfer to a group."
+          description="You haven&apos;t submitted any membership requests yet. Click the button below to request to join or transfer to a group."
           action={
             <AntButton
               type="primary"
@@ -270,6 +274,7 @@ export default function MembershipRequestsPage() {
           }
         />
       )}
-    </div>
+      </div>
+    </DashboardLayout>
   );
 }

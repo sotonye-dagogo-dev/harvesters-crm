@@ -8,6 +8,7 @@ import UserCard from "@/components/features/users/UserCard";
 import EmptyState from "@/components/ui/EmptyState";
 import { CardSkeleton } from "@/components/ui/LoadingSkeleton";
 import { useRouter } from "next/navigation";
+import { UserRole } from "@/lib/types";
 
 const { Search } = Input;
 
@@ -150,14 +151,14 @@ export default function UsersPage() {
 
   if (loading) {
     return (
-      <DashboardLayout role="SUPERADMIN">
+      <DashboardLayout role={UserRole.SUPERADMIN}>
         <CardSkeleton count={6} />
       </DashboardLayout>
     );
   }
 
   return (
-    <DashboardLayout role="SUPERADMIN">
+    <DashboardLayout role={UserRole.SUPERADMIN}>
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>

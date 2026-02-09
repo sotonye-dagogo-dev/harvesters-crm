@@ -1,8 +1,10 @@
 "use client";
 
+import { UserRole } from "@/lib/types";
 import { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { useAuth } from "@/providers/AuthProvider";
+import DashboardLayout from "@/components/features/navigation/DashboardLayout";
 import {
   Card,
   Table,
@@ -54,10 +56,12 @@ export default function AttendanceHistoryPage() {
 
   useEffect(() => {
     fetchData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [groupId, memberId]);
 
   useEffect(() => {
     applyFilters();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [attendanceData, statusFilter, dateRange]);
 
   const fetchData = async () => {
@@ -169,40 +173,46 @@ export default function AttendanceHistoryPage() {
 
   // Check permissions
   const canView =
-    user?.role === "SUPERADMIN" ||
-    (user?.role === "LEADER" && user?.groupId === groupId) ||
+    user?.role === UserRole.SUPERADMIN ||
+    (user?.role === UserRole.SMALL_GROUP_LEADER && user?.groupId === groupId) ||
     user?.id === memberId;
 
   if (!canView) {
     return (
-      <div className="p-8">
-        <Card>
-          <Empty description="You don't have permission to view this page" />
-          <div className="text-center mt-4">
-            <AntButton onClick={() => router.push("/superadmin/dashboard")}>
-              Go to Dashboard
-            </AntButton>
-          </div>
-        </Card>
-      </div>
+      <DashboardLayout role={UserRole.SUPERADMIN}>
+        <div className="max-w-7xl mx-auto">
+          <Card>
+            <Empty description="You don't have permission to view this page" />
+            <div className="text-center mt-4">
+              <AntButton onClick={() => router.push("/superadmin/dashboard")}>
+                Go to Dashboard
+              </AntButton>
+            </div>
+          </Card>
+        </div>
+      </DashboardLayout>
     );
   }
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <Spin size="large" />
-      </div>
+      <DashboardLayout role={UserRole.SUPERADMIN}>
+        <div className="flex items-center justify-center min-h-[60vh]">
+          <Spin size="large" />
+        </div>
+      </DashboardLayout>
     );
   }
 
   if (!member || !group) {
     return (
-      <div className="p-8">
-        <Card>
-          <Empty description="Member or group not found" />
-        </Card>
-      </div>
+      <DashboardLayout role={UserRole.SUPERADMIN}>
+        <div className="max-w-7xl mx-auto">
+          <Card>
+            <Empty description="Member or group not found" />
+          </Card>
+        </div>
+      </DashboardLayout>
     );
   }
 
@@ -283,8 +293,8 @@ export default function AttendanceHistoryPage() {
   ];
 
   return (
-    <div className="p-4 md:p-8 max-w-7xl mx-auto">
-      <div className="mb-6">
+    <DashboardLayout role={UserRole.SUPERADMIN}>
+      <div className="max-w-7xl mx-auto space-y-6">
         <AntButton
           icon={<ArrowLeftOutlined />}
           onClick={() =>
@@ -307,97 +317,97 @@ export default function AttendanceHistoryPage() {
             </p>
           </div>
         </div>
-      </div>
 
-      {/* Summary Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-        <Card>
-          <Statistic
-            title="Total Meetings"
-            value={filteredStats.total}
-            prefix={<CalendarOutlined />}
-            valueStyle={{ color: "#1B4B3E" }}
-          />
-        </Card>
-        <Card>
-          <Statistic
-            title="Attended"
-            value={filteredStats.attended}
-            prefix={<CheckCircleOutlined />}
-            valueStyle={{ color: "#52c41a" }}
-          />
-        </Card>
-        <Card>
-          <Statistic
-            title="Absent"
-            value={filteredStats.absent}
-            prefix={<CloseCircleOutlined />}
-            valueStyle={{ color: "#ff4d4f" }}
-          />
-        </Card>
-      </div>
-
-      {/* Filters */}
-      <Card className="mb-6">
-        <div className="flex flex-col md:flex-row gap-4 items-start md:items-center justify-between">
-          <Space wrap>
-            <Select
-              value={statusFilter}
-              onChange={setStatusFilter}
-              style={{ width: 150 }}
-              options={[
-                { label: "All Status", value: "ALL" },
-                { label: "Attended", value: "ATTENDED" },
-                { label: "Absent", value: "ABSENT" },
-              ]}
-              prefix={<FilterOutlined />}
+        {/* Summary Stats */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+          <Card>
+            <Statistic
+              title="Total Meetings"
+              value={filteredStats.total}
+              prefix={<CalendarOutlined />}
+              valueStyle={{ color: "#1B4B3E" }}
             />
-            <RangePicker
-              value={dateRange}
-              onChange={(dates) =>
-                setDateRange(dates as [Dayjs | null, Dayjs | null])
-              }
-              format="MMM D, YYYY"
+          </Card>
+          <Card>
+            <Statistic
+              title="Attended"
+              value={filteredStats.attended}
+              prefix={<CheckCircleOutlined />}
+              valueStyle={{ color: "#52c41a" }}
             />
-            <AntButton onClick={clearFilters}>Clear Filters</AntButton>
-          </Space>
-          <AntButton
-            type="primary"
-            icon={<DownloadOutlined />}
-            onClick={handleExportCSV}
-            disabled={filteredData.length === 0}
-          >
-            Export CSV
-          </AntButton>
+          </Card>
+          <Card>
+            <Statistic
+              title="Absent"
+              value={filteredStats.absent}
+              prefix={<CloseCircleOutlined />}
+              valueStyle={{ color: "#ff4d4f" }}
+            />
+          </Card>
         </div>
-      </Card>
 
-      {/* Attendance Table */}
-      <Card>
-        <Table
-          columns={columns}
-          dataSource={filteredData}
-          rowKey={(record) => record.meeting.id}
-          scroll={{ x: 1200 }}
-          pagination={{
-            pageSize: 20,
-            showTotal: (total) => `${total} meeting${total !== 1 ? "s" : ""}`,
-            showSizeChanger: true,
-            pageSizeOptions: ["10", "20", "50", "100"],
-          }}
-          locale={{
-            emptyText: (
-              <Empty
-                description={
-                  statusFilter !== "ALL" || dateRange[0] || dateRange[1]
-                    ? "No meetings match your filters"
-                    : "No meeting history available"
-                }
+        {/* Filters */}
+        <Card className="mb-6">
+          <div className="flex flex-col md:flex-row gap-4 items-start md:items-center justify-between">
+            <Space wrap>
+              <Select
+                value={statusFilter}
+                onChange={setStatusFilter}
+                style={{ width: 150 }}
+                options={[
+                  { label: "All Status", value: "ALL" },
+                  { label: "Attended", value: "ATTENDED" },
+                  { label: "Absent", value: "ABSENT" },
+                ]}
+                prefix={<FilterOutlined />}
               />
-            ),
-          }}
-        />
-      </Card>
-    </div>
+              <RangePicker
+                value={dateRange}
+                onChange={(dates) =>
+                  setDateRange(dates as [Dayjs | null, Dayjs | null])
+                }
+                format="MMM D, YYYY"
+              />
+              <AntButton onClick={clearFilters}>Clear Filters</AntButton>
+            </Space>
+            <AntButton
+              type="primary"
+              icon={<DownloadOutlined />}
+              onClick={handleExportCSV}
+              disabled={filteredData.length === 0}
+            >
+              Export CSV
+            </AntButton>
+          </div>
+        </Card>
+
+        {/* Attendance Table */}
+        <Card>
+          <Table
+            columns={columns}
+            dataSource={filteredData}
+            rowKey={(record) => record.meeting.id}
+            scroll={{ x: 1200 }}
+            pagination={{
+              pageSize: 20,
+              showTotal: (total) => `${total} meeting${total !== 1 ? "s" : ""}`,
+              showSizeChanger: true,
+              pageSizeOptions: ["10", "20", "50", "100"],
+            }}
+            locale={{
+              emptyText: (
+                <Empty
+                  description={
+                    statusFilter !== "ALL" || dateRange[0] || dateRange[1]
+                      ? "No meetings match your filters"
+                      : "No meeting history available"
+                  }
+                />
+              ),
+            }}
+          />
+        </Card>
+      </div>
+    </DashboardLayout>
   );
 }

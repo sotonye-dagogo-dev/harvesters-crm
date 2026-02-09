@@ -13,6 +13,7 @@ import {
 } from "antd";
 import { SaveOutlined } from "@ant-design/icons";
 import { useRouter } from "next/navigation";
+import { UserRole } from "@/lib/types";
 
 const { TextArea } = AntInput;
 
@@ -52,7 +53,7 @@ export default function CreateGroupPage() {
   };
 
   return (
-    <DashboardLayout role={user?.role || "SUPERADMIN"}>
+    <DashboardLayout role={user?.role || UserRole.SUPERADMIN}>
       <div className="space-y-6">
         <div>
           <h2 className="text-2xl font-bold text-gray-900">Create New Group</h2>

@@ -26,6 +26,7 @@ import {
 } from "@ant-design/icons";
 import { format, differenceInDays } from "date-fns";
 import { StatCard } from "@/components/ui/Card";
+import { UserRole } from "@/lib/types";
 
 export default function MemberAnalyticsPage() {
   const { user } = useAuth();
@@ -59,7 +60,7 @@ export default function MemberAnalyticsPage() {
 
   if (loading) {
     return (
-      <DashboardLayout role="MEMBER">
+      <DashboardLayout role={UserRole.MEMBER}>
         <div className="flex items-center justify-center h-96">
           <Spin size="large" />
         </div>
@@ -69,7 +70,7 @@ export default function MemberAnalyticsPage() {
 
   if (!analytics) {
     return (
-      <DashboardLayout role="MEMBER">
+      <DashboardLayout role={UserRole.MEMBER}>
         <div className="text-center py-12">
           <Card className="bg-white dark:bg-slate-800">
             <Empty description="Analytics data not available" />
@@ -93,7 +94,7 @@ export default function MemberAnalyticsPage() {
   );
 
   return (
-    <DashboardLayout role="MEMBER">
+    <DashboardLayout role={UserRole.MEMBER}>
       <div className="space-y-6">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">

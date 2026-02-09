@@ -26,6 +26,7 @@ import {
 } from "@ant-design/icons";
 import { CardSkeleton } from "@/components/ui/LoadingSkeleton";
 import { StatCard } from "@/components/ui/Card";
+import { UserRole } from "@/lib/types";
 
 interface InterestDistribution {
   interest: string;
@@ -128,7 +129,7 @@ export default function InterestInsightsPage() {
 
   if (loading) {
     return (
-      <DashboardLayout role={user?.role || "SUPERADMIN"}>
+      <DashboardLayout role={user?.role || UserRole.SUPERADMIN}>
         <div className="p-6">
           <h2 className="text-2xl font-bold text-gray-900 mb-6">
             Interest-Based Insights
@@ -141,7 +142,7 @@ export default function InterestInsightsPage() {
 
   if (!analytics) {
     return (
-      <DashboardLayout role={user?.role || "SUPERADMIN"}>
+      <DashboardLayout role={user?.role || UserRole.SUPERADMIN}>
         <div className="p-6">
           <Empty description="No analytics data available" />
         </div>
@@ -282,7 +283,7 @@ export default function InterestInsightsPage() {
   ];
 
   return (
-    <DashboardLayout role={user?.role || "SUPERADMIN"}>
+    <DashboardLayout role={user?.role || UserRole.SUPERADMIN}>
       <div className="p-6">
         <div className="flex justify-between items-center mb-6">
           <div>

@@ -1,5 +1,6 @@
 "use client";
 
+import { UserRole } from "@/lib/types";
 import { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { useAuth } from "@/providers/AuthProvider";
@@ -241,8 +242,8 @@ export default function AttendanceReportsPage() {
 
   // Check permissions
   const canView =
-    user?.role === "SUPERADMIN" ||
-    (user?.role === "LEADER" && user?.groupId === groupId);
+    user?.role === UserRole.SUPERADMIN ||
+    (user?.role === UserRole.SMALL_GROUP_LEADER && user?.groupId === groupId);
 
   if (!canView) {
     return (

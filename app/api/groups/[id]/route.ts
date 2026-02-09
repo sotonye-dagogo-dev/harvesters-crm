@@ -10,6 +10,7 @@ import {
   handleApiError,
 } from "@/lib/utils/api";
 import { USER_ROLES } from "@/lib/constants";
+import { MeetingFrequency, UserRole } from "@/lib/types";
 
 // GET /api/groups/[id] - Get group by ID
 export async function GET(
