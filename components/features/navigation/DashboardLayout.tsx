@@ -1,7 +1,7 @@
 "use client";
 
 import { Layout, Menu, Drawer, Dropdown } from "antd";
-import { ReactNode, useState, useEffect } from "react";
+import { ReactNode, useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
@@ -15,8 +15,6 @@ import {
   FileTextOutlined,
   SettingOutlined,
   LogoutOutlined,
-  ScheduleOutlined,
-  ClockCircleOutlined,
   BellOutlined,
   MenuOutlined,
   CloseOutlined,
@@ -26,11 +24,16 @@ import {
   UsergroupAddOutlined,
   ShareAltOutlined,
   BarChartOutlined,
+  FormOutlined,
+  PullRequestOutlined,
+  MessageOutlined,
+  HistoryOutlined,
 } from "@ant-design/icons";
 import { useAuth } from "@/providers/AuthProvider";
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
 import { useTheme } from "next-themes";
 import type { MenuProps } from "antd";
+import { getRoleConfig } from "@/lib/constants/roles";
 
 const { Sider, Content, Header } = Layout;
 
@@ -90,575 +93,93 @@ export default function DashboardLayout({
     }
   };
 
-  // Menu items based on role
-  const getMenuItems = () => {
-    // Return empty array if no role is available
+  // Icon mapping — converts string icon names from ROLE_CONFIG to React elements
+  const iconMap: Record<string, React.ReactNode> = useMemo(
+    () => ({
+      DashboardOutlined: <DashboardOutlined />,
+      TeamOutlined: <TeamOutlined />,
+      UserOutlined: <UserOutlined />,
+      CalendarOutlined: <CalendarOutlined />,
+      PhoneOutlined: <PhoneOutlined />,
+      FileTextOutlined: <FileTextOutlined />,
+      SettingOutlined: <SettingOutlined />,
+      LogoutOutlined: <LogoutOutlined />,
+      BellOutlined: <BellOutlined />,
+      GlobalOutlined: <GlobalOutlined />,
+      BankOutlined: <BankOutlined />,
+      ApartmentOutlined: <ApartmentOutlined />,
+      UsergroupAddOutlined: <UsergroupAddOutlined />,
+      ShareAltOutlined: <ShareAltOutlined />,
+      BarChartOutlined: <BarChartOutlined />,
+      FormOutlined: <FormOutlined />,
+      PullRequestOutlined: <PullRequestOutlined />,
+      MessageOutlined: <MessageOutlined />,
+      HistoryOutlined: <HistoryOutlined />,
+    }),
+    []
+  );
+
+  // Convert a ROLE_CONFIG navItem to an Ant Design menu item
+  const toMenuItem = (item: RoleNavItem): NonNullable<MenuProps["items"]>[number] => {
+    if (item.children && item.children.length > 0) {
+      return {
+        key: item.key,
+        icon: iconMap[item.icon] || <FileTextOutlined />,
+        label: item.label,
+        children: item.children.map(toMenuItem),
+      };
+    }
+
+    return {
+      key: item.key,
+      icon: iconMap[item.icon] || <FileTextOutlined />,
+      label: <Link href={item.path}>{item.label}</Link>,
+      onClick: handleMenuClick,
+    };
+  };
+
+  // Menu items based on role — driven entirely by ROLE_CONFIG
+  const getMenuItems = (): MenuProps["items"] => {
     if (!role) return [];
 
-    const rolePath = role.toLowerCase().replace("_", "");
-    const commonItems = [
-      {
-        key: "dashboard",
-        icon: <DashboardOutlined />,
-        label: <Link href={`/${rolePath}/dashboard`}>Dashboard</Link>,
-        onClick: handleMenuClick,
-      },
-    ];
+    const roleConfig = getRoleConfig(role);
+    const navItems = roleConfig.navItems;
 
-    // SUPERADMIN - Full system access
-    if (role === "SUPERADMIN") {
-      return [
-        ...commonItems,
-        {
-          key: "zones",
-          icon: <GlobalOutlined />,
-          label: <Link href="/superadmin/zones">Zones</Link>,
-          onClick: handleMenuClick,
-        },
-        {
-          key: "campuses",
-          icon: <BankOutlined />,
-          label: <Link href="/superadmin/campuses">Campuses</Link>,
-          onClick: handleMenuClick,
-        },
-        {
-          key: "departments",
-          icon: <ApartmentOutlined />,
-          label: <Link href="/superadmin/departments">Departments</Link>,
-          onClick: handleMenuClick,
-        },
-        {
-          key: "groups",
-          icon: <TeamOutlined />,
-          label: <Link href="/superadmin/groups">Groups</Link>,
-          onClick: handleMenuClick,
-        },
-        {
-          key: "cells",
-          icon: <UsergroupAddOutlined />,
-          label: <Link href="/superadmin/cells">Cells</Link>,
-          onClick: handleMenuClick,
-        },
-        {
-          key: "members",
-          icon: <UserOutlined />,
-          label: <Link href="/superadmin/members">Members</Link>,
-          onClick: handleMenuClick,
-        },
-        {
-          key: "meetings",
-          icon: <CalendarOutlined />,
-          label: <Link href="/superadmin/meetings">Meetings</Link>,
-          onClick: handleMenuClick,
-        },
-        {
-          key: "campaigns",
-          icon: <ShareAltOutlined />,
-          label: <Link href="/superadmin/campaigns">Campaigns</Link>,
-          onClick: handleMenuClick,
-        },
-        {
-          key: "analytics",
-          icon: <BarChartOutlined />,
-          label: <Link href="/superadmin/analytics">Analytics</Link>,
-          onClick: handleMenuClick,
-        },
-        {
-          key: "settings",
-          icon: <SettingOutlined />,
-          label: "Settings",
-          children: [
-            {
-              key: "system-notifications",
-              icon: <BellOutlined />,
-              label: (
-                <Link href="/superadmin/settings/system-notifications">
-                  Notifications
-                </Link>
-              ),
-              onClick: handleMenuClick,
-            },
-            {
-              key: "profile",
-              icon: <UserOutlined />,
-              label: <Link href="/profile">Profile</Link>,
-              onClick: handleMenuClick,
-            },
-            {
-              key: "logout",
-              icon: <LogoutOutlined />,
-              label: "Logout",
-              onClick: logout,
-              danger: true,
-            },
-          ],
-        },
-      ];
-    }
+    // Build menu from ROLE_CONFIG nav items
+    const items: MenuProps["items"] = navItems.map(toMenuItem);
 
-    // ZONAL LEADER - Zone-level management
-    if (role === "ZONAL_LEADER") {
-      return [
-        ...commonItems,
+    // Append Settings submenu with notifications, profile, and logout
+    const settingsPath = `${roleConfig.routePrefix}/settings`;
+    items.push({
+      key: "settings",
+      icon: <SettingOutlined />,
+      label: "Settings",
+      children: [
         {
-          key: "my-zone",
-          icon: <GlobalOutlined />,
-          label: <Link href="/zonalleader/my-zone">My Zone</Link>,
-          onClick: handleMenuClick,
-        },
-        {
-          key: "campuses",
-          icon: <BankOutlined />,
-          label: <Link href="/zonalleader/campuses">Campuses</Link>,
-          onClick: handleMenuClick,
-        },
-        {
-          key: "departments",
-          icon: <ApartmentOutlined />,
-          label: <Link href="/zonalleader/departments">Departments</Link>,
-          onClick: handleMenuClick,
-        },
-        {
-          key: "meetings",
-          icon: <CalendarOutlined />,
-          label: <Link href="/zonalleader/meetings">Meetings</Link>,
-          onClick: handleMenuClick,
-        },
-        {
-          key: "campaigns",
-          icon: <ShareAltOutlined />,
-          label: <Link href="/zonalleader/campaigns">Campaigns</Link>,
-          onClick: handleMenuClick,
-        },
-        {
-          key: "analytics",
-          icon: <BarChartOutlined />,
-          label: <Link href="/zonalleader/analytics">Analytics</Link>,
-          onClick: handleMenuClick,
-        },
-        {
-          key: "settings",
-          icon: <SettingOutlined />,
-          label: "Settings",
-          children: [
-            {
-              key: "notifications",
-              icon: <BellOutlined />,
-              label: (
-                <Link href="/zonalleader/settings/notifications">
-                  Notifications
-                </Link>
-              ),
-              onClick: handleMenuClick,
-            },
-            {
-              key: "profile",
-              icon: <UserOutlined />,
-              label: <Link href="/profile">Profile</Link>,
-              onClick: handleMenuClick,
-            },
-            {
-              key: "logout",
-              icon: <LogoutOutlined />,
-              label: "Logout",
-              onClick: logout,
-              danger: true,
-            },
-          ],
-        },
-      ];
-    }
-
-    // CAMPUS ADMIN - Campus-level management
-    if (role === "CAMPUS_ADMIN") {
-      return [
-        ...commonItems,
-        {
-          key: "my-campus",
-          icon: <BankOutlined />,
-          label: <Link href="/campusadmin/my-campus">My Campus</Link>,
-          onClick: handleMenuClick,
-        },
-        {
-          key: "departments",
-          icon: <ApartmentOutlined />,
-          label: <Link href="/campusadmin/departments">Departments</Link>,
-          onClick: handleMenuClick,
-        },
-        {
-          key: "groups",
-          icon: <TeamOutlined />,
-          label: <Link href="/campusadmin/groups">Groups</Link>,
-          onClick: handleMenuClick,
-        },
-        {
-          key: "cells",
-          icon: <UsergroupAddOutlined />,
-          label: <Link href="/campusadmin/cells">Cells</Link>,
-          onClick: handleMenuClick,
-        },
-        {
-          key: "members",
-          icon: <UserOutlined />,
-          label: <Link href="/campusadmin/members">Members</Link>,
-          onClick: handleMenuClick,
-        },
-        {
-          key: "meetings",
-          icon: <CalendarOutlined />,
-          label: <Link href="/campusadmin/meetings">Meetings</Link>,
-          onClick: handleMenuClick,
-        },
-        {
-          key: "campaigns",
-          icon: <ShareAltOutlined />,
-          label: <Link href="/campusadmin/campaigns">Campaigns</Link>,
-          onClick: handleMenuClick,
-        },
-        {
-          key: "analytics",
-          icon: <BarChartOutlined />,
-          label: <Link href="/campusadmin/analytics">Analytics</Link>,
-          onClick: handleMenuClick,
-        },
-        {
-          key: "settings",
-          icon: <SettingOutlined />,
-          label: "Settings",
-          children: [
-            {
-              key: "notifications",
-              icon: <BellOutlined />,
-              label: (
-                <Link href="/campusadmin/settings/notifications">
-                  Notifications
-                </Link>
-              ),
-              onClick: handleMenuClick,
-            },
-            {
-              key: "profile",
-              icon: <UserOutlined />,
-              label: <Link href="/profile">Profile</Link>,
-              onClick: handleMenuClick,
-            },
-            {
-              key: "logout",
-              icon: <LogoutOutlined />,
-              label: "Logout",
-              onClick: logout,
-              danger: true,
-            },
-          ],
-        },
-      ];
-    }
-
-    // HOD - Department-level management
-    if (role === "HOD") {
-      return [
-        ...commonItems,
-        {
-          key: "my-department",
-          icon: <ApartmentOutlined />,
-          label: <Link href="/hod/my-department">My Department</Link>,
-          onClick: handleMenuClick,
-        },
-        {
-          key: "groups",
-          icon: <TeamOutlined />,
-          label: <Link href="/hod/groups">Groups</Link>,
-          onClick: handleMenuClick,
-        },
-        {
-          key: "cells",
-          icon: <UsergroupAddOutlined />,
-          label: <Link href="/hod/cells">Cells</Link>,
-          onClick: handleMenuClick,
-        },
-        {
-          key: "members",
-          icon: <UserOutlined />,
-          label: <Link href="/hod/members">Members</Link>,
-          onClick: handleMenuClick,
-        },
-        {
-          key: "meetings",
-          icon: <CalendarOutlined />,
-          label: <Link href="/hod/meetings">Meetings</Link>,
-          onClick: handleMenuClick,
-        },
-        {
-          key: "campaigns",
-          icon: <ShareAltOutlined />,
-          label: <Link href="/hod/campaigns">Campaigns</Link>,
-          onClick: handleMenuClick,
-        },
-        {
-          key: "analytics",
-          icon: <BarChartOutlined />,
-          label: <Link href="/hod/analytics">Analytics</Link>,
-          onClick: handleMenuClick,
-        },
-        {
-          key: "settings",
-          icon: <SettingOutlined />,
-          label: "Settings",
-          children: [
-            {
-              key: "notifications",
-              icon: <BellOutlined />,
-              label: (
-                <Link href="/hod/settings/notifications">Notifications</Link>
-              ),
-              onClick: handleMenuClick,
-            },
-            {
-              key: "profile",
-              icon: <UserOutlined />,
-              label: <Link href="/profile">Profile</Link>,
-              onClick: handleMenuClick,
-            },
-            {
-              key: "logout",
-              icon: <LogoutOutlined />,
-              label: "Logout",
-              onClick: logout,
-              danger: true,
-            },
-          ],
-        },
-      ];
-    }
-
-    // SMALL GROUP LEADER - Group-level management
-    if (role === "SMALL_GROUP_LEADER") {
-      return [
-        ...commonItems,
-        {
-          key: "my-group",
-          icon: <TeamOutlined />,
-          label: <Link href="/smallgroupleader/my-group">My Group</Link>,
-          onClick: handleMenuClick,
-        },
-        {
-          key: "cells",
-          icon: <UsergroupAddOutlined />,
-          label: <Link href="/smallgroupleader/cells">Cells</Link>,
-          onClick: handleMenuClick,
-        },
-        {
-          key: "meetings",
-          icon: <CalendarOutlined />,
-          label: <Link href="/smallgroupleader/meetings">Meetings</Link>,
-          onClick: handleMenuClick,
-        },
-        {
-          key: "schedule",
-          icon: <ScheduleOutlined />,
-          label: <Link href="/smallgroupleader/schedule">Schedule</Link>,
-          onClick: handleMenuClick,
-        },
-        {
-          key: "follow-ups",
-          icon: <ClockCircleOutlined />,
-          label: <Link href="/smallgroupleader/follow-ups">Follow-ups</Link>,
-          onClick: handleMenuClick,
-        },
-        {
-          key: "members",
-          icon: <UserOutlined />,
-          label: <Link href="/smallgroupleader/members">Members</Link>,
-          onClick: handleMenuClick,
-        },
-        {
-          key: "interactions",
-          icon: <PhoneOutlined />,
+          key: "notifications",
+          icon: <BellOutlined />,
           label: (
-            <Link href="/smallgroupleader/interactions">Interactions</Link>
+            <Link href={`${settingsPath}/notifications`}>Notifications</Link>
           ),
           onClick: handleMenuClick,
         },
         {
-          key: "campaigns",
-          icon: <ShareAltOutlined />,
-          label: <Link href="/smallgroupleader/campaigns">Campaigns</Link>,
-          onClick: handleMenuClick,
-        },
-        {
-          key: "analytics",
-          icon: <BarChartOutlined />,
-          label: <Link href="/smallgroupleader/analytics">Analytics</Link>,
-          onClick: handleMenuClick,
-        },
-        {
-          key: "settings",
-          icon: <SettingOutlined />,
-          label: "Settings",
-          children: [
-            {
-              key: "meeting-reminders",
-              icon: <BellOutlined />,
-              label: (
-                <Link href="/smallgroupleader/settings/meeting-reminders">
-                  Notifications
-                </Link>
-              ),
-              onClick: handleMenuClick,
-            },
-            {
-              key: "profile",
-              icon: <UserOutlined />,
-              label: <Link href="/profile">Profile</Link>,
-              onClick: handleMenuClick,
-            },
-            {
-              key: "logout",
-              icon: <LogoutOutlined />,
-              label: "Logout",
-              onClick: logout,
-              danger: true,
-            },
-          ],
-        },
-      ];
-    }
-
-    // CELL LEADER - Cell-level management
-    if (role === "CELL_LEADER") {
-      return [
-        ...commonItems,
-        {
-          key: "my-cell",
-          icon: <UsergroupAddOutlined />,
-          label: <Link href="/cellleader/my-cell">My Cell</Link>,
-          onClick: handleMenuClick,
-        },
-        {
-          key: "meetings",
-          icon: <CalendarOutlined />,
-          label: <Link href="/cellleader/meetings">Meetings</Link>,
-          onClick: handleMenuClick,
-        },
-        {
-          key: "schedule",
-          icon: <ScheduleOutlined />,
-          label: <Link href="/cellleader/schedule">Schedule</Link>,
-          onClick: handleMenuClick,
-        },
-        {
-          key: "follow-ups",
-          icon: <ClockCircleOutlined />,
-          label: <Link href="/cellleader/follow-ups">Follow-ups</Link>,
-          onClick: handleMenuClick,
-        },
-        {
-          key: "members",
+          key: "profile-settings",
           icon: <UserOutlined />,
-          label: <Link href="/cellleader/members">Members</Link>,
+          label: <Link href="/profile">Profile</Link>,
           onClick: handleMenuClick,
         },
         {
-          key: "interactions",
-          icon: <PhoneOutlined />,
-          label: <Link href="/cellleader/interactions">Interactions</Link>,
-          onClick: handleMenuClick,
+          key: "logout",
+          icon: <LogoutOutlined />,
+          label: "Logout",
+          onClick: logout,
+          danger: true,
         },
-        {
-          key: "campaigns",
-          icon: <ShareAltOutlined />,
-          label: <Link href="/cellleader/campaigns">Campaigns</Link>,
-          onClick: handleMenuClick,
-        },
-        {
-          key: "settings",
-          icon: <SettingOutlined />,
-          label: "Settings",
-          children: [
-            {
-              key: "meeting-reminders",
-              icon: <BellOutlined />,
-              label: (
-                <Link href="/cellleader/settings/meeting-reminders">
-                  Notifications
-                </Link>
-              ),
-              onClick: handleMenuClick,
-            },
-            {
-              key: "profile",
-              icon: <UserOutlined />,
-              label: <Link href="/profile">Profile</Link>,
-              onClick: handleMenuClick,
-            },
-            {
-              key: "logout",
-              icon: <LogoutOutlined />,
-              label: "Logout",
-              onClick: logout,
-              danger: true,
-            },
-          ],
-        },
-      ];
-    }
+      ],
+    });
 
-    // MEMBER - Basic access
-    return [
-      ...commonItems,
-      {
-        key: "my-group",
-        icon: <TeamOutlined />,
-        label: <Link href="/member/my-group">My Group</Link>,
-        onClick: handleMenuClick,
-      },
-      {
-        key: "my-cell",
-        icon: <UsergroupAddOutlined />,
-        label: <Link href="/member/my-cell">My Cell</Link>,
-        onClick: handleMenuClick,
-      },
-      {
-        key: "history",
-        icon: <FileTextOutlined />,
-        label: <Link href="/member/history">My History</Link>,
-        onClick: handleMenuClick,
-      },
-      {
-        key: "campaigns",
-        icon: <ShareAltOutlined />,
-        label: <Link href="/member/campaigns">Campaigns</Link>,
-        onClick: handleMenuClick,
-      },
-      {
-        key: "settings",
-        icon: <SettingOutlined />,
-        label: "Settings",
-        children: [
-          {
-            key: "preferences",
-            icon: <BellOutlined />,
-            label: (
-              <Link href="/member/settings/preferences">Notifications</Link>
-            ),
-            onClick: handleMenuClick,
-          },
-          {
-            key: "profile",
-            icon: <UserOutlined />,
-            label: <Link href="/profile">Profile</Link>,
-            onClick: handleMenuClick,
-          },
-          {
-            key: "logout",
-            icon: <LogoutOutlined />,
-            label: "Logout",
-            onClick: logout,
-            danger: true,
-          },
-        ],
-      },
-    ];
+    return items;
   };
 
   // Profile dropdown menu items

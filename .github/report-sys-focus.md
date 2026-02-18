@@ -126,13 +126,13 @@ The system must be designed so that **roles, hierarchy levels, and report templa
 
 **Goal**: Define all types, enums, and interfaces needed for the reporting system. Refactor existing types where they conflict with the new hierarchy and role structure.
 
-- [ ] **R1.1** Add new report-related enums to `lib/types.ts`:
+- [x] **R1.1** Add new report-related enums to `lib/types.ts`:
   - `ReportStatus`: `DRAFT | SUBMITTED | REQUIRES_EDITS | APPROVED | REVIEWED | LOCKED`
   - `ReportEventType`: `CREATED | SUBMITTED | EDIT_REQUESTED | EDIT_SUBMITTED | EDIT_APPROVED | EDIT_REJECTED | APPROVED | REVIEWED | LOCKED | DEADLINE_PASSED | UPDATE_REQUESTED | UPDATE_APPROVED | UPDATE_REJECTED | DATA_ENTRY_CREATED | TEMPLATE_VERSION_NOTE`
   - `ReportPeriodType`: `WEEKLY | MONTHLY | YEARLY`
   - `MetricFieldType`: `NUMBER | PERCENTAGE | TEXT | CURRENCY` (for template flexibility)
 
-- [ ] **R1.2** Define **ReportTemplate** interfaces (data-driven, not hardcoded):
+- [x] **R1.2** Define **ReportTemplate** interfaces (data-driven, not hardcoded):
   - `ReportTemplate` — id, name, description, version, sections[], isActive, isDefault, createdById, campusId/groupId (optional scope), createdAt, updatedAt
   - `ReportTemplateSection` — id, templateId, name, description, order, isRequired, subSections[], metrics[]
   - `ReportTemplateMetric` — id, sectionId, name, description, fieldType (MetricFieldType), isRequired, minValue, maxValue, order, capturesGoal, capturesAchieved, capturesYoY
@@ -140,37 +140,37 @@ The system must be designed so that **roles, hierarchy levels, and report templa
   - `ReportFieldPermission` — templateId, sectionId, roleId, canEdit, canView
   - Input types: `CreateReportTemplateInput`, `UpdateReportTemplateInput`, `CreateTemplateSectionInput`, `CreateTemplateMetricInput`
 
-- [ ] **R1.3** Define core **Report** interfaces:
+- [x] **R1.3** Define core **Report** interfaces:
   - `Report` — id, templateId, templateVersionId, campusId, groupId, periodType, periodYear, periodMonth, periodWeek, status, submittedById, reviewedById, approvedById, deadline, lockedAt, isDataEntry, dataEntryById, dataEntryDate, notes, createdAt, updatedAt
   - `ReportSection` — id, reportId, templateSectionId, sectionName (snapshot from template), metrics[]
   - `ReportMetric` — id, reportSectionId, templateMetricId, metricName (snapshot), monthlyGoal, monthlyAchieved, yoyGoal, computedPercentage, isLocked, lockedAt, lockedById
   - `ReportWithDetails` — extends Report with resolved template, sections, metrics, campus, group, submittedBy, etc.
 
-- [ ] **R1.4** Define **ReportEdit** interfaces:
+- [x] **R1.4** Define **ReportEdit** interfaces:
   - `ReportEdit` — id, reportId, submittedById, status (DRAFT | SUBMITTED | APPROVED | REJECTED), reason, sections[] (proposed changes), reviewedById, reviewNotes, createdAt, updatedAt
   - `ReportEditSection` — mirrors ReportSection but for the edit entity
   - `ReportEditMetric` — mirrors ReportMetric but for the edit entity
 
-- [ ] **R1.5** Define **ReportUpdateRequest** interfaces:
+- [x] **R1.5** Define **ReportUpdateRequest** interfaces:
   - `ReportUpdateRequest` — id, reportId, requestedById, reason, sections[] (proposed changes), status (PENDING | APPROVED | REJECTED), reviewedById, reviewNotes, createdAt, updatedAt
 
-- [ ] **R1.6** Define **ReportEvent** / audit trail interfaces:
+- [x] **R1.6** Define **ReportEvent** / audit trail interfaces:
   - `ReportEvent` — id, reportId, eventType (ReportEventType), actorId, timestamp, details (JSON), previousStatus, newStatus, snapshotId
   - `ReportVersion` — id, reportId, versionNumber, snapshot (full report JSON), createdAt, createdById, reason
 
-- [ ] **R1.7** Define report analytics interfaces:
+- [x] **R1.7** Define report analytics interfaces:
   - `ReportAnalytics` — campusId, groupId, period, totalReports, submittedOnTime, submittedLate, pendingReview, approved, complianceRate
   - `ReportComplianceSummary` — per campus/group compliance over time
 
-- [ ] **R1.8** Update `UserRole` enum — add `DATA_ENTRY`, `CAMPUS_PASTOR`, `GROUP_ADMIN`, `GROUP_PASTOR`. Update `HIERARCHY_ORDER`. Update all role labels.
+- [x] **R1.8** Update `UserRole` enum — add `DATA_ENTRY`, `CAMPUS_PASTOR`, `GROUP_ADMIN`, `GROUP_PASTOR`. Update `HIERARCHY_ORDER`. Update all role labels.
 
-- [ ] **R1.9** Add new org hierarchy types — `Area`, `Community`, `District` interfaces (if not present). Ensure the chain Cell → Zone → Area → Community → District → Campus → Group is modeled. Each interface follows the same pattern: id, name, description, parentId, leaderId, isActive, timestamps.
+- [x] **R1.9** Add new org hierarchy types — `Area`, `Community`, `District` interfaces (if not present). Ensure the chain Cell → Zone → Area → Community → District → Campus → Group is modeled. Each interface follows the same pattern: id, name, description, parentId, leaderId, isActive, timestamps.
 
-- [ ] **R1.10** Define **RoleConfig** type for data-driven role system:
+- [x] **R1.10** Define **RoleConfig** type for data-driven role system:
   - `RoleConfig` — role, label, hierarchyOrder, dashboardRoute, canCreateReports, canReviewReports, canApproveReports, canManageTemplates, canDataEntry, reportVisibilityScope, navItems[]
   - `OrgLevelConfig` — level, label, parentLevel, childLevel, membersPerUnit, leaderRole
 
-- [ ] **R1.11** Define filter/form types for reports:
+- [x] **R1.11** Define filter/form types for reports:
   - `ReportFilters` — campusId, groupId, periodType, periodYear, periodMonth, periodWeek, status, templateId, search, isDataEntry
   - `ReportFormValues` — for Ant Design form binding
   - `ReportTemplateFormValues` — for template creation/editing
@@ -179,158 +179,158 @@ The system must be designed so that **roles, hierarchy levels, and report templa
 
 **Goal**: Define the default report template structure, role config, status workflow, and all reporting constants. These serve as defaults seeded into mock data — the actual source of truth is the template entities in the DB.
 
-- [ ] **R2.1** Create `lib/constants/reports.ts`:
+- [x] **R2.1** Create `lib/constants/reports.ts`:
   - `DEFAULT_REPORT_TEMPLATE` — The 11-section template from the report-types doc, fully structured as a `ReportTemplate` object with all sections, sub-sections, and metrics. This is used to **seed** the first template in mock data, not hardcoded into the UI.
   - `REPORT_STATUS_TRANSITIONS` — Map of `status → { allowedNextStatuses[], requiredRole[] }` for workflow enforcement
   - `REPORT_DEADLINE_CONFIG` — `{ submissionWindowHours: 48, reminderStartHours: 24, reminderIntervalHours: 6 }`
   - `REPORT_PERIOD_CONFIG` — Weekly cycle day boundaries
 
-- [ ] **R2.2** Define `ROLE_CONFIG` in `lib/constants/roles.ts` (or extend `index.ts`):
+- [x] **R2.2** Define `ROLE_CONFIG` in `lib/constants/roles.ts` (or extend `index.ts`):
   - A `Record<UserRole, RoleConfig>` mapping every role to its full permission set, navigation items, dashboard route, and report capabilities
   - Helper functions: `getRoleConfig(role)`, `canRolePerformAction(role, action)`, `getRoleNavItems(role)`, `getRoleReportPermissions(role)`
   - This single config replaces scattered `if (role === ...)` checks throughout the codebase
 
-- [ ] **R2.3** Define `ORG_HIERARCHY_CONFIG` — ordered array of `OrgLevelConfig`:
+- [x] **R2.3** Define `ORG_HIERARCHY_CONFIG` — ordered array of `OrgLevelConfig`:
   ```
   [Cell(10 members) → Zone(4 cells) → Area(4 zones) → Community(4 areas) → District(4 communities) → Campus(has pastor+admin) → Group(has admin)]
   ```
   - Helper functions: `getParentLevel(level)`, `getChildLevel(level)`, `getLeaderRoleForLevel(level)`, `getLevelsBetween(low, high)`
 
-- [ ] **R2.4** Add report-related API routes to `API_ROUTES` constant.
+- [x] **R2.4** Add report-related API routes to `API_ROUTES` constant.
 
-- [ ] **R2.5** Add report-related app routes to `APP_ROUTES` constant.
+- [x] **R2.5** Add report-related app routes to `APP_ROUTES` constant.
 
-- [ ] **R2.6** Add report-related `NotificationType` enum values and labels.
+- [x] **R2.6** Add report-related `NotificationType` enum values and labels.
 
 ### Phase R3: Mock Data & Database Service Overhaul
 
 **Goal**: Create report mock data and extend the in-memory database. Also update existing mock data to include new roles and org units.
 
-- [ ] **R3.1** Update `mockData.ts` — Add mock users for new roles:
+- [x] **R3.1** Update `mockData.ts` — Add mock users for new roles:
   - DATA_ENTRY users (at least 2)
   - CAMPUS_PASTOR users (one per campus)
   - GROUP_ADMIN users (one per group)
   - GROUP_PASTOR users (one per group)
   - Ensure existing users are updated if their role names changed
 
-- [ ] **R3.2** Add mock org units for new hierarchy levels:
+- [ ] **R3.2** Add mock org units for new hierarchy levels (deferred — Area/Community/District mock entities):
   - Sample Area, Community, District entities
   - Wire them into the Cell → Zone → ... → Group chain
 
-- [ ] **R3.3** Seed default report template:
+- [x] **R3.3** Seed default report template:
   - Create the 11-section template as a `ReportTemplate` entity in mock data (from `DEFAULT_REPORT_TEMPLATE` constant)
   - Include a version record for it
 
-- [ ] **R3.4** Add sample reports:
+- [x] **R3.4** Add sample reports:
   - Reports at various statuses (DRAFT, SUBMITTED, APPROVED, REVIEWED, LOCKED, REQUIRES_EDITS)
   - Reports from different campuses and periods
   - At least one data-entry report with `isDataEntry: true`
   - At least one report with associated ReportEdit entities
   - At least one ReportUpdateRequest
 
-- [ ] **R3.5** Add sample report events/history entries for the sample reports.
+- [x] **R3.5** Add sample report events/history entries for the sample reports.
 
-- [ ] **R3.6** Extend `database.ts` — Report Template CRUD:
+- [x] **R3.6** Extend `database.ts` — Report Template CRUD:
   - `createReportTemplate()`, `getReportTemplate()`, `getReportTemplates()`, `updateReportTemplate()`, `deleteReportTemplate()`
   - `publishTemplateVersion()` — snapshot current template state into a version
   - `getTemplateVersions()`, `getTemplateVersion()`
 
-- [ ] **R3.7** Extend `database.ts` — Report CRUD:
+- [x] **R3.7** Extend `database.ts` — Report CRUD:
   - `createReport()`, `getReport()`, `getReports()`, `updateReport()`, `deleteReport()`
   - `getReportWithDetails()` — resolves template, sections, metrics, actor names
 
-- [ ] **R3.8** Extend `database.ts` — Report workflow operations:
+- [x] **R3.8** Extend `database.ts` — Report workflow operations:
   - `submitReport()`, `approveReport()`, `requestEdits()`, `reviewReport()`, `lockReport()`
   - Each operation validates status transitions, records events, creates version snapshots
 
-- [ ] **R3.9** Extend `database.ts` — Report Edit operations:
+- [x] **R3.9** Extend `database.ts` — Report Edit operations:
   - `createReportEdit()`, `getReportEdits()`, `updateReportEdit()`, `submitReportEdit()`
   - `approveReportEdit()` — merges edit values into parent report, records event
   - `rejectReportEdit()` — records rejection event
 
-- [ ] **R3.10** Extend `database.ts` — Report Update Request operations:
+- [x] **R3.10** Extend `database.ts` — Report Update Request operations:
   - `createUpdateRequest()`, `getUpdateRequests()`, `getUpdateRequest()`
   - `approveUpdateRequest()` — applies changes to locked report, records event
   - `rejectUpdateRequest()`
 
-- [ ] **R3.11** Extend `database.ts` — Audit trail:
+- [x] **R3.11** Extend `database.ts` — Audit trail:
   - `addReportEvent()`, `getReportHistory()`, `getReportVersions()`
   - `createReportVersion()` — snapshot report state
 
-- [ ] **R3.12** Extend `database.ts` — Report analytics queries:
+- [x] **R3.12** Extend `database.ts` — Report analytics queries:
   - `getReportComplianceStats()`, `getCampusReportAnalytics()`, `getGroupReportAnalytics()`
 
 ### Phase R4: API Routes — Report & Template Endpoints
 
 **Goal**: Create Next.js API routes for the reporting system and template management.
 
-- [ ] **R4.1** Report Template endpoints:
+- [x] **R4.1** Report Template endpoints:
   - `GET /api/report-templates` — List templates (optionally filter by scope, active status)
   - `GET /api/report-templates/:id` — Get template with all sections/metrics
   - `POST /api/report-templates` — Create template (Superadmin only)
   - `PUT /api/report-templates/:id` — Update template (Superadmin only)
   - `DELETE /api/report-templates/:id` — Deactivate template (Superadmin only)
-  - `POST /api/report-templates/:id/publish` — Publish new version snapshot
+  - [ ] `POST /api/report-templates/:id/publish` — Publish new version snapshot (deferred — update auto-publishes)
   - `GET /api/report-templates/:id/versions` — List template versions
 
-- [ ] **R4.2** Core report CRUD:
+- [x] **R4.2** Core report CRUD:
   - `GET /api/reports` — List reports (filterable by campus, group, period, status, role-scoped)
   - `GET /api/reports/:id` — Get report with sections/metrics
   - `POST /api/reports` — Create new report (references a templateId; or data entry report with custom date)
   - `PUT /api/reports/:id` — Update report metric values (draft edits, auto-save)
   - `DELETE /api/reports/:id` — Delete draft report
 
-- [ ] **R4.3** Report workflow action endpoints:
+- [x] **R4.3** Report workflow action endpoints:
   - `POST /api/reports/:id/submit` — Submit report (validates completeness, sets status, triggers notifications)
   - `POST /api/reports/:id/approve` — Approve report (Campus Pastor)
   - `POST /api/reports/:id/request-edits` — Request edits (with feedback message)
   - `POST /api/reports/:id/review` — Mark as reviewed (Group Admin/Pastor)
   - `POST /api/reports/:id/lock` — Manual lock / auto-lock
 
-- [ ] **R4.4** Report Edit endpoints:
+- [x] **R4.4** Report Edit endpoints:
   - `GET /api/reports/:id/edits` — List edit submissions for a report
   - `POST /api/reports/:id/edits` — Create an edit (separate entity with proposed changes)
-  - `PUT /api/reports/:id/edits/:editId` — Update a draft edit
+  - [ ] `PUT /api/reports/:id/edits/:editId` — Update a draft edit (deferred)
   - `POST /api/reports/:id/edits/:editId/submit` — Submit edit for review
   - `POST /api/reports/:id/edits/:editId/approve` — Approve edit (merges into main report)
   - `POST /api/reports/:id/edits/:editId/reject` — Reject edit
 
-- [ ] **R4.5** Report Update Request endpoints (post-deadline):
+- [x] **R4.5** Report Update Request endpoints (post-deadline):
   - `GET /api/report-update-requests` — List update requests (Superadmin scoped)
   - `POST /api/report-update-requests` — Create update request (Campus Admin)
   - `GET /api/report-update-requests/:id` — Get request details
   - `POST /api/report-update-requests/:id/approve` — Superadmin approves and applies changes
   - `POST /api/report-update-requests/:id/reject` — Superadmin rejects
 
-- [ ] **R4.6** Report history & version endpoints:
+- [x] **R4.6** Report history & version endpoints:
   - `GET /api/reports/:id/history` — Full audit trail
   - `GET /api/reports/:id/versions` — Version snapshots
 
-- [ ] **R4.7** Report analytics endpoints:
+- [x] **R4.7** Report analytics endpoints:
   - `GET /api/analytics/reports` — Overall report submission stats, compliance rates
-  - `GET /api/analytics/reports/campus/:id` — Campus reporting performance
-  - `GET /api/analytics/reports/group/:id` — Group reporting performance
+  - [ ] `GET /api/analytics/reports/campus/:id` — Campus reporting performance (deferred — use ?campusId= filter)
+  - [ ] `GET /api/analytics/reports/group/:id` — Group reporting performance (deferred — use ?groupId= filter)
 
 ### Phase R5: Role Updates & Route Consolidation
 
 **Goal**: Update user roles, add DATA_ENTRY, and consolidate all leader routes under `/leader` with dynamic, role-aware rendering.
 
-- [ ] **R5.1** Update `UserRole` enum and all role infrastructure across the codebase:
+- [x] **R5.1** Update `UserRole` enum and all role infrastructure across the codebase:
   - Add `DATA_ENTRY`, `CAMPUS_PASTOR`, `GROUP_ADMIN`, `GROUP_PASTOR` to enum, constants, labels
   - Update `HIERARCHY_ORDER` to include new roles
   - Update `MEETING_LEVEL_PERMISSIONS` for new roles
   - Update `isLeadershipRole()`, `getRolesBelow()`, etc.
 
-- [ ] **R5.2** Implement `ROLE_CONFIG` from Phase R2 and integrate across the app:
+- [x] **R5.2** Implement `ROLE_CONFIG` from Phase R2 and integrate across the app:
   - Replace scattered role checks with `getRoleConfig(role).canX` calls
   - Wire role config into navigation component
 
-- [ ] **R5.3** Update leader layout (`app/leader/layout.tsx`):
+- [x] **R5.3** Update leader layout (`app/leader/layout.tsx`):
   - Read user role from auth context
   - Render role-appropriate sidebar navigation from `ROLE_CONFIG`
   - Show/hide menu items based on role permissions
 
-- [ ] **R5.4** Make leader pages role-aware:
+- [x] **R5.4** Make leader pages role-aware:
   - Leader dashboard shows role-specific widgets and stats
   - `/leader/reports` pages dynamically render based on role:
     - Departmental leaders → Fill report sections
@@ -339,21 +339,21 @@ The system must be designed so that **roles, hierarchy levels, and report templa
     - Group Admin / Group Pastor → View, mark reviewed
     - Data Entry → Historical report entry interface
 
-- [ ] **R5.5** Update middleware/auth routing:
+- [x] **R5.5** Update middleware/auth routing:
   - All non-SUPERADMIN, non-MEMBER roles route to `/leader/*`
   - DATA_ENTRY routes to `/leader/*` with reports access only
   - Existing SUPERADMIN routes remain at `/superadmin/*`
   - Member routes remain at `/member/*`
 
-- [ ] **R5.6** Update `AuthProvider` redirect logic for new roles.
+- [x] **R5.6** Update `AuthProvider` redirect logic for new roles.
 
-- [ ] **R5.7** Update `APP_ROUTES` to remove per-role route sets (zonal-leader, campus-admin, hod, cell-leader); replace with unified `/leader/*` routes.
+- [ ] **R5.7** Update `APP_ROUTES` to remove per-role route sets (deferred — old routes kept for backward compatibility).
 
 ### Phase R6: Report UI — Pages & Components
 
 **Goal**: Build the user-facing report pages and reusable components. All report UI renders dynamically from template definitions.
 
-- [ ] **R6.1** Create report component library (`components/features/reports/`):
+- [x] **R6.1** Create report component library (`components/features/reports/`):
   - `ReportForm.tsx` — Dynamically renders form sections/metrics from a `ReportTemplate`; supports auto-save; respects field locking and role permissions
   - `ReportMetricField.tsx` — Input for a single metric (monthlyGoal, monthlyAchieved, yoyGoal) with numeric validation, lock indicator
   - `ReportSectionCard.tsx` — Collapsible Ant Design Card for one report section; renders its child metrics
@@ -361,19 +361,19 @@ The system must be designed so that **roles, hierarchy levels, and report templa
   - `ReportTimeline.tsx` — Ant Design Timeline showing report event history
   - `ReportEditDiff.tsx` — Side-by-side or inline diff between main report values and proposed edit
   - `ReportDeadlineCountdown.tsx` — Countdown to submission deadline
-  - `ReportComplianceChart.tsx` — Chart (bar/line) showing submission compliance rates
-  - `ReportSummaryTable.tsx` — Auto-calculated performance table (FR16)
+  - [ ] `ReportComplianceChart.tsx` — Chart (bar/line) showing submission compliance rates (deferred to R9)
+  - [ ] `ReportSummaryTable.tsx` — Auto-calculated performance table (deferred to R9)
   - `ReportFilterBar.tsx` — Filter controls for campus, group, period, status, template
   - `ReportActionBar.tsx` — Submit/approve/request-edits/review action buttons based on role + status
 
-- [ ] **R6.2** Create template management components (`components/features/reports/templates/`):
+- [ ] **R6.2** Create template management components (deferred — `components/features/reports/templates/`):
   - `TemplateBuilder.tsx` — Drag-and-drop or ordered list of sections; add/remove/reorder sections and metrics
   - `TemplateSectionEditor.tsx` — Edit section name, description, required flag, add metrics
   - `TemplateMetricEditor.tsx` — Edit metric name, field type, required, min/max, which value types to capture
   - `TemplatePreview.tsx` — Preview how the report form will look from the template
   - `TemplateVersionHistory.tsx` — List past template versions with diff
 
-- [ ] **R6.3** Create leader report pages (`app/leader/reports/`):
+- [x] **R6.3** Create leader report pages (`app/leader/reports/`):
   - `page.tsx` — Report list (role-scoped view with filters)
   - `new/page.tsx` — Create new report (selects template, campus/period)
   - `[id]/page.tsx` — View report detail with sections, metrics, history, action buttons
@@ -382,16 +382,16 @@ The system must be designed so that **roles, hierarchy levels, and report templa
   - `[id]/edits/page.tsx` — List of edit submissions for this report
   - `data-entry/page.tsx` — Historical report entry form (DATA_ENTRY + Superadmin)
 
-- [ ] **R6.4** Create superadmin report pages (`app/superadmin/reports/`):
+- [x] **R6.4** Create superadmin report pages (`app/superadmin/reports/`):
   - `page.tsx` — All reports across campuses/groups with filtering
   - `update-requests/page.tsx` — Post-deadline update request queue
   - `analytics/page.tsx` — Reporting compliance analytics dashboard
   - `templates/page.tsx` — Template management list
-  - `templates/new/page.tsx` — Create new template
+  - [ ] `templates/new/page.tsx` — Create new template (deferred — needs TemplateBuilder component)
   - `templates/[id]/page.tsx` — View/edit template
-  - `templates/[id]/versions/page.tsx` — Template version history
+  - [ ] `templates/[id]/versions/page.tsx` — Template version history (deferred)
 
-- [ ] **R6.5** Create dashboard widgets:
+- [ ] **R6.5** Create dashboard widgets (deferred to R9):
   - Report submission status widget (leader dashboard)
   - Pending reviews widget (campus pastor dashboard)
   - Compliance overview widget (superadmin dashboard)
@@ -402,13 +402,13 @@ The system must be designed so that **roles, hierarchy levels, and report templa
 
 **Goal**: Implement report-specific notifications and deadline reminder logic.
 
-- [ ] **R7.1** Add `NotificationType` values:
+- [x] **R7.1** Add `NotificationType` values:
   - `REPORT_SUBMITTED`, `REPORT_EDITS_REQUESTED`, `REPORT_APPROVED`, `REPORT_REVIEWED`
   - `REPORT_EDIT_APPROVED`, `REPORT_EDIT_REJECTED`
   - `REPORT_UPDATE_REQUEST_APPROVED`, `REPORT_UPDATE_REQUEST_REJECTED`
   - `REPORT_DEADLINE_REMINDER`, `REPORT_DEADLINE_FINAL`
 
-- [ ] **R7.2** Implement notification triggers in report workflow operations:
+- [x] **R7.2** Implement notification triggers in report workflow operations (6/9 routes wired; remaining: approve, request-edits, edit-reject):
   - Report submitted → Notify Campus Pastor
   - Edits requested → Notify Campus Admin (submitter)
   - Report approved → Notify Campus Admin + Group Admin
@@ -427,7 +427,7 @@ The system must be designed so that **roles, hierarchy levels, and report templa
 
 **Goal**: Implement field locking rules and auto-calculation per PRD requirements.
 
-- [ ] **R8.1** Implement field locking logic:
+- [x] **R8.1** Implement field locking logic (utility layer in `reportFieldUtils.ts`; API-level enforcement deferred):
   - Monthly Goal → Locked after first submission of report (FR18)
   - Year-on-Year Goal → Locked after first submission (FR19)
   - Monthly Achieved → Editable until month end, then locked (FR20-21)
@@ -438,7 +438,7 @@ The system must be designed so that **roles, hierarchy levels, and report templa
   - Superadmin can unlock any field (FR23)
   - Logs override event in audit trail
 
-- [ ] **R8.3** Implement auto-calculations:
+- [x] **R8.3** Implement auto-calculations (in `reportFieldUtils.ts` — computeAchievementPercentage, computeYoYGrowth; section/report-level summaries deferred):
   - `computedPercentage = (monthlyAchieved / monthlyGoal) * 100` where applicable
   - Section-level summaries: totals, averages across metrics
   - Report-level summary: overall completion, performance score

@@ -13,6 +13,12 @@ import {
   MeetingLevel,
   InviteLinkType,
   CampaignInteractionType,
+  ReportStatus,
+  ReportEventType,
+  ReportPeriodType,
+  MetricFieldType,
+  ReportEditStatus,
+  ReportUpdateRequestStatus,
 } from "@/lib/types";
 
 // ============================================================================
@@ -815,6 +821,170 @@ export const mockUsers: User[] = [
     createdAt: getDateString(30),
     updatedAt: getDateString(5),
   },
+
+  // ── GROUP PASTORS ──────────────────────────────────────────────────
+  {
+    id: "user-group-pastor-1",
+    email: "group.pastor@harvestersng.org",
+    password: hashPassword("Pastor@123"),
+    firstName: "Adeboye",
+    lastName: "Olusegun",
+    phone: "+2348012345690",
+    whatsappPhone: "+2348012345690",
+    location: "Lekki, Lagos",
+    age: 52,
+    maritalStatus: "MARRIED" as MaritalStatus,
+    employmentStatus: "EMPLOYED" as EmploymentStatus,
+    interests: ["Teaching", "Mentorship", "Prayer", "Administration"],
+    role: "GROUP_PASTOR" as UserRole,
+    campusId: undefined,
+    zoneId: "zone-lagos",
+    departmentId: undefined,
+    groupId: undefined,
+    cellId: undefined,
+    avatar: undefined,
+    isActive: true,
+    invitedById: "user-superadmin-1",
+    inviteCode: "GPAS001",
+    createdAt: getDateString(365),
+    updatedAt: getDateString(1),
+  },
+
+  // ── GROUP ADMINS ──────────────────────────────────────────────────
+  {
+    id: "user-group-admin-1",
+    email: "group.admin@harvestersng.org",
+    password: hashPassword("GroupAdmin@123"),
+    firstName: "Chioma",
+    lastName: "Nwosu",
+    phone: "+2348012345691",
+    whatsappPhone: "+2348012345691",
+    location: "Victoria Island, Lagos",
+    age: 40,
+    maritalStatus: "MARRIED" as MaritalStatus,
+    employmentStatus: "EMPLOYED" as EmploymentStatus,
+    interests: ["Administration", "Counseling", "Evangelism"],
+    role: "GROUP_ADMIN" as UserRole,
+    campusId: undefined,
+    zoneId: "zone-lagos",
+    departmentId: undefined,
+    groupId: undefined,
+    cellId: undefined,
+    avatar: undefined,
+    isActive: true,
+    invitedById: "user-superadmin-1",
+    inviteCode: "GADM001",
+    createdAt: getDateString(365),
+    updatedAt: getDateString(1),
+  },
+
+  // ── CAMPUS PASTORS ────────────────────────────────────────────────
+  {
+    id: "user-campus-pastor-1",
+    email: "lekki.pastor@harvestersng.org",
+    password: hashPassword("Pastor@123"),
+    firstName: "Emeka",
+    lastName: "Okwu",
+    phone: "+2348012345692",
+    whatsappPhone: "+2348012345692",
+    location: "Lekki, Lagos",
+    age: 46,
+    maritalStatus: "MARRIED" as MaritalStatus,
+    employmentStatus: "EMPLOYED" as EmploymentStatus,
+    interests: ["Teaching", "Prayer", "Mentorship", "Counseling"],
+    role: "CAMPUS_PASTOR" as UserRole,
+    campusId: "campus-lagos-lekki",
+    zoneId: "zone-lagos",
+    departmentId: undefined,
+    groupId: undefined,
+    cellId: undefined,
+    avatar: undefined,
+    isActive: true,
+    invitedById: "user-group-pastor-1",
+    inviteCode: "CPAS001",
+    createdAt: getDateString(350),
+    updatedAt: getDateString(1),
+  },
+  {
+    id: "user-campus-pastor-2",
+    email: "gbagada.pastor@harvestersng.org",
+    password: hashPassword("Pastor@123"),
+    firstName: "Oluwaseun",
+    lastName: "Adeleke",
+    phone: "+2348012345693",
+    whatsappPhone: "+2348012345693",
+    location: "Gbagada, Lagos",
+    age: 44,
+    maritalStatus: "MARRIED" as MaritalStatus,
+    employmentStatus: "EMPLOYED" as EmploymentStatus,
+    interests: ["Teaching", "Evangelism", "Mentorship"],
+    role: "CAMPUS_PASTOR" as UserRole,
+    campusId: "campus-lagos-gbagada",
+    zoneId: "zone-lagos",
+    departmentId: undefined,
+    groupId: undefined,
+    cellId: undefined,
+    avatar: undefined,
+    isActive: true,
+    invitedById: "user-group-pastor-1",
+    inviteCode: "CPAS002",
+    createdAt: getDateString(290),
+    updatedAt: getDateString(2),
+  },
+
+  // ── DATA ENTRY USERS ──────────────────────────────────────────────
+  {
+    id: "user-data-entry-1",
+    email: "dataentry1@harvestersng.org",
+    password: hashPassword("DataEntry@123"),
+    firstName: "Blessing",
+    lastName: "Igwe",
+    phone: "+2348012345694",
+    whatsappPhone: "+2348012345694",
+    location: "Lekki, Lagos",
+    age: 27,
+    maritalStatus: "SINGLE" as MaritalStatus,
+    employmentStatus: "EMPLOYED" as EmploymentStatus,
+    interests: ["Administration", "Technology"],
+    role: "DATA_ENTRY" as UserRole,
+    campusId: undefined,
+    zoneId: undefined,
+    departmentId: undefined,
+    groupId: undefined,
+    cellId: undefined,
+    avatar: undefined,
+    isActive: true,
+    invitedById: "user-superadmin-1",
+    inviteCode: "DENT001",
+    createdAt: getDateString(60),
+    updatedAt: getDateString(1),
+  },
+  {
+    id: "user-data-entry-2",
+    email: "dataentry2@harvestersng.org",
+    password: hashPassword("DataEntry@123"),
+    firstName: "Emmanuel",
+    lastName: "Okafor",
+    phone: "+2348012345695",
+    whatsappPhone: "+2348012345695",
+    location: "Gbagada, Lagos",
+    age: 30,
+    maritalStatus: "SINGLE" as MaritalStatus,
+    employmentStatus: "EMPLOYED" as EmploymentStatus,
+    interests: ["Administration", "Education"],
+    role: "DATA_ENTRY" as UserRole,
+    campusId: undefined,
+    zoneId: undefined,
+    departmentId: undefined,
+    groupId: undefined,
+    cellId: undefined,
+    avatar: undefined,
+    isActive: true,
+    invitedById: "user-superadmin-1",
+    inviteCode: "DENT002",
+    createdAt: getDateString(55),
+    updatedAt: getDateString(1),
+  },
 ];
 
 // ============================================================================
@@ -1584,5 +1754,642 @@ export const mockInviteLinkVisits: InviteLinkVisit[] = [
     converted: false,
     convertedUserId: undefined,
     createdAt: getDateString(0),
+  },
+];
+
+// ============================================================================
+// MOCK REPORT TEMPLATE
+// ============================================================================
+// This is the seeded default template with all 11 sections from the PRD.
+// Generated from DEFAULT_REPORT_TEMPLATE constant with IDs assigned.
+// ============================================================================
+
+function makeTemplateMetric(
+  id: string,
+  sectionId: string,
+  name: string,
+  order: number,
+  opts?: { fieldType?: MetricFieldType; isRequired?: boolean }
+): ReportTemplateMetric {
+  return {
+    id,
+    sectionId,
+    name,
+    fieldType: opts?.fieldType ?? MetricFieldType.NUMBER,
+    isRequired: opts?.isRequired ?? true,
+    order,
+    capturesGoal: true,
+    capturesAchieved: true,
+    capturesYoY: true,
+  };
+}
+
+const templateId = "template-default-1";
+
+export const mockReportTemplates: ReportTemplate[] = [
+  {
+    id: templateId,
+    name: "Harvesters Weekly Campus Report",
+    description:
+      "Standard weekly report template for campus-level departmental leaders covering all strategic indicators and key metrics.",
+    version: 1,
+    sections: [
+      {
+        id: "tsec-1",
+        templateId,
+        name: "Report Summary – Special Programs",
+        description: "Overview of special programs including Church Planting and key program metrics.",
+        order: 1,
+        isRequired: true,
+        subSections: [
+          {
+            id: "tssec-1-1",
+            sectionId: "tsec-1",
+            name: "Church Planting",
+            order: 1,
+            metrics: [
+              makeTemplateMetric("tm-1-1-1", "tsec-1", "Number of Church Plants", 1),
+              makeTemplateMetric("tm-1-1-2", "tsec-1", "Church Plant Attendance", 2),
+              makeTemplateMetric("tm-1-1-3", "tsec-1", "Church Plant Offerings", 3, { fieldType: MetricFieldType.CURRENCY }),
+            ],
+          },
+          {
+            id: "tssec-1-2",
+            sectionId: "tsec-1",
+            name: "Program Metrics",
+            order: 2,
+            metrics: [
+              makeTemplateMetric("tm-1-2-1", "tsec-1", "Total Programs Held", 1),
+              makeTemplateMetric("tm-1-2-2", "tsec-1", "Total Program Attendance", 2),
+              makeTemplateMetric("tm-1-2-3", "tsec-1", "Special Events Count", 3),
+            ],
+          },
+        ],
+        metrics: [],
+      },
+      {
+        id: "tsec-2",
+        templateId,
+        name: "Attendance & Quality of Program",
+        order: 2,
+        isRequired: true,
+        metrics: [
+          makeTemplateMetric("tm-2-1", "tsec-2", "Sunday Service Attendance", 1),
+          makeTemplateMetric("tm-2-2", "tsec-2", "Midweek Service Attendance", 2),
+          makeTemplateMetric("tm-2-3", "tsec-2", "Average Program Quality Score", 3, { fieldType: MetricFieldType.PERCENTAGE }),
+          makeTemplateMetric("tm-2-4", "tsec-2", "Online Attendance", 4),
+          makeTemplateMetric("tm-2-5", "tsec-2", "Total Unique Attendees", 5),
+        ],
+      },
+      {
+        id: "tsec-3",
+        templateId,
+        name: "NLP (New Life Program)",
+        order: 3,
+        isRequired: true,
+        metrics: [
+          makeTemplateMetric("tm-3-1", "tsec-3", "NLP Enrollees", 1),
+          makeTemplateMetric("tm-3-2", "tsec-3", "NLP Graduates", 2),
+          makeTemplateMetric("tm-3-3", "tsec-3", "NLP Attendance", 3),
+          makeTemplateMetric("tm-3-4", "tsec-3", "NLP Retention Rate", 4, { fieldType: MetricFieldType.PERCENTAGE }),
+        ],
+      },
+      {
+        id: "tsec-4",
+        templateId,
+        name: "Salvation",
+        order: 4,
+        isRequired: true,
+        metrics: [
+          makeTemplateMetric("tm-4-1", "tsec-4", "Salvations (Altar Call)", 1),
+          makeTemplateMetric("tm-4-2", "tsec-4", "Salvations (Small Group)", 2),
+          makeTemplateMetric("tm-4-3", "tsec-4", "Salvations (Outreach)", 3),
+          makeTemplateMetric("tm-4-4", "tsec-4", "Total Salvations", 4),
+          makeTemplateMetric("tm-4-5", "tsec-4", "First Timer Follow-ups", 5),
+        ],
+      },
+      {
+        id: "tsec-5",
+        templateId,
+        name: "Small Group / Cell",
+        order: 5,
+        isRequired: true,
+        metrics: [
+          makeTemplateMetric("tm-5-1", "tsec-5", "Total Cells Active", 1),
+          makeTemplateMetric("tm-5-2", "tsec-5", "Total Cell Meetings Held", 2),
+          makeTemplateMetric("tm-5-3", "tsec-5", "Total Cell Attendance", 3),
+          makeTemplateMetric("tm-5-4", "tsec-5", "Average Cell Attendance", 4),
+          makeTemplateMetric("tm-5-5", "tsec-5", "New Cells Started", 5),
+          makeTemplateMetric("tm-5-6", "tsec-5", "Cell Leaders Trained", 6),
+        ],
+      },
+      {
+        id: "tsec-6",
+        templateId,
+        name: "Discipleship / Assimilation",
+        order: 6,
+        isRequired: true,
+        metrics: [
+          makeTemplateMetric("tm-6-1", "tsec-6", "New Members Assimilated", 1),
+          makeTemplateMetric("tm-6-2", "tsec-6", "Discipleship Classes Enrollment", 2),
+          makeTemplateMetric("tm-6-3", "tsec-6", "Discipleship Classes Completion", 3),
+          makeTemplateMetric("tm-6-4", "tsec-6", "Mentoring Pairs Active", 4),
+          makeTemplateMetric("tm-6-5", "tsec-6", "Water Baptism Count", 5),
+        ],
+      },
+      {
+        id: "tsec-7",
+        templateId,
+        name: "Next Gen (Kid-Zone + Stir House)",
+        order: 7,
+        isRequired: true,
+        subSections: [
+          {
+            id: "tssec-7-1",
+            sectionId: "tsec-7",
+            name: "Kid-Zone",
+            order: 1,
+            metrics: [
+              makeTemplateMetric("tm-7-1-1", "tsec-7", "Kid-Zone Attendance", 1),
+              makeTemplateMetric("tm-7-1-2", "tsec-7", "Kid-Zone New Registrations", 2),
+              makeTemplateMetric("tm-7-1-3", "tsec-7", "Kid-Zone Volunteers", 3),
+              makeTemplateMetric("tm-7-1-4", "tsec-7", "Kid-Zone Salvations", 4),
+            ],
+          },
+          {
+            id: "tssec-7-2",
+            sectionId: "tsec-7",
+            name: "Stir House",
+            order: 2,
+            metrics: [
+              makeTemplateMetric("tm-7-2-1", "tsec-7", "Stir House Attendance", 1),
+              makeTemplateMetric("tm-7-2-2", "tsec-7", "Stir House New Members", 2),
+              makeTemplateMetric("tm-7-2-3", "tsec-7", "Stir House Salvations", 3),
+              makeTemplateMetric("tm-7-2-4", "tsec-7", "Stir House Small Groups", 4),
+            ],
+          },
+        ],
+        metrics: [],
+      },
+      {
+        id: "tsec-8",
+        templateId,
+        name: "Partnership",
+        order: 8,
+        isRequired: true,
+        metrics: [
+          makeTemplateMetric("tm-8-1", "tsec-8", "Total Partners", 1),
+          makeTemplateMetric("tm-8-2", "tsec-8", "New Partners This Week", 2),
+          makeTemplateMetric("tm-8-3", "tsec-8", "Partnership Amount", 3, { fieldType: MetricFieldType.CURRENCY }),
+          makeTemplateMetric("tm-8-4", "tsec-8", "Partnership Retention Rate", 4, { fieldType: MetricFieldType.PERCENTAGE }),
+        ],
+      },
+      {
+        id: "tsec-9",
+        templateId,
+        name: "HAEF (Harvesters Advancement & Empowerment Fund)",
+        order: 9,
+        isRequired: true,
+        metrics: [
+          makeTemplateMetric("tm-9-1", "tsec-9", "HAEF Contributions", 1, { fieldType: MetricFieldType.CURRENCY }),
+          makeTemplateMetric("tm-9-2", "tsec-9", "HAEF Disbursements", 2, { fieldType: MetricFieldType.CURRENCY }),
+          makeTemplateMetric("tm-9-3", "tsec-9", "HAEF Beneficiaries", 3),
+          makeTemplateMetric("tm-9-4", "tsec-9", "HAEF New Contributors", 4),
+        ],
+      },
+      {
+        id: "tsec-10",
+        templateId,
+        name: "Spiritual",
+        order: 10,
+        isRequired: false,
+        metrics: [
+          makeTemplateMetric("tm-10-1", "tsec-10", "Prayer Chain Participants", 1),
+          makeTemplateMetric("tm-10-2", "tsec-10", "Fasting Participants", 2),
+          makeTemplateMetric("tm-10-3", "tsec-10", "Prophetic Words Received", 3, { isRequired: false }),
+          makeTemplateMetric("tm-10-4", "tsec-10", "Healing Testimonies", 4, { isRequired: false }),
+          makeTemplateMetric("tm-10-5", "tsec-10", "Spiritual Growth Score", 5, { fieldType: MetricFieldType.PERCENTAGE, isRequired: false }),
+        ],
+      },
+      {
+        id: "tsec-11",
+        templateId,
+        name: "Relationship Breakthrough",
+        order: 11,
+        isRequired: false,
+        metrics: [
+          makeTemplateMetric("tm-11-1", "tsec-11", "Marriage Counseling Sessions", 1, { isRequired: false }),
+          makeTemplateMetric("tm-11-2", "tsec-11", "Pre-Marital Counseling Sessions", 2, { isRequired: false }),
+          makeTemplateMetric("tm-11-3", "tsec-11", "Singles Ministry Attendance", 3, { isRequired: false }),
+          makeTemplateMetric("tm-11-4", "tsec-11", "Family Reconciliations", 4, { isRequired: false }),
+          makeTemplateMetric("tm-11-5", "tsec-11", "Relationship Workshops Held", 5, { isRequired: false }),
+        ],
+      },
+    ],
+    isActive: true,
+    isDefault: true,
+    createdById: "user-superadmin-1",
+    createdAt: getDateString(365),
+    updatedAt: getDateString(30),
+  },
+];
+
+export const mockReportTemplateVersions: ReportTemplateVersion[] = [
+  {
+    id: "tv-1",
+    templateId: templateId,
+    versionNumber: 1,
+    snapshot: mockReportTemplates[0],
+    createdAt: getDateString(365),
+    createdById: "user-superadmin-1",
+    changeNotes: "Initial template creation with all 11 sections.",
+  },
+];
+
+// ============================================================================
+// MOCK REPORTS
+// ============================================================================
+
+function makeReportMetric(
+  id: string,
+  sectionId: string,
+  templateMetricId: string,
+  metricName: string,
+  order: number,
+  values: { goal?: number; achieved?: number; yoy?: number },
+  fieldType: MetricFieldType = MetricFieldType.NUMBER
+): ReportMetric {
+  const pct =
+    values.goal && values.achieved
+      ? Math.round((values.achieved / values.goal) * 100)
+      : undefined;
+  return {
+    id,
+    reportSectionId: sectionId,
+    templateMetricId,
+    metricName,
+    fieldType,
+    monthlyGoal: values.goal,
+    monthlyAchieved: values.achieved,
+    yoyGoal: values.yoy,
+    computedPercentage: pct,
+    isLocked: false,
+    order,
+  };
+}
+
+const currentYear = new Date().getFullYear();
+const currentMonth = new Date().getMonth() + 1;
+
+export const mockReports: Report[] = [
+  // Report 1: Submitted (Lekki campus, current week)
+  {
+    id: "report-1",
+    templateId: templateId,
+    templateVersionId: "tv-1",
+    campusId: "campus-lagos-lekki",
+    periodType: ReportPeriodType.WEEKLY,
+    periodYear: currentYear,
+    periodMonth: currentMonth,
+    periodWeek: 1,
+    status: ReportStatus.SUBMITTED,
+    submittedById: "user-campus-admin-1",
+    deadline: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+    isDataEntry: false,
+    notes: "Weekly report for Lekki campus — first week of the month.",
+    sections: [
+      {
+        id: "rs-1-1",
+        reportId: "report-1",
+        templateSectionId: "tsec-2",
+        sectionName: "Attendance & Quality of Program",
+        order: 1,
+        metrics: [
+          makeReportMetric("rm-1-1-1", "rs-1-1", "tm-2-1", "Sunday Service Attendance", 1, { goal: 500, achieved: 478, yoy: 450 }),
+          makeReportMetric("rm-1-1-2", "rs-1-1", "tm-2-2", "Midweek Service Attendance", 2, { goal: 300, achieved: 265, yoy: 280 }),
+          makeReportMetric("rm-1-1-3", "rs-1-1", "tm-2-3", "Average Program Quality Score", 3, { goal: 90, achieved: 87, yoy: 85 }, MetricFieldType.PERCENTAGE),
+          makeReportMetric("rm-1-1-4", "rs-1-1", "tm-2-4", "Online Attendance", 4, { goal: 200, achieved: 156, yoy: 120 }),
+          makeReportMetric("rm-1-1-5", "rs-1-1", "tm-2-5", "Total Unique Attendees", 5, { goal: 600, achieved: 542, yoy: 500 }),
+        ],
+      },
+      {
+        id: "rs-1-2",
+        reportId: "report-1",
+        templateSectionId: "tsec-4",
+        sectionName: "Salvation",
+        order: 2,
+        metrics: [
+          makeReportMetric("rm-1-2-1", "rs-1-2", "tm-4-1", "Salvations (Altar Call)", 1, { goal: 20, achieved: 15, yoy: 12 }),
+          makeReportMetric("rm-1-2-2", "rs-1-2", "tm-4-2", "Salvations (Small Group)", 2, { goal: 10, achieved: 8, yoy: 7 }),
+          makeReportMetric("rm-1-2-3", "rs-1-2", "tm-4-3", "Salvations (Outreach)", 3, { goal: 15, achieved: 12, yoy: 10 }),
+          makeReportMetric("rm-1-2-4", "rs-1-2", "tm-4-4", "Total Salvations", 4, { goal: 45, achieved: 35, yoy: 29 }),
+          makeReportMetric("rm-1-2-5", "rs-1-2", "tm-4-5", "First Timer Follow-ups", 5, { goal: 30, achieved: 25, yoy: 22 }),
+        ],
+      },
+      {
+        id: "rs-1-3",
+        reportId: "report-1",
+        templateSectionId: "tsec-5",
+        sectionName: "Small Group / Cell",
+        order: 3,
+        metrics: [
+          makeReportMetric("rm-1-3-1", "rs-1-3", "tm-5-1", "Total Cells Active", 1, { goal: 25, achieved: 22, yoy: 20 }),
+          makeReportMetric("rm-1-3-2", "rs-1-3", "tm-5-2", "Total Cell Meetings Held", 2, { goal: 25, achieved: 20, yoy: 18 }),
+          makeReportMetric("rm-1-3-3", "rs-1-3", "tm-5-3", "Total Cell Attendance", 3, { goal: 200, achieved: 175, yoy: 160 }),
+          makeReportMetric("rm-1-3-4", "rs-1-3", "tm-5-4", "Average Cell Attendance", 4, { goal: 8, achieved: 7, yoy: 7 }),
+          makeReportMetric("rm-1-3-5", "rs-1-3", "tm-5-5", "New Cells Started", 5, { goal: 2, achieved: 1, yoy: 1 }),
+          makeReportMetric("rm-1-3-6", "rs-1-3", "tm-5-6", "Cell Leaders Trained", 6, { goal: 5, achieved: 3, yoy: 4 }),
+        ],
+      },
+    ],
+    createdAt: getDateString(3),
+    updatedAt: getDateString(1),
+  },
+
+  // Report 2: Approved (Gbagada campus, previous week)
+  {
+    id: "report-2",
+    templateId: templateId,
+    templateVersionId: "tv-1",
+    campusId: "campus-lagos-gbagada",
+    periodType: ReportPeriodType.WEEKLY,
+    periodYear: currentYear,
+    periodMonth: currentMonth > 1 ? currentMonth - 1 : 12,
+    periodWeek: 4,
+    status: ReportStatus.APPROVED,
+    submittedById: "user-campus-admin-2",
+    approvedById: "user-campus-pastor-2",
+    deadline: getDateString(5),
+    isDataEntry: false,
+    notes: "Last week's report for Gbagada campus.",
+    sections: [
+      {
+        id: "rs-2-1",
+        reportId: "report-2",
+        templateSectionId: "tsec-2",
+        sectionName: "Attendance & Quality of Program",
+        order: 1,
+        metrics: [
+          makeReportMetric("rm-2-1-1", "rs-2-1", "tm-2-1", "Sunday Service Attendance", 1, { goal: 350, achieved: 320, yoy: 300 }),
+          makeReportMetric("rm-2-1-2", "rs-2-1", "tm-2-2", "Midweek Service Attendance", 2, { goal: 200, achieved: 185, yoy: 170 }),
+        ],
+      },
+    ],
+    createdAt: getDateString(10),
+    updatedAt: getDateString(5),
+  },
+
+  // Report 3: Draft (Lekki campus, being filled)
+  {
+    id: "report-3",
+    templateId: templateId,
+    templateVersionId: "tv-1",
+    campusId: "campus-lagos-lekki",
+    periodType: ReportPeriodType.WEEKLY,
+    periodYear: currentYear,
+    periodMonth: currentMonth,
+    periodWeek: 2,
+    status: ReportStatus.DRAFT,
+    submittedById: "user-campus-admin-1",
+    deadline: new Date(Date.now() + 48 * 60 * 60 * 1000).toISOString(),
+    isDataEntry: false,
+    sections: [],
+    createdAt: getDateString(0),
+    updatedAt: getDateString(0),
+  },
+
+  // Report 4: REQUIRES_EDITS (Lekki campus)
+  {
+    id: "report-4",
+    templateId: templateId,
+    templateVersionId: "tv-1",
+    campusId: "campus-lagos-lekki",
+    periodType: ReportPeriodType.WEEKLY,
+    periodYear: currentYear,
+    periodMonth: currentMonth > 1 ? currentMonth - 1 : 12,
+    periodWeek: 3,
+    status: ReportStatus.REQUIRES_EDITS,
+    submittedById: "user-campus-admin-1",
+    reviewedById: "user-campus-pastor-1",
+    deadline: getDateString(8),
+    isDataEntry: false,
+    notes: "Some discrepancies in salvation numbers need correction.",
+    sections: [
+      {
+        id: "rs-4-1",
+        reportId: "report-4",
+        templateSectionId: "tsec-4",
+        sectionName: "Salvation",
+        order: 1,
+        metrics: [
+          makeReportMetric("rm-4-1-1", "rs-4-1", "tm-4-4", "Total Salvations", 1, { goal: 45, achieved: 50, yoy: 30 }),
+        ],
+      },
+    ],
+    createdAt: getDateString(12),
+    updatedAt: getDateString(8),
+  },
+
+  // Report 5: Data Entry historical report (REVIEWED + locked)
+  {
+    id: "report-5",
+    templateId: templateId,
+    templateVersionId: "tv-1",
+    campusId: "campus-lagos-lekki",
+    periodType: ReportPeriodType.WEEKLY,
+    periodYear: currentYear - 1,
+    periodMonth: 6,
+    periodWeek: 2,
+    status: ReportStatus.LOCKED,
+    submittedById: "user-data-entry-1",
+    approvedById: "user-campus-pastor-1",
+    reviewedById: "user-group-admin-1",
+    deadline: getDateString(200),
+    lockedAt: getDateString(195),
+    isDataEntry: true,
+    dataEntryById: "user-data-entry-1",
+    dataEntryDate: `${currentYear - 1}-06-14`,
+    notes: "Historical report entered via data entry.",
+    sections: [
+      {
+        id: "rs-5-1",
+        reportId: "report-5",
+        templateSectionId: "tsec-2",
+        sectionName: "Attendance & Quality of Program",
+        order: 1,
+        metrics: [
+          makeReportMetric("rm-5-1-1", "rs-5-1", "tm-2-1", "Sunday Service Attendance", 1, { goal: 400, achieved: 380, yoy: 350 }),
+        ],
+      },
+    ],
+    createdAt: getDateString(200),
+    updatedAt: getDateString(195),
+  },
+];
+
+// ============================================================================
+// MOCK REPORT EVENTS (Audit Trail)
+// ============================================================================
+
+export const mockReportEvents: ReportEvent[] = [
+  {
+    id: "re-1",
+    reportId: "report-1",
+    eventType: ReportEventType.CREATED,
+    actorId: "user-campus-admin-1",
+    timestamp: getDateString(3),
+    newStatus: ReportStatus.DRAFT,
+  },
+  {
+    id: "re-2",
+    reportId: "report-1",
+    eventType: ReportEventType.SUBMITTED,
+    actorId: "user-campus-admin-1",
+    timestamp: getDateString(1),
+    previousStatus: ReportStatus.DRAFT,
+    newStatus: ReportStatus.SUBMITTED,
+  },
+  {
+    id: "re-3",
+    reportId: "report-2",
+    eventType: ReportEventType.CREATED,
+    actorId: "user-campus-admin-2",
+    timestamp: getDateString(10),
+    newStatus: ReportStatus.DRAFT,
+  },
+  {
+    id: "re-4",
+    reportId: "report-2",
+    eventType: ReportEventType.SUBMITTED,
+    actorId: "user-campus-admin-2",
+    timestamp: getDateString(8),
+    previousStatus: ReportStatus.DRAFT,
+    newStatus: ReportStatus.SUBMITTED,
+  },
+  {
+    id: "re-5",
+    reportId: "report-2",
+    eventType: ReportEventType.APPROVED,
+    actorId: "user-campus-pastor-2",
+    timestamp: getDateString(5),
+    previousStatus: ReportStatus.SUBMITTED,
+    newStatus: ReportStatus.APPROVED,
+  },
+  {
+    id: "re-6",
+    reportId: "report-4",
+    eventType: ReportEventType.EDIT_REQUESTED,
+    actorId: "user-campus-pastor-1",
+    timestamp: getDateString(8),
+    previousStatus: ReportStatus.SUBMITTED,
+    newStatus: ReportStatus.REQUIRES_EDITS,
+    details: { reason: "Salvation numbers seem unusually high. Please verify." },
+  },
+  {
+    id: "re-7",
+    reportId: "report-5",
+    eventType: ReportEventType.DATA_ENTRY_CREATED,
+    actorId: "user-data-entry-1",
+    timestamp: getDateString(200),
+    newStatus: ReportStatus.DRAFT,
+    details: { dataEntryDate: `${currentYear - 1}-06-14` },
+  },
+];
+
+// ============================================================================
+// MOCK REPORT VERSIONS
+// ============================================================================
+
+export const mockReportVersions: ReportVersion[] = [
+  {
+    id: "rv-1",
+    reportId: "report-1",
+    versionNumber: 1,
+    snapshot: mockReports[0],
+    createdAt: getDateString(1),
+    createdById: "user-campus-admin-1",
+    reason: "Initial submission",
+  },
+];
+
+// ============================================================================
+// MOCK REPORT EDITS
+// ============================================================================
+
+export const mockReportEdits: ReportEdit[] = [
+  {
+    id: "redit-1",
+    reportId: "report-4",
+    submittedById: "user-campus-admin-1",
+    status: ReportEditStatus.DRAFT,
+    reason: "Correcting salvation numbers as requested by Campus Pastor.",
+    sections: [
+      {
+        id: "res-1-1",
+        reportEditId: "redit-1",
+        templateSectionId: "tsec-4",
+        sectionName: "Salvation",
+        order: 1,
+        metrics: [
+          {
+            id: "rem-1-1-1",
+            reportEditSectionId: "res-1-1",
+            templateMetricId: "tm-4-4",
+            metricName: "Total Salvations",
+            fieldType: MetricFieldType.NUMBER,
+            monthlyGoal: 45,
+            monthlyAchieved: 38,
+            yoyGoal: 30,
+            originalMonthlyGoal: 45,
+            originalMonthlyAchieved: 50,
+            originalYoyGoal: 30,
+            order: 1,
+          },
+        ],
+      },
+    ],
+    createdAt: getDateString(7),
+    updatedAt: getDateString(7),
+  },
+];
+
+// ============================================================================
+// MOCK REPORT UPDATE REQUESTS (Post-deadline)
+// ============================================================================
+
+export const mockReportUpdateRequests: ReportUpdateRequest[] = [
+  {
+    id: "rur-1",
+    reportId: "report-5",
+    requestedById: "user-campus-admin-1",
+    reason: "Found additional attendance records from a cell that was missing from the original report.",
+    sections: [
+      {
+        id: "rus-1-1",
+        reportEditId: "rur-1",
+        templateSectionId: "tsec-2",
+        sectionName: "Attendance & Quality of Program",
+        order: 1,
+        metrics: [
+          {
+            id: "rum-1-1-1",
+            reportEditSectionId: "rus-1-1",
+            templateMetricId: "tm-2-1",
+            metricName: "Sunday Service Attendance",
+            fieldType: MetricFieldType.NUMBER,
+            monthlyGoal: 400,
+            monthlyAchieved: 395,
+            yoyGoal: 350,
+            originalMonthlyGoal: 400,
+            originalMonthlyAchieved: 380,
+            originalYoyGoal: 350,
+            order: 1,
+          },
+        ],
+      },
+    ],
+    status: ReportUpdateRequestStatus.PENDING,
+    createdAt: getDateString(190),
+    updatedAt: getDateString(190),
   },
 ];

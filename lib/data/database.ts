@@ -5,6 +5,11 @@ import {
   MeetingLevel,
   CampaignInteractionType,
   InviteLinkType,
+  ReportStatus,
+  ReportEventType,
+  ReportPeriodType,
+  ReportEditStatus,
+  ReportUpdateRequestStatus,
 } from "@/lib/types";
 import {
   mockUsers,
@@ -21,6 +26,13 @@ import {
   mockCampaignInteractions,
   mockInviteLinks,
   mockInviteLinkVisits,
+  mockReportTemplates,
+  mockReportTemplateVersions,
+  mockReports,
+  mockReportEvents,
+  mockReportVersions,
+  mockReportEdits,
+  mockReportUpdateRequests,
 } from "./mockData";
 
 // ============================================================================
@@ -46,6 +58,13 @@ const globalForDb = globalThis as unknown as {
     campaignInteractions: CampaignInteraction[];
     inviteLinks: InviteLink[];
     inviteLinkVisits: InviteLinkVisit[];
+    reportTemplates: ReportTemplate[];
+    reportTemplateVersions: ReportTemplateVersion[];
+    reports: Report[];
+    reportEvents: ReportEvent[];
+    reportVersions: ReportVersion[];
+    reportEdits: ReportEdit[];
+    reportUpdateRequests: ReportUpdateRequest[];
   };
 };
 
@@ -65,6 +84,13 @@ if (!globalForDb.dbStore) {
     campaignInteractions: cloneData(mockCampaignInteractions),
     inviteLinks: cloneData(mockInviteLinks),
     inviteLinkVisits: cloneData(mockInviteLinkVisits),
+    reportTemplates: cloneData(mockReportTemplates),
+    reportTemplateVersions: cloneData(mockReportTemplateVersions),
+    reports: cloneData(mockReports),
+    reportEvents: cloneData(mockReportEvents),
+    reportVersions: cloneData(mockReportVersions),
+    reportEdits: cloneData(mockReportEdits),
+    reportUpdateRequests: cloneData(mockReportUpdateRequests),
   };
 }
 
@@ -82,6 +108,13 @@ const campaigns = globalForDb.dbStore.campaigns;
 const campaignInteractions = globalForDb.dbStore.campaignInteractions;
 const inviteLinks = globalForDb.dbStore.inviteLinks;
 const inviteLinkVisits = globalForDb.dbStore.inviteLinkVisits;
+const reportTemplates = globalForDb.dbStore.reportTemplates;
+const reportTemplateVersions = globalForDb.dbStore.reportTemplateVersions;
+const reports = globalForDb.dbStore.reports;
+const reportEvents = globalForDb.dbStore.reportEvents;
+const reportVersions = globalForDb.dbStore.reportVersions;
+const reportEdits = globalForDb.dbStore.reportEdits;
+const reportUpdateRequests = globalForDb.dbStore.reportUpdateRequests;
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 const generateId = () =>
@@ -1332,9 +1365,9 @@ export const analyticsDb = {
     const attendanceRate =
       groupMembers.length > 0 && groupMeetings.length > 0
         ? Math.round(
-            (totalAttendance / (groupMembers.length * groupMeetings.length)) *
-              100
-          )
+          (totalAttendance / (groupMembers.length * groupMeetings.length)) *
+          100
+        )
         : 0;
     return {
       memberCount: groupMembers.length,
@@ -1371,9 +1404,9 @@ export const analyticsDb = {
       engagementRate:
         campaign.viewCount + views > 0
           ? Math.round(
-              ((campaign.clickCount + clicks) / (campaign.viewCount + views)) *
-                100
-            )
+            ((campaign.clickCount + clicks) / (campaign.viewCount + views)) *
+            100
+          )
           : 0,
     };
   },
@@ -1439,6 +1472,1371 @@ export const analyticsDb = {
 };
 
 // ============================================================================
+// REPORT TEMPLATE OPERATIONS
+// ============================================================================
+
+export const reportTemplateDb = {
+  findAll: (filters?: {
+    isActive?: boolean;
+    search?: string;
+  }): ReportTemplate[] => {
+    let result = [...reportTemplates];
+    if (filters?.isActive !== undefined)
+      result = result.filter((t) => t.isActive === filters.isActive);
+    if (filters?.search) {
+      const q = filters.search.toLowerCase();
+      result = result.filter(
+        (t) =>
+          t.name.toLowerCase().includes(q) ||
+          t.description?.toLowerCase().includes(q)
+      );
+    }
+    return result;
+  },
+
+  findById: (id: string): ReportTemplate | undefined =>
+    reportTemplates.find((t) => t.id === id),
+
+  findDefault: (): ReportTemplate | undefined =>
+    reportTemplates.find((t) => t.isDefault && t.isActive),
+
+  create: (data: CreateReportTemplateInput, createdById: string): ReportTemplate => {
+    const id = generateId();
+    const sections: ReportTemplateSection[] = (data.sections || []).map(
+      (sec, si) => {
+        const sectionId = `tsec-${id}-${si}`;
+        return {
+          id: sectionId,
+          templateId: id,
+          name: sec.name,
+          description: sec.description,
+          order: sec.order,
+          isRequired: sec.isRequired ?? true,
+          subSections: (sec.subSections || []).map((ss, ssi) => ({
+            id: `tssec-${id}-${si}-${ssi}`,
+            sectionId,
+            name: ss.name,
+            order: ss.order,
+            metrics: (ss.metrics || []).map((m, mi) => ({
+              id: `tm-${id}-${si}-${ssi}-${mi}`,
+              sectionId,
+              name: m.name,
+              fieldType: m.fieldType,
+              isRequired: m.isRequired ?? true,
+              order: m.order,
+              capturesGoal: m.capturesGoal ?? true,
+              capturesAchieved: m.capturesAchieved ?? true,
+              capturesYoY: m.capturesYoY ?? true,
+            })),
+          })),
+          metrics: (sec.metrics || []).map((m, mi) => ({
+            id: `tm-${id}-${si}-${mi}`,
+            sectionId,
+            name: m.name,
+            fieldType: m.fieldType,
+            isRequired: m.isRequired ?? true,
+            order: m.order,
+            capturesGoal: m.capturesGoal ?? true,
+            capturesAchieved: m.capturesAchieved ?? true,
+            capturesYoY: m.capturesYoY ?? true,
+          })),
+        };
+      }
+    );
+
+    const template: ReportTemplate = {
+      id,
+      name: data.name,
+      description: data.description,
+      version: 1,
+      sections,
+      isActive: true,
+      isDefault: data.isDefault ?? false,
+      createdById,
+      createdAt: now(),
+      updatedAt: now(),
+    };
+
+    // If this is set as default, unset other defaults
+    if (template.isDefault) {
+      reportTemplates.forEach((t, idx) => {
+        if (t.id !== id && t.isDefault) {
+          reportTemplates[idx] = { ...t, isDefault: false, updatedAt: now() };
+        }
+      });
+    }
+
+    reportTemplates.push(template);
+
+    // Create initial version snapshot
+    reportTemplateVersionDb.create(id, 1, template, createdById, "Initial creation");
+
+    return template;
+  },
+
+  update: (
+    id: string,
+    data: UpdateReportTemplateInput,
+    updatedById: string
+  ): ReportTemplate | undefined => {
+    const idx = reportTemplates.findIndex((t) => t.id === id);
+    if (idx === -1) return undefined;
+
+    const existing = reportTemplates[idx];
+    const newVersion = existing.version + 1;
+
+    // Rebuild sections if provided
+    let sections = existing.sections;
+    if (data.sections) {
+      sections = data.sections.map((sec, si) => {
+        const sectionId = `tsec-${id}-v${newVersion}-${si}`;
+        return {
+          id: sectionId,
+          templateId: id,
+          name: sec.name,
+          description: sec.description,
+          order: sec.order,
+          isRequired: sec.isRequired ?? true,
+          subSections: (sec.subSections || []).map((ss, ssi) => ({
+            id: `tssec-${id}-v${newVersion}-${si}-${ssi}`,
+            sectionId,
+            name: ss.name,
+            order: ss.order,
+            metrics: (ss.metrics || []).map((m, mi) => ({
+              id: `tm-${id}-v${newVersion}-${si}-${ssi}-${mi}`,
+              sectionId,
+              name: m.name,
+              fieldType: m.fieldType,
+              isRequired: m.isRequired ?? true,
+              order: m.order,
+              capturesGoal: m.capturesGoal ?? true,
+              capturesAchieved: m.capturesAchieved ?? true,
+              capturesYoY: m.capturesYoY ?? true,
+            })),
+          })),
+          metrics: (sec.metrics || []).map((m, mi) => ({
+            id: `tm-${id}-v${newVersion}-${si}-${mi}`,
+            sectionId,
+            name: m.name,
+            fieldType: m.fieldType,
+            isRequired: m.isRequired ?? true,
+            order: m.order,
+            capturesGoal: m.capturesGoal ?? true,
+            capturesAchieved: m.capturesAchieved ?? true,
+            capturesYoY: m.capturesYoY ?? true,
+          })),
+        };
+      });
+    }
+
+    const updated: ReportTemplate = {
+      ...existing,
+      name: data.name ?? existing.name,
+      description: data.description ?? existing.description,
+      version: newVersion,
+      sections,
+      isDefault: data.isDefault ?? existing.isDefault,
+      updatedAt: now(),
+    };
+
+    // Unset other defaults if newly set as default
+    if (data.isDefault && !existing.isDefault) {
+      reportTemplates.forEach((t, i) => {
+        if (t.id !== id && t.isDefault) {
+          reportTemplates[i] = { ...t, isDefault: false, updatedAt: now() };
+        }
+      });
+    }
+
+    reportTemplates[idx] = updated;
+
+    // Snapshot the new version
+    reportTemplateVersionDb.create(
+      id,
+      newVersion,
+      updated,
+      updatedById,
+      data.changeNotes || `Updated to version ${newVersion}`
+    );
+
+    return updated;
+  },
+
+  deactivate: (id: string): ReportTemplate | undefined => {
+    const idx = reportTemplates.findIndex((t) => t.id === id);
+    if (idx === -1) return undefined;
+    reportTemplates[idx] = {
+      ...reportTemplates[idx],
+      isActive: false,
+      updatedAt: now(),
+    };
+    return reportTemplates[idx];
+  },
+
+  delete: (id: string): boolean => {
+    const idx = reportTemplates.findIndex((t) => t.id === id);
+    if (idx === -1) return false;
+    reportTemplates.splice(idx, 1);
+    return true;
+  },
+
+  count: (filters?: { isActive?: boolean }): number =>
+    reportTemplateDb.findAll(filters).length,
+};
+
+// ============================================================================
+// REPORT TEMPLATE VERSION OPERATIONS
+// ============================================================================
+
+export const reportTemplateVersionDb = {
+  findByTemplateId: (templateId: string): ReportTemplateVersion[] =>
+    reportTemplateVersions
+      .filter((v) => v.templateId === templateId)
+      .sort((a, b) => b.versionNumber - a.versionNumber),
+
+  findById: (id: string): ReportTemplateVersion | undefined =>
+    reportTemplateVersions.find((v) => v.id === id),
+
+  findByVersion: (
+    templateId: string,
+    versionNumber: number
+  ): ReportTemplateVersion | undefined =>
+    reportTemplateVersions.find(
+      (v) => v.templateId === templateId && v.versionNumber === versionNumber
+    ),
+
+  create: (
+    templateId: string,
+    versionNumber: number,
+    snapshot: ReportTemplate,
+    createdById: string,
+    changeNotes?: string
+  ): ReportTemplateVersion => {
+    const version: ReportTemplateVersion = {
+      id: generateId(),
+      templateId,
+      versionNumber,
+      snapshot: cloneData(snapshot),
+      createdAt: now(),
+      createdById,
+      changeNotes,
+    };
+    reportTemplateVersions.push(version);
+    return version;
+  },
+};
+
+// ============================================================================
+// REPORT OPERATIONS (core report CRUD + workflow)
+// ============================================================================
+
+export const reportDb = {
+  findAll: (filters?: ReportFilters): Report[] => {
+    let result = [...reports];
+
+    if (filters?.campusId)
+      result = result.filter((r) => r.campusId === filters.campusId);
+    if (filters?.status)
+      result = result.filter((r) => r.status === filters.status);
+    if (filters?.periodType)
+      result = result.filter((r) => r.periodType === filters.periodType);
+    if (filters?.periodYear)
+      result = result.filter((r) => r.periodYear === filters.periodYear);
+    if (filters?.periodMonth)
+      result = result.filter((r) => r.periodMonth === filters.periodMonth);
+    if (filters?.periodWeek)
+      result = result.filter((r) => r.periodWeek === filters.periodWeek);
+    if (filters?.submittedById)
+      result = result.filter((r) => r.submittedById === filters.submittedById);
+    if (filters?.templateId)
+      result = result.filter((r) => r.templateId === filters.templateId);
+    if (filters?.isDataEntry !== undefined)
+      result = result.filter((r) => r.isDataEntry === filters.isDataEntry);
+    if (filters?.search) {
+      const q = filters.search.toLowerCase();
+      result = result.filter(
+        (r) =>
+          r.notes?.toLowerCase().includes(q) ||
+          r.id.toLowerCase().includes(q) ||
+          r.campusId.toLowerCase().includes(q)
+      );
+    }
+
+    // Most recent first
+    result.sort(
+      (a, b) =>
+        new Date(b.updatedAt || b.createdAt).getTime() -
+        new Date(a.updatedAt || a.createdAt).getTime()
+    );
+    return result;
+  },
+
+  findById: (id: string): Report | undefined =>
+    reports.find((r) => r.id === id),
+
+  getWithDetails: (id: string): ReportWithDetails | undefined => {
+    const report = reports.find((r) => r.id === id);
+    if (!report) return undefined;
+
+    const template = reportTemplates.find((t) => t.id === report.templateId);
+    const campus = campuses.find((c) => c.id === report.campusId);
+    const submittedBy = users.find((u) => u.id === report.submittedById);
+    const approvedBy = report.approvedById
+      ? users.find((u) => u.id === report.approvedById)
+      : undefined;
+    const reviewedBy = report.reviewedById
+      ? users.find((u) => u.id === report.reviewedById)
+      : undefined;
+    const events = reportEvents
+      .filter((e) => e.reportId === id)
+      .sort(
+        (a, b) =>
+          new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+      );
+    const edits = reportEdits.filter((e) => e.reportId === id);
+    const updateRequests = reportUpdateRequests.filter(
+      (ur) => ur.reportId === id
+    );
+
+    const toProfile = (u: User): UserProfile => ({
+      id: u.id,
+      email: u.email,
+      firstName: u.firstName,
+      lastName: u.lastName,
+      phone: u.phone,
+      whatsappPhone: u.whatsappPhone,
+      location: u.location,
+      age: u.age,
+      maritalStatus: u.maritalStatus,
+      employmentStatus: u.employmentStatus,
+      interests: u.interests,
+      role: u.role,
+      campusId: u.campusId,
+      zoneId: u.zoneId,
+      departmentId: u.departmentId,
+      groupId: u.groupId,
+      cellId: u.cellId,
+      avatar: u.avatar,
+      isActive: u.isActive,
+      inviteCode: u.inviteCode,
+      createdAt: u.createdAt,
+      updatedAt: u.updatedAt,
+    });
+
+    return {
+      ...report,
+      template,
+      campus,
+      submittedBy: submittedBy ? toProfile(submittedBy) : undefined,
+      approvedBy: approvedBy ? toProfile(approvedBy) : undefined,
+      reviewedBy: reviewedBy ? toProfile(reviewedBy) : undefined,
+      events,
+      edits,
+      updateRequests,
+    };
+  },
+
+  create: (data: CreateReportInput): Report => {
+    const id = generateId();
+
+    // Build report sections from input
+    const sections: ReportSection[] = (data.sections || []).map((sec, si) => {
+      const sectionId = `rs-${id}-${si}`;
+      return {
+        id: sectionId,
+        reportId: id,
+        templateSectionId: sec.templateSectionId,
+        sectionName: sec.sectionName,
+        order: sec.order,
+        metrics: (sec.metrics || []).map((m, mi) => ({
+          id: `rm-${id}-${si}-${mi}`,
+          reportSectionId: sectionId,
+          templateMetricId: m.templateMetricId,
+          metricName: m.metricName,
+          fieldType: m.fieldType,
+          monthlyGoal: m.monthlyGoal,
+          monthlyAchieved: m.monthlyAchieved,
+          yoyGoal: m.yoyGoal,
+          computedPercentage:
+            m.monthlyGoal && m.monthlyAchieved
+              ? Math.round((m.monthlyAchieved / m.monthlyGoal) * 100)
+              : undefined,
+          isLocked: false,
+          order: m.order,
+        })),
+      };
+    });
+
+    const report: Report = {
+      id,
+      templateId: data.templateId,
+      templateVersionId: data.templateVersionId,
+      campusId: data.campusId,
+      periodType: data.periodType,
+      periodYear: data.periodYear,
+      periodMonth: data.periodMonth,
+      periodWeek: data.periodWeek,
+      status: ReportStatus.DRAFT,
+      submittedById: data.submittedById,
+      deadline: data.deadline,
+      isDataEntry: data.isDataEntry || false,
+      dataEntryById: data.dataEntryById,
+      dataEntryDate: data.dataEntryDate,
+      notes: data.notes,
+      sections,
+      createdAt: now(),
+      updatedAt: now(),
+    };
+
+    reports.push(report);
+
+    // Create audit event
+    reportEventDb.create({
+      reportId: id,
+      eventType: data.isDataEntry
+        ? ReportEventType.DATA_ENTRY_CREATED
+        : ReportEventType.CREATED,
+      actorId: data.submittedById,
+      newStatus: ReportStatus.DRAFT,
+      details: data.isDataEntry
+        ? { dataEntryDate: data.dataEntryDate }
+        : undefined,
+    });
+
+    return report;
+  },
+
+  update: (id: string, data: UpdateReportInput): Report | undefined => {
+    const idx = reports.findIndex((r) => r.id === id);
+    if (idx === -1) return undefined;
+
+    const existing = reports[idx];
+
+    // Rebuild sections if provided
+    let sections = existing.sections;
+    if (data.sections) {
+      sections = data.sections.map((sec, si) => {
+        const sectionId = `rs-${id}-upd-${si}`;
+        return {
+          id: sectionId,
+          reportId: id,
+          templateSectionId: sec.templateSectionId,
+          sectionName: sec.sectionName,
+          order: sec.order,
+          metrics: (sec.metrics || []).map((m, mi) => ({
+            id: `rm-${id}-upd-${si}-${mi}`,
+            reportSectionId: sectionId,
+            templateMetricId: m.templateMetricId,
+            metricName: m.metricName,
+            fieldType: m.fieldType,
+            monthlyGoal: m.monthlyGoal,
+            monthlyAchieved: m.monthlyAchieved,
+            yoyGoal: m.yoyGoal,
+            computedPercentage:
+              m.monthlyGoal && m.monthlyAchieved
+                ? Math.round((m.monthlyAchieved / m.monthlyGoal) * 100)
+                : undefined,
+            isLocked: false,
+            order: m.order,
+          })),
+        };
+      });
+    }
+
+    reports[idx] = {
+      ...existing,
+      notes: data.notes ?? existing.notes,
+      sections,
+      updatedAt: now(),
+    };
+
+    return reports[idx];
+  },
+
+  /** Submit a draft report for review */
+  submit: (id: string, actorId: string): Report | undefined => {
+    const idx = reports.findIndex((r) => r.id === id);
+    if (idx === -1) return undefined;
+    if (reports[idx].status !== ReportStatus.DRAFT && reports[idx].status !== ReportStatus.REQUIRES_EDITS)
+      return undefined;
+
+    const previousStatus = reports[idx].status;
+    reports[idx] = {
+      ...reports[idx],
+      status: ReportStatus.SUBMITTED,
+      updatedAt: now(),
+    };
+
+    reportEventDb.create({
+      reportId: id,
+      eventType: ReportEventType.SUBMITTED,
+      actorId,
+      previousStatus,
+      newStatus: ReportStatus.SUBMITTED,
+    });
+
+    // Create version snapshot
+    reportVersionDb.create(id, reports[idx], actorId, "Submitted for review");
+
+    return reports[idx];
+  },
+
+  /** Approve a submitted report */
+  approve: (id: string, actorId: string): Report | undefined => {
+    const idx = reports.findIndex((r) => r.id === id);
+    if (idx === -1) return undefined;
+    if (reports[idx].status !== ReportStatus.SUBMITTED) return undefined;
+
+    reports[idx] = {
+      ...reports[idx],
+      status: ReportStatus.APPROVED,
+      approvedById: actorId,
+      updatedAt: now(),
+    };
+
+    reportEventDb.create({
+      reportId: id,
+      eventType: ReportEventType.APPROVED,
+      actorId,
+      previousStatus: ReportStatus.SUBMITTED,
+      newStatus: ReportStatus.APPROVED,
+    });
+
+    return reports[idx];
+  },
+
+  /** Request edits on a submitted report */
+  requestEdits: (
+    id: string,
+    actorId: string,
+    reason: string
+  ): Report | undefined => {
+    const idx = reports.findIndex((r) => r.id === id);
+    if (idx === -1) return undefined;
+    if (reports[idx].status !== ReportStatus.SUBMITTED) return undefined;
+
+    reports[idx] = {
+      ...reports[idx],
+      status: ReportStatus.REQUIRES_EDITS,
+      reviewedById: actorId,
+      updatedAt: now(),
+    };
+
+    reportEventDb.create({
+      reportId: id,
+      eventType: ReportEventType.EDIT_REQUESTED,
+      actorId,
+      previousStatus: ReportStatus.SUBMITTED,
+      newStatus: ReportStatus.REQUIRES_EDITS,
+      details: { reason },
+    });
+
+    return reports[idx];
+  },
+
+  /** Mark an approved report as reviewed */
+  review: (id: string, actorId: string): Report | undefined => {
+    const idx = reports.findIndex((r) => r.id === id);
+    if (idx === -1) return undefined;
+    if (reports[idx].status !== ReportStatus.APPROVED) return undefined;
+
+    reports[idx] = {
+      ...reports[idx],
+      status: ReportStatus.REVIEWED,
+      reviewedById: actorId,
+      updatedAt: now(),
+    };
+
+    reportEventDb.create({
+      reportId: id,
+      eventType: ReportEventType.REVIEWED,
+      actorId,
+      previousStatus: ReportStatus.APPROVED,
+      newStatus: ReportStatus.REVIEWED,
+    });
+
+    return reports[idx];
+  },
+
+  /** Lock a reviewed report (final state) */
+  lock: (id: string, actorId: string): Report | undefined => {
+    const idx = reports.findIndex((r) => r.id === id);
+    if (idx === -1) return undefined;
+    if (reports[idx].status !== ReportStatus.REVIEWED) return undefined;
+
+    reports[idx] = {
+      ...reports[idx],
+      status: ReportStatus.LOCKED,
+      lockedAt: now(),
+      updatedAt: now(),
+    };
+
+    reportEventDb.create({
+      reportId: id,
+      eventType: ReportEventType.LOCKED,
+      actorId,
+      previousStatus: ReportStatus.REVIEWED,
+      newStatus: ReportStatus.LOCKED,
+    });
+
+    return reports[idx];
+  },
+
+  /** Apply approved edit changes to the report */
+  applyEdit: (reportId: string, editId: string): Report | undefined => {
+    const rIdx = reports.findIndex((r) => r.id === reportId);
+    if (rIdx === -1) return undefined;
+
+    const edit = reportEdits.find((e) => e.id === editId);
+    if (!edit || edit.status !== ReportEditStatus.APPROVED) return undefined;
+
+    // Snapshot before applying
+    reportVersionDb.create(
+      reportId,
+      reports[rIdx],
+      edit.submittedById,
+      `Pre-edit snapshot before edit ${editId}`
+    );
+
+    // Merge edit sections into report
+    for (const editSection of edit.sections) {
+      const existingSectionIdx = reports[rIdx].sections.findIndex(
+        (s) => s.templateSectionId === editSection.templateSectionId
+      );
+      if (existingSectionIdx !== -1) {
+        // Update existing section metrics
+        for (const editMetric of editSection.metrics) {
+          const existingMetricIdx = reports[rIdx].sections[
+            existingSectionIdx
+          ].metrics.findIndex(
+            (m) => m.templateMetricId === editMetric.templateMetricId
+          );
+          if (existingMetricIdx !== -1) {
+            reports[rIdx].sections[existingSectionIdx].metrics[
+              existingMetricIdx
+            ] = {
+              ...reports[rIdx].sections[existingSectionIdx].metrics[
+              existingMetricIdx
+              ],
+              monthlyGoal: editMetric.monthlyGoal,
+              monthlyAchieved: editMetric.monthlyAchieved,
+              yoyGoal: editMetric.yoyGoal,
+              computedPercentage:
+                editMetric.monthlyGoal && editMetric.monthlyAchieved
+                  ? Math.round(
+                    (editMetric.monthlyAchieved / editMetric.monthlyGoal) *
+                    100
+                  )
+                  : undefined,
+            };
+          }
+        }
+      }
+    }
+
+    reports[rIdx] = { ...reports[rIdx], updatedAt: now() };
+
+    reportEventDb.create({
+      reportId,
+      eventType: ReportEventType.EDIT_APPLIED,
+      actorId: edit.submittedById,
+      details: { editId },
+    });
+
+    return reports[rIdx];
+  },
+
+  delete: (id: string): boolean => {
+    const idx = reports.findIndex((r) => r.id === id);
+    if (idx === -1) return false;
+    reports.splice(idx, 1);
+    return true;
+  },
+
+  count: (filters?: ReportFilters): number =>
+    reportDb.findAll(filters).length,
+};
+
+// ============================================================================
+// REPORT EVENT OPERATIONS (Audit Trail)
+// ============================================================================
+
+export const reportEventDb = {
+  findByReportId: (reportId: string): ReportEvent[] =>
+    reportEvents
+      .filter((e) => e.reportId === reportId)
+      .sort(
+        (a, b) =>
+          new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+      ),
+
+  findById: (id: string): ReportEvent | undefined =>
+    reportEvents.find((e) => e.id === id),
+
+  create: (
+    data: Omit<ReportEvent, "id" | "timestamp">
+  ): ReportEvent => {
+    const event: ReportEvent = {
+      ...data,
+      id: generateId(),
+      timestamp: now(),
+    };
+    reportEvents.push(event);
+    return event;
+  },
+
+  getWithDetails: (reportId: string): ReportEventWithDetails[] => {
+    const events = reportEventDb.findByReportId(reportId);
+    return events.map((e) => {
+      const actor = users.find((u) => u.id === e.actorId);
+      return {
+        ...e,
+        actorName: actor
+          ? `${actor.firstName} ${actor.lastName}`
+          : "Unknown User",
+        actorRole: actor?.role,
+      };
+    });
+  },
+};
+
+// ============================================================================
+// REPORT VERSION OPERATIONS (Snapshots)
+// ============================================================================
+
+export const reportVersionDb = {
+  findByReportId: (reportId: string): ReportVersion[] =>
+    reportVersions
+      .filter((v) => v.reportId === reportId)
+      .sort((a, b) => b.versionNumber - a.versionNumber),
+
+  findById: (id: string): ReportVersion | undefined =>
+    reportVersions.find((v) => v.id === id),
+
+  create: (
+    reportId: string,
+    snapshot: Report,
+    createdById: string,
+    reason?: string
+  ): ReportVersion => {
+    const existing = reportVersionDb.findByReportId(reportId);
+    const nextVersion =
+      existing.length > 0
+        ? Math.max(...existing.map((v) => v.versionNumber)) + 1
+        : 1;
+
+    const version: ReportVersion = {
+      id: generateId(),
+      reportId,
+      versionNumber: nextVersion,
+      snapshot: cloneData(snapshot),
+      createdAt: now(),
+      createdById,
+      reason,
+    };
+    reportVersions.push(version);
+    return version;
+  },
+};
+
+// ============================================================================
+// REPORT EDIT OPERATIONS
+// ============================================================================
+
+export const reportEditDb = {
+  findAll: (filters?: {
+    reportId?: string;
+    submittedById?: string;
+    status?: ReportEditStatus;
+  }): ReportEdit[] => {
+    let result = [...reportEdits];
+    if (filters?.reportId)
+      result = result.filter((e) => e.reportId === filters.reportId);
+    if (filters?.submittedById)
+      result = result.filter((e) => e.submittedById === filters.submittedById);
+    if (filters?.status)
+      result = result.filter((e) => e.status === filters.status);
+    result.sort(
+      (a, b) =>
+        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+    );
+    return result;
+  },
+
+  findById: (id: string): ReportEdit | undefined =>
+    reportEdits.find((e) => e.id === id),
+
+  findByReportId: (reportId: string): ReportEdit[] =>
+    reportEdits.filter((e) => e.reportId === reportId),
+
+  getWithDetails: (id: string): ReportEditWithDetails | undefined => {
+    const edit = reportEdits.find((e) => e.id === id);
+    if (!edit) return undefined;
+
+    const report = reports.find((r) => r.id === edit.reportId);
+    const submittedBy = users.find((u) => u.id === edit.submittedById);
+    const reviewedBy = edit.reviewedById
+      ? users.find((u) => u.id === edit.reviewedById)
+      : undefined;
+
+    const toProfile = (u: User): UserProfile => ({
+      id: u.id,
+      email: u.email,
+      firstName: u.firstName,
+      lastName: u.lastName,
+      phone: u.phone,
+      whatsappPhone: u.whatsappPhone,
+      location: u.location,
+      age: u.age,
+      maritalStatus: u.maritalStatus,
+      employmentStatus: u.employmentStatus,
+      interests: u.interests,
+      role: u.role,
+      campusId: u.campusId,
+      zoneId: u.zoneId,
+      departmentId: u.departmentId,
+      groupId: u.groupId,
+      cellId: u.cellId,
+      avatar: u.avatar,
+      isActive: u.isActive,
+      inviteCode: u.inviteCode,
+      createdAt: u.createdAt,
+      updatedAt: u.updatedAt,
+    });
+
+    return {
+      ...edit,
+      report,
+      submittedBy: submittedBy ? toProfile(submittedBy) : undefined,
+      reviewedBy: reviewedBy ? toProfile(reviewedBy) : undefined,
+    };
+  },
+
+  create: (data: CreateReportEditInput): ReportEdit => {
+    const id = generateId();
+
+    const sections: ReportEditSection[] = (data.sections || []).map(
+      (sec, si) => {
+        const sectionId = `res-${id}-${si}`;
+        return {
+          id: sectionId,
+          reportEditId: id,
+          templateSectionId: sec.templateSectionId,
+          sectionName: sec.sectionName,
+          order: sec.order,
+          metrics: (sec.metrics || []).map((m, mi) => ({
+            id: `rem-${id}-${si}-${mi}`,
+            reportEditSectionId: sectionId,
+            templateMetricId: m.templateMetricId,
+            metricName: m.metricName,
+            fieldType: m.fieldType,
+            monthlyGoal: m.monthlyGoal,
+            monthlyAchieved: m.monthlyAchieved,
+            yoyGoal: m.yoyGoal,
+            originalMonthlyGoal: m.originalMonthlyGoal,
+            originalMonthlyAchieved: m.originalMonthlyAchieved,
+            originalYoyGoal: m.originalYoyGoal,
+            order: m.order,
+          })),
+        };
+      }
+    );
+
+    const edit: ReportEdit = {
+      id,
+      reportId: data.reportId,
+      submittedById: data.submittedById,
+      status: ReportEditStatus.DRAFT,
+      reason: data.reason,
+      sections,
+      createdAt: now(),
+      updatedAt: now(),
+    };
+
+    reportEdits.push(edit);
+
+    reportEventDb.create({
+      reportId: data.reportId,
+      eventType: ReportEventType.EDIT_SUBMITTED,
+      actorId: data.submittedById,
+      details: { editId: id, reason: data.reason },
+    });
+
+    return edit;
+  },
+
+  submit: (id: string): ReportEdit | undefined => {
+    const idx = reportEdits.findIndex((e) => e.id === id);
+    if (idx === -1) return undefined;
+    if (reportEdits[idx].status !== ReportEditStatus.DRAFT) return undefined;
+
+    reportEdits[idx] = {
+      ...reportEdits[idx],
+      status: ReportEditStatus.SUBMITTED,
+      updatedAt: now(),
+    };
+    return reportEdits[idx];
+  },
+
+  approve: (id: string, reviewerId: string): ReportEdit | undefined => {
+    const idx = reportEdits.findIndex((e) => e.id === id);
+    if (idx === -1) return undefined;
+    if (reportEdits[idx].status !== ReportEditStatus.SUBMITTED) return undefined;
+
+    reportEdits[idx] = {
+      ...reportEdits[idx],
+      status: ReportEditStatus.APPROVED,
+      reviewedById: reviewerId,
+      updatedAt: now(),
+    };
+
+    reportEventDb.create({
+      reportId: reportEdits[idx].reportId,
+      eventType: ReportEventType.EDIT_APPROVED,
+      actorId: reviewerId,
+      details: { editId: id },
+    });
+
+    // Auto-apply the edit to the report
+    reportDb.applyEdit(reportEdits[idx].reportId, id);
+
+    return reportEdits[idx];
+  },
+
+  reject: (
+    id: string,
+    reviewerId: string,
+    reason?: string
+  ): ReportEdit | undefined => {
+    const idx = reportEdits.findIndex((e) => e.id === id);
+    if (idx === -1) return undefined;
+    if (reportEdits[idx].status !== ReportEditStatus.SUBMITTED) return undefined;
+
+    reportEdits[idx] = {
+      ...reportEdits[idx],
+      status: ReportEditStatus.REJECTED,
+      reviewedById: reviewerId,
+      rejectionReason: reason,
+      updatedAt: now(),
+    };
+
+    reportEventDb.create({
+      reportId: reportEdits[idx].reportId,
+      eventType: ReportEventType.EDIT_REJECTED,
+      actorId: reviewerId,
+      details: { editId: id, reason },
+    });
+
+    return reportEdits[idx];
+  },
+
+  count: (filters?: { reportId?: string; status?: ReportEditStatus }): number =>
+    reportEditDb.findAll(filters).length,
+};
+
+// ============================================================================
+// REPORT UPDATE REQUEST OPERATIONS (Post-deadline changes)
+// ============================================================================
+
+export const reportUpdateRequestDb = {
+  findAll: (filters?: {
+    reportId?: string;
+    requestedById?: string;
+    status?: ReportUpdateRequestStatus;
+  }): ReportUpdateRequest[] => {
+    let result = [...reportUpdateRequests];
+    if (filters?.reportId)
+      result = result.filter((r) => r.reportId === filters.reportId);
+    if (filters?.requestedById)
+      result = result.filter((r) => r.requestedById === filters.requestedById);
+    if (filters?.status)
+      result = result.filter((r) => r.status === filters.status);
+    result.sort(
+      (a, b) =>
+        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+    );
+    return result;
+  },
+
+  findById: (id: string): ReportUpdateRequest | undefined =>
+    reportUpdateRequests.find((r) => r.id === id),
+
+  findByReportId: (reportId: string): ReportUpdateRequest[] =>
+    reportUpdateRequests.filter((r) => r.reportId === reportId),
+
+  getWithDetails: (id: string): ReportUpdateRequestWithDetails | undefined => {
+    const request = reportUpdateRequests.find((r) => r.id === id);
+    if (!request) return undefined;
+
+    const report = reports.find((r) => r.id === request.reportId);
+    const requestedBy = users.find((u) => u.id === request.requestedById);
+    const reviewedBy = request.reviewedById
+      ? users.find((u) => u.id === request.reviewedById)
+      : undefined;
+
+    const toProfile = (u: User): UserProfile => ({
+      id: u.id,
+      email: u.email,
+      firstName: u.firstName,
+      lastName: u.lastName,
+      phone: u.phone,
+      whatsappPhone: u.whatsappPhone,
+      location: u.location,
+      age: u.age,
+      maritalStatus: u.maritalStatus,
+      employmentStatus: u.employmentStatus,
+      interests: u.interests,
+      role: u.role,
+      campusId: u.campusId,
+      zoneId: u.zoneId,
+      departmentId: u.departmentId,
+      groupId: u.groupId,
+      cellId: u.cellId,
+      avatar: u.avatar,
+      isActive: u.isActive,
+      inviteCode: u.inviteCode,
+      createdAt: u.createdAt,
+      updatedAt: u.updatedAt,
+    });
+
+    return {
+      ...request,
+      report,
+      requestedBy: requestedBy ? toProfile(requestedBy) : undefined,
+      reviewedBy: reviewedBy ? toProfile(reviewedBy) : undefined,
+    };
+  },
+
+  create: (data: CreateReportUpdateRequestInput): ReportUpdateRequest => {
+    const id = generateId();
+
+    const sections: ReportEditSection[] = (data.sections || []).map(
+      (sec, si) => {
+        const sectionId = `rus-${id}-${si}`;
+        return {
+          id: sectionId,
+          reportEditId: id,
+          templateSectionId: sec.templateSectionId,
+          sectionName: sec.sectionName,
+          order: sec.order,
+          metrics: (sec.metrics || []).map((m, mi) => ({
+            id: `rum-${id}-${si}-${mi}`,
+            reportEditSectionId: sectionId,
+            templateMetricId: m.templateMetricId,
+            metricName: m.metricName,
+            fieldType: m.fieldType,
+            monthlyGoal: m.monthlyGoal,
+            monthlyAchieved: m.monthlyAchieved,
+            yoyGoal: m.yoyGoal,
+            originalMonthlyGoal: m.originalMonthlyGoal,
+            originalMonthlyAchieved: m.originalMonthlyAchieved,
+            originalYoyGoal: m.originalYoyGoal,
+            order: m.order,
+          })),
+        };
+      }
+    );
+
+    const request: ReportUpdateRequest = {
+      id,
+      reportId: data.reportId,
+      requestedById: data.requestedById,
+      reason: data.reason,
+      sections,
+      status: ReportUpdateRequestStatus.PENDING,
+      createdAt: now(),
+      updatedAt: now(),
+    };
+
+    reportUpdateRequests.push(request);
+
+    reportEventDb.create({
+      reportId: data.reportId,
+      eventType: ReportEventType.UPDATE_REQUESTED,
+      actorId: data.requestedById,
+      details: { updateRequestId: id, reason: data.reason },
+    });
+
+    return request;
+  },
+
+  approve: (
+    id: string,
+    reviewerId: string
+  ): ReportUpdateRequest | undefined => {
+    const idx = reportUpdateRequests.findIndex((r) => r.id === id);
+    if (idx === -1) return undefined;
+    if (reportUpdateRequests[idx].status !== ReportUpdateRequestStatus.PENDING)
+      return undefined;
+
+    reportUpdateRequests[idx] = {
+      ...reportUpdateRequests[idx],
+      status: ReportUpdateRequestStatus.APPROVED,
+      reviewedById: reviewerId,
+      updatedAt: now(),
+    };
+
+    const req = reportUpdateRequests[idx];
+
+    // Apply the update request changes to the report
+    const rIdx = reports.findIndex((r) => r.id === req.reportId);
+    if (rIdx !== -1) {
+      // Snapshot before applying
+      reportVersionDb.create(
+        req.reportId,
+        reports[rIdx],
+        reviewerId,
+        `Pre-update-request snapshot before request ${id}`
+      );
+
+      // Merge changes
+      for (const urSection of req.sections) {
+        const existingSectionIdx = reports[rIdx].sections.findIndex(
+          (s) => s.templateSectionId === urSection.templateSectionId
+        );
+        if (existingSectionIdx !== -1) {
+          for (const urMetric of urSection.metrics) {
+            const existingMetricIdx = reports[rIdx].sections[
+              existingSectionIdx
+            ].metrics.findIndex(
+              (m) => m.templateMetricId === urMetric.templateMetricId
+            );
+            if (existingMetricIdx !== -1) {
+              reports[rIdx].sections[existingSectionIdx].metrics[
+                existingMetricIdx
+              ] = {
+                ...reports[rIdx].sections[existingSectionIdx].metrics[
+                existingMetricIdx
+                ],
+                monthlyGoal: urMetric.monthlyGoal,
+                monthlyAchieved: urMetric.monthlyAchieved,
+                yoyGoal: urMetric.yoyGoal,
+                computedPercentage:
+                  urMetric.monthlyGoal && urMetric.monthlyAchieved
+                    ? Math.round(
+                      (urMetric.monthlyAchieved / urMetric.monthlyGoal) * 100
+                    )
+                    : undefined,
+              };
+            }
+          }
+        }
+      }
+
+      reports[rIdx] = { ...reports[rIdx], updatedAt: now() };
+    }
+
+    reportEventDb.create({
+      reportId: req.reportId,
+      eventType: ReportEventType.UPDATE_APPROVED,
+      actorId: reviewerId,
+      details: { updateRequestId: id },
+    });
+
+    return reportUpdateRequests[idx];
+  },
+
+  reject: (
+    id: string,
+    reviewerId: string,
+    reason?: string
+  ): ReportUpdateRequest | undefined => {
+    const idx = reportUpdateRequests.findIndex((r) => r.id === id);
+    if (idx === -1) return undefined;
+    if (reportUpdateRequests[idx].status !== ReportUpdateRequestStatus.PENDING)
+      return undefined;
+
+    reportUpdateRequests[idx] = {
+      ...reportUpdateRequests[idx],
+      status: ReportUpdateRequestStatus.REJECTED,
+      reviewedById: reviewerId,
+      rejectionReason: reason,
+      updatedAt: now(),
+    };
+
+    reportEventDb.create({
+      reportId: reportUpdateRequests[idx].reportId,
+      eventType: ReportEventType.UPDATE_REJECTED,
+      actorId: reviewerId,
+      details: { updateRequestId: id, reason },
+    });
+
+    return reportUpdateRequests[idx];
+  },
+
+  count: (filters?: {
+    reportId?: string;
+    status?: ReportUpdateRequestStatus;
+  }): number => reportUpdateRequestDb.findAll(filters).length,
+};
+
+// ============================================================================
+// REPORT ANALYTICS HELPERS
+// ============================================================================
+
+export const reportAnalyticsDb = {
+  /** Get dashboard stats for reports, scoped by campus or church-wide */
+  getDashboardStats: (campusId?: string): ReportDashboardStats => {
+    let scoped = [...reports];
+    if (campusId) scoped = scoped.filter((r) => r.campusId === campusId);
+
+    const total = scoped.length;
+    const submitted = scoped.filter(
+      (r) => r.status === ReportStatus.SUBMITTED
+    ).length;
+    const approved = scoped.filter(
+      (r) => r.status === ReportStatus.APPROVED
+    ).length;
+    const draft = scoped.filter(
+      (r) => r.status === ReportStatus.DRAFT
+    ).length;
+    const requiresEdits = scoped.filter(
+      (r) => r.status === ReportStatus.REQUIRES_EDITS
+    ).length;
+    const locked = scoped.filter(
+      (r) => r.status === ReportStatus.LOCKED
+    ).length;
+    const overdue = scoped.filter(
+      (r) =>
+        r.status === ReportStatus.DRAFT &&
+        r.deadline &&
+        new Date(r.deadline).getTime() < Date.now()
+    ).length;
+
+    return {
+      totalReports: total,
+      submittedReports: submitted,
+      approvedReports: approved,
+      draftReports: draft,
+      requiresEditsReports: requiresEdits,
+      lockedReports: locked,
+      overdueReports: overdue,
+      complianceRate:
+        total > 0
+          ? Math.round(
+            ((approved + locked + submitted) / total) * 100
+          )
+          : 0,
+    };
+  },
+
+  /** Compliance summary across all campuses */
+  getComplianceSummary: (): ReportComplianceSummary[] => {
+    const campusList = [...campuses];
+    return campusList.map((campus) => {
+      const campusReports = reports.filter(
+        (r) => r.campusId === campus.id
+      );
+      const total = campusReports.length;
+      const onTime = campusReports.filter(
+        (r) =>
+          r.deadline &&
+          r.status !== ReportStatus.DRAFT &&
+          new Date(r.updatedAt || r.createdAt).getTime() <=
+          new Date(r.deadline).getTime()
+      ).length;
+      const late = campusReports.filter(
+        (r) =>
+          r.deadline &&
+          r.status !== ReportStatus.DRAFT &&
+          new Date(r.updatedAt || r.createdAt).getTime() >
+          new Date(r.deadline).getTime()
+      ).length;
+      const missing = campusReports.filter(
+        (r) =>
+          r.status === ReportStatus.DRAFT &&
+          r.deadline &&
+          new Date(r.deadline).getTime() < Date.now()
+      ).length;
+
+      return {
+        campusId: campus.id,
+        campusName: campus.name,
+        totalExpected: total || 1,
+        submitted: onTime + late,
+        onTime,
+        late,
+        missing,
+        compliancePercentage:
+          total > 0 ? Math.round(((onTime + late) / total) * 100) : 0,
+      };
+    });
+  },
+
+  /** Metric aggregates for analytics dashboards */
+  getMetricAggregates: (filters?: {
+    campusId?: string;
+    periodYear?: number;
+    periodMonth?: number;
+    metricName?: string;
+  }): ReportAnalytics[] => {
+    let scoped = reports.filter(
+      (r) =>
+        r.status === ReportStatus.APPROVED ||
+        r.status === ReportStatus.REVIEWED ||
+        r.status === ReportStatus.LOCKED
+    );
+    if (filters?.campusId)
+      scoped = scoped.filter((r) => r.campusId === filters.campusId);
+    if (filters?.periodYear)
+      scoped = scoped.filter((r) => r.periodYear === filters.periodYear);
+    if (filters?.periodMonth)
+      scoped = scoped.filter((r) => r.periodMonth === filters.periodMonth);
+
+    // Aggregate metrics across all matching reports
+    const metricMap = new Map<
+      string,
+      { totalGoal: number; totalAchieved: number; totalYoY: number; count: number }
+    >();
+
+    for (const report of scoped) {
+      for (const section of report.sections) {
+        for (const metric of section.metrics) {
+          if (filters?.metricName && metric.metricName !== filters.metricName)
+            continue;
+          const key = metric.metricName;
+          const existing = metricMap.get(key) || {
+            totalGoal: 0,
+            totalAchieved: 0,
+            totalYoY: 0,
+            count: 0,
+          };
+          metricMap.set(key, {
+            totalGoal: existing.totalGoal + (metric.monthlyGoal || 0),
+            totalAchieved:
+              existing.totalAchieved + (metric.monthlyAchieved || 0),
+            totalYoY: existing.totalYoY + (metric.yoyGoal || 0),
+            count: existing.count + 1,
+          });
+        }
+      }
+    }
+
+    const results: ReportAnalytics[] = [];
+    metricMap.forEach((agg, metricName) => {
+      results.push({
+        metricName,
+        totalGoal: agg.totalGoal,
+        totalAchieved: agg.totalAchieved,
+        achievementRate:
+          agg.totalGoal > 0
+            ? Math.round((agg.totalAchieved / agg.totalGoal) * 100)
+            : 0,
+        yoyGrowth:
+          agg.totalYoY > 0
+            ? Math.round(
+              ((agg.totalAchieved - agg.totalYoY) / agg.totalYoY) * 100
+            )
+            : 0,
+        reportCount: agg.count,
+      });
+    });
+
+    return results.sort((a, b) => b.reportCount - a.reportCount);
+  },
+};
+
+// ============================================================================
 // Combined Database Export (for backward compatibility)
 // ============================================================================
 export const db = {
@@ -1457,4 +2855,12 @@ export const db = {
   inviteLinks: inviteLinkDb,
   inviteLinkVisits: inviteLinkVisitDb,
   analytics: analyticsDb,
+  reportTemplates: reportTemplateDb,
+  reportTemplateVersions: reportTemplateVersionDb,
+  reports: reportDb,
+  reportEvents: reportEventDb,
+  reportVersions: reportVersionDb,
+  reportEdits: reportEditDb,
+  reportUpdateRequests: reportUpdateRequestDb,
+  reportAnalytics: reportAnalyticsDb,
 };

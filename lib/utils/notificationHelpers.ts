@@ -5,9 +5,8 @@
  * for various events in the system (meetings, membership requests, role changes).
  */
 
-import { UserRole } from "@/lib/types";
+import { UserRole, NotificationType, ReportStatus } from "@/lib/types";
 import { db } from "@/lib/data/database";
-import { NotificationType } from "@/lib/types";
 
 /**
  * Send meeting reminder notification to all group members
@@ -400,6 +399,385 @@ export async function sendNewMembershipRequestNotification(
         error instanceof Error
           ? `Failed to send new membership request notification: ${error.message}`
           : "An unexpected error occurred while sending new membership request notification.",
+    };
+  }
+}
+
+// ============================================================================
+// REPORT NOTIFICATION HELPERS
+// ============================================================================
+
+/**
+ * Helper to find users by role who should receive report notifications.
+ * Returns IDs of users in SUPERADMIN, GROUP_PASTOR, GROUP_ADMIN roles (approvers).
+ */
+function getReportApproverIds(campusId?: string): string[] {
+  const approverRoles: string[] = [
+    UserRole.SUPERADMIN,
+    UserRole.GROUP_PASTOR,
+    UserRole.GROUP_ADMIN,
+  ];
+  const allUsers = db.users.findAll({});
+  return allUsers
+    .filter(
+      (u) =>
+        approverRoles.includes(u.role) &&
+        (!campusId || !u.campusId || u.campusId === campusId)
+    )
+    .map((u) => u.id);
+}
+
+/**
+ * Notify approvers when a report is submitted for review
+ */
+export async function sendReportSubmittedNotification(
+  reportId: string,
+  submitterId: string
+): Promise<{ success: boolean; message: string }> {
+  try {
+    const report = db.reports.findById(reportId);
+    const submitter = db.users.findById(submitterId);
+    if (!report || !submitter) {
+      return { success: false, message: "Report or submitter not found" };
+    }
+
+    const approverIds = getReportApproverIds(report.campusId);
+    for (const approverId of approverIds) {
+      if (approverId === submitterId) continue;
+      db.notifications.create({
+        userId: approverId,
+        type: NotificationType.REPORT_SUBMITTED,
+        title: "Report Submitted",
+        message: `${submitter.firstName} ${submitter.lastName} submitted a ${report.periodType} report for review.`,
+        relatedId: reportId,
+      });
+    }
+
+    return {
+      success: true,
+      message: `Submitted notification sent to ${approverIds.length} approver(s).`,
+    };
+  } catch (error) {
+    return {
+      success: false,
+      message: error instanceof Error ? error.message : "Failed to send report submitted notification.",
+    };
+  }
+}
+
+/**
+ * Notify submitter when edits are requested on their report
+ */
+export async function sendReportEditsRequestedNotification(
+  reportId: string,
+  reviewerId: string,
+  reason?: string
+): Promise<{ success: boolean; message: string }> {
+  try {
+    const report = db.reports.findById(reportId);
+    const reviewer = db.users.findById(reviewerId);
+    if (!report || !reviewer) {
+      return { success: false, message: "Report or reviewer not found" };
+    }
+
+    db.notifications.create({
+      userId: report.submittedById,
+      type: NotificationType.REPORT_EDITS_REQUESTED,
+      title: "Report Edits Requested",
+      message: `${reviewer.firstName} ${reviewer.lastName} has requested changes to your report.${reason ? ` Reason: ${reason}` : ""}`,
+      relatedId: reportId,
+    });
+
+    return { success: true, message: "Edits requested notification sent to submitter." };
+  } catch (error) {
+    return {
+      success: false,
+      message: error instanceof Error ? error.message : "Failed to send edits requested notification.",
+    };
+  }
+}
+
+/**
+ * Notify submitter when their report is approved
+ */
+export async function sendReportApprovedNotification(
+  reportId: string,
+  approverId: string
+): Promise<{ success: boolean; message: string }> {
+  try {
+    const report = db.reports.findById(reportId);
+    const approver = db.users.findById(approverId);
+    if (!report || !approver) {
+      return { success: false, message: "Report or approver not found" };
+    }
+
+    db.notifications.create({
+      userId: report.submittedById,
+      type: NotificationType.REPORT_APPROVED,
+      title: "Report Approved",
+      message: `Your report has been approved by ${approver.firstName} ${approver.lastName}.`,
+      relatedId: reportId,
+    });
+
+    return { success: true, message: "Approval notification sent to submitter." };
+  } catch (error) {
+    return {
+      success: false,
+      message: error instanceof Error ? error.message : "Failed to send report approved notification.",
+    };
+  }
+}
+
+/**
+ * Notify submitter when their report is reviewed (post-approval)
+ */
+export async function sendReportReviewedNotification(
+  reportId: string,
+  reviewerId: string
+): Promise<{ success: boolean; message: string }> {
+  try {
+    const report = db.reports.findById(reportId);
+    const reviewer = db.users.findById(reviewerId);
+    if (!report || !reviewer) {
+      return { success: false, message: "Report or reviewer not found" };
+    }
+
+    db.notifications.create({
+      userId: report.submittedById,
+      type: NotificationType.REPORT_REVIEWED,
+      title: "Report Reviewed",
+      message: `Your report has been marked as reviewed by ${reviewer.firstName} ${reviewer.lastName}.`,
+      relatedId: reportId,
+    });
+
+    return { success: true, message: "Review notification sent to submitter." };
+  } catch (error) {
+    return {
+      success: false,
+      message: error instanceof Error ? error.message : "Failed to send report reviewed notification.",
+    };
+  }
+}
+
+/**
+ * Notify edit submitter when their report edit is approved
+ */
+export async function sendReportEditApprovedNotification(
+  editId: string,
+  approverId: string
+): Promise<{ success: boolean; message: string }> {
+  try {
+    const edit = db.reportEdits.findById(editId);
+    const approver = db.users.findById(approverId);
+    if (!edit || !approver) {
+      return { success: false, message: "Edit or approver not found" };
+    }
+
+    db.notifications.create({
+      userId: edit.submittedById,
+      type: NotificationType.REPORT_EDIT_APPROVED,
+      title: "Report Edit Approved",
+      message: `Your edit to a report has been approved by ${approver.firstName} ${approver.lastName} and changes have been applied.`,
+      relatedId: edit.reportId,
+    });
+
+    return { success: true, message: "Edit approval notification sent." };
+  } catch (error) {
+    return {
+      success: false,
+      message: error instanceof Error ? error.message : "Failed to send edit approved notification.",
+    };
+  }
+}
+
+/**
+ * Notify edit submitter when their report edit is rejected
+ */
+export async function sendReportEditRejectedNotification(
+  editId: string,
+  reviewerId: string,
+  reason?: string
+): Promise<{ success: boolean; message: string }> {
+  try {
+    const edit = db.reportEdits.findById(editId);
+    const reviewer = db.users.findById(reviewerId);
+    if (!edit || !reviewer) {
+      return { success: false, message: "Edit or reviewer not found" };
+    }
+
+    db.notifications.create({
+      userId: edit.submittedById,
+      type: NotificationType.REPORT_EDIT_REJECTED,
+      title: "Report Edit Rejected",
+      message: `Your edit was rejected by ${reviewer.firstName} ${reviewer.lastName}.${reason ? ` Reason: ${reason}` : ""}`,
+      relatedId: edit.reportId,
+    });
+
+    return { success: true, message: "Edit rejection notification sent." };
+  } catch (error) {
+    return {
+      success: false,
+      message: error instanceof Error ? error.message : "Failed to send edit rejected notification.",
+    };
+  }
+}
+
+/**
+ * Notify approvers when a report update request is submitted
+ */
+export async function sendReportUpdateRequestSubmittedNotification(
+  requestId: string,
+  requestedById: string
+): Promise<{ success: boolean; message: string }> {
+  try {
+    const updateRequest = db.reportUpdateRequests.findById(requestId);
+    const requester = db.users.findById(requestedById);
+    if (!updateRequest || !requester) {
+      return { success: false, message: "Update request or requester not found" };
+    }
+
+    const report = db.reports.findById(updateRequest.reportId);
+    const approverIds = getReportApproverIds(report?.campusId);
+
+    for (const approverId of approverIds) {
+      if (approverId === requestedById) continue;
+      db.notifications.create({
+        userId: approverId,
+        type: NotificationType.REPORT_UPDATE_REQUEST_SUBMITTED,
+        title: "Report Update Request",
+        message: `${requester.firstName} ${requester.lastName} has requested to update a locked report. Reason: ${updateRequest.reason}`,
+        relatedId: requestId,
+      });
+    }
+
+    return {
+      success: true,
+      message: `Update request notification sent to ${approverIds.length} approver(s).`,
+    };
+  } catch (error) {
+    return {
+      success: false,
+      message: error instanceof Error ? error.message : "Failed to send update request notification.",
+    };
+  }
+}
+
+/**
+ * Notify requester when their update request is approved
+ */
+export async function sendReportUpdateRequestApprovedNotification(
+  requestId: string,
+  approverId: string
+): Promise<{ success: boolean; message: string }> {
+  try {
+    const updateRequest = db.reportUpdateRequests.findById(requestId);
+    const approver = db.users.findById(approverId);
+    if (!updateRequest || !approver) {
+      return { success: false, message: "Update request or approver not found" };
+    }
+
+    db.notifications.create({
+      userId: updateRequest.requestedById,
+      type: NotificationType.REPORT_UPDATE_REQUEST_APPROVED,
+      title: "Update Request Approved",
+      message: `Your request to update a report has been approved by ${approver.firstName} ${approver.lastName}. Changes have been applied.`,
+      relatedId: updateRequest.reportId,
+    });
+
+    return { success: true, message: "Update request approval notification sent." };
+  } catch (error) {
+    return {
+      success: false,
+      message: error instanceof Error ? error.message : "Failed to send update request approval notification.",
+    };
+  }
+}
+
+/**
+ * Notify requester when their update request is rejected
+ */
+export async function sendReportUpdateRequestRejectedNotification(
+  requestId: string,
+  reviewerId: string,
+  reason?: string
+): Promise<{ success: boolean; message: string }> {
+  try {
+    const updateRequest = db.reportUpdateRequests.findById(requestId);
+    const reviewer = db.users.findById(reviewerId);
+    if (!updateRequest || !reviewer) {
+      return { success: false, message: "Update request or reviewer not found" };
+    }
+
+    db.notifications.create({
+      userId: updateRequest.requestedById,
+      type: NotificationType.REPORT_UPDATE_REQUEST_REJECTED,
+      title: "Update Request Rejected",
+      message: `Your request to update a report was rejected by ${reviewer.firstName} ${reviewer.lastName}.${reason ? ` Reason: ${reason}` : ""}`,
+      relatedId: updateRequest.reportId,
+    });
+
+    return { success: true, message: "Update request rejection notification sent." };
+  } catch (error) {
+    return {
+      success: false,
+      message: error instanceof Error ? error.message : "Failed to send update request rejection notification.",
+    };
+  }
+}
+
+/**
+ * Send deadline reminder to report submitters
+ * Called for reports approaching their deadline (e.g., 3 days and 1 day before)
+ */
+export async function sendReportDeadlineReminder(
+  reportId: string,
+  isFinal: boolean
+): Promise<{ success: boolean; message: string }> {
+  try {
+    const report = db.reports.findById(reportId);
+    if (!report) {
+      return { success: false, message: "Report not found" };
+    }
+
+    if (report.status !== ReportStatus.DRAFT && report.status !== ReportStatus.REQUIRES_EDITS) {
+      return { success: false, message: "Report is not in a state that requires a deadline reminder." };
+    }
+
+    if (!report.deadline) {
+      return { success: false, message: "Report has no deadline set." };
+    }
+
+    const deadline = new Date(report.deadline);
+    const daysLeft = Math.ceil((deadline.getTime() - Date.now()) / (1000 * 60 * 60 * 24));
+
+    const notifType = isFinal
+      ? NotificationType.REPORT_DEADLINE_FINAL
+      : NotificationType.REPORT_DEADLINE_REMINDER;
+
+    const title = isFinal
+      ? "Report Deadline Tomorrow!"
+      : "Report Deadline Approaching";
+
+    const body = isFinal
+      ? `Your ${report.periodType} report is due tomorrow (${deadline.toLocaleDateString()}). Please submit it as soon as possible.`
+      : `Your ${report.periodType} report is due in ${daysLeft} day(s) on ${deadline.toLocaleDateString()}. Please ensure it is completed and submitted on time.`;
+
+    db.notifications.create({
+      userId: report.submittedById,
+      type: notifType,
+      title,
+      message: body,
+      relatedId: reportId,
+    });
+
+    return {
+      success: true,
+      message: `Deadline ${isFinal ? "final " : ""}reminder sent for report ${reportId}.`,
+    };
+  } catch (error) {
+    return {
+      success: false,
+      message: error instanceof Error ? error.message : "Failed to send deadline reminder.",
     };
   }
 }
