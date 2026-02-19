@@ -30,6 +30,7 @@ interface ReportFilters {
   periodType?: ReportPeriodType;
   campusId?: string;
   templateId?: string;
+  groupId?: string;
   search?: string;
   dateRange?: [string, string];
 }

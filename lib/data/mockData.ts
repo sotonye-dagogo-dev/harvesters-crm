@@ -2667,6 +2667,372 @@ export const mockReportTemplates: ReportTemplate[] = [
     createdAt: getDateString(365),
     updatedAt: getDateString(30),
   },
+
+  // ── Individual focused templates (one per report type) ──
+
+  {
+    id: "template-attendance",
+    name: "Attendance & Quality Report",
+    description: "Focused template for tracking weekly attendance numbers and program quality across services.",
+    version: 1,
+    sections: [
+      {
+        id: "tsec-att-1",
+        templateId: "template-attendance",
+        name: "Attendance & Quality of Program",
+        description: "Track weekly attendance and quality scores.",
+        order: 1,
+        isRequired: true,
+        metrics: [
+          makeTemplateMetric("tm-att-1", "tsec-att-1", "Sunday Service Attendance", 1),
+          makeTemplateMetric("tm-att-2", "tsec-att-1", "Midweek Service Attendance", 2),
+          makeTemplateMetric("tm-att-3", "tsec-att-1", "Average Program Quality Score", 3, { fieldType: MetricFieldType.PERCENTAGE }),
+          makeTemplateMetric("tm-att-4", "tsec-att-1", "Online Attendance", 4),
+          makeTemplateMetric("tm-att-5", "tsec-att-1", "Total Unique Attendees", 5),
+          makeTemplateMetric("tm-att-6", "tsec-att-1", "First Timers", 6),
+          makeTemplateMetric("tm-att-7", "tsec-att-1", "Returning Visitors", 7),
+        ],
+      },
+    ],
+    isActive: true,
+    isDefault: false,
+    createdById: "user-superadmin-1",
+    createdAt: getDateString(300),
+    updatedAt: getDateString(30),
+  },
+
+  {
+    id: "template-salvation",
+    name: "Salvation Report",
+    description: "Focused template for tracking salvations across different channels and follow-up efforts.",
+    version: 1,
+    sections: [
+      {
+        id: "tsec-sal-1",
+        templateId: "template-salvation",
+        name: "Salvation",
+        description: "Souls won and salvation-related metrics.",
+        order: 1,
+        isRequired: true,
+        metrics: [
+          makeTemplateMetric("tm-sal-1", "tsec-sal-1", "Salvations (Altar Call)", 1),
+          makeTemplateMetric("tm-sal-2", "tsec-sal-1", "Salvations (Small Group)", 2),
+          makeTemplateMetric("tm-sal-3", "tsec-sal-1", "Salvations (Outreach)", 3),
+          makeTemplateMetric("tm-sal-4", "tsec-sal-1", "Salvations (Online)", 4),
+          makeTemplateMetric("tm-sal-5", "tsec-sal-1", "Total Salvations", 5),
+          makeTemplateMetric("tm-sal-6", "tsec-sal-1", "First Timer Follow-ups", 6),
+          makeTemplateMetric("tm-sal-7", "tsec-sal-1", "Follow-up Completion Rate", 7, { fieldType: MetricFieldType.PERCENTAGE }),
+        ],
+      },
+    ],
+    isActive: true,
+    isDefault: false,
+    createdById: "user-superadmin-1",
+    createdAt: getDateString(300),
+    updatedAt: getDateString(30),
+  },
+
+  {
+    id: "template-small-group",
+    name: "Small Group / Cell Report",
+    description: "Focused template for tracking small group and cell meeting activities, growth, and leadership development.",
+    version: 1,
+    sections: [
+      {
+        id: "tsec-sg-1",
+        templateId: "template-small-group",
+        name: "Small Group / Cell",
+        description: "Small group and cell meeting metrics.",
+        order: 1,
+        isRequired: true,
+        metrics: [
+          makeTemplateMetric("tm-sg-1", "tsec-sg-1", "Total Cells Active", 1),
+          makeTemplateMetric("tm-sg-2", "tsec-sg-1", "Total Cell Meetings Held", 2),
+          makeTemplateMetric("tm-sg-3", "tsec-sg-1", "Total Cell Attendance", 3),
+          makeTemplateMetric("tm-sg-4", "tsec-sg-1", "Average Cell Attendance", 4),
+          makeTemplateMetric("tm-sg-5", "tsec-sg-1", "New Cells Started", 5),
+          makeTemplateMetric("tm-sg-6", "tsec-sg-1", "Cell Leaders Trained", 6),
+          makeTemplateMetric("tm-sg-7", "tsec-sg-1", "Cell Leader Retention Rate", 7, { fieldType: MetricFieldType.PERCENTAGE }),
+        ],
+      },
+    ],
+    isActive: true,
+    isDefault: false,
+    createdById: "user-superadmin-1",
+    createdAt: getDateString(300),
+    updatedAt: getDateString(30),
+  },
+
+  {
+    id: "template-nlp",
+    name: "NLP (New Life Program) Report",
+    description: "Focused template for tracking New Life Program enrollment, graduation, and retention metrics.",
+    version: 1,
+    sections: [
+      {
+        id: "tsec-nlp-1",
+        templateId: "template-nlp",
+        name: "NLP (New Life Program)",
+        description: "New Life Program metrics tracking new believers integration.",
+        order: 1,
+        isRequired: true,
+        metrics: [
+          makeTemplateMetric("tm-nlp-1", "tsec-nlp-1", "NLP Enrollees", 1),
+          makeTemplateMetric("tm-nlp-2", "tsec-nlp-1", "NLP Graduates", 2),
+          makeTemplateMetric("tm-nlp-3", "tsec-nlp-1", "NLP Attendance", 3),
+          makeTemplateMetric("tm-nlp-4", "tsec-nlp-1", "NLP Retention Rate", 4, { fieldType: MetricFieldType.PERCENTAGE }),
+          makeTemplateMetric("tm-nlp-5", "tsec-nlp-1", "NLP Follow-Up Contacts", 5),
+        ],
+      },
+    ],
+    isActive: true,
+    isDefault: false,
+    createdById: "user-superadmin-1",
+    createdAt: getDateString(300),
+    updatedAt: getDateString(30),
+  },
+
+  {
+    id: "template-discipleship",
+    name: "Discipleship & Assimilation Report",
+    description: "Focused template for tracking discipleship classes, mentoring, baptism, and member assimilation.",
+    version: 1,
+    sections: [
+      {
+        id: "tsec-disc-1",
+        templateId: "template-discipleship",
+        name: "Discipleship / Assimilation",
+        description: "Discipleship and member assimilation tracking.",
+        order: 1,
+        isRequired: true,
+        metrics: [
+          makeTemplateMetric("tm-disc-1", "tsec-disc-1", "New Members Assimilated", 1),
+          makeTemplateMetric("tm-disc-2", "tsec-disc-1", "Discipleship Classes Enrollment", 2),
+          makeTemplateMetric("tm-disc-3", "tsec-disc-1", "Discipleship Classes Completion", 3),
+          makeTemplateMetric("tm-disc-4", "tsec-disc-1", "Mentoring Pairs Active", 4),
+          makeTemplateMetric("tm-disc-5", "tsec-disc-1", "Water Baptism Count", 5),
+          makeTemplateMetric("tm-disc-6", "tsec-disc-1", "Assimilation Rate", 6, { fieldType: MetricFieldType.PERCENTAGE }),
+        ],
+      },
+    ],
+    isActive: true,
+    isDefault: false,
+    createdById: "user-superadmin-1",
+    createdAt: getDateString(300),
+    updatedAt: getDateString(30),
+  },
+
+  {
+    id: "template-next-gen",
+    name: "Next Gen Ministry Report",
+    description: "Focused template for children's ministry (Kid-Zone) and youth ministry (Stir House) metrics.",
+    version: 1,
+    sections: [
+      {
+        id: "tsec-ng-1",
+        templateId: "template-next-gen",
+        name: "Next Gen (Kid-Zone + Stir House)",
+        description: "Children's and youth ministry metrics.",
+        order: 1,
+        isRequired: true,
+        subSections: [
+          {
+            id: "tssec-ng-1-1",
+            sectionId: "tsec-ng-1",
+            name: "Kid-Zone",
+            order: 1,
+            metrics: [
+              makeTemplateMetric("tm-ng-1-1", "tsec-ng-1", "Kid-Zone Attendance", 1),
+              makeTemplateMetric("tm-ng-1-2", "tsec-ng-1", "Kid-Zone New Registrations", 2),
+              makeTemplateMetric("tm-ng-1-3", "tsec-ng-1", "Kid-Zone Volunteers", 3),
+              makeTemplateMetric("tm-ng-1-4", "tsec-ng-1", "Kid-Zone Salvations", 4),
+            ],
+          },
+          {
+            id: "tssec-ng-1-2",
+            sectionId: "tsec-ng-1",
+            name: "Stir House",
+            order: 2,
+            metrics: [
+              makeTemplateMetric("tm-ng-2-1", "tsec-ng-1", "Stir House Attendance", 1),
+              makeTemplateMetric("tm-ng-2-2", "tsec-ng-1", "Stir House New Members", 2),
+              makeTemplateMetric("tm-ng-2-3", "tsec-ng-1", "Stir House Salvations", 3),
+              makeTemplateMetric("tm-ng-2-4", "tsec-ng-1", "Stir House Small Groups", 4),
+            ],
+          },
+        ],
+        metrics: [],
+      },
+    ],
+    isActive: true,
+    isDefault: false,
+    createdById: "user-superadmin-1",
+    createdAt: getDateString(300),
+    updatedAt: getDateString(30),
+  },
+
+  {
+    id: "template-partnership",
+    name: "Partnership Report",
+    description: "Focused template for tracking partnership giving, new partners, and retention rates.",
+    version: 1,
+    sections: [
+      {
+        id: "tsec-part-1",
+        templateId: "template-partnership",
+        name: "Partnership",
+        description: "Partnership and giving metrics.",
+        order: 1,
+        isRequired: true,
+        metrics: [
+          makeTemplateMetric("tm-part-1", "tsec-part-1", "Total Partners", 1),
+          makeTemplateMetric("tm-part-2", "tsec-part-1", "New Partners This Week", 2),
+          makeTemplateMetric("tm-part-3", "tsec-part-1", "Partnership Amount", 3, { fieldType: MetricFieldType.CURRENCY }),
+          makeTemplateMetric("tm-part-4", "tsec-part-1", "Partnership Retention Rate", 4, { fieldType: MetricFieldType.PERCENTAGE }),
+          makeTemplateMetric("tm-part-5", "tsec-part-1", "Lapsed Partners Recovered", 5),
+        ],
+      },
+    ],
+    isActive: true,
+    isDefault: false,
+    createdById: "user-superadmin-1",
+    createdAt: getDateString(300),
+    updatedAt: getDateString(30),
+  },
+
+  {
+    id: "template-haef",
+    name: "HAEF Report",
+    description: "Focused template for Harvesters Advancement & Empowerment Fund contributions and disbursements.",
+    version: 1,
+    sections: [
+      {
+        id: "tsec-haef-1",
+        templateId: "template-haef",
+        name: "HAEF (Harvesters Advancement & Empowerment Fund)",
+        description: "HAEF contributions and disbursement tracking.",
+        order: 1,
+        isRequired: true,
+        metrics: [
+          makeTemplateMetric("tm-haef-1", "tsec-haef-1", "HAEF Contributions", 1, { fieldType: MetricFieldType.CURRENCY }),
+          makeTemplateMetric("tm-haef-2", "tsec-haef-1", "HAEF Disbursements", 2, { fieldType: MetricFieldType.CURRENCY }),
+          makeTemplateMetric("tm-haef-3", "tsec-haef-1", "HAEF Beneficiaries", 3),
+          makeTemplateMetric("tm-haef-4", "tsec-haef-1", "HAEF New Contributors", 4),
+          makeTemplateMetric("tm-haef-5", "tsec-haef-1", "HAEF Fund Balance", 5, { fieldType: MetricFieldType.CURRENCY }),
+        ],
+      },
+    ],
+    isActive: true,
+    isDefault: false,
+    createdById: "user-superadmin-1",
+    createdAt: getDateString(300),
+    updatedAt: getDateString(30),
+  },
+
+  {
+    id: "template-spiritual",
+    name: "Spiritual Growth Report",
+    description: "Focused template for tracking prayer, fasting, spiritual growth, and testimonies.",
+    version: 1,
+    sections: [
+      {
+        id: "tsec-spi-1",
+        templateId: "template-spiritual",
+        name: "Spiritual",
+        description: "Spiritual growth and prayer-related metrics.",
+        order: 1,
+        isRequired: true,
+        metrics: [
+          makeTemplateMetric("tm-spi-1", "tsec-spi-1", "Prayer Chain Participants", 1),
+          makeTemplateMetric("tm-spi-2", "tsec-spi-1", "Fasting Participants", 2),
+          makeTemplateMetric("tm-spi-3", "tsec-spi-1", "Prophetic Words Received", 3, { isRequired: false }),
+          makeTemplateMetric("tm-spi-4", "tsec-spi-1", "Healing Testimonies", 4, { isRequired: false }),
+          makeTemplateMetric("tm-spi-5", "tsec-spi-1", "Spiritual Growth Score", 5, { fieldType: MetricFieldType.PERCENTAGE, isRequired: false }),
+        ],
+      },
+    ],
+    isActive: true,
+    isDefault: false,
+    createdById: "user-superadmin-1",
+    createdAt: getDateString(300),
+    updatedAt: getDateString(30),
+  },
+
+  {
+    id: "template-relationship",
+    name: "Relationship Breakthrough Report",
+    description: "Focused template for tracking marriage counseling, singles ministry, and family reconciliation.",
+    version: 1,
+    sections: [
+      {
+        id: "tsec-rel-1",
+        templateId: "template-relationship",
+        name: "Relationship Breakthrough",
+        description: "Relationship and family ministry metrics.",
+        order: 1,
+        isRequired: true,
+        metrics: [
+          makeTemplateMetric("tm-rel-1", "tsec-rel-1", "Marriage Counseling Sessions", 1, { isRequired: false }),
+          makeTemplateMetric("tm-rel-2", "tsec-rel-1", "Pre-Marital Counseling Sessions", 2, { isRequired: false }),
+          makeTemplateMetric("tm-rel-3", "tsec-rel-1", "Singles Ministry Attendance", 3, { isRequired: false }),
+          makeTemplateMetric("tm-rel-4", "tsec-rel-1", "Family Reconciliations", 4, { isRequired: false }),
+          makeTemplateMetric("tm-rel-5", "tsec-rel-1", "Relationship Workshops Held", 5, { isRequired: false }),
+        ],
+      },
+    ],
+    isActive: true,
+    isDefault: false,
+    createdById: "user-superadmin-1",
+    createdAt: getDateString(300),
+    updatedAt: getDateString(30),
+  },
+
+  {
+    id: "template-special-programs",
+    name: "Special Programs Report",
+    description: "Focused template for tracking church planting and special program activities.",
+    version: 1,
+    sections: [
+      {
+        id: "tsec-sp-1",
+        templateId: "template-special-programs",
+        name: "Report Summary – Special Programs",
+        description: "Overview of special programs including Church Planting and key program metrics.",
+        order: 1,
+        isRequired: true,
+        subSections: [
+          {
+            id: "tssec-sp-1-1",
+            sectionId: "tsec-sp-1",
+            name: "Church Planting",
+            order: 1,
+            metrics: [
+              makeTemplateMetric("tm-sp-1-1", "tsec-sp-1", "Number of Church Plants", 1),
+              makeTemplateMetric("tm-sp-1-2", "tsec-sp-1", "Church Plant Attendance", 2),
+              makeTemplateMetric("tm-sp-1-3", "tsec-sp-1", "Church Plant Offerings", 3, { fieldType: MetricFieldType.CURRENCY }),
+            ],
+          },
+          {
+            id: "tssec-sp-1-2",
+            sectionId: "tsec-sp-1",
+            name: "Program Metrics",
+            order: 2,
+            metrics: [
+              makeTemplateMetric("tm-sp-2-1", "tsec-sp-1", "Total Programs Held", 1),
+              makeTemplateMetric("tm-sp-2-2", "tsec-sp-1", "Total Program Attendance", 2),
+              makeTemplateMetric("tm-sp-2-3", "tsec-sp-1", "Special Events Count", 3),
+            ],
+          },
+        ],
+        metrics: [],
+      },
+    ],
+    isActive: true,
+    isDefault: false,
+    createdById: "user-superadmin-1",
+    createdAt: getDateString(300),
+    updatedAt: getDateString(30),
+  },
 ];
 
 export const mockReportTemplateVersions: ReportTemplateVersion[] = [
@@ -2679,6 +3045,16 @@ export const mockReportTemplateVersions: ReportTemplateVersion[] = [
     createdById: "user-superadmin-1",
     changeNotes: "Initial template creation with all 11 sections.",
   },
+  // Versions for individual focused templates
+  ...mockReportTemplates.slice(1).map((t, idx) => ({
+    id: `tv-focused-${idx + 1}`,
+    templateId: t.id,
+    versionNumber: 1,
+    snapshot: t,
+    createdAt: t.createdAt,
+    createdById: t.createdById,
+    changeNotes: `Initial creation of ${t.name}.`,
+  })),
 ];
 
 // ============================================================================
@@ -2717,7 +3093,7 @@ const currentYear = new Date().getFullYear();
 const currentMonth = new Date().getMonth() + 1;
 
 export const mockReports: PeriodicReport[] = [
-  // Report 1: Submitted (Lekki campus, current week)
+  // Report 1: Submitted (Lekki campus, current week) — comprehensive report covering all 11 sections
   {
     id: "report-1",
     templateId: templateId,
@@ -2731,14 +3107,31 @@ export const mockReports: PeriodicReport[] = [
     submittedById: "user-campus-admin-1",
     deadline: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
     isDataEntry: false,
-    notes: "Weekly report for Lekki campus — first week of the month.",
+    notes: "Weekly report for Lekki campus — first week of the month. All 11 sections completed.",
     sections: [
+      // Section 1: Report Summary – Special Programs (with subsections)
+      {
+        id: "rs-1-sp",
+        reportId: "report-1",
+        templateSectionId: "tsec-1",
+        sectionName: "Report Summary – Special Programs",
+        order: 1,
+        metrics: [
+          makeReportMetric("rm-1-sp-1", "rs-1-sp", "tm-1-1-1", "Number of Church Plants", 1, { goal: 2, achieved: 2, yoy: 1 }),
+          makeReportMetric("rm-1-sp-2", "rs-1-sp", "tm-1-1-2", "Church Plant Attendance", 2, { goal: 80, achieved: 65, yoy: 50 }),
+          makeReportMetric("rm-1-sp-3", "rs-1-sp", "tm-1-1-3", "Church Plant Offerings", 3, { goal: 150000, achieved: 125000, yoy: 100000 }, MetricFieldType.CURRENCY),
+          makeReportMetric("rm-1-sp-4", "rs-1-sp", "tm-1-2-1", "Total Programs Held", 4, { goal: 4, achieved: 3, yoy: 3 }),
+          makeReportMetric("rm-1-sp-5", "rs-1-sp", "tm-1-2-2", "Total Program Attendance", 5, { goal: 300, achieved: 275, yoy: 250 }),
+          makeReportMetric("rm-1-sp-6", "rs-1-sp", "tm-1-2-3", "Special Events Count", 6, { goal: 1, achieved: 1, yoy: 1 }),
+        ],
+      },
+      // Section 2: Attendance & Quality of Program
       {
         id: "rs-1-1",
         reportId: "report-1",
         templateSectionId: "tsec-2",
         sectionName: "Attendance & Quality of Program",
-        order: 1,
+        order: 2,
         metrics: [
           makeReportMetric("rm-1-1-1", "rs-1-1", "tm-2-1", "Sunday Service Attendance", 1, { goal: 500, achieved: 478, yoy: 450 }),
           makeReportMetric("rm-1-1-2", "rs-1-1", "tm-2-2", "Midweek Service Attendance", 2, { goal: 300, achieved: 265, yoy: 280 }),
@@ -2747,12 +3140,27 @@ export const mockReports: PeriodicReport[] = [
           makeReportMetric("rm-1-1-5", "rs-1-1", "tm-2-5", "Total Unique Attendees", 5, { goal: 600, achieved: 542, yoy: 500 }),
         ],
       },
+      // Section 3: NLP
+      {
+        id: "rs-1-nlp",
+        reportId: "report-1",
+        templateSectionId: "tsec-3",
+        sectionName: "NLP (New Life Program)",
+        order: 3,
+        metrics: [
+          makeReportMetric("rm-1-nlp-1", "rs-1-nlp", "tm-3-1", "NLP Enrollees", 1, { goal: 40, achieved: 35, yoy: 30 }),
+          makeReportMetric("rm-1-nlp-2", "rs-1-nlp", "tm-3-2", "NLP Graduates", 2, { goal: 25, achieved: 22, yoy: 20 }),
+          makeReportMetric("rm-1-nlp-3", "rs-1-nlp", "tm-3-3", "NLP Attendance", 3, { goal: 38, achieved: 32, yoy: 28 }),
+          makeReportMetric("rm-1-nlp-4", "rs-1-nlp", "tm-3-4", "NLP Retention Rate", 4, { goal: 85, achieved: 80, yoy: 75 }, MetricFieldType.PERCENTAGE),
+        ],
+      },
+      // Section 4: Salvation
       {
         id: "rs-1-2",
         reportId: "report-1",
         templateSectionId: "tsec-4",
         sectionName: "Salvation",
-        order: 2,
+        order: 4,
         metrics: [
           makeReportMetric("rm-1-2-1", "rs-1-2", "tm-4-1", "Salvations (Altar Call)", 1, { goal: 20, achieved: 15, yoy: 12 }),
           makeReportMetric("rm-1-2-2", "rs-1-2", "tm-4-2", "Salvations (Small Group)", 2, { goal: 10, achieved: 8, yoy: 7 }),
@@ -2761,12 +3169,13 @@ export const mockReports: PeriodicReport[] = [
           makeReportMetric("rm-1-2-5", "rs-1-2", "tm-4-5", "First Timer Follow-ups", 5, { goal: 30, achieved: 25, yoy: 22 }),
         ],
       },
+      // Section 5: Small Group / Cell
       {
         id: "rs-1-3",
         reportId: "report-1",
         templateSectionId: "tsec-5",
         sectionName: "Small Group / Cell",
-        order: 3,
+        order: 5,
         metrics: [
           makeReportMetric("rm-1-3-1", "rs-1-3", "tm-5-1", "Total Cells Active", 1, { goal: 25, achieved: 22, yoy: 20 }),
           makeReportMetric("rm-1-3-2", "rs-1-3", "tm-5-2", "Total Cell Meetings Held", 2, { goal: 25, achieved: 20, yoy: 18 }),
@@ -2776,12 +3185,103 @@ export const mockReports: PeriodicReport[] = [
           makeReportMetric("rm-1-3-6", "rs-1-3", "tm-5-6", "Cell Leaders Trained", 6, { goal: 5, achieved: 3, yoy: 4 }),
         ],
       },
+      // Section 6: Discipleship / Assimilation
+      {
+        id: "rs-1-disc",
+        reportId: "report-1",
+        templateSectionId: "tsec-6",
+        sectionName: "Discipleship / Assimilation",
+        order: 6,
+        metrics: [
+          makeReportMetric("rm-1-disc-1", "rs-1-disc", "tm-6-1", "New Members Assimilated", 1, { goal: 15, achieved: 12, yoy: 10 }),
+          makeReportMetric("rm-1-disc-2", "rs-1-disc", "tm-6-2", "Discipleship Classes Enrollment", 2, { goal: 30, achieved: 28, yoy: 22 }),
+          makeReportMetric("rm-1-disc-3", "rs-1-disc", "tm-6-3", "Discipleship Classes Completion", 3, { goal: 20, achieved: 18, yoy: 15 }),
+          makeReportMetric("rm-1-disc-4", "rs-1-disc", "tm-6-4", "Mentoring Pairs Active", 4, { goal: 10, achieved: 8, yoy: 6 }),
+          makeReportMetric("rm-1-disc-5", "rs-1-disc", "tm-6-5", "Water Baptism Count", 5, { goal: 8, achieved: 5, yoy: 4 }),
+        ],
+      },
+      // Section 7: Next Gen (Kid-Zone + Stir House)
+      {
+        id: "rs-1-ng",
+        reportId: "report-1",
+        templateSectionId: "tsec-7",
+        sectionName: "Next Gen (Kid-Zone + Stir House)",
+        order: 7,
+        metrics: [
+          makeReportMetric("rm-1-ng-1", "rs-1-ng", "tm-7-1-1", "Kid-Zone Attendance", 1, { goal: 80, achieved: 72, yoy: 65 }),
+          makeReportMetric("rm-1-ng-2", "rs-1-ng", "tm-7-1-2", "Kid-Zone New Registrations", 2, { goal: 10, achieved: 8, yoy: 6 }),
+          makeReportMetric("rm-1-ng-3", "rs-1-ng", "tm-7-1-3", "Kid-Zone Volunteers", 3, { goal: 15, achieved: 14, yoy: 12 }),
+          makeReportMetric("rm-1-ng-4", "rs-1-ng", "tm-7-1-4", "Kid-Zone Salvations", 4, { goal: 5, achieved: 3, yoy: 2 }),
+          makeReportMetric("rm-1-ng-5", "rs-1-ng", "tm-7-2-1", "Stir House Attendance", 5, { goal: 60, achieved: 55, yoy: 45 }),
+          makeReportMetric("rm-1-ng-6", "rs-1-ng", "tm-7-2-2", "Stir House New Members", 6, { goal: 8, achieved: 6, yoy: 4 }),
+          makeReportMetric("rm-1-ng-7", "rs-1-ng", "tm-7-2-3", "Stir House Salvations", 7, { goal: 3, achieved: 2, yoy: 2 }),
+          makeReportMetric("rm-1-ng-8", "rs-1-ng", "tm-7-2-4", "Stir House Small Groups", 8, { goal: 5, achieved: 4, yoy: 3 }),
+        ],
+      },
+      // Section 8: Partnership
+      {
+        id: "rs-1-part",
+        reportId: "report-1",
+        templateSectionId: "tsec-8",
+        sectionName: "Partnership",
+        order: 8,
+        metrics: [
+          makeReportMetric("rm-1-part-1", "rs-1-part", "tm-8-1", "Total Partners", 1, { goal: 120, achieved: 115, yoy: 100 }),
+          makeReportMetric("rm-1-part-2", "rs-1-part", "tm-8-2", "New Partners This Week", 2, { goal: 5, achieved: 3, yoy: 2 }),
+          makeReportMetric("rm-1-part-3", "rs-1-part", "tm-8-3", "Partnership Amount", 3, { goal: 500000, achieved: 475000, yoy: 400000 }, MetricFieldType.CURRENCY),
+          makeReportMetric("rm-1-part-4", "rs-1-part", "tm-8-4", "Partnership Retention Rate", 4, { goal: 95, achieved: 92, yoy: 88 }, MetricFieldType.PERCENTAGE),
+        ],
+      },
+      // Section 9: HAEF
+      {
+        id: "rs-1-haef",
+        reportId: "report-1",
+        templateSectionId: "tsec-9",
+        sectionName: "HAEF (Harvesters Advancement & Empowerment Fund)",
+        order: 9,
+        metrics: [
+          makeReportMetric("rm-1-haef-1", "rs-1-haef", "tm-9-1", "HAEF Contributions", 1, { goal: 200000, achieved: 185000, yoy: 150000 }, MetricFieldType.CURRENCY),
+          makeReportMetric("rm-1-haef-2", "rs-1-haef", "tm-9-2", "HAEF Disbursements", 2, { goal: 100000, achieved: 95000, yoy: 80000 }, MetricFieldType.CURRENCY),
+          makeReportMetric("rm-1-haef-3", "rs-1-haef", "tm-9-3", "HAEF Beneficiaries", 3, { goal: 10, achieved: 8, yoy: 6 }),
+          makeReportMetric("rm-1-haef-4", "rs-1-haef", "tm-9-4", "HAEF New Contributors", 4, { goal: 5, achieved: 4, yoy: 3 }),
+        ],
+      },
+      // Section 10: Spiritual
+      {
+        id: "rs-1-spi",
+        reportId: "report-1",
+        templateSectionId: "tsec-10",
+        sectionName: "Spiritual",
+        order: 10,
+        metrics: [
+          makeReportMetric("rm-1-spi-1", "rs-1-spi", "tm-10-1", "Prayer Chain Participants", 1, { goal: 50, achieved: 45, yoy: 40 }),
+          makeReportMetric("rm-1-spi-2", "rs-1-spi", "tm-10-2", "Fasting Participants", 2, { goal: 30, achieved: 25, yoy: 20 }),
+          makeReportMetric("rm-1-spi-3", "rs-1-spi", "tm-10-3", "Prophetic Words Received", 3, { goal: 5, achieved: 3, yoy: 2 }),
+          makeReportMetric("rm-1-spi-4", "rs-1-spi", "tm-10-4", "Healing Testimonies", 4, { goal: 3, achieved: 2, yoy: 1 }),
+          makeReportMetric("rm-1-spi-5", "rs-1-spi", "tm-10-5", "Spiritual Growth Score", 5, { goal: 80, achieved: 75, yoy: 70 }, MetricFieldType.PERCENTAGE),
+        ],
+      },
+      // Section 11: Relationship Breakthrough
+      {
+        id: "rs-1-rel",
+        reportId: "report-1",
+        templateSectionId: "tsec-11",
+        sectionName: "Relationship Breakthrough",
+        order: 11,
+        metrics: [
+          makeReportMetric("rm-1-rel-1", "rs-1-rel", "tm-11-1", "Marriage Counseling Sessions", 1, { goal: 8, achieved: 6, yoy: 5 }),
+          makeReportMetric("rm-1-rel-2", "rs-1-rel", "tm-11-2", "Pre-Marital Counseling Sessions", 2, { goal: 4, achieved: 3, yoy: 2 }),
+          makeReportMetric("rm-1-rel-3", "rs-1-rel", "tm-11-3", "Singles Ministry Attendance", 3, { goal: 40, achieved: 35, yoy: 30 }),
+          makeReportMetric("rm-1-rel-4", "rs-1-rel", "tm-11-4", "Family Reconciliations", 4, { goal: 3, achieved: 2, yoy: 1 }),
+          makeReportMetric("rm-1-rel-5", "rs-1-rel", "tm-11-5", "Relationship Workshops Held", 5, { goal: 1, achieved: 1, yoy: 1 }),
+        ],
+      },
     ],
     createdAt: getDateString(3),
     updatedAt: getDateString(1),
   },
 
-  // Report 2: Approved (Gbagada campus, previous week)
+  // Report 2: Approved (Gbagada campus, previous week) — 5 sections
   {
     id: "report-2",
     templateId: templateId,
@@ -2796,7 +3296,7 @@ export const mockReports: PeriodicReport[] = [
     approvedById: "user-campus-pastor-2",
     deadline: getDateString(5),
     isDataEntry: false,
-    notes: "Last week's report for Gbagada campus.",
+    notes: "Last week's report for Gbagada campus — approved with strong numbers.",
     sections: [
       {
         id: "rs-2-1",
@@ -2807,6 +3307,60 @@ export const mockReports: PeriodicReport[] = [
         metrics: [
           makeReportMetric("rm-2-1-1", "rs-2-1", "tm-2-1", "Sunday Service Attendance", 1, { goal: 350, achieved: 320, yoy: 300 }),
           makeReportMetric("rm-2-1-2", "rs-2-1", "tm-2-2", "Midweek Service Attendance", 2, { goal: 200, achieved: 185, yoy: 170 }),
+          makeReportMetric("rm-2-1-3", "rs-2-1", "tm-2-3", "Average Program Quality Score", 3, { goal: 85, achieved: 82, yoy: 80 }, MetricFieldType.PERCENTAGE),
+          makeReportMetric("rm-2-1-4", "rs-2-1", "tm-2-4", "Online Attendance", 4, { goal: 100, achieved: 90, yoy: 70 }),
+          makeReportMetric("rm-2-1-5", "rs-2-1", "tm-2-5", "Total Unique Attendees", 5, { goal: 400, achieved: 375, yoy: 340 }),
+        ],
+      },
+      {
+        id: "rs-2-2",
+        reportId: "report-2",
+        templateSectionId: "tsec-4",
+        sectionName: "Salvation",
+        order: 2,
+        metrics: [
+          makeReportMetric("rm-2-2-1", "rs-2-2", "tm-4-1", "Salvations (Altar Call)", 1, { goal: 15, achieved: 12, yoy: 10 }),
+          makeReportMetric("rm-2-2-2", "rs-2-2", "tm-4-2", "Salvations (Small Group)", 2, { goal: 8, achieved: 6, yoy: 5 }),
+          makeReportMetric("rm-2-2-3", "rs-2-2", "tm-4-3", "Salvations (Outreach)", 3, { goal: 10, achieved: 9, yoy: 8 }),
+          makeReportMetric("rm-2-2-4", "rs-2-2", "tm-4-4", "Total Salvations", 4, { goal: 33, achieved: 27, yoy: 23 }),
+          makeReportMetric("rm-2-2-5", "rs-2-2", "tm-4-5", "First Timer Follow-ups", 5, { goal: 20, achieved: 18, yoy: 15 }),
+        ],
+      },
+      {
+        id: "rs-2-3",
+        reportId: "report-2",
+        templateSectionId: "tsec-5",
+        sectionName: "Small Group / Cell",
+        order: 3,
+        metrics: [
+          makeReportMetric("rm-2-3-1", "rs-2-3", "tm-5-1", "Total Cells Active", 1, { goal: 18, achieved: 16, yoy: 14 }),
+          makeReportMetric("rm-2-3-2", "rs-2-3", "tm-5-2", "Total Cell Meetings Held", 2, { goal: 18, achieved: 15, yoy: 12 }),
+          makeReportMetric("rm-2-3-3", "rs-2-3", "tm-5-3", "Total Cell Attendance", 3, { goal: 140, achieved: 125, yoy: 110 }),
+          makeReportMetric("rm-2-3-4", "rs-2-3", "tm-5-4", "Average Cell Attendance", 4, { goal: 8, achieved: 7, yoy: 7 }),
+        ],
+      },
+      {
+        id: "rs-2-4",
+        reportId: "report-2",
+        templateSectionId: "tsec-6",
+        sectionName: "Discipleship / Assimilation",
+        order: 4,
+        metrics: [
+          makeReportMetric("rm-2-4-1", "rs-2-4", "tm-6-1", "New Members Assimilated", 1, { goal: 10, achieved: 8, yoy: 6 }),
+          makeReportMetric("rm-2-4-2", "rs-2-4", "tm-6-2", "Discipleship Classes Enrollment", 2, { goal: 20, achieved: 18, yoy: 15 }),
+          makeReportMetric("rm-2-4-3", "rs-2-4", "tm-6-5", "Water Baptism Count", 3, { goal: 5, achieved: 4, yoy: 3 }),
+        ],
+      },
+      {
+        id: "rs-2-5",
+        reportId: "report-2",
+        templateSectionId: "tsec-8",
+        sectionName: "Partnership",
+        order: 5,
+        metrics: [
+          makeReportMetric("rm-2-5-1", "rs-2-5", "tm-8-1", "Total Partners", 1, { goal: 80, achieved: 75, yoy: 65 }),
+          makeReportMetric("rm-2-5-2", "rs-2-5", "tm-8-2", "New Partners This Week", 2, { goal: 3, achieved: 4, yoy: 2 }),
+          makeReportMetric("rm-2-5-3", "rs-2-5", "tm-8-3", "Partnership Amount", 3, { goal: 300000, achieved: 285000, yoy: 250000 }, MetricFieldType.CURRENCY),
         ],
       },
     ],
@@ -2901,7 +3455,7 @@ export const mockReports: PeriodicReport[] = [
     updatedAt: getDateString(195),
   },
 
-  // Report 6: London campus — REVIEWED (multi-campus coverage)
+  // Report 6: London campus — REVIEWED (multi-campus coverage, 7 sections)
   {
     id: "report-6",
     templateId: templateId,
@@ -2917,7 +3471,7 @@ export const mockReports: PeriodicReport[] = [
     reviewedById: "user-group-admin-1",
     deadline: getDateString(2),
     isDataEntry: false,
-    notes: "London campus weekly report — reviewed and awaiting lock.",
+    notes: "London campus weekly report — reviewed and awaiting lock. Strong attendance and NLP numbers.",
     sections: [
       {
         id: "rs-6-1",
@@ -2928,7 +3482,9 @@ export const mockReports: PeriodicReport[] = [
         metrics: [
           makeReportMetric("rm-6-1-1", "rs-6-1", "tm-2-1", "Sunday Service Attendance", 1, { goal: 250, achieved: 230, yoy: 200 }),
           makeReportMetric("rm-6-1-2", "rs-6-1", "tm-2-2", "Midweek Service Attendance", 2, { goal: 150, achieved: 135, yoy: 110 }),
-          makeReportMetric("rm-6-1-3", "rs-6-1", "tm-2-4", "Online Attendance", 3, { goal: 100, achieved: 120, yoy: 80 }),
+          makeReportMetric("rm-6-1-3", "rs-6-1", "tm-2-3", "Average Program Quality Score", 3, { goal: 88, achieved: 85, yoy: 82 }, MetricFieldType.PERCENTAGE),
+          makeReportMetric("rm-6-1-4", "rs-6-1", "tm-2-4", "Online Attendance", 4, { goal: 100, achieved: 120, yoy: 80 }),
+          makeReportMetric("rm-6-1-5", "rs-6-1", "tm-2-5", "Total Unique Attendees", 5, { goal: 300, achieved: 280, yoy: 250 }),
         ],
       },
       {
@@ -2940,18 +3496,70 @@ export const mockReports: PeriodicReport[] = [
         metrics: [
           makeReportMetric("rm-6-2-1", "rs-6-2", "tm-3-1", "NLP Enrollees", 1, { goal: 30, achieved: 28, yoy: 20 }),
           makeReportMetric("rm-6-2-2", "rs-6-2", "tm-3-2", "NLP Graduates", 2, { goal: 20, achieved: 18, yoy: 15 }),
+          makeReportMetric("rm-6-2-3", "rs-6-2", "tm-3-3", "NLP Attendance", 3, { goal: 28, achieved: 25, yoy: 18 }),
+          makeReportMetric("rm-6-2-4", "rs-6-2", "tm-3-4", "NLP Retention Rate", 4, { goal: 85, achieved: 89, yoy: 80 }, MetricFieldType.PERCENTAGE),
         ],
       },
       {
         id: "rs-6-3",
         reportId: "report-6",
-        templateSectionId: "tsec-8",
-        sectionName: "Partnership",
+        templateSectionId: "tsec-4",
+        sectionName: "Salvation",
         order: 3,
         metrics: [
-          makeReportMetric("rm-6-3-1", "rs-6-3", "tm-8-1", "Total Partners", 1, { goal: 100, achieved: 95, yoy: 80 }),
-          makeReportMetric("rm-6-3-2", "rs-6-3", "tm-8-2", "New Partners This Week", 2, { goal: 5, achieved: 7, yoy: 3 }),
-          makeReportMetric("rm-6-3-3", "rs-6-3", "tm-8-3", "Partnership Amount", 3, { goal: 5000, achieved: 4800, yoy: 4000 }, MetricFieldType.CURRENCY),
+          makeReportMetric("rm-6-3-1", "rs-6-3", "tm-4-1", "Salvations (Altar Call)", 1, { goal: 10, achieved: 8, yoy: 6 }),
+          makeReportMetric("rm-6-3-2", "rs-6-3", "tm-4-2", "Salvations (Small Group)", 2, { goal: 5, achieved: 4, yoy: 3 }),
+          makeReportMetric("rm-6-3-3", "rs-6-3", "tm-4-4", "Total Salvations", 3, { goal: 20, achieved: 15, yoy: 12 }),
+        ],
+      },
+      {
+        id: "rs-6-4",
+        reportId: "report-6",
+        templateSectionId: "tsec-5",
+        sectionName: "Small Group / Cell",
+        order: 4,
+        metrics: [
+          makeReportMetric("rm-6-4-1", "rs-6-4", "tm-5-1", "Total Cells Active", 1, { goal: 12, achieved: 10, yoy: 8 }),
+          makeReportMetric("rm-6-4-2", "rs-6-4", "tm-5-2", "Total Cell Meetings Held", 2, { goal: 12, achieved: 10, yoy: 8 }),
+          makeReportMetric("rm-6-4-3", "rs-6-4", "tm-5-3", "Total Cell Attendance", 3, { goal: 80, achieved: 72, yoy: 60 }),
+        ],
+      },
+      {
+        id: "rs-6-5",
+        reportId: "report-6",
+        templateSectionId: "tsec-7",
+        sectionName: "Next Gen (Kid-Zone + Stir House)",
+        order: 5,
+        metrics: [
+          makeReportMetric("rm-6-5-1", "rs-6-5", "tm-7-1-1", "Kid-Zone Attendance", 1, { goal: 40, achieved: 35, yoy: 30 }),
+          makeReportMetric("rm-6-5-2", "rs-6-5", "tm-7-1-2", "Kid-Zone New Registrations", 2, { goal: 5, achieved: 4, yoy: 3 }),
+          makeReportMetric("rm-6-5-3", "rs-6-5", "tm-7-2-1", "Stir House Attendance", 3, { goal: 30, achieved: 28, yoy: 22 }),
+          makeReportMetric("rm-6-5-4", "rs-6-5", "tm-7-2-2", "Stir House New Members", 4, { goal: 4, achieved: 3, yoy: 2 }),
+        ],
+      },
+      {
+        id: "rs-6-6",
+        reportId: "report-6",
+        templateSectionId: "tsec-8",
+        sectionName: "Partnership",
+        order: 6,
+        metrics: [
+          makeReportMetric("rm-6-6-1", "rs-6-6", "tm-8-1", "Total Partners", 1, { goal: 100, achieved: 95, yoy: 80 }),
+          makeReportMetric("rm-6-6-2", "rs-6-6", "tm-8-2", "New Partners This Week", 2, { goal: 5, achieved: 7, yoy: 3 }),
+          makeReportMetric("rm-6-6-3", "rs-6-6", "tm-8-3", "Partnership Amount", 3, { goal: 5000, achieved: 4800, yoy: 4000 }, MetricFieldType.CURRENCY),
+          makeReportMetric("rm-6-6-4", "rs-6-6", "tm-8-4", "Partnership Retention Rate", 4, { goal: 90, achieved: 88, yoy: 85 }, MetricFieldType.PERCENTAGE),
+        ],
+      },
+      {
+        id: "rs-6-7",
+        reportId: "report-6",
+        templateSectionId: "tsec-9",
+        sectionName: "HAEF (Harvesters Advancement & Empowerment Fund)",
+        order: 7,
+        metrics: [
+          makeReportMetric("rm-6-7-1", "rs-6-7", "tm-9-1", "HAEF Contributions", 1, { goal: 3000, achieved: 2800, yoy: 2500 }, MetricFieldType.CURRENCY),
+          makeReportMetric("rm-6-7-2", "rs-6-7", "tm-9-2", "HAEF Disbursements", 2, { goal: 1500, achieved: 1400, yoy: 1200 }, MetricFieldType.CURRENCY),
+          makeReportMetric("rm-6-7-3", "rs-6-7", "tm-9-3", "HAEF Beneficiaries", 3, { goal: 5, achieved: 4, yoy: 3 }),
         ],
       },
     ],

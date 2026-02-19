@@ -55,12 +55,44 @@ interface ReportDetail {
   sections: ReportSectionDetail[];
   createdAt: string;
   updatedAt: string;
-  template?: { name: string; version: number };
+  template?: {
+    id: string;
+    name: string;
+    version: number;
+    sections?: TemplateSectionMeta[];
+  };
   campus?: { name: string };
   submittedBy?: { firstName: string; lastName: string };
   reviewedBy?: { firstName: string; lastName: string };
   approvedBy?: { firstName: string; lastName: string };
   dataEntryBy?: { firstName: string; lastName: string };
+}
+
+/** Shape of a template section as returned by the API */
+interface TemplateSectionMeta {
+  id: string;
+  name: string;
+  order: number;
+  isRequired?: boolean;
+  description?: string;
+  metrics?: TemplateMetricMeta[];
+  subSections?: {
+    id: string;
+    name: string;
+    order: number;
+    metrics?: TemplateMetricMeta[];
+  }[];
+}
+
+interface TemplateMetricMeta {
+  id: string;
+  name: string;
+  fieldType: MetricFieldType;
+  isRequired: boolean;
+  capturesGoal: boolean;
+  capturesAchieved: boolean;
+  capturesYoY: boolean;
+  order: number;
 }
 
 interface ReportSectionDetail {
@@ -218,8 +250,135 @@ export default function ReportDetailPage() {
     (roleConfig?.canCreateReports ?? false);
 
   const periodLabel =
-    REPORT_PERIOD_LABELS[report.periodType as keyof typeof REPORT_PERIOD_LABELS] ??
-    report.periodType;
+    REPORT_PERIOD_LABELS[
+      report.periodType as keyof typeof REPORT_PERIOD_LABELS
+    ] ?? report.periodType;
+
+  // ── Build template metric lookup ──
+  const templateMetricMap = new Map<string, TemplateMetricMeta>();
+  const templateSections = report.template?.sections ?? [];
+  for (const ts of templateSections) {
+    for (const m of ts.metrics ?? []) {
+      templateMetricMap.set(m.id, m);
+    }
+    for (const ss of ts.subSections ?? []) {
+      for (const m of ss.metrics ?? []) {
+        templateMetricMap.set(m.id, m);
+      }
+    }
+  }
+
+  // Merge template sections with submitted data
+  const reportSectionsMap = new Map<string, ReportSectionDetail>();
+  for (const rs of report.sections) {
+    reportSectionsMap.set(rs.templateSectionId, rs);
+  }
+
+  type DisplaySection = {
+    templateSectionId: string;
+    sectionName: string;
+    order: number;
+    metrics: {
+      templateMetricId: string;
+      name: string;
+      fieldType: MetricFieldType;
+      isRequired: boolean;
+      capturesGoal: boolean;
+      capturesAchieved: boolean;
+      capturesYoY: boolean;
+      order: number;
+    }[];
+    values: {
+      templateMetricId: string;
+      monthlyGoal?: number;
+      monthlyAchieved?: number;
+      yoyGoal?: number;
+      textValue?: string;
+      computedPercentage?: number;
+      isLocked?: boolean;
+    }[];
+  };
+
+  const displaySections: DisplaySection[] = [];
+
+  if (templateSections.length > 0) {
+    for (const ts of [...templateSections].sort((a, b) => a.order - b.order)) {
+      const reportSection = reportSectionsMap.get(ts.id);
+      const allTemplateMetrics: TemplateMetricMeta[] = [];
+      for (const m of ts.metrics ?? []) allTemplateMetrics.push(m);
+      for (const ss of ts.subSections ?? []) {
+        for (const m of ss.metrics ?? []) allTemplateMetrics.push(m);
+      }
+      allTemplateMetrics.sort((a, b) => a.order - b.order);
+
+      const metricValuesMap = new Map<string, ReportMetricDetail>();
+      if (reportSection) {
+        for (const m of reportSection.metrics) {
+          metricValuesMap.set(m.templateMetricId, m);
+        }
+      }
+
+      displaySections.push({
+        templateSectionId: ts.id,
+        sectionName: ts.name,
+        order: ts.order,
+        metrics: allTemplateMetrics.map((tm, idx) => ({
+          templateMetricId: tm.id,
+          name: tm.name,
+          fieldType: tm.fieldType,
+          isRequired: tm.isRequired,
+          capturesGoal: tm.capturesGoal,
+          capturesAchieved: tm.capturesAchieved,
+          capturesYoY: tm.capturesYoY,
+          order: tm.order || idx + 1,
+        })),
+        values: allTemplateMetrics.map((tm) => {
+          const mv = metricValuesMap.get(tm.id);
+          return {
+            templateMetricId: tm.id,
+            monthlyGoal: mv?.monthlyGoal,
+            monthlyAchieved: mv?.monthlyAchieved,
+            yoyGoal: mv?.yoyGoal,
+            textValue: mv?.textValue,
+            computedPercentage: mv?.computedPercentage,
+            isLocked: mv?.isLocked,
+          };
+        }),
+      });
+    }
+  } else {
+    for (const section of [...report.sections].sort(
+      (a, b) => a.order - b.order
+    )) {
+      displaySections.push({
+        templateSectionId: section.templateSectionId,
+        sectionName: section.sectionName,
+        order: section.order,
+        metrics: section.metrics.map((m) => {
+          const tmMeta = templateMetricMap.get(m.templateMetricId);
+          return {
+            templateMetricId: m.templateMetricId,
+            name: m.metricName,
+            fieldType: m.fieldType,
+            isRequired: tmMeta?.isRequired ?? false,
+            capturesGoal: tmMeta?.capturesGoal ?? true,
+            capturesAchieved: tmMeta?.capturesAchieved ?? true,
+            capturesYoY: tmMeta?.capturesYoY ?? true,
+            order: m.order,
+          };
+        }),
+        values: section.metrics.map((m) => ({
+          templateMetricId: m.templateMetricId,
+          monthlyGoal: m.monthlyGoal,
+          monthlyAchieved: m.monthlyAchieved,
+          yoyGoal: m.yoyGoal,
+          textValue: m.textValue,
+          computedPercentage: m.computedPercentage,
+          isLocked: m.isLocked,
+        })),
+      });
+    }
+  }
 
   return (
     <DashboardLayout role={role}>
@@ -253,26 +412,20 @@ export default function ReportDetailPage() {
             {canEdit && (
               <Button
                 icon={<EditOutlined />}
-                onClick={() =>
-                  router.push(`/leader/reports/${reportId}/edit`)
-                }
+                onClick={() => router.push(`/leader/reports/${reportId}/edit`)}
               >
                 Edit
               </Button>
             )}
             <Button
               icon={<HistoryOutlined />}
-              onClick={() =>
-                router.push(`/leader/reports/${reportId}/history`)
-              }
+              onClick={() => router.push(`/leader/reports/${reportId}/history`)}
             >
               History
             </Button>
             <Button
               icon={<FileTextOutlined />}
-              onClick={() =>
-                router.push(`/leader/reports/${reportId}/edits`)
-              }
+              onClick={() => router.push(`/leader/reports/${reportId}/edits`)}
             >
               Edits
             </Button>
@@ -301,10 +454,7 @@ export default function ReportDetailPage() {
                 <div className="flex flex-col gap-6">
                   {/* Metadata */}
                   <Card size="small" title="Report Information">
-                    <Descriptions
-                      column={{ xs: 1, sm: 2, lg: 3 }}
-                      size="small"
-                    >
+                    <Descriptions column={{ xs: 1, sm: 2, lg: 3 }} size="small">
                       <Descriptions.Item label="Campus">
                         {report.campus?.name ?? "—"}
                       </Descriptions.Item>
@@ -350,41 +500,29 @@ export default function ReportDetailPage() {
                     </Descriptions>
                   </Card>
 
-                  {/* Section data (read-only view) */}
-                  {report.sections
-                    .sort((a, b) => a.order - b.order)
-                    .map((section) => (
+                  {/* Section data (read-only view) — powered by template metadata */}
+                  {displaySections.length > 0 ? (
+                    displaySections.map((ds) => (
                       <ReportSectionCard
-                        key={section.id}
+                        key={ds.templateSectionId}
                         section={{
-                          templateSectionId: section.templateSectionId,
-                          sectionName: section.sectionName,
-                          order: section.order,
-                          metrics: section.metrics.map((m) => ({
-                            templateMetricId: m.templateMetricId,
-                            name: m.metricName,
-                            fieldType: m.fieldType,
-                            isRequired: false,
-                            capturesGoal: m.monthlyGoal !== undefined,
-                            capturesAchieved:
-                              m.monthlyAchieved !== undefined,
-                            capturesYoY: m.yoyGoal !== undefined,
-                            order: m.order,
-                          })),
+                          templateSectionId: ds.templateSectionId,
+                          sectionName: ds.sectionName,
+                          order: ds.order,
+                          metrics: ds.metrics,
                         }}
-                        values={section.metrics.map((m) => ({
-                          templateMetricId: m.templateMetricId,
-                          monthlyGoal: m.monthlyGoal,
-                          monthlyAchieved: m.monthlyAchieved,
-                          yoyGoal: m.yoyGoal,
-                          textValue: m.textValue,
-                          computedPercentage: m.computedPercentage,
-                          isLocked: m.isLocked,
-                        }))}
+                        values={ds.values}
                         onMetricChange={() => {}}
                         readOnly
                       />
-                    ))}
+                    ))
+                  ) : (
+                    <Card size="small">
+                      <Text className="text-gray-400">
+                        No sections have been filled in yet.
+                      </Text>
+                    </Card>
+                  )}
 
                   {/* Notes */}
                   {report.notes && (
@@ -403,7 +541,8 @@ export default function ReportDetailPage() {
                   <ReportTimeline
                     events={events.map((e) => ({
                       id: e.id,
-                      eventType: e.eventType as import("@/lib/types").ReportEventType,
+                      eventType:
+                        e.eventType as import("@/lib/types").ReportEventType,
                       timestamp: e.timestamp,
                       actorName: e.actor
                         ? `${e.actor.firstName} ${e.actor.lastName}`

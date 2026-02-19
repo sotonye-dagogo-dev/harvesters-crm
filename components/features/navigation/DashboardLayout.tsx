@@ -120,7 +120,9 @@ export default function DashboardLayout({
   );
 
   // Convert a ROLE_CONFIG navItem to an Ant Design menu item
-  const toMenuItem = (item: RoleNavItem): NonNullable<MenuProps["items"]>[number] => {
+  const toMenuItem = (
+    item: RoleNavItem
+  ): NonNullable<MenuProps["items"]>[number] => {
     if (item.children && item.children.length > 0) {
       return {
         key: item.key,
@@ -149,7 +151,15 @@ export default function DashboardLayout({
     const items: MenuProps["items"] = navItems.map(toMenuItem);
 
     // Append Settings submenu with notifications, profile, and logout
-    const settingsPath = `${roleConfig.routePrefix}/settings`;
+    // Map each role prefix to its actual (unique) settings page
+    const settingsNotificationsPathMap: Record<string, string> = {
+      "/superadmin": "/superadmin/settings/system-notifications",
+      "/leader": "/leader/settings/meeting-reminders",
+      "/member": "/member/settings/preferences",
+    };
+    const settingsNotificationsHref =
+      settingsNotificationsPathMap[roleConfig.routePrefix] ||
+      `${roleConfig.routePrefix}/settings`;
     items.push({
       key: "settings",
       icon: <SettingOutlined />,
@@ -158,9 +168,7 @@ export default function DashboardLayout({
         {
           key: "notifications",
           icon: <BellOutlined />,
-          label: (
-            <Link href={`${settingsPath}/notifications`}>Notifications</Link>
-          ),
+          label: <Link href={settingsNotificationsHref}>Settings</Link>,
           onClick: handleMenuClick,
         },
         {

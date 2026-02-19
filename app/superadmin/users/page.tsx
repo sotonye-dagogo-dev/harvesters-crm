@@ -2,13 +2,14 @@
 
 import { useEffect, useState } from "react";
 import DashboardLayout from "@/components/features/navigation/DashboardLayout";
-import { Input, Select, Button as AntButton, message, Modal, Form } from "antd";
+import { Input, Select, Button as AntButton, message, Modal, Form, DatePicker } from "antd";
 import { PlusOutlined, SearchOutlined } from "@ant-design/icons";
 import UserCard from "@/components/features/users/UserCard";
 import EmptyState from "@/components/ui/EmptyState";
 import { CardSkeleton } from "@/components/ui/LoadingSkeleton";
 import { useRouter } from "next/navigation";
 import { UserRole } from "@/lib/types";
+import dayjs from "dayjs";
 
 const { Search } = Input;
 
@@ -20,9 +21,12 @@ export default function UsersPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [roleFilter, setRoleFilter] = useState<string>("ALL");
   const [showAssignModal, setShowAssignModal] = useState(false);
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [createLoading, setCreateLoading] = useState(false);
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
   const [groups, setGroups] = useState<Group[]>([]);
   const [form] = Form.useForm();
+  const [createForm] = Form.useForm();
 
   useEffect(() => {
     fetchUsers();
@@ -149,6 +153,41 @@ export default function UsersPage() {
     }
   };
 
+  const handleCreateUser = async (values: Record<string, unknown>) => {
+    setCreateLoading(true);
+    try {
+      const payload = {
+        ...values,
+        dateOfBirth: values.dateOfBirth
+          ? dayjs(values.dateOfBirth as string).format("YYYY-MM-DD")
+          : undefined,
+        age: values.dateOfBirth
+          ? dayjs().diff(dayjs(values.dateOfBirth as string), "year")
+          : undefined,
+      };
+
+      const response = await fetch("/api/users", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      if (response.ok) {
+        message.success("User created successfully");
+        setShowCreateModal(false);
+        createForm.resetFields();
+        fetchUsers();
+      } else {
+        const error = await response.json();
+        message.error(error.error || "Failed to create user");
+      }
+    } catch {
+      message.error("An error occurred while creating user");
+    } finally {
+      setCreateLoading(false);
+    }
+  };
+
   if (loading) {
     return (
       <DashboardLayout role={UserRole.SUPERADMIN}>
@@ -172,7 +211,7 @@ export default function UsersPage() {
           <AntButton
             type="primary"
             icon={<PlusOutlined />}
-            onClick={() => router.push("/superadmin/users/new")}
+            onClick={() => setShowCreateModal(true)}
           >
             Add User
           </AntButton>
@@ -222,7 +261,7 @@ export default function UsersPage() {
                 key={user.id}
                 user={user}
                 showActions
-                onEdit={(id) => router.push(`/users/${id}/edit`)}
+                onEdit={(id) => router.push(`/superadmin/users/${id}`)}
                 onDeactivate={handleDeactivate}
                 onAssignGroup={handleAssignGroup}
               />
@@ -268,6 +307,167 @@ export default function UsersPage() {
                 </AntButton>
                 <AntButton type="primary" htmlType="submit">
                   Assign
+                </AntButton>
+              </div>
+            </Form.Item>
+          </Form>
+        </Modal>
+
+        {/* Create User Modal */}
+        <Modal
+          title="Create New User"
+          open={showCreateModal}
+          onCancel={() => {
+            setShowCreateModal(false);
+            createForm.resetFields();
+          }}
+          footer={null}
+          width={640}
+        >
+          <Form
+            form={createForm}
+            layout="vertical"
+            onFinish={handleCreateUser}
+            initialValues={{
+              role: UserRole.MEMBER,
+              gender: "MALE",
+              maritalStatus: "SINGLE",
+              employmentStatus: "EMPLOYED",
+            }}
+            className="mt-4"
+          >
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4">
+              <Form.Item
+                name="firstName"
+                label="First Name"
+                rules={[{ required: true, message: "First name is required" }]}
+              >
+                <Input placeholder="Enter first name" size="large" />
+              </Form.Item>
+              <Form.Item
+                name="lastName"
+                label="Last Name"
+                rules={[{ required: true, message: "Last name is required" }]}
+              >
+                <Input placeholder="Enter last name" size="large" />
+              </Form.Item>
+            </div>
+            <Form.Item
+              name="email"
+              label="Email"
+              rules={[
+                { required: true, message: "Email is required" },
+                { type: "email", message: "Please enter a valid email" },
+              ]}
+            >
+              <Input placeholder="Enter email address" size="large" />
+            </Form.Item>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4">
+              <Form.Item
+                name="password"
+                label="Password"
+                rules={[
+                  { required: true, message: "Password is required" },
+                  { min: 8, message: "Password must be at least 8 characters" },
+                ]}
+              >
+                <Input.Password placeholder="Set password" size="large" />
+              </Form.Item>
+              <Form.Item
+                name="role"
+                label="Role"
+                rules={[{ required: true, message: "Role is required" }]}
+              >
+                <Select
+                  size="large"
+                  options={[
+                    { label: "Superadmin", value: UserRole.SUPERADMIN },
+                    { label: "Group Pastor", value: UserRole.GROUP_PASTOR },
+                    { label: "Group Admin", value: UserRole.GROUP_ADMIN },
+                    { label: "Campus Pastor", value: UserRole.CAMPUS_PASTOR },
+                    { label: "Campus Admin", value: UserRole.CAMPUS_ADMIN },
+                    { label: "Zonal Leader", value: UserRole.ZONAL_LEADER },
+                    { label: "HOD", value: UserRole.HOD },
+                    { label: "Small Group Leader", value: UserRole.SMALL_GROUP_LEADER },
+                    { label: "Cell Leader", value: UserRole.CELL_LEADER },
+                    { label: "Data Entry", value: UserRole.DATA_ENTRY },
+                    { label: "Member", value: UserRole.MEMBER },
+                  ]}
+                />
+              </Form.Item>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4">
+              <Form.Item
+                name="phone"
+                label="Phone"
+                rules={[{ required: true, message: "Phone number is required" }]}
+              >
+                <Input placeholder="Enter phone number" size="large" />
+              </Form.Item>
+              <Form.Item name="whatsappPhone" label="WhatsApp Phone">
+                <Input placeholder="Enter WhatsApp number" size="large" />
+              </Form.Item>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4">
+              <Form.Item
+                name="dateOfBirth"
+                label="Date of Birth"
+                rules={[{ required: true, message: "Date of birth is required" }]}
+              >
+                <DatePicker className="w-full" size="large" format="YYYY-MM-DD" />
+              </Form.Item>
+              <Form.Item
+                name="gender"
+                label="Gender"
+                rules={[{ required: true, message: "Gender is required" }]}
+              >
+                <Select
+                  size="large"
+                  options={[
+                    { label: "Male", value: "MALE" },
+                    { label: "Female", value: "FEMALE" },
+                  ]}
+                />
+              </Form.Item>
+            </div>
+            <Form.Item
+              name="address"
+              label="Address"
+              rules={[{ required: true, message: "Address is required" }]}
+            >
+              <Input placeholder="Enter address" size="large" />
+            </Form.Item>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4">
+              <Form.Item name="maritalStatus" label="Marital Status">
+                <Select
+                  size="large"
+                  options={[
+                    { label: "Single", value: "SINGLE" },
+                    { label: "Married", value: "MARRIED" },
+                    { label: "Divorced", value: "DIVORCED" },
+                    { label: "Widowed", value: "WIDOWED" },
+                  ]}
+                />
+              </Form.Item>
+              <Form.Item name="employmentStatus" label="Employment Status">
+                <Select
+                  size="large"
+                  options={[
+                    { label: "Student", value: "STUDENT" },
+                    { label: "Employed", value: "EMPLOYED" },
+                    { label: "Self-Employed", value: "SELF_EMPLOYED" },
+                    { label: "Unemployed", value: "UNEMPLOYED" },
+                  ]}
+                />
+              </Form.Item>
+            </div>
+            <Form.Item className="mb-0 mt-4">
+              <div className="flex justify-end gap-2">
+                <AntButton onClick={() => { setShowCreateModal(false); createForm.resetFields(); }}>
+                  Cancel
+                </AntButton>
+                <AntButton type="primary" htmlType="submit" loading={createLoading}>
+                  Create User
                 </AntButton>
               </div>
             </Form.Item>

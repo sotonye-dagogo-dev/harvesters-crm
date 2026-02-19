@@ -1791,6 +1791,8 @@ export const reportDb = {
 
     if (filters?.campusId)
       result = result.filter((r) => r.campusId === filters.campusId);
+    if (filters?.groupId)
+      result = result.filter((r) => r.groupId === filters.groupId);
     if (filters?.status)
       result = result.filter((r) => r.status === filters.status);
     if (filters?.periodType)

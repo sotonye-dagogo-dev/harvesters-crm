@@ -9,3 +9,5 @@ export { default as ReportActionBar } from "./ReportActionBar";
 export { default as ReportEditDiff } from "./ReportEditDiff";
 export { default as ReportForm } from "./ReportForm";
 export { default as ReportOverviewWidget } from "./ReportOverviewWidget";
+export { default as TemplateSectionBuilder } from "./TemplateSectionBuilder";
+export type { SectionInput, SubSectionInput, MetricInput } from "./TemplateSectionBuilder";

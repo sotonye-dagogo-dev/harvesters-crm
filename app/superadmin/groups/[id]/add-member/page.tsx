@@ -44,7 +44,7 @@ export default function AddMemberPage({ params }: { params: { id: string } }) {
     } catch (error) {
       message.error("Failed to load data");
       console.error(error);
-      router.push(`/groups/${params.id}`);
+      router.push(`/superadmin/groups/${params.id}`);
     } finally {
       setLoading(false);
     }
@@ -84,7 +84,7 @@ export default function AddMemberPage({ params }: { params: { id: string } }) {
       }
 
       message.success("Member added successfully");
-      router.push(`/groups/${params.id}`);
+      router.push(`/superadmin/groups/${params.id}`);
     } catch (error: unknown) {
       const errorMessage =
         error instanceof Error ? error.message : "Failed to add member";
@@ -123,7 +123,7 @@ export default function AddMemberPage({ params }: { params: { id: string } }) {
             </p>
             <Button
               type="primary"
-              onClick={() => router.push(`/groups/${params.id}`)}
+              onClick={() => router.push(`/superadmin/groups/${params.id}`)}
             >
               Back to Group
             </Button>
@@ -149,7 +149,7 @@ export default function AddMemberPage({ params }: { params: { id: string } }) {
             >
               <Button
                 type="primary"
-                onClick={() => router.push(`/groups/${params.id}`)}
+                onClick={() => router.push(`/superadmin/groups/${params.id}`)}
               >
                 Back to Group
               </Button>

@@ -74,14 +74,14 @@ export default function LeaderProfilePage() {
           <div className="flex gap-3">
             <AntButton
               icon={<LockOutlined />}
-              onClick={() => router.push("/leader/profile/change-password")}
+              onClick={() => router.push("/profile/change-password")}
             >
               Change Password
             </AntButton>
             <AntButton
               type="primary"
               icon={<EditOutlined />}
-              onClick={() => router.push("/leader/profile/edit")}
+              onClick={() => router.push("/profile/edit")}
             >
               Edit Profile
             </AntButton>

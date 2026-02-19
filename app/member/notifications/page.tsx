@@ -172,147 +172,61 @@ export default function NotificationsPage() {
     <DashboardLayout role={UserRole.MEMBER}>
       <div className="max-w-4xl mx-auto space-y-6">
         <div>
-        <div className="flex items-center justify-between mb-4">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-              <BellOutlined />
-              Notifications
-            </h1>
-            <p className="text-gray-600">
-              {unreadNotifications.length} unread notification
-              {unreadNotifications.length !== 1 ? "s" : ""}
-            </p>
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+                <BellOutlined />
+                Notifications
+              </h1>
+              <p className="text-gray-600">
+                {unreadNotifications.length} unread notification
+                {unreadNotifications.length !== 1 ? "s" : ""}
+              </p>
+            </div>
+            {unreadNotifications.length > 0 && (
+              <AntButton
+                type="primary"
+                icon={<CheckOutlined />}
+                onClick={handleMarkAllAsRead}
+              >
+                Mark All as Read
+              </AntButton>
+            )}
           </div>
-          {unreadNotifications.length > 0 && (
-            <AntButton
-              type="primary"
-              icon={<CheckOutlined />}
-              onClick={handleMarkAllAsRead}
-            >
-              Mark All as Read
-            </AntButton>
-          )}
         </div>
-      </div>
 
-      {notifications.length === 0 ? (
-        <EmptyState
-          icon={<BellOutlined />}
-          title="No Notifications"
-          description="You don&apos;t have any notifications yet. We&apos;ll notify you about meetings, requests, and important updates."
-        />
-      ) : (
-        <Tabs defaultActiveKey="all">
-          <TabPane tab={`All (${notifications.length})`} key="all">
-            <List
-              dataSource={notifications}
-              renderItem={(notification) => (
-                <List.Item
-                  key={notification.id}
-                  className={`cursor-pointer transition-colors hover:bg-gray-50 ${!notification.read ? "bg-blue-50" : ""}`}
-                  onClick={() => handleNotificationClick(notification)}
-                  actions={[
-                    !notification.read && (
-                      <AntButton
-                        key="mark-read"
-                        type="text"
-                        size="small"
-                        icon={<CheckOutlined />}
-                        loading={markingRead === notification.id}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleMarkAsRead(notification.id);
-                        }}
-                      >
-                        Mark Read
-                      </AntButton>
-                    ),
-                    <AntButton
-                      key="delete"
-                      type="text"
-                      danger
-                      size="small"
-                      icon={<DeleteOutlined />}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleDelete(notification.id);
-                      }}
-                    >
-                      Delete
-                    </AntButton>,
-                  ].filter(Boolean)}
-                >
-                  <List.Item.Meta
-                    avatar={
-                      <Avatar
-                        icon={getNotificationIcon(notification.type)}
-                        style={{
-                          backgroundColor: notification.read
-                            ? "#f0f0f0"
-                            : "#e6f7ff",
-                        }}
-                      />
-                    }
-                    title={
-                      <div className="flex items-center gap-2">
-                        <span
-                          className={!notification.read ? "font-semibold" : ""}
-                        >
-                          {notification.title}
-                        </span>
-                        {!notification.read && (
-                          <Tag color="blue" className="text-xs">
-                            New
-                          </Tag>
-                        )}
-                      </div>
-                    }
-                    description={
-                      <div>
-                        <p className="text-gray-700 mb-1">
-                          {notification.message}
-                        </p>
-                        <span className="text-sm text-gray-500">
-                          {format(
-                            new Date(notification.createdAt),
-                            "MMM d, yyyy 'at' h:mm a"
-                          )}
-                        </span>
-                      </div>
-                    }
-                  />
-                </List.Item>
-              )}
-            />
-          </TabPane>
-          <TabPane tab={`Unread (${unreadNotifications.length})`} key="unread">
-            {unreadNotifications.length === 0 ? (
-              <Empty
-                description="No unread notifications"
-                image={Empty.PRESENTED_IMAGE_SIMPLE}
-              />
-            ) : (
+        {notifications.length === 0 ? (
+          <EmptyState
+            icon={<BellOutlined />}
+            title="No Notifications"
+            description="You don't have any notifications yet. We'll notify you about meetings, requests, and important updates."
+          />
+        ) : (
+          <Tabs defaultActiveKey="all">
+            <TabPane tab={`All (${notifications.length})`} key="all">
               <List
-                dataSource={unreadNotifications}
+                dataSource={notifications}
                 renderItem={(notification) => (
                   <List.Item
                     key={notification.id}
-                    className="cursor-pointer transition-colors hover:bg-gray-50 bg-blue-50"
+                    className={`cursor-pointer transition-colors hover:bg-gray-50 ${!notification.read ? "bg-blue-50" : ""}`}
                     onClick={() => handleNotificationClick(notification)}
                     actions={[
-                      <AntButton
-                        key="mark-read"
-                        type="text"
-                        size="small"
-                        icon={<CheckOutlined />}
-                        loading={markingRead === notification.id}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleMarkAsRead(notification.id);
-                        }}
-                      >
-                        Mark Read
-                      </AntButton>,
+                      !notification.read && (
+                        <AntButton
+                          key="mark-read"
+                          type="text"
+                          size="small"
+                          icon={<CheckOutlined />}
+                          loading={markingRead === notification.id}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleMarkAsRead(notification.id);
+                          }}
+                        >
+                          Mark Read
+                        </AntButton>
+                      ),
                       <AntButton
                         key="delete"
                         type="text"
@@ -326,23 +240,33 @@ export default function NotificationsPage() {
                       >
                         Delete
                       </AntButton>,
-                    ]}
+                    ].filter(Boolean)}
                   >
                     <List.Item.Meta
                       avatar={
                         <Avatar
                           icon={getNotificationIcon(notification.type)}
-                          style={{ backgroundColor: "#e6f7ff" }}
+                          style={{
+                            backgroundColor: notification.read
+                              ? "#f0f0f0"
+                              : "#e6f7ff",
+                          }}
                         />
                       }
                       title={
                         <div className="flex items-center gap-2">
-                          <span className="font-semibold">
+                          <span
+                            className={
+                              !notification.read ? "font-semibold" : ""
+                            }
+                          >
                             {notification.title}
                           </span>
-                          <Tag color="blue" className="text-xs">
-                            New
-                          </Tag>
+                          {!notification.read && (
+                            <Tag color="blue" className="text-xs">
+                              New
+                            </Tag>
+                          )}
                         </div>
                       }
                       description={
@@ -362,10 +286,91 @@ export default function NotificationsPage() {
                   </List.Item>
                 )}
               />
-            )}
-          </TabPane>
-        </Tabs>
-      )}
+            </TabPane>
+            <TabPane
+              tab={`Unread (${unreadNotifications.length})`}
+              key="unread"
+            >
+              {unreadNotifications.length === 0 ? (
+                <Empty
+                  description="No unread notifications"
+                  image={Empty.PRESENTED_IMAGE_SIMPLE}
+                />
+              ) : (
+                <List
+                  dataSource={unreadNotifications}
+                  renderItem={(notification) => (
+                    <List.Item
+                      key={notification.id}
+                      className="cursor-pointer transition-colors hover:bg-gray-50 bg-blue-50"
+                      onClick={() => handleNotificationClick(notification)}
+                      actions={[
+                        <AntButton
+                          key="mark-read"
+                          type="text"
+                          size="small"
+                          icon={<CheckOutlined />}
+                          loading={markingRead === notification.id}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleMarkAsRead(notification.id);
+                          }}
+                        >
+                          Mark Read
+                        </AntButton>,
+                        <AntButton
+                          key="delete"
+                          type="text"
+                          danger
+                          size="small"
+                          icon={<DeleteOutlined />}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDelete(notification.id);
+                          }}
+                        >
+                          Delete
+                        </AntButton>,
+                      ]}
+                    >
+                      <List.Item.Meta
+                        avatar={
+                          <Avatar
+                            icon={getNotificationIcon(notification.type)}
+                            style={{ backgroundColor: "#e6f7ff" }}
+                          />
+                        }
+                        title={
+                          <div className="flex items-center gap-2">
+                            <span className="font-semibold">
+                              {notification.title}
+                            </span>
+                            <Tag color="blue" className="text-xs">
+                              New
+                            </Tag>
+                          </div>
+                        }
+                        description={
+                          <div>
+                            <p className="text-gray-700 mb-1">
+                              {notification.message}
+                            </p>
+                            <span className="text-sm text-gray-500">
+                              {format(
+                                new Date(notification.createdAt),
+                                "MMM d, yyyy 'at' h:mm a"
+                              )}
+                            </span>
+                          </div>
+                        }
+                      />
+                    </List.Item>
+                  )}
+                />
+              )}
+            </TabPane>
+          </Tabs>
+        )}
       </div>
     </DashboardLayout>
   );

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Button, Result } from "antd";
 import { HomeOutlined, DashboardOutlined } from "@ant-design/icons";
 import { useAuth } from "@/providers/AuthProvider";
+import { getDashboardRoute } from "@/lib/constants/roles";
 
 export default function NotFoundPage() {
   const { user } = useAuth();
@@ -18,7 +19,7 @@ export default function NotFoundPage() {
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             {user?.role ? (
               <>
-                <Link href={`/${user.role.toLowerCase()}/dashboard`}>
+                <Link href={user?.role ? getDashboardRoute(user.role) : "/"}>
                   <Button
                     type="primary"
                     size="large"

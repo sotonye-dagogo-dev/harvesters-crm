@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Table, Button, Space, Spin, message, Typography, Tag } from "antd";
 import {
   EyeOutlined,
@@ -43,6 +43,7 @@ interface ReportListItem {
 
 export default function SuperadminReportsPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { user } = useAuth();
   const role = user?.role;
 
@@ -51,7 +52,11 @@ export default function SuperadminReportsPage() {
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
   const [pageSize] = useState(20);
-  const [filters, setFilters] = useState<ReportFilters>({});
+  const [filters, setFilters] = useState<ReportFilters>(() => {
+    const groupId = searchParams.get("groupId");
+    return groupId ? { groupId } : {};
+  });
+  const [groupName, setGroupName] = useState<string | null>(null);
   const [campuses, setCampuses] = useState<Array<{ id: string; name: string }>>([]);
   const [templates, setTemplates] = useState<Array<{ id: string; name: string }>>([]);
 
@@ -65,6 +70,7 @@ export default function SuperadminReportsPage() {
       if (filters.periodType) params.set("periodType", filters.periodType);
       if (filters.campusId) params.set("campusId", filters.campusId);
       if (filters.templateId) params.set("templateId", filters.templateId);
+      if (filters.groupId) params.set("groupId", filters.groupId);
 
       const response = await fetch(`/api/reports?${params.toString()}`);
       if (!response.ok) throw new Error("Failed to fetch reports");
@@ -99,7 +105,16 @@ export default function SuperadminReportsPage() {
       }
     };
     fetchFilterData();
-  }, []);
+
+    // Resolve group name when a groupId filter is present from URL
+    const urlGroupId = searchParams.get("groupId");
+    if (urlGroupId) {
+      fetch(`/api/groups/${urlGroupId}`)
+        .then((r) => r.ok ? r.json() : null)
+        .then((d) => { if (d?.data?.name) setGroupName(d.data.name); })
+        .catch(() => {});
+    }
+  }, [searchParams]);
 
   useEffect(() => {
     fetchReports();
@@ -194,8 +209,35 @@ export default function SuperadminReportsPage() {
       <div className="flex flex-col gap-6">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div>
-            <Title level={3} className="!mb-0">All Reports</Title>
-            <Text className="text-gray-500">Church-wide report oversight and management</Text>
+            <Title level={3} className="!mb-0">
+              {filters.groupId && groupName
+                ? `Reports — ${groupName}`
+                : "All Reports"}
+            </Title>
+            <Text className="text-gray-500">
+              {filters.groupId
+                ? "Showing reports scoped to this group"
+                : "Church-wide report oversight and management"}
+            </Text>
+            {filters.groupId && (
+              <div className="mt-1">
+                <Button
+                  type="link"
+                  size="small"
+                  className="!p-0"
+                  onClick={() => {
+                    const { groupId: _, ...rest } = filters;
+                    setFilters(rest);
+                    setGroupName(null);
+                    setPage(1);
+                    // Remove groupId from URL
+                    router.replace("/superadmin/reports");
+                  }}
+                >
+                  Clear group filter
+                </Button>
+              </div>
+            )}
           </div>
           <Space>
             <Button icon={<ReloadOutlined />} onClick={fetchReports}>Refresh</Button>

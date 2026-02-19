@@ -13,6 +13,7 @@ import {
 import Button from "@/components/ui/Button";
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
 import { useAuth } from "@/providers/AuthProvider";
+import { getDashboardRoute } from "@/lib/constants/roles";
 
 export default function Home() {
   const { user } = useAuth();
@@ -21,8 +22,7 @@ export default function Home() {
   // Redirect authenticated users to their dashboard
   useEffect(() => {
     if (user?.role) {
-      const rolePath = user.role.toLowerCase();
-      router.push(`/${rolePath}/dashboard`);
+      router.push(getDashboardRoute(user.role));
     }
   }, [user, router]);
 
@@ -49,8 +49,7 @@ export default function Home() {
             </div>
 
             <h1 className="text-5xl text-gray-900 dark:text-gray-100 sm:text-6xl md:text-7xl font-bold leading-tight">
-              Harvesters
-              {" "}
+              Harvesters{" "}
               <span className="text-transparent bg-clip-text bg-linear-to-r from-green-600 to-emerald-600 dark:from-green-400 dark:to-emerald-400">
                 Small Groups CRM
               </span>

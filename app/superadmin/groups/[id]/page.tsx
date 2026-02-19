@@ -229,9 +229,7 @@ export default function GroupDetailsPage() {
             <div className="flex flex-wrap gap-2">
               <AntButton
                 icon={<BarChartOutlined />}
-                onClick={() =>
-                  router.push(`/superadmin/groups/${groupId}/reports`)
-                }
+                onClick={() => router.push(`/superadmin/reports?groupId=${groupId}`)}
               >
                 View Reports
               </AntButton>

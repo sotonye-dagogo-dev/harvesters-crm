@@ -6,6 +6,7 @@ import { useAuth } from "@/providers/AuthProvider";
 import { Badge, Dropdown, List, Button as AntButton, Empty } from "antd";
 import { BellOutlined, CheckOutlined } from "@ant-design/icons";
 import { format } from "date-fns";
+import { getRoleConfig } from "@/lib/constants/roles";
 
 export default function NotificationBell() {
   const router = useRouter();
@@ -77,13 +78,31 @@ export default function NotificationBell() {
       stopPropagation: () => {},
     } as React.MouseEvent);
 
-    const rolePath = user?.role?.toLowerCase() || "member";
+    // Derive the correct route prefix for this user's role
+    const routePrefix = user?.role
+      ? getRoleConfig(user.role).routePrefix
+      : "/member";
 
-    // Navigate based on type
+    // Navigate based on notification type with role-aware destinations
     if (notification.type === "MEETING_REMINDER" && notification.relatedId) {
-      router.push(`/${rolePath}/meetings/${notification.relatedId}`);
+      if (routePrefix === "/leader") {
+        // Leaders have a meeting detail page
+        router.push(`/leader/meetings/${notification.relatedId}`);
+      } else if (routePrefix === "/member") {
+        // Members have a read-only meeting detail page
+        router.push(`/member/meetings/${notification.relatedId}`);
+      } else {
+        // Superadmin and other roles fall back to dashboard
+        router.push(`${routePrefix}/dashboard`);
+      }
     } else if (notification.type === "REQUEST_STATUS") {
-      router.push(`/${rolePath}/membership-requests`);
+      if (routePrefix === "/leader") {
+        router.push("/leader/requests");
+      } else if (routePrefix === "/superadmin") {
+        router.push("/superadmin/members");
+      } else {
+        router.push("/member/membership-requests");
+      }
     } else if (notification.type === "ROLE_ASSIGNMENT") {
       router.push("/profile");
     }
@@ -98,8 +117,15 @@ export default function NotificationBell() {
             type="link"
             size="small"
             onClick={() => {
-              const rolePath = user?.role?.toLowerCase() || "member";
-              router.push(`/${rolePath}/notifications`);
+              const routePrefix = user?.role
+                ? getRoleConfig(user.role).routePrefix
+                : "/member";
+              // Only members have a dedicated notifications page
+              if (routePrefix === "/member") {
+                router.push("/member/notifications");
+              } else {
+                router.push(`${routePrefix}/dashboard`);
+              }
             }}
           >
             View All

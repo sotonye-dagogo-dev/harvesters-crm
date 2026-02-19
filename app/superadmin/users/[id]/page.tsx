@@ -13,6 +13,8 @@ import {
   message,
   Modal,
   Select,
+  Form,
+  Input,
 } from "antd";
 import {
   EditOutlined,
@@ -28,7 +30,10 @@ export default function UserDetailsPage() {
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState<User | null>(null);
   const [roleModalOpen, setRoleModalOpen] = useState(false);
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const [editLoading, setEditLoading] = useState(false);
   const [newRole, setNewRole] = useState<string>("");
+  const [editForm] = Form.useForm();
 
   useEffect(() => {
     fetchUser();
@@ -109,6 +114,44 @@ export default function UserDetailsPage() {
     });
   };
 
+  const openEditModal = () => {
+    if (!user) return;
+    editForm.setFieldsValue({
+      firstName: user.firstName,
+      lastName: user.lastName,
+      phone: user.phone,
+      whatsappPhone: user.whatsappPhone || "",
+      location: user.location || "",
+      maritalStatus: user.maritalStatus || undefined,
+      employmentStatus: user.employmentStatus || undefined,
+    });
+    setEditModalOpen(true);
+  };
+
+  const handleEditUser = async (values: Record<string, unknown>) => {
+    setEditLoading(true);
+    try {
+      const response = await fetch(`/api/users/${userId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(values),
+      });
+
+      if (response.ok) {
+        message.success("User updated successfully");
+        setEditModalOpen(false);
+        fetchUser();
+      } else {
+        const error = await response.json();
+        message.error(error.error || "Failed to update user");
+      }
+    } catch {
+      message.error("An error occurred while updating user");
+    } finally {
+      setEditLoading(false);
+    }
+  };
+
   if (loading) {
     return (
       <DashboardLayout role={UserRole.SUPERADMIN}>
@@ -137,7 +180,7 @@ export default function UserDetailsPage() {
           <div className="flex gap-2">
             <AntButton
               icon={<EditOutlined />}
-              onClick={() => router.push(`/users/${userId}/edit`)}
+              onClick={openEditModal}
             >
               Edit
             </AntButton>
@@ -248,6 +291,90 @@ export default function UserDetailsPage() {
               ]}
             />
           </div>
+        </Modal>
+
+        {/* Edit User Modal */}
+        <Modal
+          title={`Edit User — ${user.firstName} ${user.lastName}`}
+          open={editModalOpen}
+          onCancel={() => { setEditModalOpen(false); editForm.resetFields(); }}
+          footer={null}
+          width={560}
+        >
+          <Form
+            form={editForm}
+            layout="vertical"
+            onFinish={handleEditUser}
+            className="mt-4"
+          >
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4">
+              <Form.Item
+                name="firstName"
+                label="First Name"
+                rules={[{ required: true, message: "First name is required" }]}
+              >
+                <Input size="large" />
+              </Form.Item>
+              <Form.Item
+                name="lastName"
+                label="Last Name"
+                rules={[{ required: true, message: "Last name is required" }]}
+              >
+                <Input size="large" />
+              </Form.Item>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4">
+              <Form.Item
+                name="phone"
+                label="Phone"
+                rules={[{ required: true, message: "Phone is required" }]}
+              >
+                <Input size="large" />
+              </Form.Item>
+              <Form.Item name="whatsappPhone" label="WhatsApp Phone">
+                <Input size="large" />
+              </Form.Item>
+            </div>
+            <Form.Item name="location" label="Location">
+              <Input size="large" />
+            </Form.Item>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4">
+              <Form.Item name="maritalStatus" label="Marital Status">
+                <Select
+                  size="large"
+                  allowClear
+                  options={[
+                    { label: "Single", value: "SINGLE" },
+                    { label: "Married", value: "MARRIED" },
+                    { label: "Divorced", value: "DIVORCED" },
+                    { label: "Widowed", value: "WIDOWED" },
+                  ]}
+                />
+              </Form.Item>
+              <Form.Item name="employmentStatus" label="Employment Status">
+                <Select
+                  size="large"
+                  allowClear
+                  options={[
+                    { label: "Student", value: "STUDENT" },
+                    { label: "Employed", value: "EMPLOYED" },
+                    { label: "Self-Employed", value: "SELF_EMPLOYED" },
+                    { label: "Unemployed", value: "UNEMPLOYED" },
+                  ]}
+                />
+              </Form.Item>
+            </div>
+            <Form.Item className="mb-0 mt-4">
+              <div className="flex justify-end gap-2">
+                <AntButton onClick={() => { setEditModalOpen(false); editForm.resetFields(); }}>
+                  Cancel
+                </AntButton>
+                <AntButton type="primary" htmlType="submit" loading={editLoading}>
+                  Save Changes
+                </AntButton>
+              </div>
+            </Form.Item>
+          </Form>
         </Modal>
       </div>
     </DashboardLayout>

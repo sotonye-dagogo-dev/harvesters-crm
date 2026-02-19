@@ -117,7 +117,7 @@ export default function EditGroupPage({ params }: { params: { id: string } }) {
             </p>
             <Button
               type="primary"
-              onClick={() => router.push(`/groups/${params.id}`)}
+              onClick={() => router.push(`/superadmin/groups/${params.id}`)}
             >
               Back to Group
             </Button>

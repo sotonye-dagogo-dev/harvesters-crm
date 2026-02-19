@@ -53,12 +53,44 @@ interface ReportDetail {
   sections: ReportSectionDetail[];
   createdAt: string;
   updatedAt: string;
-  template?: { name: string; version: number };
+  template?: {
+    id: string;
+    name: string;
+    version: number;
+    sections?: TemplateSectionMeta[];
+  };
   campus?: { name: string };
   submittedBy?: { firstName: string; lastName: string };
   reviewedBy?: { firstName: string; lastName: string };
   approvedBy?: { firstName: string; lastName: string };
   dataEntryBy?: { firstName: string; lastName: string };
+}
+
+/** Shape of a template section as returned by the API */
+interface TemplateSectionMeta {
+  id: string;
+  name: string;
+  order: number;
+  isRequired?: boolean;
+  description?: string;
+  metrics?: TemplateMetricMeta[];
+  subSections?: {
+    id: string;
+    name: string;
+    order: number;
+    metrics?: TemplateMetricMeta[];
+  }[];
+}
+
+interface TemplateMetricMeta {
+  id: string;
+  name: string;
+  fieldType: MetricFieldType;
+  isRequired: boolean;
+  capturesGoal: boolean;
+  capturesAchieved: boolean;
+  capturesYoY: boolean;
+  order: number;
 }
 
 interface ReportSectionDetail {
@@ -102,7 +134,6 @@ export default function SuperadminReportDetailPage() {
   const reportId = params.id as string;
   const { user } = useAuth();
   const role = user?.role;
-
 
   const [report, setReport] = useState<ReportDetail | null>(null);
   const [events, setEvents] = useState<ReportEventDetail[]>([]);
@@ -180,7 +211,9 @@ export default function SuperadminReportDetailPage() {
   if (loading || !role) {
     return (
       <DashboardLayout role={role}>
-        <div className="flex justify-center items-center h-64"><Spin size="large" /></div>
+        <div className="flex justify-center items-center h-64">
+          <Spin size="large" />
+        </div>
       </DashboardLayout>
     );
   }
@@ -191,7 +224,10 @@ export default function SuperadminReportDetailPage() {
         <div className="text-center py-16">
           <Text className="text-gray-500">Report not found</Text>
           <br />
-          <Button onClick={() => router.push("/superadmin/reports")} className="mt-4">
+          <Button
+            onClick={() => router.push("/superadmin/reports")}
+            className="mt-4"
+          >
             Back to Reports
           </Button>
         </div>
@@ -201,8 +237,141 @@ export default function SuperadminReportDetailPage() {
 
   const isPastDeadline = new Date(report.deadline) < new Date();
   const periodLabel =
-    REPORT_PERIOD_LABELS[report.periodType as keyof typeof REPORT_PERIOD_LABELS] ??
-    report.periodType;
+    REPORT_PERIOD_LABELS[
+      report.periodType as keyof typeof REPORT_PERIOD_LABELS
+    ] ?? report.periodType;
+
+  // ── Build template metric lookup ──
+  // Map templateMetricId → TemplateMetricMeta from the template definition
+  const templateMetricMap = new Map<string, TemplateMetricMeta>();
+  const templateSections = report.template?.sections ?? [];
+  for (const ts of templateSections) {
+    for (const m of ts.metrics ?? []) {
+      templateMetricMap.set(m.id, m);
+    }
+    for (const ss of ts.subSections ?? []) {
+      for (const m of ss.metrics ?? []) {
+        templateMetricMap.set(m.id, m);
+      }
+    }
+  }
+
+  // Build the section list to display: merge template sections with submitted data.
+  // If a report section exists for a template section, use its data;
+  // otherwise, create an empty section from the template definition.
+  const reportSectionsMap = new Map<string, ReportSectionDetail>();
+  for (const rs of report.sections) {
+    reportSectionsMap.set(rs.templateSectionId, rs);
+  }
+
+  type DisplaySection = {
+    templateSectionId: string;
+    sectionName: string;
+    order: number;
+    metrics: {
+      templateMetricId: string;
+      name: string;
+      fieldType: MetricFieldType;
+      isRequired: boolean;
+      capturesGoal: boolean;
+      capturesAchieved: boolean;
+      capturesYoY: boolean;
+      order: number;
+    }[];
+    values: {
+      templateMetricId: string;
+      monthlyGoal?: number;
+      monthlyAchieved?: number;
+      yoyGoal?: number;
+      textValue?: string;
+      computedPercentage?: number;
+      isLocked?: boolean;
+    }[];
+  };
+
+  const displaySections: DisplaySection[] = [];
+
+  if (templateSections.length > 0) {
+    // We have template metadata — overlay template onto report data
+    for (const ts of [...templateSections].sort((a, b) => a.order - b.order)) {
+      const reportSection = reportSectionsMap.get(ts.id);
+      // Collect all template metrics (including from subSections)
+      const allTemplateMetrics: TemplateMetricMeta[] = [];
+      for (const m of ts.metrics ?? []) allTemplateMetrics.push(m);
+      for (const ss of ts.subSections ?? []) {
+        for (const m of ss.metrics ?? []) allTemplateMetrics.push(m);
+      }
+      allTemplateMetrics.sort((a, b) => a.order - b.order);
+
+      const metricValuesMap = new Map<string, ReportMetricDetail>();
+      if (reportSection) {
+        for (const m of reportSection.metrics) {
+          metricValuesMap.set(m.templateMetricId, m);
+        }
+      }
+
+      displaySections.push({
+        templateSectionId: ts.id,
+        sectionName: ts.name,
+        order: ts.order,
+        metrics: allTemplateMetrics.map((tm, idx) => ({
+          templateMetricId: tm.id,
+          name: tm.name,
+          fieldType: tm.fieldType,
+          isRequired: tm.isRequired,
+          capturesGoal: tm.capturesGoal,
+          capturesAchieved: tm.capturesAchieved,
+          capturesYoY: tm.capturesYoY,
+          order: tm.order || idx + 1,
+        })),
+        values: allTemplateMetrics.map((tm) => {
+          const mv = metricValuesMap.get(tm.id);
+          return {
+            templateMetricId: tm.id,
+            monthlyGoal: mv?.monthlyGoal,
+            monthlyAchieved: mv?.monthlyAchieved,
+            yoyGoal: mv?.yoyGoal,
+            textValue: mv?.textValue,
+            computedPercentage: mv?.computedPercentage,
+            isLocked: mv?.isLocked,
+          };
+        }),
+      });
+    }
+  } else {
+    // Fallback: no template metadata available — use report sections directly
+    for (const section of [...report.sections].sort(
+      (a, b) => a.order - b.order
+    )) {
+      displaySections.push({
+        templateSectionId: section.templateSectionId,
+        sectionName: section.sectionName,
+        order: section.order,
+        metrics: section.metrics.map((m) => {
+          const tmMeta = templateMetricMap.get(m.templateMetricId);
+          return {
+            templateMetricId: m.templateMetricId,
+            name: m.metricName,
+            fieldType: m.fieldType,
+            isRequired: tmMeta?.isRequired ?? false,
+            capturesGoal: tmMeta?.capturesGoal ?? true,
+            capturesAchieved: tmMeta?.capturesAchieved ?? true,
+            capturesYoY: tmMeta?.capturesYoY ?? true,
+            order: m.order,
+          };
+        }),
+        values: section.metrics.map((m) => ({
+          templateMetricId: m.templateMetricId,
+          monthlyGoal: m.monthlyGoal,
+          monthlyAchieved: m.monthlyAchieved,
+          yoyGoal: m.yoyGoal,
+          textValue: m.textValue,
+          computedPercentage: m.computedPercentage,
+          isLocked: m.isLocked,
+        })),
+      });
+    }
+  }
 
   return (
     <DashboardLayout role={role}>
@@ -235,13 +404,17 @@ export default function SuperadminReportDetailPage() {
           <div className="flex gap-2">
             <Button
               icon={<HistoryOutlined />}
-              onClick={() => router.push(`/superadmin/reports/${reportId}/history`)}
+              onClick={() =>
+                router.push(`/superadmin/reports/${reportId}/history`)
+              }
             >
               History
             </Button>
             <Button
               icon={<FileTextOutlined />}
-              onClick={() => router.push(`/superadmin/reports/${reportId}/edits`)}
+              onClick={() =>
+                router.push(`/superadmin/reports/${reportId}/edits`)
+              }
             >
               Edits
             </Button>
@@ -277,7 +450,8 @@ export default function SuperadminReportDetailPage() {
                         {periodLabel} — {report.periodYear}
                       </Descriptions.Item>
                       <Descriptions.Item label="Template">
-                        {report.template?.name ?? "—"} (v{report.template?.version ?? "?"})
+                        {report.template?.name ?? "—"} (v
+                        {report.template?.version ?? "?"})
                       </Descriptions.Item>
                       <Descriptions.Item label="Submitted By">
                         {report.submittedBy
@@ -286,12 +460,14 @@ export default function SuperadminReportDetailPage() {
                       </Descriptions.Item>
                       {report.approvedBy && (
                         <Descriptions.Item label="Approved By">
-                          {report.approvedBy.firstName} {report.approvedBy.lastName}
+                          {report.approvedBy.firstName}{" "}
+                          {report.approvedBy.lastName}
                         </Descriptions.Item>
                       )}
                       {report.reviewedBy && (
                         <Descriptions.Item label="Reviewed By">
-                          {report.reviewedBy.firstName} {report.reviewedBy.lastName}
+                          {report.reviewedBy.firstName}{" "}
+                          {report.reviewedBy.lastName}
                         </Descriptions.Item>
                       )}
                       <Descriptions.Item label="Created">
@@ -312,40 +488,29 @@ export default function SuperadminReportDetailPage() {
                     </Descriptions>
                   </Card>
 
-                  {/* Sections read-only */}
-                  {report.sections
-                    .sort((a, b) => a.order - b.order)
-                    .map((section) => (
+                  {/* Sections read-only — powered by template metadata */}
+                  {displaySections.length > 0 ? (
+                    displaySections.map((ds) => (
                       <ReportSectionCard
-                        key={section.id}
+                        key={ds.templateSectionId}
                         section={{
-                          templateSectionId: section.templateSectionId,
-                          sectionName: section.sectionName,
-                          order: section.order,
-                          metrics: section.metrics.map((m) => ({
-                            templateMetricId: m.templateMetricId,
-                            name: m.metricName,
-                            fieldType: m.fieldType,
-                            isRequired: false,
-                            capturesGoal: m.monthlyGoal !== undefined,
-                            capturesAchieved: m.monthlyAchieved !== undefined,
-                            capturesYoY: m.yoyGoal !== undefined,
-                            order: m.order,
-                          })),
+                          templateSectionId: ds.templateSectionId,
+                          sectionName: ds.sectionName,
+                          order: ds.order,
+                          metrics: ds.metrics,
                         }}
-                        values={section.metrics.map((m) => ({
-                          templateMetricId: m.templateMetricId,
-                          monthlyGoal: m.monthlyGoal,
-                          monthlyAchieved: m.monthlyAchieved,
-                          yoyGoal: m.yoyGoal,
-                          textValue: m.textValue,
-                          computedPercentage: m.computedPercentage,
-                          isLocked: m.isLocked,
-                        }))}
+                        values={ds.values}
                         onMetricChange={() => {}}
                         readOnly
                       />
-                    ))}
+                    ))
+                  ) : (
+                    <Card size="small">
+                      <Text className="text-gray-400">
+                        No sections have been filled in yet.
+                      </Text>
+                    </Card>
+                  )}
 
                   {report.notes && (
                     <Card size="small" title="Notes">

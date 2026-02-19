@@ -2,6 +2,7 @@
 
 import { UserRole } from "@/lib/types";
 import { useState, useEffect, useCallback } from "react";
+import { useAuth } from "@/providers/AuthProvider";
 import DashboardLayout from "@/components/features/navigation/DashboardLayout";
 import {
   Card,
@@ -37,6 +38,7 @@ interface ParticipationStats {
 }
 
 export default function MemberHistoryPage() {
+  const { user } = useAuth();
   const [history, setHistory] = useState<MeetingHistory[]>([]);
   const [stats, setStats] = useState<ParticipationStats>({
     totalMeetings: 0,
@@ -49,7 +51,7 @@ export default function MemberHistoryPage() {
   const fetchHistory = useCallback(async () => {
     try {
       setLoading(true);
-      const response = await fetch("/api/analytics/members/me");
+      const response = await fetch(`/api/analytics/members/${user?.id}`);
       if (response.ok) {
         const data = await response.json();
         const analyticsData = data.data;
@@ -88,7 +90,7 @@ export default function MemberHistoryPage() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [user?.id]);
 
   useEffect(() => {
     fetchHistory();

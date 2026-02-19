@@ -31,7 +31,7 @@ export const ROLE_CONFIG: Record<UserRole, RoleConfig> = {
             { key: "users", label: "Users", icon: "TeamOutlined", path: "/superadmin/users" },
             { key: "groups", label: "Groups", icon: "ApartmentOutlined", path: "/superadmin/groups" },
             { key: "members", label: "Members", icon: "UserOutlined", path: "/superadmin/members" },
-            { key: "meetings", label: "Meetings", icon: "CalendarOutlined", path: "/superadmin/meetings" },
+            { key: "meetings", label: "Meetings", icon: "CalendarOutlined", path: "/superadmin/meetings/broadcast" },
             {
                 key: "reports",
                 label: "Reports",

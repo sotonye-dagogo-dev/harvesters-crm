@@ -36,6 +36,7 @@ export async function GET(request: NextRequest) {
         const page = parseInt(sp.get("page") || "1");
         const pageSize = parseInt(sp.get("pageSize") || "20");
         const campusId = sp.get("campusId") || undefined;
+        const groupId = sp.get("groupId") || undefined;
         const status = (sp.get("status") as ReportStatus) || undefined;
         const periodYear = sp.get("periodYear")
             ? parseInt(sp.get("periodYear")!)
@@ -51,6 +52,7 @@ export async function GET(request: NextRequest) {
 
         let results = reportDb.findAll({
             campusId,
+            groupId,
             status,
             periodYear,
             periodMonth,
@@ -69,6 +71,7 @@ export async function GET(request: NextRequest) {
         // Re-fetch if any were auto-approved (status changed)
         results = reportDb.findAll({
             campusId,
+            groupId,
             status,
             periodYear,
             periodMonth,

@@ -113,167 +113,167 @@ export default function MembershipRequestsPage() {
           <AntButton
             type="primary"
             icon={<PlusOutlined />}
-            onClick={() => router.push("/membership-requests/new")}
+            onClick={() => router.push("/member/membership-requests/new")}
             size="large"
           >
             New Request
           </AntButton>
         </div>
 
-      {/* Pending Requests */}
-      {pendingRequests.length > 0 && (
-        <div className="mb-8">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-            <ClockCircleOutlined className="text-blue-500" />
-            Pending Requests ({pendingRequests.length})
-          </h2>
-          <div className="space-y-4">
-            {pendingRequests.map((request) => (
-              <Card
-                key={request.id}
-                className="hover:shadow-md transition-shadow"
-              >
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-3 mb-2">
-                      <Tag
-                        color={request.type === "JOIN" ? "blue" : "orange"}
-                        className="text-sm"
-                      >
-                        {request.type}
-                      </Tag>
-                      <Tag icon={<ClockCircleOutlined />} color="default">
-                        Pending
-                      </Tag>
-                    </div>
-                    <h3 className="text-lg font-medium text-gray-900 mb-2">
-                      {request.toGroup?.name}
-                    </h3>
-                    {request.message && (
-                      <p className="text-gray-600 mb-3">{request.message}</p>
-                    )}
-                    <div className="flex items-center gap-4 text-sm text-gray-500">
-                      <span>
-                        Requested:{" "}
-                        {format(
-                          new Date(request.requestedAt),
-                          "MMM d, yyyy 'at' h:mm a"
-                        )}
-                      </span>
-                      {request.fromGroup && (
-                        <span>From: {request.fromGroup.name}</span>
+        {/* Pending Requests */}
+        {pendingRequests.length > 0 && (
+          <div className="mb-8">
+            <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+              <ClockCircleOutlined className="text-blue-500" />
+              Pending Requests ({pendingRequests.length})
+            </h2>
+            <div className="space-y-4">
+              {pendingRequests.map((request) => (
+                <Card
+                  key={request.id}
+                  className="hover:shadow-md transition-shadow"
+                >
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-3 mb-2">
+                        <Tag
+                          color={request.type === "JOIN" ? "blue" : "orange"}
+                          className="text-sm"
+                        >
+                          {request.type}
+                        </Tag>
+                        <Tag icon={<ClockCircleOutlined />} color="default">
+                          Pending
+                        </Tag>
+                      </div>
+                      <h3 className="text-lg font-medium text-gray-900 mb-2">
+                        {request.toGroup?.name}
+                      </h3>
+                      {request.message && (
+                        <p className="text-gray-600 mb-3">{request.message}</p>
                       )}
-                    </div>
-                  </div>
-                  <AntButton
-                    danger
-                    icon={<DeleteOutlined />}
-                    onClick={() => handleCancelRequest(request.id)}
-                  >
-                    Cancel
-                  </AntButton>
-                </div>
-              </Card>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Processed Requests */}
-      {processedRequests.length > 0 && (
-        <div className="mb-8">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">
-            Request History ({processedRequests.length})
-          </h2>
-          <div className="space-y-4">
-            {processedRequests.map((request) => (
-              <Card
-                key={request.id}
-                className={`${request.status === "APPROVED" ? "border-green-200 bg-green-50" : "border-red-200 bg-red-50"}`}
-              >
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-3 mb-2">
-                      <Tag
-                        color={request.type === "JOIN" ? "blue" : "orange"}
-                        className="text-sm"
-                      >
-                        {request.type}
-                      </Tag>
-                      <Tag
-                        icon={
-                          request.status === "APPROVED" ? (
-                            <CheckCircleOutlined />
-                          ) : (
-                            <CloseCircleOutlined />
-                          )
-                        }
-                        color={
-                          request.status === "APPROVED" ? "success" : "error"
-                        }
-                      >
-                        {request.status}
-                      </Tag>
-                    </div>
-                    <h3 className="text-lg font-medium text-gray-900 mb-2">
-                      {request.toGroup?.name}
-                    </h3>
-                    {request.message && (
-                      <p className="text-gray-600 mb-3">{request.message}</p>
-                    )}
-                    <div className="flex flex-col gap-1 text-sm text-gray-600">
-                      <span>
-                        Requested:{" "}
-                        {format(
-                          new Date(request.requestedAt),
-                          "MMM d, yyyy 'at' h:mm a"
-                        )}
-                      </span>
-                      {request.respondedAt && (
+                      <div className="flex items-center gap-4 text-sm text-gray-500">
                         <span>
-                          {request.status === "APPROVED"
-                            ? "Approved"
-                            : "Rejected"}
-                          :{" "}
+                          Requested:{" "}
                           {format(
-                            new Date(request.respondedAt),
+                            new Date(request.requestedAt),
                             "MMM d, yyyy 'at' h:mm a"
                           )}
                         </span>
+                        {request.fromGroup && (
+                          <span>From: {request.fromGroup.name}</span>
+                        )}
+                      </div>
+                    </div>
+                    <AntButton
+                      danger
+                      icon={<DeleteOutlined />}
+                      onClick={() => handleCancelRequest(request.id)}
+                    >
+                      Cancel
+                    </AntButton>
+                  </div>
+                </Card>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Processed Requests */}
+        {processedRequests.length > 0 && (
+          <div className="mb-8">
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">
+              Request History ({processedRequests.length})
+            </h2>
+            <div className="space-y-4">
+              {processedRequests.map((request) => (
+                <Card
+                  key={request.id}
+                  className={`${request.status === "APPROVED" ? "border-green-200 bg-green-50" : "border-red-200 bg-red-50"}`}
+                >
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-3 mb-2">
+                        <Tag
+                          color={request.type === "JOIN" ? "blue" : "orange"}
+                          className="text-sm"
+                        >
+                          {request.type}
+                        </Tag>
+                        <Tag
+                          icon={
+                            request.status === "APPROVED" ? (
+                              <CheckCircleOutlined />
+                            ) : (
+                              <CloseCircleOutlined />
+                            )
+                          }
+                          color={
+                            request.status === "APPROVED" ? "success" : "error"
+                          }
+                        >
+                          {request.status}
+                        </Tag>
+                      </div>
+                      <h3 className="text-lg font-medium text-gray-900 mb-2">
+                        {request.toGroup?.name}
+                      </h3>
+                      {request.message && (
+                        <p className="text-gray-600 mb-3">{request.message}</p>
                       )}
-                      {request.respondedBy && (
+                      <div className="flex flex-col gap-1 text-sm text-gray-600">
                         <span>
-                          By: {request.respondedBy.firstName}{" "}
-                          {request.respondedBy.lastName}
+                          Requested:{" "}
+                          {format(
+                            new Date(request.requestedAt),
+                            "MMM d, yyyy 'at' h:mm a"
+                          )}
                         </span>
-                      )}
+                        {request.respondedAt && (
+                          <span>
+                            {request.status === "APPROVED"
+                              ? "Approved"
+                              : "Rejected"}
+                            :{" "}
+                            {format(
+                              new Date(request.respondedAt),
+                              "MMM d, yyyy 'at' h:mm a"
+                            )}
+                          </span>
+                        )}
+                        {request.respondedBy && (
+                          <span>
+                            By: {request.respondedBy.firstName}{" "}
+                            {request.respondedBy.lastName}
+                          </span>
+                        )}
+                      </div>
                     </div>
                   </div>
-                </div>
-              </Card>
-            ))}
+                </Card>
+              ))}
+            </div>
           </div>
-        </div>
-      )}
+        )}
 
-      {/* Empty State */}
-      {requests.length === 0 && (
-        <EmptyState
-          icon={<ClockCircleOutlined />}
-          title="No Membership Requests"
-          description="You haven&apos;t submitted any membership requests yet. Click the button below to request to join or transfer to a group."
-          action={
-            <AntButton
-              type="primary"
-              icon={<PlusOutlined />}
-              onClick={() => router.push("/member/membership-requests/new")}
-              size="large"
-            >
-              Submit Request
-            </AntButton>
-          }
-        />
-      )}
+        {/* Empty State */}
+        {requests.length === 0 && (
+          <EmptyState
+            icon={<ClockCircleOutlined />}
+            title="No Membership Requests"
+            description="You haven't submitted any membership requests yet. Click the button below to request to join or transfer to a group."
+            action={
+              <AntButton
+                type="primary"
+                icon={<PlusOutlined />}
+                onClick={() => router.push("/member/membership-requests/new")}
+                size="large"
+              >
+                Submit Request
+              </AntButton>
+            }
+          />
+        )}
       </div>
     </DashboardLayout>
   );
