@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { Suspense, useEffect, useState, useCallback } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Table, Button, Space, Spin, message, Typography, Tag } from "antd";
 import {
@@ -18,7 +18,10 @@ import {
   ReportFilterBar,
 } from "@/components/features/reports";
 import type { ReportFilters } from "@/components/features/reports";
-import { REPORT_PERIOD_LABELS, REPORT_STATUS_LABELS } from "@/lib/constants/reports";
+import {
+  REPORT_PERIOD_LABELS,
+  REPORT_STATUS_LABELS,
+} from "@/lib/constants/reports";
 
 const { Title, Text } = Typography;
 
@@ -41,7 +44,7 @@ interface ReportListItem {
   submittedBy?: { firstName: string; lastName: string };
 }
 
-export default function SuperadminReportsPage() {
+function SuperadminReportsPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { user } = useAuth();
@@ -57,8 +60,12 @@ export default function SuperadminReportsPage() {
     return groupId ? { groupId } : {};
   });
   const [groupName, setGroupName] = useState<string | null>(null);
-  const [campuses, setCampuses] = useState<Array<{ id: string; name: string }>>([]);
-  const [templates, setTemplates] = useState<Array<{ id: string; name: string }>>([]);
+  const [campuses, setCampuses] = useState<Array<{ id: string; name: string }>>(
+    []
+  );
+  const [templates, setTemplates] = useState<
+    Array<{ id: string; name: string }>
+  >([]);
 
   const fetchReports = useCallback(async () => {
     setLoading(true);
@@ -94,11 +101,21 @@ export default function SuperadminReportsPage() {
         ]);
         if (campusRes.ok) {
           const d = await campusRes.json();
-          setCampuses((d.data || []).map((c: { id: string; name: string }) => ({ id: c.id, name: c.name })));
+          setCampuses(
+            (d.data || []).map((c: { id: string; name: string }) => ({
+              id: c.id,
+              name: c.name,
+            }))
+          );
         }
         if (templateRes.ok) {
           const d = await templateRes.json();
-          setTemplates((d.data || []).map((t: { id: string; name: string }) => ({ id: t.id, name: t.name })));
+          setTemplates(
+            (d.data || []).map((t: { id: string; name: string }) => ({
+              id: t.id,
+              name: t.name,
+            }))
+          );
         }
       } catch {
         // non-critical
@@ -110,8 +127,10 @@ export default function SuperadminReportsPage() {
     const urlGroupId = searchParams.get("groupId");
     if (urlGroupId) {
       fetch(`/api/groups/${urlGroupId}`)
-        .then((r) => r.ok ? r.json() : null)
-        .then((d) => { if (d?.data?.name) setGroupName(d.data.name); })
+        .then((r) => (r.ok ? r.json() : null))
+        .then((d) => {
+          if (d?.data?.name) setGroupName(d.data.name);
+        })
         .catch(() => {});
     }
   }, [searchParams]);
@@ -136,17 +155,24 @@ export default function SuperadminReportsPage() {
           </Text>
         </div>
       ),
-      sorter: (a, b) => a.periodYear * 100 + a.periodMonth - (b.periodYear * 100 + b.periodMonth),
+      sorter: (a, b) =>
+        a.periodYear * 100 +
+        a.periodMonth -
+        (b.periodYear * 100 + b.periodMonth),
     },
     {
       title: "Template",
       key: "template",
-      render: (_, r) => <Text className="text-sm">{r.template?.name ?? "—"}</Text>,
+      render: (_, r) => (
+        <Text className="text-sm">{r.template?.name ?? "—"}</Text>
+      ),
     },
     {
       title: "Campus",
       key: "campus",
-      render: (_, r) => <Text className="text-sm">{r.campus?.name ?? "—"}</Text>,
+      render: (_, r) => (
+        <Text className="text-sm">{r.campus?.name ?? "—"}</Text>
+      ),
     },
     {
       title: "Status",
@@ -162,18 +188,21 @@ export default function SuperadminReportsPage() {
       title: "Deadline",
       key: "deadline",
       render: (_, r) => <ReportDeadlineCountdown deadline={r.deadline} />,
-      sorter: (a, b) => new Date(a.deadline).getTime() - new Date(b.deadline).getTime(),
+      sorter: (a, b) =>
+        new Date(a.deadline).getTime() - new Date(b.deadline).getTime(),
     },
     {
       title: "Submitted By",
       key: "submittedBy",
       render: (_, r) =>
-        r.submittedBy ? `${r.submittedBy.firstName} ${r.submittedBy.lastName}` : "—",
+        r.submittedBy
+          ? `${r.submittedBy.firstName} ${r.submittedBy.lastName}`
+          : "—",
     },
     {
       title: "Data Entry",
       key: "dataEntry",
-      render: (_, r) => r.isDataEntry ? <Tag color="orange">DE</Tag> : null,
+      render: (_, r) => (r.isDataEntry ? <Tag color="orange">DE</Tag> : null),
       width: 80,
     },
     {
@@ -199,7 +228,9 @@ export default function SuperadminReportsPage() {
   if (!role) {
     return (
       <DashboardLayout>
-        <div className="flex justify-center items-center h-64"><Spin size="large" /></div>
+        <div className="flex justify-center items-center h-64">
+          <Spin size="large" />
+        </div>
       </DashboardLayout>
     );
   }
@@ -240,8 +271,13 @@ export default function SuperadminReportsPage() {
             )}
           </div>
           <Space>
-            <Button icon={<ReloadOutlined />} onClick={fetchReports}>Refresh</Button>
-            <Button icon={<FileTextOutlined />} onClick={() => router.push("/superadmin/reports/templates")}>
+            <Button icon={<ReloadOutlined />} onClick={fetchReports}>
+              Refresh
+            </Button>
+            <Button
+              icon={<FileTextOutlined />}
+              onClick={() => router.push("/superadmin/reports/templates")}
+            >
               Templates
             </Button>
           </Space>
@@ -249,7 +285,10 @@ export default function SuperadminReportsPage() {
 
         <ReportFilterBar
           filters={filters}
-          onChange={(f) => { setFilters(f); setPage(1); }}
+          onChange={(f) => {
+            setFilters(f);
+            setPage(1);
+          }}
           campuses={campuses}
           templates={templates}
           showCampusFilter
@@ -276,5 +315,21 @@ export default function SuperadminReportsPage() {
         />
       </div>
     </DashboardLayout>
+  );
+}
+
+export default function SuperadminReportsPage() {
+  return (
+    <Suspense
+      fallback={
+        <DashboardLayout>
+          <div className="flex justify-center items-center h-64">
+            <Spin size="large" />
+          </div>
+        </DashboardLayout>
+      }
+    >
+      <SuperadminReportsPageContent />
+    </Suspense>
   );
 }
