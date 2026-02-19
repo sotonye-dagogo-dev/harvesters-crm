@@ -14,7 +14,7 @@ export async function GET(
 ) {
     try {
         const { id } = await params;
-        const { user, error } = await getAuthenticatedUser();
+        const { error } = await getAuthenticatedUser();
         if (error) return error;
 
         const template = reportTemplateDb.findById(id);
@@ -23,7 +23,7 @@ export async function GET(
         const versions = reportTemplateVersionDb.findByTemplateId(id);
 
         // Sort by version descending (most recent first)
-        const sorted = [...versions].sort((a, b) => b.version - a.version);
+        const sorted = [...versions].sort((a, b) => b.versionNumber - a.versionNumber);
 
         return successResponse(sorted);
     } catch (err) {

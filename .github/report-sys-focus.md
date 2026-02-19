@@ -408,7 +408,7 @@ The system must be designed so that **roles, hierarchy levels, and report templa
   - `REPORT_UPDATE_REQUEST_APPROVED`, `REPORT_UPDATE_REQUEST_REJECTED`
   - `REPORT_DEADLINE_REMINDER`, `REPORT_DEADLINE_FINAL`
 
-- [x] **R7.2** Implement notification triggers in report workflow operations (6/9 routes wired; remaining: approve, request-edits, edit-reject):
+- [x] **R7.2** Implement notification triggers in report workflow operations (all 11 routes wired):
   - Report submitted → Notify Campus Pastor
   - Edits requested → Notify Campus Admin (submitter)
   - Report approved → Notify Campus Admin + Group Admin
@@ -416,7 +416,7 @@ The system must be designed so that **roles, hierarchy levels, and report templa
   - Edit approved/rejected → Notify edit submitter
   - Update request approved/rejected → Notify requester
 
-- [ ] **R7.3** Implement deadline reminder logic:
+- [x] **R7.3** Implement deadline reminder logic:
   - Track report deadlines
   - At 24 hours remaining → First reminder notification
   - Every 6 hours after → Escalating reminders
@@ -434,7 +434,7 @@ The system must be designed so that **roles, hierarchy levels, and report templa
   - Track locked state per metric: `isLocked`, `lockedAt`, `lockedById`
   - Prevent modification of locked fields at API level (FR22)
 
-- [ ] **R8.2** Implement Superadmin override:
+- [x] **R8.2** Implement Superadmin override:
   - Superadmin can unlock any field (FR23)
   - Logs override event in audit trail
 
@@ -444,12 +444,12 @@ The system must be designed so that **roles, hierarchy levels, and report templa
   - Report-level summary: overall completion, performance score
   - Trend calculation: compare current period to previous period
 
-- [ ] **R8.4** Implement submission validation:
+- [x] **R8.4** Implement submission validation:
   - Prevent submission if required fields are incomplete (FR17)
   - Range validation on numeric fields (FR14)
   - Return detailed validation errors listing which fields are incomplete
 
-- [ ] **R8.5** Implement auto-approve on deadline:
+- [x] **R8.5** Implement auto-approve on deadline:
   - If deadline passes and Campus Pastor hasn't acted, auto-approve (FR29)
   - Record auto-approve event in audit trail
 

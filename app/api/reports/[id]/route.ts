@@ -11,6 +11,7 @@ import {
 import { USER_ROLES } from "@/lib/constants";
 import { updateReportSchema } from "@/lib/utils/validation";
 import { ReportStatus } from "@/lib/types";
+import { shouldAutoApprove } from "@/lib/utils/reportFieldUtils";
 
 // Roles that can view any report
 const WIDE_VIEW_ROLES: string[] = [
@@ -28,6 +29,12 @@ export async function GET(
         const { id } = await params;
         const { user, error } = await getAuthenticatedUser();
         if (error) return error;
+
+        // Check for auto-approve before returning (FR29)
+        const rawReport = reportDb.findById(id);
+        if (rawReport && shouldAutoApprove(rawReport.status, rawReport.deadline)) {
+            reportDb.autoApprove(id);
+        }
 
         const report = reportDb.getWithDetails(id);
         if (!report) return notFoundResponse("Report not found");

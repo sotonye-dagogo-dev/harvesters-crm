@@ -77,11 +77,15 @@ export default function MembersPage() {
       render: (role: UserRole) => {
         const colors: Record<UserRole, string> = {
           [UserRole.SUPERADMIN]: "red",
+          [UserRole.GROUP_PASTOR]: "volcano",
+          [UserRole.GROUP_ADMIN]: "orange",
+          [UserRole.CAMPUS_PASTOR]: "gold",
           [UserRole.ZONAL_LEADER]: "purple",
           [UserRole.CAMPUS_ADMIN]: "geekblue",
           [UserRole.HOD]: "blue",
           [UserRole.SMALL_GROUP_LEADER]: "cyan",
           [UserRole.CELL_LEADER]: "lime",
+          [UserRole.DATA_ENTRY]: "magenta",
           [UserRole.MEMBER]: "green",
         };
         return <Tag color={colors[role]}>{role}</Tag>;

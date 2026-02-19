@@ -10,6 +10,7 @@ import {
 import { USER_ROLES } from "@/lib/constants";
 import { createReportSchema } from "@/lib/utils/validation";
 import { ReportStatus } from "@/lib/types";
+import { shouldAutoApprove } from "@/lib/utils/reportFieldUtils";
 
 // ── Roles allowed to create reports ──
 const REPORT_CREATORS: string[] = [
@@ -49,6 +50,24 @@ export async function GET(request: NextRequest) {
         const search = sp.get("search") || undefined;
 
         let results = reportDb.findAll({
+            campusId,
+            status,
+            periodYear,
+            periodMonth,
+            submittedById,
+            isDataEntry,
+            search,
+        });
+
+        // Auto-approve submitted reports past their deadline (FR29)
+        for (const report of results) {
+            if (shouldAutoApprove(report.status, report.deadline)) {
+                reportDb.autoApprove(report.id);
+            }
+        }
+
+        // Re-fetch if any were auto-approved (status changed)
+        results = reportDb.findAll({
             campusId,
             status,
             periodYear,

@@ -10,6 +10,7 @@ import {
 } from "@/lib/utils/api";
 import { USER_ROLES } from "@/lib/constants";
 import { ReportEditStatus } from "@/lib/types";
+import { sendReportEditSubmittedNotification } from "@/lib/utils/notificationHelpers";
 
 // POST /api/reports/:id/edits/:editId/submit — Submit a draft edit for review
 export async function POST(
@@ -17,7 +18,7 @@ export async function POST(
     { params }: { params: Promise<{ id: string; editId: string }> }
 ) {
     try {
-        const { editId } = await params;
+        const { id: reportId, editId } = await params;
         const { user, error } = await getAuthenticatedUser();
         if (error) return error;
 
@@ -37,6 +38,9 @@ export async function POST(
 
         const updated = reportEditDb.submit(editId);
         if (!updated) return badRequestResponse("Failed to submit edit.");
+
+        // Notify approvers
+        await sendReportEditSubmittedNotification(editId, reportId, user!.id);
 
         return successResponse(updated, "Edit submitted for review");
     } catch (err) {

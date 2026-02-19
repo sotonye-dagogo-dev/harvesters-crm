@@ -20,6 +20,10 @@ import {
   ReportEditStatus,
   ReportUpdateRequestStatus,
 } from "@/lib/types";
+import { DEPARTMENT_CONFIG } from "@/lib/constants/roles";
+
+// Hierarchy reference: ORG_HIERARCHY_CONFIG in roles.ts defines
+// Cell → Zone → Area → Community → District → Campus → Group
 
 // ============================================================================
 // HELPER FUNCTIONS
@@ -40,30 +44,45 @@ function getDateOnly(daysAgo: number = 0): string {
 }
 
 // ============================================================================
-// MOCK ZONES (TOP-LEVEL ORGANIZATIONAL UNITS)
-// Zones are above Campuses. A Zone spans a geographic region and may
-// contain multiple Campuses.
+// MOCK "GROUPS" (TOP-LEVEL ORGANIZATIONAL UNITS)
+// ============================================================================
+// Per ORG_HIERARCHY_CONFIG in roles.ts the hierarchy is:
+//   Cell → Zone → Area → Community → District → Campus → Group
+// "Group" is the top-level entity wrapping multiple campuses.
+//
+// mockOrgGroups is the canonical source for top-level entities.
+// The OrgGroup interface extends OrgUnitBase and is the proper top-level type.
 // ============================================================================
 
-export const mockZones: Zone[] = [
+export const mockOrgGroups: OrgGroup[] = [
   {
     id: "zone-lagos",
-    name: "Lagos Zone",
+    name: "Harvesters Nigeria",
     description:
-      "Covers all Harvesters campuses across Lagos, Nigeria — the heartbeat of the ministry.",
-    region: "Southwest Nigeria",
-    leaderId: "user-zonal-leader-1",
+      "Harvesters International Christian Centre — Nigeria. Founded 13 Dec 2003 by Pastor Bolaji Idowu. " +
+      "Campuses across Lagos, Ibadan, Abuja and beyond — the heartbeat of the ministry.",
+    orgLevel: "GROUP",
+    parentId: null,
+    parentLevel: null,
+    country: "Nigeria",
+    region: "Nigeria",
+    leaderId: "user-group-pastor-1",
     isActive: true,
     createdAt: getDateString(365),
     updatedAt: getDateString(1),
   },
   {
     id: "zone-uk",
-    name: "United Kingdom Zone",
+    name: "Harvesters United Kingdom",
     description:
-      "Covers all Harvesters campuses across the United Kingdom, pioneering thriving churches abroad.",
+      "Harvesters International Christian Centre — United Kingdom. " +
+      "Pioneering thriving churches across London, Birmingham, Glasgow and Manchester.",
+    orgLevel: "GROUP",
+    parentId: null,
+    parentLevel: null,
+    country: "United Kingdom",
     region: "United Kingdom",
-    leaderId: "user-zonal-leader-2",
+    leaderId: "user-group-pastor-2",
     isActive: true,
     createdAt: getDateString(300),
     updatedAt: getDateString(2),
@@ -71,22 +90,30 @@ export const mockZones: Zone[] = [
 ];
 
 // ============================================================================
-// MOCK CAMPUSES (BELONG TO ZONES)
-// Each campus sits inside a zone and serves a specific location.
+// MOCK CAMPUSES (BELONG TO GROUPS via parentId)
+// Real Harvesters International Christian Centre campus locations.
+// Addresses, phone numbers and coordinates sourced from harvestersng.org.
 // ============================================================================
 
 export const mockCampuses: Campus[] = [
+  // ── NIGERIA ─────────────────────────────────────────────────────────
   {
     id: "campus-lagos-lekki",
     name: "Lekki Campus",
     description:
       "Harvesters International Christian Centre — Lekki, the flagship campus in Lagos.",
+    orgLevel: "CAMPUS",
+    parentId: "zone-lagos",
+    parentLevel: "GROUP",
     location: "Lekki, Lagos",
+    address: "Plot 22, Providence Street, 2nd Roundabout, Lekki Phase 1, Lagos 106104",
     country: "Nigeria",
-    zoneId: "zone-lagos",
     adminId: "user-campus-admin-1",
+    latitude: 6.4314,
+    longitude: 3.4696,
+    phone: "+2349139341859",
     isActive: true,
-    createdAt: getDateString(350),
+    createdAt: getDateString(365),
     updatedAt: getDateString(1),
   },
   {
@@ -94,39 +121,144 @@ export const mockCampuses: Campus[] = [
     name: "Gbagada Campus",
     description:
       "Harvesters International Christian Centre — Gbagada, serving the mainland community.",
+    orgLevel: "CAMPUS",
+    parentId: "zone-lagos",
+    parentLevel: "GROUP",
     location: "Gbagada, Lagos",
+    address: "Plot 5-7 Gbagada Oshodi Expressway, Gbagada, Lagos 100234",
     country: "Nigeria",
-    zoneId: "zone-lagos",
     adminId: "user-campus-admin-2",
+    latitude: 6.5550,
+    longitude: 3.3834,
+    phone: "+2349044010211",
     isActive: true,
     createdAt: getDateString(290),
     updatedAt: getDateString(2),
   },
   {
-    id: "campus-london",
-    name: "London Campus",
+    id: "campus-lagos-anthony",
+    name: "Anthony Campus",
     description:
-      "Harvesters International Christian Centre — London, pioneering thriving church life in the UK.",
-    location: "London",
-    country: "United Kingdom",
-    zoneId: "zone-uk",
-    adminId: "user-campus-admin-3",
+      "Harvesters International Christian Centre — Anthony, a vibrant Lagos mainland campus.",
+    orgLevel: "CAMPUS",
+    parentId: "zone-lagos",
+    parentLevel: "GROUP",
+    location: "Anthony, Lagos",
+    address: "Northgate Arena, 308 Ikorodu Road, Anthony, Lagos 101232",
+    country: "Nigeria",
+    adminId: "user-campus-admin-4",
+    latitude: 6.5622,
+    longitude: 3.3695,
+    phone: "+2349044010211",
+    isActive: true,
+    createdAt: getDateString(270),
+    updatedAt: getDateString(3),
+  },
+  {
+    id: "campus-abuja",
+    name: "Abuja Campus",
+    description:
+      "Harvesters International Christian Centre — Abuja, bringing the experience to Nigeria's capital.",
+    orgLevel: "CAMPUS",
+    parentId: "zone-lagos",
+    parentLevel: "GROUP",
+    location: "Life Camp, Abuja",
+    address: "De Franklin Apartments, 1 Paul Muotolum Crescent, Old Gwarimpa Road, Life Camp Roundabout, Abuja FCT 900108",
+    country: "Nigeria",
+    adminId: "user-campus-admin-5",
+    latitude: 9.0579,
+    longitude: 7.4515,
+    phone: "+2349139341857",
+    isActive: true,
+    createdAt: getDateString(250),
+    updatedAt: getDateString(4),
+  },
+  {
+    id: "campus-ibadan",
+    name: "Ibadan Campus",
+    description:
+      "Harvesters International Christian Centre — Ibadan, extending impact across Oyo State.",
+    orgLevel: "CAMPUS",
+    parentId: "zone-lagos",
+    parentLevel: "GROUP",
+    location: "Jericho, Ibadan",
+    address: "The Citron Events Centre, Opp Citron Hotel, Kudeti Avenue, Onireke, Jericho, Ibadan, Oyo 200132",
+    country: "Nigeria",
+    adminId: "user-campus-admin-6",
+    latitude: 7.3887,
+    longitude: 3.8684,
+    phone: "+2349044010211",
     isActive: true,
     createdAt: getDateString(200),
     updatedAt: getDateString(5),
   },
+  // ── UNITED KINGDOM ──────────────────────────────────────────────────
+  {
+    id: "campus-london",
+    name: "London Campus",
+    description:
+      "Harvesters International Christian Centre — London, pioneering thriving church life in the UK.",
+    orgLevel: "CAMPUS",
+    parentId: "zone-uk",
+    parentLevel: "GROUP",
+    location: "Greenwich Peninsula, London",
+    address: "Cineworld at the O2, Peninsula Square, London SE10 0DX",
+    country: "United Kingdom",
+    adminId: "user-campus-admin-3",
+    latitude: 51.5030,
+    longitude: 0.0032,
+    phone: undefined,
+    isActive: true,
+    createdAt: getDateString(200),
+    updatedAt: getDateString(5),
+  },
+  {
+    id: "campus-birmingham",
+    name: "Birmingham Campus",
+    description:
+      "Harvesters International Christian Centre — Birmingham, reaching the West Midlands.",
+    orgLevel: "CAMPUS",
+    parentId: "zone-uk",
+    parentLevel: "GROUP",
+    location: "Birmingham",
+    address: "Eastside Rooms, 2 Woodcock Street, Birmingham B7 4BL",
+    country: "United Kingdom",
+    adminId: "user-campus-admin-7",
+    latitude: 52.4813,
+    longitude: -1.8908,
+    phone: undefined,
+    isActive: true,
+    createdAt: getDateString(150),
+    updatedAt: getDateString(6),
+  },
 ];
 
 // ============================================================================
-// MOCK DEPARTMENTS (BELONG TO CAMPUSES)
-// zoneId is denormalized for convenient filtering.
+// MOCK DEPARTMENTS (CONFIG-DRIVEN)
 // ============================================================================
+// Each mock department references a DEPARTMENT_CONFIG key for its name and
+// description. To add a new department type: add one entry in
+// DEPARTMENT_CONFIG (roles.ts), then optionally add a campus instance here.
+// ============================================================================
+
+/** Helper: look up a DepartmentConfig by key, falling back to the key itself */
+function deptName(key: string): string {
+  const cfg = DEPARTMENT_CONFIG.find((d) => d.key === key);
+  return cfg?.name ?? key;
+}
+function deptDesc(key: string): string {
+  const cfg = DEPARTMENT_CONFIG.find((d) => d.key === key);
+  return cfg?.description ?? "";
+}
 
 export const mockDepartments: Department[] = [
   {
     id: "dept-youth",
-    name: "Youth Ministry",
-    description: "Ministry focused on young adults and teenagers.",
+    name: deptName("youth"),
+    description: deptDesc("youth"),
+    orgLevel: "DEPARTMENT",
+    parentId: "campus-lagos-lekki",
+    parentLevel: "CAMPUS",
     campusId: "campus-lagos-lekki",
     zoneId: "zone-lagos",
     hodId: "user-hod-1",
@@ -138,6 +270,9 @@ export const mockDepartments: Department[] = [
     id: "dept-women",
     name: "Women's Ministry",
     description: "Ministry focused on empowering women in faith and life.",
+    orgLevel: "DEPARTMENT",
+    parentId: "campus-lagos-lekki",
+    parentLevel: "CAMPUS",
     campusId: "campus-lagos-lekki",
     zoneId: "zone-lagos",
     hodId: "user-hod-2",
@@ -150,6 +285,9 @@ export const mockDepartments: Department[] = [
     name: "Men's Ministry",
     description:
       "Ministry focused on discipleship and spiritual leadership for men.",
+    orgLevel: "DEPARTMENT",
+    parentId: "campus-lagos-gbagada",
+    parentLevel: "CAMPUS",
     campusId: "campus-lagos-gbagada",
     zoneId: "zone-lagos",
     hodId: "user-hod-3",
@@ -159,8 +297,11 @@ export const mockDepartments: Department[] = [
   },
   {
     id: "dept-worship",
-    name: "Worship & Arts",
-    description: "Ministry of music, worship and creative arts.",
+    name: deptName("worship"),
+    description: deptDesc("worship"),
+    orgLevel: "DEPARTMENT",
+    parentId: "campus-london",
+    parentLevel: "CAMPUS",
     campusId: "campus-london",
     zoneId: "zone-uk",
     hodId: "user-hod-4",
@@ -168,12 +309,55 @@ export const mockDepartments: Department[] = [
     createdAt: getDateString(180),
     updatedAt: getDateString(7),
   },
+  {
+    id: "dept-children",
+    name: deptName("children"),
+    description: deptDesc("children"),
+    orgLevel: "DEPARTMENT",
+    parentId: "campus-lagos-lekki",
+    parentLevel: "CAMPUS",
+    campusId: "campus-lagos-lekki",
+    zoneId: "zone-lagos",
+    hodId: "user-hod-5",
+    isActive: true,
+    createdAt: getDateString(310),
+    updatedAt: getDateString(2),
+  },
+  {
+    id: "dept-outreach",
+    name: deptName("outreach"),
+    description: deptDesc("outreach"),
+    orgLevel: "DEPARTMENT",
+    parentId: "campus-lagos-anthony",
+    parentLevel: "CAMPUS",
+    campusId: "campus-lagos-anthony",
+    zoneId: "zone-lagos",
+    hodId: "user-hod-6",
+    isActive: true,
+    createdAt: getDateString(250),
+    updatedAt: getDateString(5),
+  },
 ];
 
 // ============================================================================
-// MOCK USERS — ALL 7 HIERARCHY TIERS
-// Hierarchy: SUPERADMIN → ZONAL_LEADER → CAMPUS_ADMIN → HOD →
-//            SMALL_GROUP_LEADER → CELL_LEADER → MEMBER
+// MOCK USERS — ALL 11 ROLE TIERS
+// Hierarchy (tier 0-10):
+//   SUPERADMIN(0) → GROUP_PASTOR(1) → GROUP_ADMIN(2) → CAMPUS_PASTOR(3) →
+//   CAMPUS_ADMIN(4) → ZONAL_LEADER(5) → HOD(6) → SMALL_GROUP_LEADER(7) →
+//   CELL_LEADER(8) → DATA_ENTRY(9) → MEMBER(10)
+//
+// Credentials reference (password in parentheses):
+//   Superadmin:         admin@harvestersng.org          (Admin@123)
+//   Group Pastor:       group.pastor@harvestersng.org   (Pastor@123)
+//   Group Admin:        group.admin@harvestersng.org    (GroupAdmin@123)
+//   Campus Pastor:      lekki.pastor@harvestersng.org   (Pastor@123)
+//   Campus Admin:       lekki.admin@harvestersng.org    (Campus@123)
+//   Zonal Leader:       zone.lagos@harvestersng.org     (Zonal@123)
+//   HOD:                hod.youth@harvestersng.org      (Hod@1234)
+//   Small Group Leader: sgl.youthfire@harvestersng.org  (Leader@123)
+//   Cell Leader:        cell.spark@harvestersng.org     (CellLd@123)
+//   Data Entry:         dataentry1@harvestersng.org     (DataEntry@123)
+//   Member:             samuel.ojo@email.com            (Member@123)
 // ============================================================================
 
 export const mockUsers: User[] = [
@@ -205,7 +389,7 @@ export const mockUsers: User[] = [
     updatedAt: getDateString(1),
   },
 
-  // ── ZONAL LEADERS (invited by Superadmin) ──────────────────────────
+  // ── ZONAL LEADERS (invited by Campus Pastor — zones are sub-campus) ─
   {
     id: "user-zonal-leader-1",
     email: "zone.lagos@harvestersng.org",
@@ -220,14 +404,14 @@ export const mockUsers: User[] = [
     employmentStatus: "EMPLOYED" as EmploymentStatus,
     interests: ["Administration", "Teaching", "Evangelism"],
     role: "ZONAL_LEADER" as UserRole,
-    campusId: undefined,
+    campusId: "campus-lagos-lekki",
     zoneId: "zone-lagos",
     departmentId: undefined,
     groupId: undefined,
     cellId: undefined,
     avatar: undefined,
     isActive: true,
-    invitedById: "user-superadmin-1",
+    invitedById: "user-campus-pastor-1",
     inviteCode: "ZONE001",
     createdAt: getDateString(360),
     updatedAt: getDateString(2),
@@ -246,20 +430,20 @@ export const mockUsers: User[] = [
     employmentStatus: "EMPLOYED" as EmploymentStatus,
     interests: ["Worship", "Community Service", "Mentorship"],
     role: "ZONAL_LEADER" as UserRole,
-    campusId: undefined,
+    campusId: "campus-london",
     zoneId: "zone-uk",
     departmentId: undefined,
     groupId: undefined,
     cellId: undefined,
     avatar: undefined,
     isActive: true,
-    invitedById: "user-superadmin-1",
+    invitedById: "user-campus-pastor-5",
     inviteCode: "ZONE002",
     createdAt: getDateString(295),
     updatedAt: getDateString(3),
   },
 
-  // ── CAMPUS ADMINS (invited by their Zonal Leader) ──────────────────
+  // ── CAMPUS ADMINS (invited by their Campus Pastor) ─────────────────
   {
     id: "user-campus-admin-1",
     email: "lekki.admin@harvestersng.org",
@@ -336,6 +520,110 @@ export const mockUsers: User[] = [
     invitedById: "user-zonal-leader-2",
     inviteCode: "CAMP003",
     createdAt: getDateString(195),
+    updatedAt: getDateString(5),
+  },
+  {
+    id: "user-campus-admin-4",
+    email: "anthony.admin@harvestersng.org",
+    password: hashPassword("Campus@123"),
+    firstName: "Adebayo",
+    lastName: "Olumide",
+    phone: "+2348078901236",
+    whatsappPhone: "+2348078901236",
+    location: "Anthony, Lagos",
+    age: 34,
+    maritalStatus: "MARRIED" as MaritalStatus,
+    employmentStatus: "EMPLOYED" as EmploymentStatus,
+    interests: ["Administration", "Evangelism", "Teaching"],
+    role: "CAMPUS_ADMIN" as UserRole,
+    campusId: "campus-lagos-anthony",
+    zoneId: "zone-lagos",
+    departmentId: undefined,
+    groupId: undefined,
+    cellId: undefined,
+    avatar: undefined,
+    isActive: true,
+    invitedById: "user-campus-pastor-3",
+    inviteCode: "CAMP004",
+    createdAt: getDateString(220),
+    updatedAt: getDateString(3),
+  },
+  {
+    id: "user-campus-admin-5",
+    email: "abuja.admin@harvestersng.org",
+    password: hashPassword("Campus@123"),
+    firstName: "Hauwa",
+    lastName: "Abdullahi",
+    phone: "+2349012345678",
+    whatsappPhone: "+2349012345678",
+    location: "Wuse, Abuja",
+    age: 37,
+    maritalStatus: "MARRIED" as MaritalStatus,
+    employmentStatus: "EMPLOYED" as EmploymentStatus,
+    interests: ["Administration", "Community Service", "Prayer"],
+    role: "CAMPUS_ADMIN" as UserRole,
+    campusId: "campus-abuja",
+    zoneId: "zone-lagos",
+    departmentId: undefined,
+    groupId: undefined,
+    cellId: undefined,
+    avatar: undefined,
+    isActive: true,
+    invitedById: "user-campus-pastor-4",
+    inviteCode: "CAMP005",
+    createdAt: getDateString(160),
+    updatedAt: getDateString(4),
+  },
+  {
+    id: "user-campus-admin-6",
+    email: "ibadan.admin@harvestersng.org",
+    password: hashPassword("Campus@123"),
+    firstName: "Oluwole",
+    lastName: "Akinola",
+    phone: "+2348167890124",
+    whatsappPhone: "+2348167890124",
+    location: "Ibadan, Oyo",
+    age: 39,
+    maritalStatus: "MARRIED" as MaritalStatus,
+    employmentStatus: "EMPLOYED" as EmploymentStatus,
+    interests: ["Administration", "Teaching", "Mentorship"],
+    role: "CAMPUS_ADMIN" as UserRole,
+    campusId: "campus-ibadan",
+    zoneId: "zone-lagos",
+    departmentId: undefined,
+    groupId: undefined,
+    cellId: undefined,
+    avatar: undefined,
+    isActive: true,
+    invitedById: "user-group-pastor-1",
+    inviteCode: "CAMP006",
+    createdAt: getDateString(155),
+    updatedAt: getDateString(3),
+  },
+  {
+    id: "user-campus-admin-7",
+    email: "birmingham.admin@harvestersng.org",
+    password: hashPassword("Campus@123"),
+    firstName: "Yemi",
+    lastName: "Adekunle",
+    phone: "+447045678901",
+    whatsappPhone: "+447045678901",
+    location: "Birmingham, UK",
+    age: 33,
+    maritalStatus: "SINGLE" as MaritalStatus,
+    employmentStatus: "EMPLOYED" as EmploymentStatus,
+    interests: ["Administration", "Music", "Community Service"],
+    role: "CAMPUS_ADMIN" as UserRole,
+    campusId: "campus-birmingham",
+    zoneId: "zone-uk",
+    departmentId: undefined,
+    groupId: undefined,
+    cellId: undefined,
+    avatar: undefined,
+    isActive: true,
+    invitedById: "user-group-pastor-2",
+    inviteCode: "CAMP007",
+    createdAt: getDateString(145),
     updatedAt: getDateString(5),
   },
 
@@ -448,6 +736,58 @@ export const mockUsers: User[] = [
     inviteCode: "HOD004",
     createdAt: getDateString(175),
     updatedAt: getDateString(7),
+  },
+  {
+    id: "user-hod-5",
+    email: "hod.children@harvestersng.org",
+    password: hashPassword("Hod@1234"),
+    firstName: "Folasade",
+    lastName: "Ogunyemi",
+    phone: "+2348045678902",
+    whatsappPhone: "+2348045678902",
+    location: "Lekki, Lagos",
+    age: 34,
+    maritalStatus: "MARRIED" as MaritalStatus,
+    employmentStatus: "EMPLOYED" as EmploymentStatus,
+    interests: ["Children's Ministry", "Teaching", "Arts & Crafts"],
+    role: "HOD" as UserRole,
+    campusId: "campus-lagos-lekki",
+    zoneId: "zone-lagos",
+    departmentId: "dept-children",
+    groupId: undefined,
+    cellId: undefined,
+    avatar: undefined,
+    isActive: true,
+    invitedById: "user-campus-admin-1",
+    inviteCode: "HOD005",
+    createdAt: getDateString(305),
+    updatedAt: getDateString(2),
+  },
+  {
+    id: "user-hod-6",
+    email: "hod.outreach@harvestersng.org",
+    password: hashPassword("Hod@1234"),
+    firstName: "Nnamdi",
+    lastName: "Eze",
+    phone: "+2348056789013",
+    whatsappPhone: "+2348056789013",
+    location: "Anthony, Lagos",
+    age: 36,
+    maritalStatus: "MARRIED" as MaritalStatus,
+    employmentStatus: "EMPLOYED" as EmploymentStatus,
+    interests: ["Evangelism", "Community Service", "Mentorship", "Teaching"],
+    role: "HOD" as UserRole,
+    campusId: "campus-lagos-anthony",
+    zoneId: "zone-lagos",
+    departmentId: "dept-outreach",
+    groupId: undefined,
+    cellId: undefined,
+    avatar: undefined,
+    isActive: true,
+    invitedById: "user-campus-admin-4",
+    inviteCode: "HOD006",
+    createdAt: getDateString(215),
+    updatedAt: getDateString(4),
   },
 
   // ── SMALL GROUP LEADERS (invited by their HOD) ─────────────────────
@@ -785,8 +1125,8 @@ export const mockUsers: User[] = [
     campusId: "campus-london",
     zoneId: "zone-uk",
     departmentId: "dept-worship",
-    groupId: undefined,
-    cellId: undefined,
+    groupId: "group-4",
+    cellId: "cell-4",
     avatar: undefined,
     isActive: true,
     invitedById: "user-hod-4",
@@ -822,6 +1162,116 @@ export const mockUsers: User[] = [
     updatedAt: getDateString(5),
   },
 
+  // ── UK SMALL GROUP LEADER ─────────────────────────────────────────
+  {
+    id: "user-leader-4",
+    email: "sgl.praise@harvestersng.org",
+    password: hashPassword("Leader@123"),
+    firstName: "Ayo",
+    lastName: "Olanrewaju",
+    phone: "+447056789012",
+    whatsappPhone: "+447056789012",
+    location: "Brixton, London",
+    age: 31,
+    maritalStatus: "SINGLE" as MaritalStatus,
+    employmentStatus: "EMPLOYED" as EmploymentStatus,
+    interests: ["Worship", "Music", "Teaching"],
+    role: "SMALL_GROUP_LEADER" as UserRole,
+    campusId: "campus-london",
+    zoneId: "zone-uk",
+    departmentId: "dept-worship",
+    groupId: "group-4",
+    cellId: undefined,
+    avatar: undefined,
+    isActive: true,
+    invitedById: "user-hod-4",
+    inviteCode: "SGL004",
+    createdAt: getDateString(170),
+    updatedAt: getDateString(5),
+  },
+
+  // ── UK CELL LEADER ────────────────────────────────────────────────
+  {
+    id: "user-cell-leader-4",
+    email: "cell.harmony@harvestersng.org",
+    password: hashPassword("CellLd@123"),
+    firstName: "Priscilla",
+    lastName: "Mensah",
+    phone: "+447067890123",
+    whatsappPhone: "+447067890123",
+    location: "Peckham, London",
+    age: 26,
+    maritalStatus: "SINGLE" as MaritalStatus,
+    employmentStatus: "EMPLOYED" as EmploymentStatus,
+    interests: ["Music", "Worship", "Community Service"],
+    role: "CELL_LEADER" as UserRole,
+    campusId: "campus-london",
+    zoneId: "zone-uk",
+    departmentId: "dept-worship",
+    groupId: "group-4",
+    cellId: "cell-4",
+    avatar: undefined,
+    isActive: true,
+    invitedById: "user-leader-4",
+    inviteCode: "CELL004",
+    createdAt: getDateString(160),
+    updatedAt: getDateString(8),
+  },
+
+  // ── ADDITIONAL UK MEMBERS ─────────────────────────────────────────
+  {
+    id: "user-member-8",
+    email: "david.asante@email.com",
+    password: hashPassword("Member@123"),
+    firstName: "David",
+    lastName: "Asante",
+    phone: "+447078901234",
+    whatsappPhone: "+447078901234",
+    location: "Lewisham, London",
+    age: 29,
+    maritalStatus: "SINGLE" as MaritalStatus,
+    employmentStatus: "EMPLOYED" as EmploymentStatus,
+    interests: ["Music", "Technology", "Community Service"],
+    role: "MEMBER" as UserRole,
+    campusId: "campus-london",
+    zoneId: "zone-uk",
+    departmentId: "dept-worship",
+    groupId: "group-4",
+    cellId: "cell-4",
+    avatar: undefined,
+    isActive: true,
+    invitedById: "user-cell-leader-4",
+    inviteCode: "MEM008",
+    createdAt: getDateString(80),
+    updatedAt: getDateString(12),
+  },
+  {
+    id: "user-member-9",
+    email: "ruth.adomako@email.com",
+    password: hashPassword("Member@123"),
+    firstName: "Ruth",
+    lastName: "Adomako",
+    phone: "+447089012345",
+    whatsappPhone: "+447089012345",
+    location: "Croydon, London",
+    age: 24,
+    maritalStatus: "SINGLE" as MaritalStatus,
+    employmentStatus: "STUDENT" as EmploymentStatus,
+    interests: ["Worship", "Prayer", "Youth Ministry"],
+    role: "MEMBER" as UserRole,
+    campusId: "campus-london",
+    zoneId: "zone-uk",
+    departmentId: "dept-worship",
+    groupId: "group-4",
+    cellId: "cell-4",
+    avatar: undefined,
+    isActive: true,
+    invitedById: "user-leader-4",
+    inviteCode: "MEM009",
+    createdAt: getDateString(75),
+    updatedAt: getDateString(10),
+  },
+
   // ── GROUP PASTORS ──────────────────────────────────────────────────
   {
     id: "user-group-pastor-1",
@@ -847,6 +1297,32 @@ export const mockUsers: User[] = [
     invitedById: "user-superadmin-1",
     inviteCode: "GPAS001",
     createdAt: getDateString(365),
+    updatedAt: getDateString(1),
+  },
+  {
+    id: "user-group-pastor-2",
+    email: "group.pastor.uk@harvestersng.org",
+    password: hashPassword("Pastor@123"),
+    firstName: "Daniel",
+    lastName: "Adewale",
+    phone: "+447012345699",
+    whatsappPhone: "+447012345699",
+    location: "London, UK",
+    age: 50,
+    maritalStatus: "MARRIED" as MaritalStatus,
+    employmentStatus: "EMPLOYED" as EmploymentStatus,
+    interests: ["Teaching", "Mentorship", "Evangelism", "Prayer"],
+    role: "GROUP_PASTOR" as UserRole,
+    campusId: undefined,
+    zoneId: "zone-uk",
+    departmentId: undefined,
+    groupId: undefined,
+    cellId: undefined,
+    avatar: undefined,
+    isActive: true,
+    invitedById: "user-superadmin-1",
+    inviteCode: "GPAS002",
+    createdAt: getDateString(300),
     updatedAt: getDateString(1),
   },
 
@@ -931,6 +1407,84 @@ export const mockUsers: User[] = [
     createdAt: getDateString(290),
     updatedAt: getDateString(2),
   },
+  {
+    id: "user-campus-pastor-3",
+    email: "anthony.pastor@harvestersng.org",
+    password: hashPassword("Pastor@123"),
+    firstName: "Ikenna",
+    lastName: "Onwuka",
+    phone: "+2348078901237",
+    whatsappPhone: "+2348078901237",
+    location: "Anthony, Lagos",
+    age: 43,
+    maritalStatus: "MARRIED" as MaritalStatus,
+    employmentStatus: "EMPLOYED" as EmploymentStatus,
+    interests: ["Teaching", "Evangelism", "Counseling"],
+    role: "CAMPUS_PASTOR" as UserRole,
+    campusId: "campus-lagos-anthony",
+    zoneId: "zone-lagos",
+    departmentId: undefined,
+    groupId: undefined,
+    cellId: undefined,
+    avatar: undefined,
+    isActive: true,
+    invitedById: "user-group-pastor-1",
+    inviteCode: "CPAS003",
+    createdAt: getDateString(225),
+    updatedAt: getDateString(2),
+  },
+  {
+    id: "user-campus-pastor-4",
+    email: "abuja.pastor@harvestersng.org",
+    password: hashPassword("Pastor@123"),
+    firstName: "Ibrahim",
+    lastName: "Musa",
+    phone: "+2349023456789",
+    whatsappPhone: "+2349023456789",
+    location: "Garki, Abuja",
+    age: 47,
+    maritalStatus: "MARRIED" as MaritalStatus,
+    employmentStatus: "EMPLOYED" as EmploymentStatus,
+    interests: ["Teaching", "Prayer", "Administration"],
+    role: "CAMPUS_PASTOR" as UserRole,
+    campusId: "campus-abuja",
+    zoneId: "zone-lagos",
+    departmentId: undefined,
+    groupId: undefined,
+    cellId: undefined,
+    avatar: undefined,
+    isActive: true,
+    invitedById: "user-group-pastor-1",
+    inviteCode: "CPAS004",
+    createdAt: getDateString(165),
+    updatedAt: getDateString(3),
+  },
+  {
+    id: "user-campus-pastor-5",
+    email: "london.pastor@harvestersng.org",
+    password: hashPassword("Pastor@123"),
+    firstName: "Oluwatobi",
+    lastName: "Bakare",
+    phone: "+447034567890",
+    whatsappPhone: "+447034567890",
+    location: "London, UK",
+    age: 45,
+    maritalStatus: "MARRIED" as MaritalStatus,
+    employmentStatus: "EMPLOYED" as EmploymentStatus,
+    interests: ["Teaching", "Mentorship", "Community Service", "Prayer"],
+    role: "CAMPUS_PASTOR" as UserRole,
+    campusId: "campus-london",
+    zoneId: "zone-uk",
+    departmentId: undefined,
+    groupId: undefined,
+    cellId: undefined,
+    avatar: undefined,
+    isActive: true,
+    invitedById: "user-group-pastor-2",
+    inviteCode: "CPAS005",
+    createdAt: getDateString(200),
+    updatedAt: getDateString(2),
+  },
 
   // ── DATA ENTRY USERS ──────────────────────────────────────────────
   {
@@ -997,6 +1551,9 @@ export const mockGroups: Group[] = [
     name: "Youth Fire Fellowship",
     description:
       "A vibrant community for young professionals at Lekki campus, focusing on career growth and spiritual development.",
+    orgLevel: "SMALL_GROUP",
+    parentId: "campus-lagos-lekki",
+    parentLevel: "CAMPUS",
     meetingFrequency: "BIWEEKLY" as MeetingFrequency,
     leaderId: "user-leader-1",
     memberCount: 3,
@@ -1013,6 +1570,9 @@ export const mockGroups: Group[] = [
     name: "Grace Circle Women's Fellowship",
     description:
       "A supportive community of women building sisterhood through prayer, worship, and mutual encouragement.",
+    orgLevel: "SMALL_GROUP",
+    parentId: "campus-lagos-lekki",
+    parentLevel: "CAMPUS",
     meetingFrequency: "BIWEEKLY" as MeetingFrequency,
     leaderId: "user-leader-2",
     memberCount: 3,
@@ -1029,6 +1589,9 @@ export const mockGroups: Group[] = [
     name: "Iron Men Discipleship",
     description:
       "A brotherhood focused on becoming fully devoted followers of Christ, spiritual leadership, and influencing culture.",
+    orgLevel: "SMALL_GROUP",
+    parentId: "campus-lagos-gbagada",
+    parentLevel: "CAMPUS",
     meetingFrequency: "WEEKLY" as MeetingFrequency,
     leaderId: "user-leader-3",
     memberCount: 3,
@@ -1039,6 +1602,25 @@ export const mockGroups: Group[] = [
     isActive: true,
     createdAt: getDateString(270),
     updatedAt: getDateString(2),
+  },
+  {
+    id: "group-4",
+    name: "Praise & Worship Fellowship",
+    description:
+      "A vibrant community of worship-minded believers at the London campus, dedicated to growing in music, creative arts, and spiritual depth.",
+    orgLevel: "SMALL_GROUP",
+    parentId: "campus-london",
+    parentLevel: "CAMPUS",
+    meetingFrequency: "BIWEEKLY" as MeetingFrequency,
+    leaderId: "user-leader-4",
+    memberCount: 3,
+    campusId: "campus-london",
+    zoneId: "zone-uk",
+    departmentId: "dept-worship",
+    inviteCode: "GRPPW04",
+    isActive: true,
+    createdAt: getDateString(170),
+    updatedAt: getDateString(5),
   },
 ];
 
@@ -1052,6 +1634,9 @@ export const mockCells: Cell[] = [
     name: "Spark Cell",
     description:
       "A dynamic sub-group within Youth Fire Fellowship for deeper personal connection.",
+    orgLevel: "CELL",
+    parentId: "group-1",
+    parentLevel: "SMALL_GROUP",
     campusId: "campus-lagos-lekki",
     zoneId: "zone-lagos",
     departmentId: "dept-youth",
@@ -1069,6 +1654,9 @@ export const mockCells: Cell[] = [
     name: "Virtue Cell",
     description:
       "An intimate circle within Grace Circle for prayer partnerships and accountability.",
+    orgLevel: "CELL",
+    parentId: "group-2",
+    parentLevel: "SMALL_GROUP",
     campusId: "campus-lagos-lekki",
     zoneId: "zone-lagos",
     departmentId: "dept-women",
@@ -1086,6 +1674,9 @@ export const mockCells: Cell[] = [
     name: "Valor Cell",
     description:
       "A brotherhood cell within Iron Men for accountability and discipleship.",
+    orgLevel: "CELL",
+    parentId: "group-3",
+    parentLevel: "SMALL_GROUP",
     campusId: "campus-lagos-gbagada",
     zoneId: "zone-lagos",
     departmentId: "dept-men",
@@ -1097,6 +1688,26 @@ export const mockCells: Cell[] = [
     isActive: true,
     createdAt: getDateString(230),
     updatedAt: getDateString(4),
+  },
+  {
+    id: "cell-4",
+    name: "Harmony Cell",
+    description:
+      "An intimate worship cell within Praise & Worship Fellowship for prayer, practice and spiritual growth.",
+    orgLevel: "CELL",
+    parentId: "group-4",
+    parentLevel: "SMALL_GROUP",
+    campusId: "campus-london",
+    zoneId: "zone-uk",
+    departmentId: "dept-worship",
+    groupId: "group-4",
+    leaderId: "user-cell-leader-4",
+    meetingFrequency: "WEEKLY" as MeetingFrequency,
+    memberCount: 2,
+    inviteCode: "CELHR04",
+    isActive: true,
+    createdAt: getDateString(160),
+    updatedAt: getDateString(8),
   },
 ];
 
@@ -1334,6 +1945,70 @@ export const mockMeetings: Meeting[] = [
     cellId: "cell-1",
     createdAt: getDateString(2),
     updatedAt: getDateString(2),
+  },
+  // London campus meeting
+  {
+    id: "meeting-campus-london-1",
+    title: "London Campus Fellowship Night",
+    groupId: "",
+    date: getDateOnly(6),
+    startTime: "18:30",
+    endTime: "20:30",
+    topic: "Growing Together — Community & Mission in the UK",
+    attendeeCount: 5,
+    attendeeIds: [
+      "user-campus-admin-3",
+      "user-hod-4",
+      "user-leader-4",
+      "user-member-7",
+      "user-member-8",
+    ],
+    screenshotUrl: undefined,
+    notes:
+      "Campus-wide fellowship evening. Great energy from the worship team and encouraging testimonies from new members.",
+    createdById: "user-campus-admin-3",
+    level: "CAMPUS" as MeetingLevel,
+    campusId: "campus-london",
+    zoneId: "zone-uk",
+    departmentId: undefined,
+    cellId: undefined,
+    campusNotes: {
+      totalCells: 1,
+      cellsHeld: 1,
+      newGroups: 0,
+      firstTimers: 2,
+      testimonies: [
+        "Found a new job after months of searching",
+        "My visa application was approved!",
+      ],
+      salvations: 1,
+      additionalNotes: "Strong partnership interest from attendees.",
+    },
+    createdAt: getDateString(6),
+    updatedAt: getDateString(6),
+  },
+  // London group meeting
+  {
+    id: "meeting-london-group-1",
+    title: "Praise Fellowship — Heart of Worship",
+    groupId: "group-4",
+    date: getDateOnly(4),
+    startTime: "19:00",
+    endTime: "20:30",
+    topic: "The Heart of Worship — Beyond the Music",
+    attendeeCount: 3,
+    attendeeIds: ["user-cell-leader-4", "user-member-7", "user-member-8"],
+    screenshotUrl: undefined,
+    notes:
+      "Explored the deeper meaning behind worship. Shared how worship transforms daily life beyond Sunday service.",
+    createdById: "user-leader-4",
+    level: "SMALL_GROUP" as MeetingLevel,
+    campusId: "campus-london",
+    zoneId: "zone-uk",
+    departmentId: "dept-worship",
+    cellId: undefined,
+    createdAt: getDateString(4),
+    updatedAt: getDateString(4),
   },
 ];
 
@@ -2041,7 +2716,7 @@ function makeReportMetric(
 const currentYear = new Date().getFullYear();
 const currentMonth = new Date().getMonth() + 1;
 
-export const mockReports: Report[] = [
+export const mockReports: PeriodicReport[] = [
   // Report 1: Submitted (Lekki campus, current week)
   {
     id: "report-1",
@@ -2225,6 +2900,64 @@ export const mockReports: Report[] = [
     createdAt: getDateString(200),
     updatedAt: getDateString(195),
   },
+
+  // Report 6: London campus — REVIEWED (multi-campus coverage)
+  {
+    id: "report-6",
+    templateId: templateId,
+    templateVersionId: "tv-1",
+    campusId: "campus-london",
+    periodType: ReportPeriodType.WEEKLY,
+    periodYear: currentYear,
+    periodMonth: currentMonth,
+    periodWeek: 1,
+    status: ReportStatus.REVIEWED,
+    submittedById: "user-campus-admin-3",
+    approvedById: "user-campus-pastor-2",
+    reviewedById: "user-group-admin-1",
+    deadline: getDateString(2),
+    isDataEntry: false,
+    notes: "London campus weekly report — reviewed and awaiting lock.",
+    sections: [
+      {
+        id: "rs-6-1",
+        reportId: "report-6",
+        templateSectionId: "tsec-2",
+        sectionName: "Attendance & Quality of Program",
+        order: 1,
+        metrics: [
+          makeReportMetric("rm-6-1-1", "rs-6-1", "tm-2-1", "Sunday Service Attendance", 1, { goal: 250, achieved: 230, yoy: 200 }),
+          makeReportMetric("rm-6-1-2", "rs-6-1", "tm-2-2", "Midweek Service Attendance", 2, { goal: 150, achieved: 135, yoy: 110 }),
+          makeReportMetric("rm-6-1-3", "rs-6-1", "tm-2-4", "Online Attendance", 3, { goal: 100, achieved: 120, yoy: 80 }),
+        ],
+      },
+      {
+        id: "rs-6-2",
+        reportId: "report-6",
+        templateSectionId: "tsec-3",
+        sectionName: "NLP (New Life Program)",
+        order: 2,
+        metrics: [
+          makeReportMetric("rm-6-2-1", "rs-6-2", "tm-3-1", "NLP Enrollees", 1, { goal: 30, achieved: 28, yoy: 20 }),
+          makeReportMetric("rm-6-2-2", "rs-6-2", "tm-3-2", "NLP Graduates", 2, { goal: 20, achieved: 18, yoy: 15 }),
+        ],
+      },
+      {
+        id: "rs-6-3",
+        reportId: "report-6",
+        templateSectionId: "tsec-8",
+        sectionName: "Partnership",
+        order: 3,
+        metrics: [
+          makeReportMetric("rm-6-3-1", "rs-6-3", "tm-8-1", "Total Partners", 1, { goal: 100, achieved: 95, yoy: 80 }),
+          makeReportMetric("rm-6-3-2", "rs-6-3", "tm-8-2", "New Partners This Week", 2, { goal: 5, achieved: 7, yoy: 3 }),
+          makeReportMetric("rm-6-3-3", "rs-6-3", "tm-8-3", "Partnership Amount", 3, { goal: 5000, achieved: 4800, yoy: 4000 }, MetricFieldType.CURRENCY),
+        ],
+      },
+    ],
+    createdAt: getDateString(5),
+    updatedAt: getDateString(2),
+  },
 ];
 
 // ============================================================================
@@ -2294,6 +3027,51 @@ export const mockReportEvents: ReportEvent[] = [
     newStatus: ReportStatus.DRAFT,
     details: { dataEntryDate: `${currentYear - 1}-06-14` },
   },
+  // Report 3 — Draft created
+  {
+    id: "re-8",
+    reportId: "report-3",
+    eventType: ReportEventType.CREATED,
+    actorId: "user-campus-admin-1",
+    timestamp: getDateString(0),
+    newStatus: ReportStatus.DRAFT,
+  },
+  // Report 6 — Full lifecycle through REVIEWED
+  {
+    id: "re-9",
+    reportId: "report-6",
+    eventType: ReportEventType.CREATED,
+    actorId: "user-campus-admin-3",
+    timestamp: getDateString(5),
+    newStatus: ReportStatus.DRAFT,
+  },
+  {
+    id: "re-10",
+    reportId: "report-6",
+    eventType: ReportEventType.SUBMITTED,
+    actorId: "user-campus-admin-3",
+    timestamp: getDateString(4),
+    previousStatus: ReportStatus.DRAFT,
+    newStatus: ReportStatus.SUBMITTED,
+  },
+  {
+    id: "re-11",
+    reportId: "report-6",
+    eventType: ReportEventType.APPROVED,
+    actorId: "user-campus-pastor-2",
+    timestamp: getDateString(3),
+    previousStatus: ReportStatus.SUBMITTED,
+    newStatus: ReportStatus.APPROVED,
+  },
+  {
+    id: "re-12",
+    reportId: "report-6",
+    eventType: ReportEventType.REVIEWED,
+    actorId: "user-group-admin-1",
+    timestamp: getDateString(2),
+    previousStatus: ReportStatus.APPROVED,
+    newStatus: ReportStatus.REVIEWED,
+  },
 ];
 
 // ============================================================================
@@ -2309,6 +3087,15 @@ export const mockReportVersions: ReportVersion[] = [
     createdAt: getDateString(1),
     createdById: "user-campus-admin-1",
     reason: "Initial submission",
+  },
+  {
+    id: "rv-2",
+    reportId: "report-6",
+    versionNumber: 1,
+    snapshot: mockReports[5], // report-6 is index 5
+    createdAt: getDateString(4),
+    createdById: "user-campus-admin-3",
+    reason: "Initial submission — London campus",
   },
 ];
 

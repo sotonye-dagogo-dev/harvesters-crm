@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { Form, Input, Button, Card, Typography, Alert, Checkbox } from "antd";
-import { MailOutlined, LockOutlined, UserOutlined } from "@ant-design/icons";
+import { Form, Input, Button, Card, Typography, Alert, Checkbox, Collapse, Tag } from "antd";
+import { MailOutlined, LockOutlined, UserOutlined, BugOutlined } from "@ant-design/icons";
 import Link from "next/link";
 import { useAuth } from "@/providers/AuthProvider";
 
@@ -14,7 +14,25 @@ interface LoginFormValues {
   remember: boolean;
 }
 
-export default function LoginForm() {
+interface LoginFormProps {
+  showDevCredentials?: boolean;
+}
+
+const DEV_CREDENTIALS = [
+  { role: "Superadmin", email: "admin@harvestersng.org", password: "Admin@123", color: "red" },
+  { role: "Group Pastor", email: "group.pastor@harvestersng.org", password: "Pastor@123", color: "volcano" },
+  { role: "Group Admin", email: "group.admin@harvestersng.org", password: "GroupAdmin@123", color: "orange" },
+  { role: "Campus Pastor", email: "lekki.pastor@harvestersng.org", password: "Pastor@123", color: "gold" },
+  { role: "Campus Admin", email: "lekki.admin@harvestersng.org", password: "Campus@123", color: "lime" },
+  { role: "Zonal Leader", email: "zone.lagos@harvestersng.org", password: "Zonal@123", color: "green" },
+  { role: "HOD", email: "hod.youth@harvestersng.org", password: "Hod@1234", color: "cyan" },
+  { role: "SG Leader", email: "sgl.youthfire@harvestersng.org", password: "Leader@123", color: "blue" },
+  { role: "Cell Leader", email: "cell.spark@harvestersng.org", password: "CellLd@123", color: "geekblue" },
+  { role: "Data Entry", email: "dataentry1@harvestersng.org", password: "DataEntry@123", color: "purple" },
+  { role: "Member", email: "samuel.ojo@email.com", password: "Member@123", color: "magenta" },
+] as const;
+
+export default function LoginForm({ showDevCredentials = false }: LoginFormProps) {
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -34,6 +52,10 @@ export default function LoginForm() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const fillCredentials = (email: string, password: string) => {
+    form.setFieldsValue({ email, password });
   };
 
   return (
@@ -136,6 +158,46 @@ export default function LoginForm() {
           By signing in, you agree to our <Link href="/terms" className="text-church-primary hover:text-church-primary/80">Terms of Service</Link> and <Link href="/privacy" className="text-church-primary hover:text-church-primary/80">Privacy Policy</Link>.
         </Text>
       </div>
+
+      {showDevCredentials && (
+        <div className="mt-6">
+          <Collapse
+            ghost
+            size="small"
+            items={[
+              {
+                key: "dev-creds",
+                label: (
+                  <span className="text-xs font-medium text-orange-600 dark:text-orange-400 flex items-center gap-1">
+                    <BugOutlined /> Dev Credentials
+                  </span>
+                ),
+                children: (
+                  <div className="space-y-1.5 max-h-64 overflow-y-auto">
+                    {DEV_CREDENTIALS.map((cred) => (
+                      <button
+                        key={cred.email}
+                        type="button"
+                        onClick={() => fillCredentials(cred.email, cred.password)}
+                        className="w-full text-left px-2.5 py-1.5 rounded-md border border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors cursor-pointer"
+                      >
+                        <div className="flex items-center justify-between gap-2">
+                          <Tag color={cred.color} className="!m-0 !text-[10px] !leading-tight !px-1.5">
+                            {cred.role}
+                          </Tag>
+                          <Text className="!text-[11px] text-gray-500 truncate flex-1 text-right">
+                            {cred.email}
+                          </Text>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                ),
+              },
+            ]}
+          />
+        </div>
+      )}
     </Card>
   );
 }

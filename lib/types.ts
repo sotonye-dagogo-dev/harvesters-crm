@@ -153,6 +153,7 @@ export enum ReportEventType {
   EDIT_SUBMITTED = "EDIT_SUBMITTED",
   EDIT_APPROVED = "EDIT_APPROVED",
   EDIT_REJECTED = "EDIT_REJECTED",
+  EDIT_APPLIED = "EDIT_APPLIED",
   APPROVED = "APPROVED",
   REVIEWED = "REVIEWED",
   LOCKED = "LOCKED",
@@ -218,76 +219,169 @@ export const HIERARCHY_ORDER: Record<UserRole, number> = {
 
 declare global {
   // ============================================================================
-  // ORGANIZATIONAL UNIT TYPES
+  // UNIVERSAL ORG UNIT BASE INTERFACE
+  // ============================================================================
+  // Single base shape shared by ALL organisational levels (Cell, Zone, Area,
+  // Community, District, Campus, Group). Each concrete interface extends this
+  // with level-specific required/optional fields.
+  //
+  // Why: Adding a new org level means extending OrgUnitBase, not creating an
+  // entirely new interface from scratch. Utility functions can work generically
+  // with OrgUnitBase for listing, searching, breadcrumbs, etc.
   // ============================================================================
 
-  interface Campus {
+  interface OrgUnitBase {
     id: string;
     name: string;
     description: string;
-    location: string;
-    country: string;
-    zoneId: string;
-    adminId: string;
+    /** The hierarchy level key this entity belongs to (e.g. "CELL", "CAMPUS", "GROUP") */
+    orgLevel: string;
+    /** ID of the direct parent org unit (null for top-level entities) */
+    parentId: string | null;
+    /** The hierarchy level of the parent (mirrors OrgLevelConfig.parentLevel) */
+    parentLevel: string | null;
     isActive: boolean;
     createdAt: string;
     updatedAt: string;
+
+    // ── Optional fields driven by OrgLevelConfig flags ──
+    /** Leader assigned to this unit */
+    leaderId?: string;
+    /** Admin assigned to this unit (hasAdmin levels) */
+    adminId?: string;
+    /** Country scope (hasCountry levels like Group) */
+    country?: string;
+    /** Regional scope (hasRegion levels like Zone) */
+    region?: string;
+    /** Physical address (hasLocation levels) */
+    address?: string;
+    /** Display-friendly location string (e.g. "Lekki, Lagos") */
+    location?: string;
+    /** Latitude for map features (hasLocation levels) */
+    latitude?: number;
+    /** Longitude for map features (hasLocation levels) */
+    longitude?: number;
+    /** Contact phone (hasLocation levels) */
+    phone?: string;
+    /** Department association (hasDepartment levels) */
+    departmentId?: string;
+    /** Meeting schedule (hasMeetingFrequency levels) */
+    meetingFrequency?: MeetingFrequency;
+    /** Tracked member count (hasMemberCount levels) */
+    memberCount?: number;
+    /** Referral / join code (hasInviteCode levels) */
+    inviteCode?: string;
   }
 
-  interface Zone {
-    id: string;
-    name: string;
-    description: string;
+  // ============================================================================
+  // TOP-LEVEL ORG GROUP (highest hierarchy level)
+  // ============================================================================
+
+  interface OrgGroup extends OrgUnitBase {
+    orgLevel: "GROUP";
+    parentId: null;
+    parentLevel: null;
+    /** Country this Group entity covers (e.g. "Nigeria", "United Kingdom") */
+    country: string;
     region?: string;
     leaderId: string;
-    isActive: boolean;
-    createdAt: string;
-    updatedAt: string;
   }
 
-  interface Department {
-    id: string;
+  interface OrgGroupWithDetails extends OrgGroup {
+    leader?: UserProfile;
+    campuses: Campus[];
+    totalMembers: number;
+    totalCampuses: number;
+  }
+
+  interface CreateOrgGroupInput {
     name: string;
     description: string;
+    country: string;
+    region?: string;
+    leaderId: string;
+  }
+
+  interface UpdateOrgGroupInput {
+    name?: string;
+    description?: string;
+    country?: string;
+    region?: string;
+    leaderId?: string;
+    isActive?: boolean;
+  }
+
+  // ============================================================================
+  // ORGANIZATIONAL UNIT TYPES — All extend OrgUnitBase
+  // ============================================================================
+  // Every org unit inherits from OrgUnitBase:
+  //   id, name, description, orgLevel, parentId, parentLevel,
+  //   isActive, createdAt, updatedAt,
+  //   + optional: leaderId, adminId, country, region, address, location,
+  //     latitude, longitude, phone, departmentId, meetingFrequency,
+  //     memberCount, inviteCode
+  //
+  // Level-specific interfaces narrow optional fields to required where needed
+  // and add any level-specific fields (e.g. hodId on Department).
+  // ============================================================================
+
+  interface Campus extends OrgUnitBase {
+    orgLevel: "CAMPUS";
+    /** Parent OrgGroup ID — the top-level organisational group */
+    parentId: string;
+    parentLevel: "GROUP";
+    /** Campus administrator (narrowed to required) */
+    adminId: string;
+    /** Country where the campus is located (narrowed to required) */
+    country: string;
+    /** Display-friendly location label, e.g. "Lekki, Lagos" (narrowed to required) */
+    location: string;
+  }
+
+  interface Zone extends OrgUnitBase {
+    orgLevel: "ZONE";
+    /** Zone leader (narrowed to required) */
+    leaderId: string;
+  }
+
+  interface Department extends OrgUnitBase {
+    orgLevel: "DEPARTMENT";
+    /** Campus this department belongs to (denormalised cross-reference) */
     campusId: string;
+    /** OrgGroup association (denormalised cross-reference) */
     zoneId?: string;
+    /** Head of Department — department-specific field */
     hodId: string;
-    isActive: boolean;
-    createdAt: string;
-    updatedAt: string;
   }
 
-  interface SmallGroup {
-    id: string;
-    name: string;
-    description: string;
+  interface SmallGroup extends OrgUnitBase {
+    orgLevel: "SMALL_GROUP";
+    /** Campus this group belongs to (denormalised) */
     campusId: string;
+    /** OrgGroup (top-level zone) this group belongs to (denormalised) */
     zoneId: string;
-    departmentId?: string;
+    /** Group leader (narrowed to required) */
     leaderId: string;
+    /** Meeting schedule (narrowed to required) */
     meetingFrequency: MeetingFrequency;
+    /** Tracked member count (narrowed to required) */
     memberCount: number;
-    inviteCode?: string;
-    isActive: boolean;
-    createdAt: string;
-    updatedAt: string;
   }
 
-  interface Cell {
-    id: string;
-    name: string;
-    description: string;
-    campusId: string;
-    zoneId: string;
-    departmentId?: string;
+  interface Cell extends OrgUnitBase {
+    orgLevel: "CELL";
+    /** Parent SmallGroup this cell belongs to */
     groupId: string;
+    /** Campus reference (denormalised) */
+    campusId: string;
+    /** OrgGroup reference (denormalised) */
+    zoneId: string;
+    /** Cell leader (narrowed to required) */
     leaderId: string;
+    /** Meeting schedule (narrowed to required) */
     meetingFrequency: MeetingFrequency;
+    /** Tracked member count (narrowed to required) */
     memberCount: number;
-    inviteCode?: string;
-    isActive: boolean;
-    createdAt: string;
-    updatedAt: string;
   }
 
   // ============================================================================
@@ -295,7 +389,8 @@ declare global {
   // ============================================================================
 
   interface CampusWithDetails extends Campus {
-    zone: Zone;
+    /** Parent OrgGroup entity */
+    orgGroup?: OrgGroup;
     admin?: UserProfile;
     departments: Department[];
     groups: SmallGroup[];
@@ -318,7 +413,6 @@ declare global {
 
   interface DepartmentWithDetails extends Department {
     campus: Campus;
-    zone?: Zone;
     hod?: UserProfile;
     groups: SmallGroup[];
     totalMembers: number;
@@ -356,8 +450,13 @@ declare global {
     description: string;
     location: string;
     country: string;
-    zoneId: string;
+    /** Parent OrgGroup ID */
+    parentId: string;
     adminId: string;
+    address?: string;
+    latitude?: number;
+    longitude?: number;
+    phone?: string;
   }
 
   interface UpdateCampusInput {
@@ -365,8 +464,13 @@ declare global {
     description?: string;
     location?: string;
     country?: string;
-    zoneId?: string;
+    /** Parent OrgGroup ID */
+    parentId?: string;
     adminId?: string;
+    address?: string;
+    latitude?: number;
+    longitude?: number;
+    phone?: string;
     isActive?: boolean;
   }
 
@@ -526,10 +630,10 @@ declare global {
   }
 
   // ============================================================================
-  // GROUP TYPES (BACKWARD COMPAT - MAPS TO SmallGroup)
+  // GROUP TYPES (Convenience alias — Group ≡ SmallGroup)
   // ============================================================================
 
-  // Group is an alias for SmallGroup (maintained for backward compatibility)
+  /** Short alias used throughout the codebase. SmallGroup is the canonical name. */
   type Group = SmallGroup;
 
   interface GroupWithDetails extends Group {
@@ -1740,6 +1844,7 @@ declare global {
     isDefault?: boolean;
     campusId?: string;
     groupId?: string;
+    changeNotes?: string;
   }
 
   interface CreateTemplateSectionInput {
@@ -1775,7 +1880,7 @@ declare global {
   // REPORT TYPES (Core report entities)
   // ============================================================================
 
-  interface Report {
+  interface PeriodicReport {
     id: string;
     templateId: string;
     templateVersionId: string;
@@ -1832,7 +1937,7 @@ declare global {
     order: number;
   }
 
-  interface ReportWithDetails extends Report {
+  interface ReportWithDetails extends PeriodicReport {
     template?: ReportTemplate;
     templateVersion?: ReportTemplateVersion;
     campus?: Campus;
@@ -1843,6 +1948,7 @@ declare global {
     dataEntryBy?: UserProfile;
     events?: ReportEvent[];
     edits?: ReportEdit[];
+    updateRequests?: ReportUpdateRequest[];
   }
 
   // ============================================================================
@@ -1858,6 +1964,7 @@ declare global {
     sections: ReportEditSection[];
     reviewedById?: string;
     reviewNotes?: string;
+    rejectionReason?: string;
     createdAt: string;
     updatedAt: string;
   }
@@ -1890,7 +1997,7 @@ declare global {
   }
 
   interface ReportEditWithDetails extends ReportEdit {
-    report?: Report;
+    report?: PeriodicReport;
     submittedBy?: UserProfile;
     reviewedBy?: UserProfile;
   }
@@ -1917,6 +2024,9 @@ declare global {
     monthlyAchieved?: number;
     yoyGoal?: number;
     textValue?: string;
+    originalMonthlyGoal?: number;
+    originalMonthlyAchieved?: number;
+    originalYoyGoal?: number;
     order: number;
   }
 
@@ -1933,12 +2043,13 @@ declare global {
     status: ReportUpdateRequestStatus;
     reviewedById?: string;
     reviewNotes?: string;
+    rejectionReason?: string;
     createdAt: string;
     updatedAt: string;
   }
 
   interface ReportUpdateRequestWithDetails extends ReportUpdateRequest {
-    report?: Report;
+    report?: PeriodicReport;
     requestedBy?: UserProfile;
     reviewedBy?: UserProfile;
   }
@@ -1977,7 +2088,7 @@ declare global {
     reportId: string;
     versionNumber: number;
     /** Full snapshot of the report at this version */
-    snapshot: Report;
+    snapshot: PeriodicReport;
     createdAt: string;
     createdById: string;
     reason?: string;
@@ -2069,6 +2180,37 @@ declare global {
     leaderRole: UserRole | null;
     hasAdmin: boolean;
     hasPastor: boolean;
+    /** Whether entities at this level can have geolocation (address, lat, lng, phone) */
+    hasLocation: boolean;
+    /** Whether entities at this level have a meeting frequency */
+    hasMeetingFrequency: boolean;
+    /** Whether entities at this level have invite codes */
+    hasInviteCode: boolean;
+    /** Whether entities at this level track member counts */
+    hasMemberCount: boolean;
+    /** Whether entities at this level can belong to a department */
+    hasDepartment: boolean;
+    /** Whether entities at this level have a country field */
+    hasCountry: boolean;
+    /** Whether entities at this level have a region field */
+    hasRegion: boolean;
+  }
+
+  // ============================================================================
+  // DEPARTMENT CONFIG TYPES (Data-driven department registry)
+  // ============================================================================
+
+  interface DepartmentConfig {
+    /** Stable key used as ID prefix (e.g. "worship" → "dept-worship") */
+    key: string;
+    /** Display name */
+    name: string;
+    /** Short description of the department's focus */
+    description: string;
+    /** Default icon key for UI rendering */
+    icon: string;
+    /** Whether this department is available across all campuses */
+    isGlobal: boolean;
   }
 
   // ============================================================================

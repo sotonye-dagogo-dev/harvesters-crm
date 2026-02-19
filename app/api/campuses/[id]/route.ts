@@ -30,7 +30,7 @@ export async function GET(
     const canView =
       user?.role === USER_ROLES.SUPERADMIN ||
       (user?.role === USER_ROLES.ZONAL_LEADER &&
-        user?.zoneId === campus.zoneId) ||
+        user?.zoneId === campus.parentId) ||
       (user?.role === USER_ROLES.CAMPUS_ADMIN && user?.campusId === id) ||
       user?.campusId === id;
 
@@ -68,7 +68,7 @@ export async function PUT(
     const canUpdate =
       user?.role === USER_ROLES.SUPERADMIN ||
       (user?.role === USER_ROLES.ZONAL_LEADER &&
-        user?.zoneId === campus.zoneId);
+        user?.zoneId === campus.parentId);
 
     if (!canUpdate) {
       return forbiddenResponse(
@@ -83,7 +83,7 @@ export async function PUT(
       updateData.description = body.description;
     if (body.location !== undefined) updateData.location = body.location;
     if (body.country !== undefined) updateData.country = body.country;
-    if (body.zoneId !== undefined) updateData.zoneId = body.zoneId;
+    if (body.parentId !== undefined) updateData.parentId = body.parentId;
     if (body.adminId !== undefined) updateData.adminId = body.adminId;
     if (body.isActive !== undefined) updateData.isActive = body.isActive;
 

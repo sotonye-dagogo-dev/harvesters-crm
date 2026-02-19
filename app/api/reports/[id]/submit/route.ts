@@ -1,5 +1,5 @@
 import { NextRequest } from "next/server";
-import { reportDb } from "@/lib/data/database";
+import { reportDb, reportTemplateDb } from "@/lib/data/database";
 import { getAuthenticatedUser } from "@/lib/utils/middleware";
 import {
     successResponse,
@@ -11,6 +11,7 @@ import {
 import { USER_ROLES } from "@/lib/constants";
 import { ReportStatus } from "@/lib/types";
 import { sendReportSubmittedNotification } from "@/lib/utils/notificationHelpers";
+import { validateReportForSubmission } from "@/lib/utils/reportFieldUtils";
 
 // POST /api/reports/:id/submit — Submit a report for review
 export async function POST(
@@ -40,6 +41,19 @@ export async function POST(
             return badRequestResponse(
                 "Only draft or requires-edits reports can be submitted."
             );
+        }
+
+        // Validate required fields against the report template (FR17)
+        const template = reportTemplateDb.findById(report.templateId);
+        if (template) {
+            const validation = validateReportForSubmission(report, template);
+            if (!validation.isValid) {
+                return badRequestResponse(
+                    `Report has ${validation.errors.length} validation error(s): ${validation.errors
+                        .map((e) => e.message)
+                        .join("; ")}`
+                );
+            }
         }
 
         const updated = reportDb.submit(id, user!.id);

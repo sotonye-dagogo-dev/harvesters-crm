@@ -15,6 +15,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Card from "@/components/ui/Card";
 import { Spin, Button } from "antd";
+import { ReportOverviewWidget } from "@/components/features/reports";
 
 export default function SuperadminDashboard() {
   const router = useRouter();
@@ -145,6 +146,9 @@ export default function SuperadminDashboard() {
             View Analytics
           </Button>
         </div>
+
+        {/* Report Overview — prioritised first for leadership roles */}
+        <ReportOverviewWidget />
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mx-2 sm:mx-0">
           {stats.map((stat, index) => (

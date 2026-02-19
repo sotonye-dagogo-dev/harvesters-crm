@@ -7,7 +7,6 @@ import {
   InviteLinkType,
   ReportStatus,
   ReportEventType,
-  ReportPeriodType,
   ReportEditStatus,
   ReportUpdateRequestStatus,
 } from "@/lib/types";
@@ -19,7 +18,7 @@ import {
   mockMembershipRequests,
   mockNotifications,
   mockCampuses,
-  mockZones,
+  mockOrgGroups,
   mockDepartments,
   mockCells,
   mockCampaigns,
@@ -52,6 +51,7 @@ const globalForDb = globalThis as unknown as {
     notifications: appNotification[];
     campuses: Campus[];
     zones: Zone[];
+    orgGroups: OrgGroup[];
     departments: Department[];
     cells: Cell[];
     campaigns: Campaign[];
@@ -60,7 +60,7 @@ const globalForDb = globalThis as unknown as {
     inviteLinkVisits: InviteLinkVisit[];
     reportTemplates: ReportTemplate[];
     reportTemplateVersions: ReportTemplateVersion[];
-    reports: Report[];
+    reports: PeriodicReport[];
     reportEvents: ReportEvent[];
     reportVersions: ReportVersion[];
     reportEdits: ReportEdit[];
@@ -77,7 +77,20 @@ if (!globalForDb.dbStore) {
     membershipRequests: cloneData(mockMembershipRequests),
     notifications: cloneData(mockNotifications),
     campuses: cloneData(mockCampuses),
-    zones: cloneData(mockZones),
+    zones: cloneData(mockOrgGroups).map((g: OrgGroup): Zone => ({
+      id: g.id,
+      name: g.name,
+      description: g.description,
+      orgLevel: "ZONE" as const,
+      parentId: null,
+      parentLevel: null,
+      region: g.region,
+      leaderId: g.leaderId,
+      isActive: g.isActive,
+      createdAt: g.createdAt,
+      updatedAt: g.updatedAt,
+    })),
+    orgGroups: cloneData(mockOrgGroups),
     departments: cloneData(mockDepartments),
     cells: cloneData(mockCells),
     campaigns: cloneData(mockCampaigns),
@@ -102,6 +115,7 @@ const membershipRequests = globalForDb.dbStore.membershipRequests;
 let notifications = globalForDb.dbStore.notifications;
 const campuses = globalForDb.dbStore.campuses;
 const zones = globalForDb.dbStore.zones;
+const orgGroups = globalForDb.dbStore.orgGroups;
 const departments = globalForDb.dbStore.departments;
 const cells = globalForDb.dbStore.cells;
 const campaigns = globalForDb.dbStore.campaigns;
@@ -122,6 +136,32 @@ const generateId = () =>
 const now = () => new Date().toISOString();
 const generateCode = () =>
   Math.random().toString(36).substring(2, 10).toUpperCase();
+
+/** Shared helper: convert User → UserProfile (strips password). */
+const toProfile = (u: User): UserProfile => ({
+  id: u.id,
+  email: u.email,
+  firstName: u.firstName,
+  lastName: u.lastName,
+  phone: u.phone,
+  whatsappPhone: u.whatsappPhone,
+  location: u.location,
+  age: u.age,
+  maritalStatus: u.maritalStatus,
+  employmentStatus: u.employmentStatus,
+  interests: u.interests,
+  role: u.role,
+  campusId: u.campusId,
+  zoneId: u.zoneId,
+  departmentId: u.departmentId,
+  groupId: u.groupId,
+  cellId: u.cellId,
+  avatar: u.avatar,
+  isActive: u.isActive,
+  inviteCode: u.inviteCode,
+  createdAt: u.createdAt,
+  updatedAt: u.updatedAt,
+});
 
 // ============================================================================
 // USER OPERATIONS
@@ -242,6 +282,9 @@ export const zoneDb = {
     const zone: Zone = {
       id: generateId(),
       ...data,
+      orgLevel: "ZONE",
+      parentId: null,
+      parentLevel: null,
       isActive: true,
       createdAt: now(),
       updatedAt: now(),
@@ -269,35 +312,10 @@ export const zoneDb = {
     if (!zone) return undefined;
 
     const leader = users.find((u) => u.id === zone.leaderId);
-    const zoneCampuses = campuses.filter((c) => c.zoneId === zone.id);
+    const zoneCampuses = campuses.filter((c) => c.parentId === zone.id);
     const zoneDepts = departments.filter((d) => d.zoneId === zone.id);
     const zoneMembers = users.filter((u) => u.zoneId === zone.id);
     const zoneGroups = groups.filter((g) => g.zoneId === zone.id);
-
-    const toProfile = (u: User): UserProfile => ({
-      id: u.id,
-      email: u.email,
-      firstName: u.firstName,
-      lastName: u.lastName,
-      phone: u.phone,
-      whatsappPhone: u.whatsappPhone,
-      location: u.location,
-      age: u.age,
-      maritalStatus: u.maritalStatus,
-      employmentStatus: u.employmentStatus,
-      interests: u.interests,
-      role: u.role,
-      campusId: u.campusId,
-      zoneId: u.zoneId,
-      departmentId: u.departmentId,
-      groupId: u.groupId,
-      cellId: u.cellId,
-      avatar: u.avatar,
-      isActive: u.isActive,
-      inviteCode: u.inviteCode,
-      createdAt: u.createdAt,
-      updatedAt: u.updatedAt,
-    });
 
     return {
       ...zone,
@@ -315,18 +333,93 @@ export const zoneDb = {
 };
 
 // ============================================================================
-// CAMPUS OPERATIONS (belong to zones)
+// ORG GROUP OPERATIONS (top-level org entity in hierarchy)
+// ============================================================================
+
+export const orgGroupDb = {
+  findAll: (filters?: { isActive?: boolean; country?: string; search?: string }): OrgGroup[] => {
+    let result = [...orgGroups];
+    if (filters?.isActive !== undefined)
+      result = result.filter((g) => g.isActive === filters.isActive);
+    if (filters?.country)
+      result = result.filter((g) => g.country === filters.country);
+    if (filters?.search) {
+      const q = filters.search.toLowerCase();
+      result = result.filter(
+        (g) =>
+          g.name.toLowerCase().includes(q) ||
+          g.description.toLowerCase().includes(q) ||
+          g.country?.toLowerCase().includes(q)
+      );
+    }
+    return result;
+  },
+
+  findById: (id: string): OrgGroup | undefined =>
+    orgGroups.find((g) => g.id === id),
+
+  create: (data: CreateOrgGroupInput): OrgGroup => {
+    const group: OrgGroup = {
+      id: generateId(),
+      orgLevel: "GROUP",
+      parentId: null,
+      parentLevel: null,
+      ...data,
+      isActive: true,
+      createdAt: now(),
+      updatedAt: now(),
+    };
+    orgGroups.push(group);
+    return group;
+  },
+
+  update: (id: string, data: UpdateOrgGroupInput): OrgGroup | undefined => {
+    const idx = orgGroups.findIndex((g) => g.id === id);
+    if (idx === -1) return undefined;
+    orgGroups[idx] = { ...orgGroups[idx], ...data, updatedAt: now() };
+    return orgGroups[idx];
+  },
+
+  delete: (id: string): boolean => {
+    const idx = orgGroups.findIndex((g) => g.id === id);
+    if (idx === -1) return false;
+    orgGroups.splice(idx, 1);
+    return true;
+  },
+
+  getWithDetails: (id: string): OrgGroupWithDetails | undefined => {
+    const group = orgGroups.find((g) => g.id === id);
+    if (!group) return undefined;
+
+    const leader = users.find((u) => u.id === group.leaderId);
+    const groupCampuses = campuses.filter((c) => c.parentId === group.id);
+    const groupMembers = users.filter((u) => u.zoneId === group.id);
+
+    return {
+      ...group,
+      leader: leader ? toProfile(leader) : undefined,
+      campuses: groupCampuses,
+      totalCampuses: groupCampuses.length,
+      totalMembers: groupMembers.length,
+    };
+  },
+
+  count: (): number => orgGroups.length,
+};
+
+// ============================================================================
+// CAMPUS OPERATIONS (belong to org groups via parentId)
 // ============================================================================
 
 export const campusDb = {
   findAll: (filters?: {
-    zoneId?: string;
+    parentId?: string;
     isActive?: boolean;
     search?: string;
   }): Campus[] => {
     let result = [...campuses];
-    if (filters?.zoneId)
-      result = result.filter((c) => c.zoneId === filters.zoneId);
+    if (filters?.parentId)
+      result = result.filter((c) => c.parentId === filters.parentId);
     if (filters?.isActive !== undefined)
       result = result.filter((c) => c.isActive === filters.isActive);
     if (filters?.search) {
@@ -348,6 +441,9 @@ export const campusDb = {
     const campus: Campus = {
       id: generateId(),
       ...data,
+      orgLevel: "CAMPUS",
+      parentId: data.parentId,
+      parentLevel: "GROUP",
       isActive: true,
       createdAt: now(),
       updatedAt: now(),
@@ -374,41 +470,16 @@ export const campusDb = {
     const campus = campuses.find((c) => c.id === id);
     if (!campus) return undefined;
 
-    const zone = zones.find((z) => z.id === campus.zoneId);
+    const orgGroup = orgGroups.find((g) => g.id === campus.parentId);
     const admin = users.find((u) => u.id === campus.adminId);
     const campusDepts = departments.filter((d) => d.campusId === campus.id);
     const campusGroups = groups.filter((g) => g.campusId === campus.id);
     const campusCells = cells.filter((c) => c.campusId === campus.id);
     const campusMembers = users.filter((u) => u.campusId === campus.id);
 
-    const toProfile = (u: User): UserProfile => ({
-      id: u.id,
-      email: u.email,
-      firstName: u.firstName,
-      lastName: u.lastName,
-      phone: u.phone,
-      whatsappPhone: u.whatsappPhone,
-      location: u.location,
-      age: u.age,
-      maritalStatus: u.maritalStatus,
-      employmentStatus: u.employmentStatus,
-      interests: u.interests,
-      role: u.role,
-      campusId: u.campusId,
-      zoneId: u.zoneId,
-      departmentId: u.departmentId,
-      groupId: u.groupId,
-      cellId: u.cellId,
-      avatar: u.avatar,
-      isActive: u.isActive,
-      inviteCode: u.inviteCode,
-      createdAt: u.createdAt,
-      updatedAt: u.updatedAt,
-    });
-
     return {
       ...campus,
-      zone: zone as Zone,
+      orgGroup: orgGroup,
       admin: admin ? toProfile(admin) : undefined,
       departments: campusDepts,
       groups: campusGroups,
@@ -420,7 +491,7 @@ export const campusDb = {
     };
   },
 
-  count: (filters?: { zoneId?: string }): number =>
+  count: (filters?: { parentId?: string }): number =>
     campusDb.findAll(filters).length,
 };
 
@@ -460,6 +531,9 @@ export const departmentDb = {
     const dept: Department = {
       id: generateId(),
       ...data,
+      orgLevel: "DEPARTMENT",
+      parentId: data.campusId,
+      parentLevel: "CAMPUS",
       isActive: true,
       createdAt: now(),
       updatedAt: now(),
@@ -490,31 +564,6 @@ export const departmentDb = {
     const hod = users.find((u) => u.id === dept.hodId);
     const deptGroups = groups.filter((g) => g.departmentId === dept.id);
     const deptMembers = users.filter((u) => u.departmentId === dept.id);
-
-    const toProfile = (u: User): UserProfile => ({
-      id: u.id,
-      email: u.email,
-      firstName: u.firstName,
-      lastName: u.lastName,
-      phone: u.phone,
-      whatsappPhone: u.whatsappPhone,
-      location: u.location,
-      age: u.age,
-      maritalStatus: u.maritalStatus,
-      employmentStatus: u.employmentStatus,
-      interests: u.interests,
-      role: u.role,
-      campusId: u.campusId,
-      zoneId: u.zoneId,
-      departmentId: u.departmentId,
-      groupId: u.groupId,
-      cellId: u.cellId,
-      avatar: u.avatar,
-      isActive: u.isActive,
-      inviteCode: u.inviteCode,
-      createdAt: u.createdAt,
-      updatedAt: u.updatedAt,
-    });
 
     return {
       ...dept,
@@ -567,6 +616,9 @@ export const groupDb = {
     const group: Group = {
       id: generateId(),
       ...data,
+      orgLevel: "SMALL_GROUP",
+      parentId: data.campusId || null,
+      parentLevel: "CAMPUS",
       campusId: data.campusId || "",
       zoneId: data.zoneId || "",
       departmentId: data.departmentId || undefined,
@@ -647,6 +699,9 @@ export const cellDb = {
     const cell: Cell = {
       id: generateId(),
       ...data,
+      orgLevel: "CELL",
+      parentId: data.groupId,
+      parentLevel: "SMALL_GROUP",
       memberCount: 0,
       inviteCode: generateCode(),
       isActive: true,
@@ -1313,7 +1368,7 @@ export const analyticsDb = {
 
   /** Stats scoped to a specific zone */
   getZoneStats: (zoneId: string) => {
-    const zoneCampuses = campuses.filter((c) => c.zoneId === zoneId);
+    const zoneCampuses = campuses.filter((c) => c.parentId === zoneId);
     const campusIds = zoneCampuses.map((c) => c.id);
     const zoneMembers = users.filter((u) => u.zoneId === zoneId && u.isActive);
     const zoneMeetings = meetings.filter((m) => m.zoneId === zoneId);
@@ -1731,7 +1786,7 @@ export const reportTemplateVersionDb = {
 // ============================================================================
 
 export const reportDb = {
-  findAll: (filters?: ReportFilters): Report[] => {
+  findAll: (filters?: ReportFilters): PeriodicReport[] => {
     let result = [...reports];
 
     if (filters?.campusId)
@@ -1771,7 +1826,7 @@ export const reportDb = {
     return result;
   },
 
-  findById: (id: string): Report | undefined =>
+  findById: (id: string): PeriodicReport | undefined =>
     reports.find((r) => r.id === id),
 
   getWithDetails: (id: string): ReportWithDetails | undefined => {
@@ -1798,31 +1853,6 @@ export const reportDb = {
       (ur) => ur.reportId === id
     );
 
-    const toProfile = (u: User): UserProfile => ({
-      id: u.id,
-      email: u.email,
-      firstName: u.firstName,
-      lastName: u.lastName,
-      phone: u.phone,
-      whatsappPhone: u.whatsappPhone,
-      location: u.location,
-      age: u.age,
-      maritalStatus: u.maritalStatus,
-      employmentStatus: u.employmentStatus,
-      interests: u.interests,
-      role: u.role,
-      campusId: u.campusId,
-      zoneId: u.zoneId,
-      departmentId: u.departmentId,
-      groupId: u.groupId,
-      cellId: u.cellId,
-      avatar: u.avatar,
-      isActive: u.isActive,
-      inviteCode: u.inviteCode,
-      createdAt: u.createdAt,
-      updatedAt: u.updatedAt,
-    });
-
     return {
       ...report,
       template,
@@ -1836,7 +1866,7 @@ export const reportDb = {
     };
   },
 
-  create: (data: CreateReportInput): Report => {
+  create: (data: CreateReportInput): PeriodicReport => {
     const id = generateId();
 
     // Build report sections from input
@@ -1867,7 +1897,7 @@ export const reportDb = {
       };
     });
 
-    const report: Report = {
+    const report: PeriodicReport = {
       id,
       templateId: data.templateId,
       templateVersionId: data.templateVersionId,
@@ -1906,7 +1936,7 @@ export const reportDb = {
     return report;
   },
 
-  update: (id: string, data: UpdateReportInput): Report | undefined => {
+  update: (id: string, data: UpdateReportInput): PeriodicReport | undefined => {
     const idx = reports.findIndex((r) => r.id === id);
     if (idx === -1) return undefined;
 
@@ -1954,7 +1984,7 @@ export const reportDb = {
   },
 
   /** Submit a draft report for review */
-  submit: (id: string, actorId: string): Report | undefined => {
+  submit: (id: string, actorId: string): PeriodicReport | undefined => {
     const idx = reports.findIndex((r) => r.id === id);
     if (idx === -1) return undefined;
     if (reports[idx].status !== ReportStatus.DRAFT && reports[idx].status !== ReportStatus.REQUIRES_EDITS)
@@ -1982,7 +2012,7 @@ export const reportDb = {
   },
 
   /** Approve a submitted report */
-  approve: (id: string, actorId: string): Report | undefined => {
+  approve: (id: string, actorId: string): PeriodicReport | undefined => {
     const idx = reports.findIndex((r) => r.id === id);
     if (idx === -1) return undefined;
     if (reports[idx].status !== ReportStatus.SUBMITTED) return undefined;
@@ -2010,7 +2040,7 @@ export const reportDb = {
     id: string,
     actorId: string,
     reason: string
-  ): Report | undefined => {
+  ): PeriodicReport | undefined => {
     const idx = reports.findIndex((r) => r.id === id);
     if (idx === -1) return undefined;
     if (reports[idx].status !== ReportStatus.SUBMITTED) return undefined;
@@ -2035,7 +2065,7 @@ export const reportDb = {
   },
 
   /** Mark an approved report as reviewed */
-  review: (id: string, actorId: string): Report | undefined => {
+  review: (id: string, actorId: string): PeriodicReport | undefined => {
     const idx = reports.findIndex((r) => r.id === id);
     if (idx === -1) return undefined;
     if (reports[idx].status !== ReportStatus.APPROVED) return undefined;
@@ -2059,7 +2089,7 @@ export const reportDb = {
   },
 
   /** Lock a reviewed report (final state) */
-  lock: (id: string, actorId: string): Report | undefined => {
+  lock: (id: string, actorId: string): PeriodicReport | undefined => {
     const idx = reports.findIndex((r) => r.id === id);
     if (idx === -1) return undefined;
     if (reports[idx].status !== ReportStatus.REVIEWED) return undefined;
@@ -2083,7 +2113,7 @@ export const reportDb = {
   },
 
   /** Apply approved edit changes to the report */
-  applyEdit: (reportId: string, editId: string): Report | undefined => {
+  applyEdit: (reportId: string, editId: string): PeriodicReport | undefined => {
     const rIdx = reports.findIndex((r) => r.id === reportId);
     if (rIdx === -1) return undefined;
 
@@ -2153,6 +2183,63 @@ export const reportDb = {
     return true;
   },
 
+  /** Superadmin unlock specific metric fields on a report */
+  unlockFields: (
+    reportId: string,
+    metricIds: string[],
+    actorId: string,
+    reason?: string
+  ): PeriodicReport | undefined => {
+    const idx = reports.findIndex((r) => r.id === reportId);
+    if (idx === -1) return undefined;
+
+    const report = reports[idx];
+
+    // Unlock specified metrics
+    for (const section of report.sections) {
+      for (const metric of section.metrics) {
+        if (metricIds.includes(metric.templateMetricId)) {
+          metric.isLocked = false;
+        }
+      }
+    }
+
+    reports[idx] = { ...report, updatedAt: now() };
+
+    reportEventDb.create({
+      reportId,
+      eventType: ReportEventType.FIELD_UNLOCKED,
+      actorId,
+      details: { metricIds, reason: reason || "Superadmin override" },
+    });
+
+    return reports[idx];
+  },
+
+  /** Auto-approve a report when deadline passes with no reviewer action */
+  autoApprove: (reportId: string): PeriodicReport | undefined => {
+    const idx = reports.findIndex((r) => r.id === reportId);
+    if (idx === -1) return undefined;
+    if (reports[idx].status !== ReportStatus.SUBMITTED) return undefined;
+
+    reports[idx] = {
+      ...reports[idx],
+      status: ReportStatus.APPROVED,
+      updatedAt: now(),
+    };
+
+    reportEventDb.create({
+      reportId,
+      eventType: ReportEventType.AUTO_APPROVED,
+      actorId: "system",
+      previousStatus: ReportStatus.SUBMITTED,
+      newStatus: ReportStatus.APPROVED,
+      details: { reason: "Auto-approved: reviewer deadline expired" },
+    });
+
+    return reports[idx];
+  },
+
   count: (filters?: ReportFilters): number =>
     reportDb.findAll(filters).length,
 };
@@ -2215,7 +2302,7 @@ export const reportVersionDb = {
 
   create: (
     reportId: string,
-    snapshot: Report,
+    snapshot: PeriodicReport,
     createdById: string,
     reason?: string
   ): ReportVersion => {
@@ -2278,31 +2365,6 @@ export const reportEditDb = {
     const reviewedBy = edit.reviewedById
       ? users.find((u) => u.id === edit.reviewedById)
       : undefined;
-
-    const toProfile = (u: User): UserProfile => ({
-      id: u.id,
-      email: u.email,
-      firstName: u.firstName,
-      lastName: u.lastName,
-      phone: u.phone,
-      whatsappPhone: u.whatsappPhone,
-      location: u.location,
-      age: u.age,
-      maritalStatus: u.maritalStatus,
-      employmentStatus: u.employmentStatus,
-      interests: u.interests,
-      role: u.role,
-      campusId: u.campusId,
-      zoneId: u.zoneId,
-      departmentId: u.departmentId,
-      groupId: u.groupId,
-      cellId: u.cellId,
-      avatar: u.avatar,
-      isActive: u.isActive,
-      inviteCode: u.inviteCode,
-      createdAt: u.createdAt,
-      updatedAt: u.updatedAt,
-    });
 
     return {
       ...edit,
@@ -2473,31 +2535,6 @@ export const reportUpdateRequestDb = {
     const reviewedBy = request.reviewedById
       ? users.find((u) => u.id === request.reviewedById)
       : undefined;
-
-    const toProfile = (u: User): UserProfile => ({
-      id: u.id,
-      email: u.email,
-      firstName: u.firstName,
-      lastName: u.lastName,
-      phone: u.phone,
-      whatsappPhone: u.whatsappPhone,
-      location: u.location,
-      age: u.age,
-      maritalStatus: u.maritalStatus,
-      employmentStatus: u.employmentStatus,
-      interests: u.interests,
-      role: u.role,
-      campusId: u.campusId,
-      zoneId: u.zoneId,
-      departmentId: u.departmentId,
-      groupId: u.groupId,
-      cellId: u.cellId,
-      avatar: u.avatar,
-      isActive: u.isActive,
-      inviteCode: u.inviteCode,
-      createdAt: u.createdAt,
-      updatedAt: u.updatedAt,
-    });
 
     return {
       ...request,
@@ -2842,6 +2879,7 @@ export const reportAnalyticsDb = {
 export const db = {
   users: userDb,
   zones: zoneDb,
+  orgGroups: orgGroupDb,
   campuses: campusDb,
   departments: departmentDb,
   groups: groupDb,

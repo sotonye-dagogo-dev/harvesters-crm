@@ -8,3 +8,4 @@ export { default as ReportTimeline } from "./ReportTimeline";
 export { default as ReportActionBar } from "./ReportActionBar";
 export { default as ReportEditDiff } from "./ReportEditDiff";
 export { default as ReportForm } from "./ReportForm";
+export { default as ReportOverviewWidget } from "./ReportOverviewWidget";

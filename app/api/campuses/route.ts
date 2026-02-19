@@ -20,13 +20,13 @@ export async function GET(request: NextRequest) {
     const page = parseInt(searchParams.get("page") || "1");
     const pageSize = parseInt(searchParams.get("pageSize") || "20");
     const search = searchParams.get("search") || undefined;
-    const zoneId = searchParams.get("zoneId") || undefined;
+    const parentId = searchParams.get("parentId") || undefined;
     const isActive = searchParams.get("isActive") === "true" ? true : undefined;
 
     // Build filters
     const filters = {
       search,
-      zoneId,
+      parentId,
       isActive,
     };
 
@@ -36,7 +36,7 @@ export async function GET(request: NextRequest) {
     // Filter by permission
     if (user?.role === USER_ROLES.ZONAL_LEADER) {
       // Zonal leaders can see campuses in their zone
-      allCampuses = allCampuses.filter((c) => c.zoneId === user.zoneId);
+      allCampuses = allCampuses.filter((c) => c.parentId === user.zoneId);
     } else if (user?.role === USER_ROLES.CAMPUS_ADMIN) {
       // Campus admins can only see their own campus
       allCampuses = allCampuses.filter((c) => c.id === user.campusId);
@@ -81,28 +81,28 @@ export async function POST(request: NextRequest) {
       !body.description ||
       !body.location ||
       !body.country ||
-      !body.zoneId ||
+      !body.parentId ||
       !body.adminId
     ) {
       return badRequestResponse(
-        "Missing required fields: name, description, location, country, zoneId, adminId"
+        "Missing required fields: name, description, location, country, parentId, adminId"
       );
     }
 
     // If zonal leader is creating, campus must be in their zone
-    if (user?.role === USER_ROLES.ZONAL_LEADER && body.zoneId !== user.zoneId) {
+    if (user?.role === USER_ROLES.ZONAL_LEADER && body.parentId !== user.zoneId) {
       return badRequestResponse(
         "Zonal leaders can only create campuses in their own zone"
       );
     }
 
-    // Create campus
+    // Create campus with parentId pointing to the org group
     const newCampus = campusDb.create({
       name: body.name,
       description: body.description,
       location: body.location,
       country: body.country,
-      zoneId: body.zoneId,
+      parentId: body.parentId,
       adminId: body.adminId,
     });
 

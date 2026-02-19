@@ -726,6 +726,76 @@ export async function sendReportUpdateRequestRejectedNotification(
 }
 
 /**
+ * Notify the report submitter when their report is locked (finalized)
+ */
+export async function sendReportLockedNotification(
+  reportId: string,
+  lockerId: string
+): Promise<{ success: boolean; message: string }> {
+  try {
+    const report = db.reports.findById(reportId);
+    const locker = db.users.findById(lockerId);
+    if (!report || !locker) {
+      return { success: false, message: "Report or locker not found" };
+    }
+
+    db.notifications.create({
+      userId: report.submittedById,
+      type: NotificationType.REPORT_REVIEWED,
+      title: "Report Locked",
+      message: `Your report has been finalized and locked by ${locker.firstName} ${locker.lastName}. No further edits are possible without an update request.`,
+      relatedId: reportId,
+    });
+
+    return { success: true, message: "Lock notification sent to submitter." };
+  } catch (error) {
+    return {
+      success: false,
+      message: error instanceof Error ? error.message : "Failed to send report locked notification.",
+    };
+  }
+}
+
+/**
+ * Notify reviewers/approvers when a report edit is submitted for their review
+ */
+export async function sendReportEditSubmittedNotification(
+  editId: string,
+  reportId: string,
+  submitterId: string
+): Promise<{ success: boolean; message: string }> {
+  try {
+    const report = db.reports.findById(reportId);
+    const submitter = db.users.findById(submitterId);
+    if (!report || !submitter) {
+      return { success: false, message: "Report or submitter not found" };
+    }
+
+    const approverIds = getReportApproverIds(report.campusId);
+    for (const approverId of approverIds) {
+      if (approverId === submitterId) continue;
+      db.notifications.create({
+        userId: approverId,
+        type: NotificationType.REPORT_EDITS_REQUESTED,
+        title: "Report Edit Submitted",
+        message: `${submitter.firstName} ${submitter.lastName} submitted a report edit for review.`,
+        relatedId: editId,
+      });
+    }
+
+    return {
+      success: true,
+      message: `Edit submitted notification sent to ${approverIds.length} reviewer(s).`,
+    };
+  } catch (error) {
+    return {
+      success: false,
+      message: error instanceof Error ? error.message : "Failed to send edit submitted notification.",
+    };
+  }
+}
+
+/**
  * Send deadline reminder to report submitters
  * Called for reports approaching their deadline (e.g., 3 days and 1 day before)
  */

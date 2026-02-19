@@ -17,6 +17,7 @@ import Card from "@/components/ui/Card";
 import { Spin, Button, message } from "antd";
 import { useAuth } from "@/providers/AuthProvider";
 import FollowUpReminderWidget from "@/components/features/communications/FollowUpReminderWidget";
+import { ReportOverviewWidget } from "@/components/features/reports";
 
 interface Member {
   id: string;
@@ -210,6 +211,9 @@ export default function LeaderDashboard() {
 
             {/* Follow-up Reminders Widget */}
             <FollowUpReminderWidget leaderGroupId={user.groupId} />
+
+            {/* Report Overview Widget */}
+            <ReportOverviewWidget />
 
             <Card
               title="Average Attendance"

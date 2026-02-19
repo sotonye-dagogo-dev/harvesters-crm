@@ -10,6 +10,7 @@ import {
 } from "@/lib/utils/api";
 import { USER_ROLES } from "@/lib/constants";
 import { ReportStatus } from "@/lib/types";
+import { sendReportLockedNotification } from "@/lib/utils/notificationHelpers";
 
 // POST /api/reports/:id/lock — Lock a reviewed report (final state)
 export async function POST(
@@ -38,6 +39,9 @@ export async function POST(
 
         const updated = reportDb.lock(id, user!.id);
         if (!updated) return badRequestResponse("Failed to lock report.");
+
+        // Notify the report submitter
+        await sendReportLockedNotification(id, user!.id);
 
         return successResponse(updated, "Report locked successfully");
     } catch (err) {

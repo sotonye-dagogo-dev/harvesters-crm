@@ -8,6 +8,8 @@ export const metadata: Metadata = {
 };
 
 export default function LoginPage() {
+  const isDev = process.env.NODE_ENV === "development";
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-church-primary/10 to-church-accent/10 dark:from-slate-900 dark:to-slate-800 p-4">
       {/* Theme Toggle - Fixed Position */}
@@ -16,7 +18,7 @@ export default function LoginPage() {
       </div>
 
       <div className="w-full max-w-md">
-        <LoginForm />
+        <LoginForm showDevCredentials={isDev} />
       </div>
     </div>
   );

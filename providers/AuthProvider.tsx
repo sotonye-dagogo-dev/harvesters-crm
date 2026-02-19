@@ -9,7 +9,6 @@ import {
 } from "react";
 import { useRouter } from "next/navigation";
 import { App } from "antd";
-import { USER_ROLES } from "@/lib/constants";
 import { getDashboardRoute } from "@/lib/constants/roles";
 import { UserRole, Gender, EmploymentStatus, MaritalStatus } from "@/lib/types";
 

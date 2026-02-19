@@ -359,6 +359,13 @@ export const ORG_HIERARCHY_CONFIG: OrgLevelConfig[] = [
         leaderRole: UserRole.CELL_LEADER,
         hasAdmin: false,
         hasPastor: false,
+        hasLocation: true,
+        hasMeetingFrequency: true,
+        hasInviteCode: true,
+        hasMemberCount: true,
+        hasDepartment: true,
+        hasCountry: false,
+        hasRegion: false,
     },
     {
         level: "ZONE",
@@ -370,6 +377,13 @@ export const ORG_HIERARCHY_CONFIG: OrgLevelConfig[] = [
         leaderRole: UserRole.ZONAL_LEADER,
         hasAdmin: false,
         hasPastor: false,
+        hasLocation: false,
+        hasMeetingFrequency: false,
+        hasInviteCode: false,
+        hasMemberCount: false,
+        hasDepartment: false,
+        hasCountry: false,
+        hasRegion: true,
     },
     {
         level: "AREA",
@@ -381,6 +395,13 @@ export const ORG_HIERARCHY_CONFIG: OrgLevelConfig[] = [
         leaderRole: null, // Area leaders are generic leadership
         hasAdmin: false,
         hasPastor: false,
+        hasLocation: false,
+        hasMeetingFrequency: false,
+        hasInviteCode: false,
+        hasMemberCount: false,
+        hasDepartment: false,
+        hasCountry: false,
+        hasRegion: false,
     },
     {
         level: "COMMUNITY",
@@ -392,6 +413,13 @@ export const ORG_HIERARCHY_CONFIG: OrgLevelConfig[] = [
         leaderRole: null,
         hasAdmin: false,
         hasPastor: false,
+        hasLocation: false,
+        hasMeetingFrequency: false,
+        hasInviteCode: false,
+        hasMemberCount: false,
+        hasDepartment: false,
+        hasCountry: false,
+        hasRegion: false,
     },
     {
         level: "DISTRICT",
@@ -403,6 +431,13 @@ export const ORG_HIERARCHY_CONFIG: OrgLevelConfig[] = [
         leaderRole: null,
         hasAdmin: false,
         hasPastor: false,
+        hasLocation: false,
+        hasMeetingFrequency: false,
+        hasInviteCode: false,
+        hasMemberCount: false,
+        hasDepartment: false,
+        hasCountry: false,
+        hasRegion: false,
     },
     {
         level: "CAMPUS",
@@ -414,6 +449,13 @@ export const ORG_HIERARCHY_CONFIG: OrgLevelConfig[] = [
         leaderRole: UserRole.CAMPUS_ADMIN,
         hasAdmin: true,
         hasPastor: true,
+        hasLocation: true,
+        hasMeetingFrequency: false,
+        hasInviteCode: false,
+        hasMemberCount: false,
+        hasDepartment: false,
+        hasCountry: true,
+        hasRegion: false,
     },
     {
         level: "GROUP",
@@ -425,6 +467,94 @@ export const ORG_HIERARCHY_CONFIG: OrgLevelConfig[] = [
         leaderRole: UserRole.GROUP_ADMIN,
         hasAdmin: true,
         hasPastor: true,
+        hasLocation: false,
+        hasMeetingFrequency: false,
+        hasInviteCode: false,
+        hasMemberCount: false,
+        hasDepartment: false,
+        hasCountry: true,
+        hasRegion: true,
+    },
+];
+
+// ============================================================================
+// DEPARTMENT CONFIGURATION
+// ============================================================================
+// Single registry of all department types used across the ministry.
+// mockData.ts and UI components reference these keys instead of hardcoding.
+// To add a new department: add one entry here. The rest propagates.
+// ============================================================================
+
+export const DEPARTMENT_CONFIG: DepartmentConfig[] = [
+    {
+        key: "worship",
+        name: "Worship & Arts",
+        description: "Music, worship leading, choir, and creative arts ministry.",
+        icon: "SoundOutlined",
+        isGlobal: true,
+    },
+    {
+        key: "ushering",
+        name: "Ushering & Protocol",
+        description: "Ushering, crowd management, and protocol services during services and events.",
+        icon: "TeamOutlined",
+        isGlobal: true,
+    },
+    {
+        key: "media",
+        name: "Media & Communications",
+        description: "Audio-visual production, social media, graphic design, and church communications.",
+        icon: "VideoCameraOutlined",
+        isGlobal: true,
+    },
+    {
+        key: "pastoral",
+        name: "Pastoral Care & Counselling",
+        description: "Member welfare, counselling, hospital visitation, and pastoral support.",
+        icon: "HeartOutlined",
+        isGlobal: true,
+    },
+    {
+        key: "children",
+        name: "Kidz Zone",
+        description: "Children's church, Sunday school, and kids-focused ministry programmes.",
+        icon: "SmileOutlined",
+        isGlobal: true,
+    },
+    {
+        key: "outreach",
+        name: "Missions & Outreach",
+        description: "Evangelism, community outreach, missions, and external engagement.",
+        icon: "GlobalOutlined",
+        isGlobal: true,
+    },
+    {
+        key: "prayer",
+        name: "Prayer Ministry",
+        description: "Intercessory prayer, prayer walks, and prayer chain coordination.",
+        icon: "FireOutlined",
+        isGlobal: false,
+    },
+    {
+        key: "hospitality",
+        name: "Hospitality",
+        description: "Guest relations, refreshments, facility management, and event hosting.",
+        icon: "CoffeeOutlined",
+        isGlobal: false,
+    },
+    {
+        key: "youth",
+        name: "Youth Ministry",
+        description: "Young adults ministry, campus fellowship, and youth-focused programmes.",
+        icon: "RocketOutlined",
+        isGlobal: false,
+    },
+    {
+        key: "tech",
+        name: "Technical & IT",
+        description: "Sound engineering, lighting, live streaming, and IT infrastructure.",
+        icon: "LaptopOutlined",
+        isGlobal: false,
     },
 ];
 
@@ -465,4 +595,41 @@ export function getLevelsBetween(low: string, high: string): string[] {
 /** Get the full hierarchy chain from bottom to top */
 export function getHierarchyChain(): string[] {
     return ORG_HIERARCHY_CONFIG.map((c) => c.level);
+}
+
+// ============================================================================
+// DEPARTMENT CONFIG HELPERS
+// ============================================================================
+
+/** Get a department config by key */
+export function getDepartmentConfig(key: string): DepartmentConfig | undefined {
+    return DEPARTMENT_CONFIG.find((d) => d.key === key);
+}
+
+/** Get all global departments (available at every campus) */
+export function getGlobalDepartments(): DepartmentConfig[] {
+    return DEPARTMENT_CONFIG.filter((d) => d.isGlobal);
+}
+
+/** Get all department keys */
+export function getDepartmentKeys(): string[] {
+    return DEPARTMENT_CONFIG.map((d) => d.key);
+}
+
+/** Check if an org level supports a given feature via OrgLevelConfig flags */
+export function orgLevelHasFeature(
+    level: string,
+    feature: keyof Pick<
+        OrgLevelConfig,
+        | "hasLocation"
+        | "hasMeetingFrequency"
+        | "hasInviteCode"
+        | "hasMemberCount"
+        | "hasDepartment"
+        | "hasCountry"
+        | "hasRegion"
+    >
+): boolean {
+    const config = getOrgLevelConfig(level);
+    return config ? config[feature] : false;
 }

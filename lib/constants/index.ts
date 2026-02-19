@@ -3,7 +3,35 @@
 // ============================================================================
 
 // ============================================================================
-// USER ROLES (7-TIER HIERARCHY)
+// RE-EXPORT ROLE & ORG HIERARCHY CONFIGURATION (Single Source of Truth)
+// ============================================================================
+// All role-driven and org-hierarchy-driven config lives in roles.ts.
+// Re-exported here so consumers can import from "@/lib/constants" as before.
+// ============================================================================
+export {
+  ROLE_CONFIG,
+  getRoleConfig,
+  canRolePerformAction,
+  getRoleNavItems,
+  getRoleReportPermissions,
+  getDashboardRoute,
+  isRoleLeadership,
+  ORG_HIERARCHY_CONFIG,
+  getOrgLevelConfig,
+  getParentLevel,
+  getChildLevel,
+  getLeaderRoleForLevel,
+  getLevelsBetween,
+  getHierarchyChain,
+  DEPARTMENT_CONFIG,
+  getDepartmentConfig,
+  getGlobalDepartments,
+  getDepartmentKeys,
+  orgLevelHasFeature,
+} from "./roles";
+
+// ============================================================================
+// USER ROLES (Runtime string constants — mirrors UserRole enum for JS usage)
 // ============================================================================
 
 export const USER_ROLES = {
@@ -20,43 +48,28 @@ export const USER_ROLES = {
   MEMBER: "MEMBER" as const,
 };
 
-export const USER_ROLE_LABELS: Record<string, string> = {
-  [USER_ROLES.SUPERADMIN]: "Super Admin",
-  [USER_ROLES.GROUP_PASTOR]: "Group Pastor",
-  [USER_ROLES.GROUP_ADMIN]: "Group Admin",
-  [USER_ROLES.CAMPUS_PASTOR]: "Campus Pastor",
-  [USER_ROLES.CAMPUS_ADMIN]: "Campus Admin",
-  [USER_ROLES.ZONAL_LEADER]: "Zonal Leader",
-  [USER_ROLES.HOD]: "Head of Department",
-  [USER_ROLES.SMALL_GROUP_LEADER]: "Small Group Leader",
-  [USER_ROLES.CELL_LEADER]: "Cell Leader",
-  [USER_ROLES.DATA_ENTRY]: "Data Entry",
-  [USER_ROLES.MEMBER]: "Member",
-};
+// Derive labels from ROLE_CONFIG so there's one source of truth for role names.
+import { ROLE_CONFIG } from "./roles";
+import { UserRole } from "../types";
 
-/** Hierarchy order: lower number = higher authority */
-export const HIERARCHY_ORDER: Record<string, number> = {
-  [USER_ROLES.SUPERADMIN]: 0,
-  [USER_ROLES.GROUP_PASTOR]: 1,
-  [USER_ROLES.GROUP_ADMIN]: 2,
-  [USER_ROLES.CAMPUS_PASTOR]: 3,
-  [USER_ROLES.CAMPUS_ADMIN]: 4,
-  [USER_ROLES.ZONAL_LEADER]: 5,
-  [USER_ROLES.HOD]: 6,
-  [USER_ROLES.SMALL_GROUP_LEADER]: 7,
-  [USER_ROLES.CELL_LEADER]: 8,
-  [USER_ROLES.DATA_ENTRY]: 9,
-  [USER_ROLES.MEMBER]: 10,
-};
+export const USER_ROLE_LABELS: Record<string, string> = Object.fromEntries(
+  Object.values(ROLE_CONFIG).map((rc) => [rc.role, rc.label])
+);
+
+/** Hierarchy order derived from ROLE_CONFIG.hierarchyOrder: lower = higher authority */
+export const HIERARCHY_ORDER: Record<string, number> = Object.fromEntries(
+  Object.values(ROLE_CONFIG).map((rc) => [rc.role, rc.hierarchyOrder])
+);
 
 /** Returns true if roleA is above roleB in the hierarchy */
 export const isAboveInHierarchy = (roleA: string, roleB: string): boolean => {
   return (HIERARCHY_ORDER[roleA] ?? 99) < (HIERARCHY_ORDER[roleB] ?? 99);
 };
 
-/** Returns true if the role is a leadership role (not regular member or data entry) */
+/** Returns true if the role is a leadership role (derived from ROLE_CONFIG) */
 export const isLeadershipRole = (role: string): boolean => {
-  return role !== USER_ROLES.MEMBER && role !== USER_ROLES.DATA_ENTRY;
+  const config = ROLE_CONFIG[role as UserRole];
+  return config ? config.isLeadership : false;
 };
 
 /** Returns the roles that are below a given role in the hierarchy */

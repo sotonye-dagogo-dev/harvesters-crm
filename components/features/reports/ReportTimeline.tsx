@@ -66,6 +66,11 @@ const EVENT_CONFIG: Record<
     icon: <ExclamationCircleOutlined />,
     label: "Edit Rejected",
   },
+  [ReportEventType.EDIT_APPLIED]: {
+    color: "green",
+    icon: <CheckCircleOutlined />,
+    label: "Edit Applied",
+  },
   [ReportEventType.APPROVED]: {
     color: "green",
     icon: <CheckCircleOutlined />,
