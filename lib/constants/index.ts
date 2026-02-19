@@ -3,25 +3,38 @@
 // ============================================================================
 
 // ============================================================================
-// USER ROLES (7-TIER HIERARCHY)
+// USER ROLES (Organizational Hierarchy)
+// Cell → Zone → Area → Community → District → Campus → Group
 // ============================================================================
 
 export const USER_ROLES = {
   SUPERADMIN: "SUPERADMIN" as const,
-  ZONAL_LEADER: "ZONAL_LEADER" as const,
-  CAMPUS_ADMIN: "CAMPUS_ADMIN" as const,
-  HOD: "HOD" as const,
-  SMALL_GROUP_LEADER: "SMALL_GROUP_LEADER" as const,
+  SPO: "SPO" as const,
+  CHURCH_MINISTRY: "CHURCH_MINISTRY" as const,
+  GROUP_ADMIN: "GROUP_ADMIN" as const,
+  GROUP_LEADER: "GROUP_LEADER" as const,
+  CAMPUS_PASTOR: "CAMPUS_PASTOR" as const,
+  CAMPUS_LEADER: "CAMPUS_LEADER" as const,
+  DISTRICT_LEADER: "DISTRICT_LEADER" as const,
+  COMMUNITY_LEADER: "COMMUNITY_LEADER" as const,
+  AREA_LEADER: "AREA_LEADER" as const,
+  ZONE_LEADER: "ZONE_LEADER" as const,
   CELL_LEADER: "CELL_LEADER" as const,
   MEMBER: "MEMBER" as const,
 };
 
 export const USER_ROLE_LABELS: Record<string, string> = {
-  [USER_ROLES.SUPERADMIN]: "Super Admin",
-  [USER_ROLES.ZONAL_LEADER]: "Zonal Leader",
-  [USER_ROLES.CAMPUS_ADMIN]: "Campus Admin",
-  [USER_ROLES.HOD]: "Head of Department",
-  [USER_ROLES.SMALL_GROUP_LEADER]: "Small Group Leader",
+  [USER_ROLES.SUPERADMIN]: "Super Admin (CEO)",
+  [USER_ROLES.SPO]: "Senior Pastor Officer",
+  [USER_ROLES.CHURCH_MINISTRY]: "Church Ministry",
+  [USER_ROLES.GROUP_ADMIN]: "Group Admin",
+  [USER_ROLES.GROUP_LEADER]: "Group Leader",
+  [USER_ROLES.CAMPUS_PASTOR]: "Campus Pastor",
+  [USER_ROLES.CAMPUS_LEADER]: "Campus Leader",
+  [USER_ROLES.DISTRICT_LEADER]: "District Leader",
+  [USER_ROLES.COMMUNITY_LEADER]: "Community Leader",
+  [USER_ROLES.AREA_LEADER]: "Area Leader",
+  [USER_ROLES.ZONE_LEADER]: "Zone Leader",
   [USER_ROLES.CELL_LEADER]: "Cell Leader",
   [USER_ROLES.MEMBER]: "Member",
 };
@@ -29,12 +42,18 @@ export const USER_ROLE_LABELS: Record<string, string> = {
 /** Hierarchy order: lower number = higher authority */
 export const HIERARCHY_ORDER: Record<string, number> = {
   [USER_ROLES.SUPERADMIN]: 0,
-  [USER_ROLES.ZONAL_LEADER]: 1,
-  [USER_ROLES.CAMPUS_ADMIN]: 2,
-  [USER_ROLES.HOD]: 3,
-  [USER_ROLES.SMALL_GROUP_LEADER]: 4,
-  [USER_ROLES.CELL_LEADER]: 5,
-  [USER_ROLES.MEMBER]: 6,
+  [USER_ROLES.SPO]: 1,
+  [USER_ROLES.CHURCH_MINISTRY]: 1,
+  [USER_ROLES.GROUP_ADMIN]: 2,
+  [USER_ROLES.GROUP_LEADER]: 3,
+  [USER_ROLES.CAMPUS_PASTOR]: 4,
+  [USER_ROLES.CAMPUS_LEADER]: 4,
+  [USER_ROLES.DISTRICT_LEADER]: 5,
+  [USER_ROLES.COMMUNITY_LEADER]: 6,
+  [USER_ROLES.AREA_LEADER]: 7,
+  [USER_ROLES.ZONE_LEADER]: 8,
+  [USER_ROLES.CELL_LEADER]: 9,
+  [USER_ROLES.MEMBER]: 10,
 };
 
 /** Returns true if roleA is above roleB in the hierarchy */
@@ -42,9 +61,31 @@ export const isAboveInHierarchy = (roleA: string, roleB: string): boolean => {
   return (HIERARCHY_ORDER[roleA] ?? 99) < (HIERARCHY_ORDER[roleB] ?? 99);
 };
 
-/** Returns true if the role is a leadership role (not regular member) */
+/** Returns true if the role is a leadership role (not regular member or superadmin) */
 export const isLeadershipRole = (role: string): boolean => {
-  return role !== USER_ROLES.MEMBER;
+  return role !== USER_ROLES.MEMBER && role !== USER_ROLES.SUPERADMIN;
+};
+
+/** All leader roles that route to /leader/ */
+export const LEADER_ROLES: string[] = [
+  USER_ROLES.SPO,
+  USER_ROLES.CHURCH_MINISTRY,
+  USER_ROLES.GROUP_ADMIN,
+  USER_ROLES.GROUP_LEADER,
+  USER_ROLES.CAMPUS_PASTOR,
+  USER_ROLES.CAMPUS_LEADER,
+  USER_ROLES.DISTRICT_LEADER,
+  USER_ROLES.COMMUNITY_LEADER,
+  USER_ROLES.AREA_LEADER,
+  USER_ROLES.ZONE_LEADER,
+  USER_ROLES.CELL_LEADER,
+];
+
+/** Returns the route prefix for a given role */
+export const getRoleRoutePrefix = (role: string): string => {
+  if (role === USER_ROLES.SUPERADMIN) return "/superadmin";
+  if (role === USER_ROLES.MEMBER) return "/member";
+  return "/leader";
 };
 
 /** Returns the roles that are below a given role in the hierarchy */
@@ -95,28 +136,63 @@ export const MEETING_LEVEL_PERMISSIONS: Record<string, string[]> = {
     MEETING_LEVELS.SMALL_GROUP,
     MEETING_LEVELS.CELL,
   ],
-  [USER_ROLES.ZONAL_LEADER]: [
+  [USER_ROLES.SPO]: [
+    MEETING_LEVELS.ALL,
     MEETING_LEVELS.ZONE,
     MEETING_LEVELS.CAMPUS,
     MEETING_LEVELS.DEPARTMENT,
     MEETING_LEVELS.SMALL_GROUP,
     MEETING_LEVELS.CELL,
   ],
-  [USER_ROLES.CAMPUS_ADMIN]: [
+  [USER_ROLES.CHURCH_MINISTRY]: [
+    MEETING_LEVELS.ALL,
+    MEETING_LEVELS.ZONE,
     MEETING_LEVELS.CAMPUS,
     MEETING_LEVELS.DEPARTMENT,
     MEETING_LEVELS.SMALL_GROUP,
     MEETING_LEVELS.CELL,
   ],
-  [USER_ROLES.HOD]: [
+  [USER_ROLES.GROUP_ADMIN]: [
+    MEETING_LEVELS.ALL,
+    MEETING_LEVELS.ZONE,
+    MEETING_LEVELS.CAMPUS,
     MEETING_LEVELS.DEPARTMENT,
     MEETING_LEVELS.SMALL_GROUP,
     MEETING_LEVELS.CELL,
   ],
-  [USER_ROLES.SMALL_GROUP_LEADER]: [
+  [USER_ROLES.GROUP_LEADER]: [
+    MEETING_LEVELS.ZONE,
+    MEETING_LEVELS.CAMPUS,
+    MEETING_LEVELS.DEPARTMENT,
     MEETING_LEVELS.SMALL_GROUP,
     MEETING_LEVELS.CELL,
   ],
+  [USER_ROLES.CAMPUS_PASTOR]: [
+    MEETING_LEVELS.CAMPUS,
+    MEETING_LEVELS.DEPARTMENT,
+    MEETING_LEVELS.SMALL_GROUP,
+    MEETING_LEVELS.CELL,
+  ],
+  [USER_ROLES.CAMPUS_LEADER]: [
+    MEETING_LEVELS.CAMPUS,
+    MEETING_LEVELS.DEPARTMENT,
+    MEETING_LEVELS.SMALL_GROUP,
+    MEETING_LEVELS.CELL,
+  ],
+  [USER_ROLES.DISTRICT_LEADER]: [
+    MEETING_LEVELS.DEPARTMENT,
+    MEETING_LEVELS.SMALL_GROUP,
+    MEETING_LEVELS.CELL,
+  ],
+  [USER_ROLES.COMMUNITY_LEADER]: [
+    MEETING_LEVELS.SMALL_GROUP,
+    MEETING_LEVELS.CELL,
+  ],
+  [USER_ROLES.AREA_LEADER]: [
+    MEETING_LEVELS.SMALL_GROUP,
+    MEETING_LEVELS.CELL,
+  ],
+  [USER_ROLES.ZONE_LEADER]: [MEETING_LEVELS.CELL],
   [USER_ROLES.CELL_LEADER]: [MEETING_LEVELS.CELL],
   [USER_ROLES.MEMBER]: [],
 };
@@ -453,41 +529,15 @@ export const APP_ROUTES = {
   SUPERADMIN_CAMPAIGNS: "/superadmin/campaigns",
   SUPERADMIN_REFERRALS: "/superadmin/referrals",
 
-  // Zonal Leader
-  ZONAL_LEADER_DASHBOARD: "/zonal-leader/dashboard",
-  ZONAL_LEADER_CAMPUSES: "/zonal-leader/campuses",
-  ZONAL_LEADER_GROUPS: "/zonal-leader/groups",
-  ZONAL_LEADER_MEMBERS: "/zonal-leader/members",
-  ZONAL_LEADER_MEETINGS: "/zonal-leader/meetings",
-  ZONAL_LEADER_ANALYTICS: "/zonal-leader/analytics",
-
-  // Campus Admin
-  CAMPUS_ADMIN_DASHBOARD: "/campus-admin/dashboard",
-  CAMPUS_ADMIN_DEPARTMENTS: "/campus-admin/departments",
-  CAMPUS_ADMIN_GROUPS: "/campus-admin/groups",
-  CAMPUS_ADMIN_MEMBERS: "/campus-admin/members",
-  CAMPUS_ADMIN_MEETINGS: "/campus-admin/meetings",
-  CAMPUS_ADMIN_ANALYTICS: "/campus-admin/analytics",
-
-  // HOD
-  HOD_DASHBOARD: "/hod/dashboard",
-  HOD_GROUPS: "/hod/groups",
-  HOD_MEMBERS: "/hod/members",
-  HOD_MEETINGS: "/hod/meetings",
-  HOD_ANALYTICS: "/hod/analytics",
-
-  // Leader (Small Group Leader)
+  // Leader (all leadership roles)
   LEADER_DASHBOARD: "/leader/dashboard",
   LEADER_MY_GROUP: "/leader/my-group",
   LEADER_MEETINGS: "/leader/meetings",
   LEADER_MEMBERS: "/leader/members",
   LEADER_ANALYTICS: "/leader/analytics",
-
-  // Cell Leader
-  CELL_LEADER_DASHBOARD: "/cell-leader/dashboard",
-  CELL_LEADER_MY_CELL: "/cell-leader/my-cell",
-  CELL_LEADER_MEETINGS: "/cell-leader/meetings",
-  CELL_LEADER_MEMBERS: "/cell-leader/members",
+  LEADER_REPORTS: "/leader/reports",
+  LEADER_REPORTS_SUBMIT: "/leader/reports/submit",
+  LEADER_REPORTS_ANALYTICS: "/leader/reports/analytics",
 
   // Member
   MEMBER_DASHBOARD: "/member/dashboard",
@@ -586,6 +636,114 @@ export const CHART_COLORS = {
     "#ea580c",
     "#4f46e5",
   ],
+};
+
+// ============================================================================
+// REPORTING SYSTEM
+// ============================================================================
+
+export const REPORT_STATUS_LABELS: Record<string, string> = {
+  DRAFT: "Draft",
+  SUBMITTED: "Submitted",
+  REQUIRES_EDITS: "Requires Edits",
+  APPROVED: "Approved",
+  REVIEWED: "Reviewed",
+  FINALIZED: "Finalized",
+};
+
+export const REPORT_STATUS_COLORS: Record<string, string> = {
+  DRAFT: "default",
+  SUBMITTED: "processing",
+  REQUIRES_EDITS: "warning",
+  APPROVED: "success",
+  REVIEWED: "cyan",
+  FINALIZED: "green",
+};
+
+export const REPORT_CATEGORY_LABELS: Record<string, string> = {
+  CAMPUS: "Campus",
+  GROUP: "Group",
+  MINISTRY: "Ministry",
+  SPECIAL: "Special",
+};
+
+export const REPORT_FREQUENCY_LABELS: Record<string, string> = {
+  WEEKLY: "Weekly",
+  MONTHLY: "Monthly",
+  QUARTERLY: "Quarterly",
+  YEARLY: "Yearly",
+  AD_HOC: "Ad Hoc",
+};
+
+export const ORGANIZATIONAL_LEVEL_LABELS: Record<string, string> = {
+  CELL: "Cell",
+  ZONE: "Zone",
+  AREA: "Area",
+  COMMUNITY: "Community",
+  DISTRICT: "District",
+  CAMPUS: "Campus",
+  GROUP: "Group",
+};
+
+export const FIELD_TYPE_LABELS: Record<string, string> = {
+  TEXT: "Text",
+  NUMBER: "Number",
+  DATE: "Date",
+  SELECT: "Select",
+  TEXTAREA: "Text Area",
+  CHECKBOX: "Checkbox",
+  STRATEGIC_INDICATOR: "Strategic Indicator",
+  FILE_UPLOAD: "File Upload",
+  MULTI_FILE_UPLOAD: "Multi File Upload",
+};
+
+export const AUTO_SAVE_INTERVAL_MS = 30000;
+export const MAX_REPORT_WEEK = 53;
+export const MIN_REPORT_WEEK = 1;
+export const REFERRAL_CODE_LENGTH = 12;
+
+/** Roles allowed to submit reports */
+export const REPORT_SUBMITTER_ROLES = [
+  USER_ROLES.CELL_LEADER,
+  USER_ROLES.ZONE_LEADER,
+  USER_ROLES.AREA_LEADER,
+  USER_ROLES.COMMUNITY_LEADER,
+  USER_ROLES.DISTRICT_LEADER,
+  USER_ROLES.CAMPUS_LEADER,
+  USER_ROLES.CAMPUS_PASTOR,
+  USER_ROLES.GROUP_LEADER,
+  USER_ROLES.GROUP_ADMIN,
+  USER_ROLES.SUPERADMIN,
+];
+
+/** Roles allowed to review/approve reports */
+export const REPORT_REVIEWER_ROLES = [
+  USER_ROLES.CAMPUS_PASTOR,
+  USER_ROLES.CAMPUS_LEADER,
+  USER_ROLES.GROUP_LEADER,
+  USER_ROLES.GROUP_ADMIN,
+  USER_ROLES.SPO,
+  USER_ROLES.CHURCH_MINISTRY,
+  USER_ROLES.SUPERADMIN,
+];
+
+/** Performance thresholds for metric status */
+export const PERFORMANCE_THRESHOLDS = {
+  EXCEEDING: 100,
+  ON_TRACK: 80,
+  BELOW_TARGET: 0,
+};
+
+export const PERFORMANCE_STATUS_LABELS: Record<string, string> = {
+  EXCEEDING: "Exceeding Target",
+  ON_TRACK: "On Track",
+  BELOW_TARGET: "Below Target",
+};
+
+export const PERFORMANCE_STATUS_COLORS: Record<string, string> = {
+  EXCEEDING: "#16a34a",
+  ON_TRACK: "#d97706",
+  BELOW_TARGET: "#dc2626",
 };
 
 // ============================================================================

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { UserRole } from "@/lib/types";
 import { verifyToken } from "@/lib/utils/auth";
+import { LEADER_ROLES } from "@/lib/constants";
 
 // Define public routes that don't require authentication
 const publicRoutes = [
@@ -18,13 +19,6 @@ const publicRoutes = [
 
 // Define shared authenticated routes (accessible to all logged-in users)
 const sharedAuthRoutes = ["/profile"];
-
-// Define role-based routes
-const roleRoutes = {
-  SUPERADMIN: ["/superadmin"],
-  LEADER: ["/leader"],
-  MEMBER: ["/member"],
-};
 
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -64,30 +58,23 @@ export async function proxy(request: NextRequest) {
     }
 
     // Check role-based access
-    for (const [role, routes] of Object.entries(roleRoutes)) {
-      const hasAccess = routes.some((route) => pathname.startsWith(route));
+    // Three route tiers: /superadmin/, /leader/, /member/
+    if (pathname.startsWith("/superadmin") && decoded.role !== UserRole.SUPERADMIN) {
+      const url = request.nextUrl.clone();
+      url.pathname = LEADER_ROLES.includes(decoded.role) ? "/leader/dashboard" : "/member/dashboard";
+      return NextResponse.redirect(url);
+    }
 
-      if (hasAccess && decoded.role !== role) {
-        // User trying to access route they don't have permission for
-        const url = request.nextUrl.clone();
+    if (pathname.startsWith("/leader") && !LEADER_ROLES.includes(decoded.role)) {
+      const url = request.nextUrl.clone();
+      url.pathname = decoded.role === UserRole.SUPERADMIN ? "/superadmin/dashboard" : "/member/dashboard";
+      return NextResponse.redirect(url);
+    }
 
-        // Redirect to appropriate dashboard based on role
-        switch (decoded.role) {
-          case UserRole.SUPERADMIN:
-            url.pathname = "/superadmin/dashboard";
-            break;
-          case UserRole.SMALL_GROUP_LEADER:
-            url.pathname = "/leader/dashboard";
-            break;
-          case UserRole.MEMBER:
-            url.pathname = "/member/dashboard";
-            break;
-          default:
-            url.pathname = "/";
-        }
-
-        return NextResponse.redirect(url);
-      }
+    if (pathname.startsWith("/member") && decoded.role !== UserRole.MEMBER) {
+      const url = request.nextUrl.clone();
+      url.pathname = decoded.role === UserRole.SUPERADMIN ? "/superadmin/dashboard" : "/leader/dashboard";
+      return NextResponse.redirect(url);
     }
 
     // User has valid token and appropriate role

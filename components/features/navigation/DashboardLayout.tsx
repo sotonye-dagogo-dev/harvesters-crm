@@ -26,6 +26,7 @@ import {
   UsergroupAddOutlined,
   ShareAltOutlined,
   BarChartOutlined,
+  SolutionOutlined,
 } from "@ant-design/icons";
 import { useAuth } from "@/providers/AuthProvider";
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
@@ -95,20 +96,15 @@ export default function DashboardLayout({
     // Return empty array if no role is available
     if (!role) return [];
 
-    const rolePath = role.toLowerCase().replace("_", "");
-    const commonItems = [
-      {
-        key: "dashboard",
-        icon: <DashboardOutlined />,
-        label: <Link href={`/${rolePath}/dashboard`}>Dashboard</Link>,
-        onClick: handleMenuClick,
-      },
-    ];
-
     // SUPERADMIN - Full system access
     if (role === "SUPERADMIN") {
       return [
-        ...commonItems,
+        {
+          key: "dashboard",
+          icon: <DashboardOutlined />,
+          label: <Link href="/superadmin/dashboard">Dashboard</Link>,
+          onClick: handleMenuClick,
+        },
         {
           key: "zones",
           icon: <GlobalOutlined />,
@@ -158,6 +154,34 @@ export default function DashboardLayout({
           onClick: handleMenuClick,
         },
         {
+          key: "reports",
+          icon: <SolutionOutlined />,
+          label: "Reports",
+          children: [
+            {
+              key: "reports-list",
+              icon: <FileTextOutlined />,
+              label: <Link href="/superadmin/reports">All Reports</Link>,
+              onClick: handleMenuClick,
+            },
+            {
+              key: "reports-analytics",
+              icon: <BarChartOutlined />,
+              label: (
+                <Link href="/superadmin/reports/analytics">
+                  Report Analytics
+                </Link>
+              ),
+              onClick: handleMenuClick,
+            },
+            {
+              key: "report-types",
+              label: <Link href="/superadmin/reports/types">Report Types</Link>,
+              onClick: handleMenuClick,
+            },
+          ],
+        },
+        {
           key: "analytics",
           icon: <BarChartOutlined />,
           label: <Link href="/superadmin/analytics">Analytics</Link>,
@@ -196,378 +220,37 @@ export default function DashboardLayout({
       ];
     }
 
-    // ZONAL LEADER - Zone-level management
-    if (role === "ZONAL_LEADER") {
+    // MEMBER - Basic access
+    if (role === "MEMBER") {
       return [
-        ...commonItems,
         {
-          key: "my-zone",
-          icon: <GlobalOutlined />,
-          label: <Link href="/zonalleader/my-zone">My Zone</Link>,
+          key: "dashboard",
+          icon: <DashboardOutlined />,
+          label: <Link href="/member/dashboard">Dashboard</Link>,
           onClick: handleMenuClick,
         },
-        {
-          key: "campuses",
-          icon: <BankOutlined />,
-          label: <Link href="/zonalleader/campuses">Campuses</Link>,
-          onClick: handleMenuClick,
-        },
-        {
-          key: "departments",
-          icon: <ApartmentOutlined />,
-          label: <Link href="/zonalleader/departments">Departments</Link>,
-          onClick: handleMenuClick,
-        },
-        {
-          key: "meetings",
-          icon: <CalendarOutlined />,
-          label: <Link href="/zonalleader/meetings">Meetings</Link>,
-          onClick: handleMenuClick,
-        },
-        {
-          key: "campaigns",
-          icon: <ShareAltOutlined />,
-          label: <Link href="/zonalleader/campaigns">Campaigns</Link>,
-          onClick: handleMenuClick,
-        },
-        {
-          key: "analytics",
-          icon: <BarChartOutlined />,
-          label: <Link href="/zonalleader/analytics">Analytics</Link>,
-          onClick: handleMenuClick,
-        },
-        {
-          key: "settings",
-          icon: <SettingOutlined />,
-          label: "Settings",
-          children: [
-            {
-              key: "notifications",
-              icon: <BellOutlined />,
-              label: (
-                <Link href="/zonalleader/settings/notifications">
-                  Notifications
-                </Link>
-              ),
-              onClick: handleMenuClick,
-            },
-            {
-              key: "profile",
-              icon: <UserOutlined />,
-              label: <Link href="/profile">Profile</Link>,
-              onClick: handleMenuClick,
-            },
-            {
-              key: "logout",
-              icon: <LogoutOutlined />,
-              label: "Logout",
-              onClick: logout,
-              danger: true,
-            },
-          ],
-        },
-      ];
-    }
-
-    // CAMPUS ADMIN - Campus-level management
-    if (role === "CAMPUS_ADMIN") {
-      return [
-        ...commonItems,
-        {
-          key: "my-campus",
-          icon: <BankOutlined />,
-          label: <Link href="/campusadmin/my-campus">My Campus</Link>,
-          onClick: handleMenuClick,
-        },
-        {
-          key: "departments",
-          icon: <ApartmentOutlined />,
-          label: <Link href="/campusadmin/departments">Departments</Link>,
-          onClick: handleMenuClick,
-        },
-        {
-          key: "groups",
-          icon: <TeamOutlined />,
-          label: <Link href="/campusadmin/groups">Groups</Link>,
-          onClick: handleMenuClick,
-        },
-        {
-          key: "cells",
-          icon: <UsergroupAddOutlined />,
-          label: <Link href="/campusadmin/cells">Cells</Link>,
-          onClick: handleMenuClick,
-        },
-        {
-          key: "members",
-          icon: <UserOutlined />,
-          label: <Link href="/campusadmin/members">Members</Link>,
-          onClick: handleMenuClick,
-        },
-        {
-          key: "meetings",
-          icon: <CalendarOutlined />,
-          label: <Link href="/campusadmin/meetings">Meetings</Link>,
-          onClick: handleMenuClick,
-        },
-        {
-          key: "campaigns",
-          icon: <ShareAltOutlined />,
-          label: <Link href="/campusadmin/campaigns">Campaigns</Link>,
-          onClick: handleMenuClick,
-        },
-        {
-          key: "analytics",
-          icon: <BarChartOutlined />,
-          label: <Link href="/campusadmin/analytics">Analytics</Link>,
-          onClick: handleMenuClick,
-        },
-        {
-          key: "settings",
-          icon: <SettingOutlined />,
-          label: "Settings",
-          children: [
-            {
-              key: "notifications",
-              icon: <BellOutlined />,
-              label: (
-                <Link href="/campusadmin/settings/notifications">
-                  Notifications
-                </Link>
-              ),
-              onClick: handleMenuClick,
-            },
-            {
-              key: "profile",
-              icon: <UserOutlined />,
-              label: <Link href="/profile">Profile</Link>,
-              onClick: handleMenuClick,
-            },
-            {
-              key: "logout",
-              icon: <LogoutOutlined />,
-              label: "Logout",
-              onClick: logout,
-              danger: true,
-            },
-          ],
-        },
-      ];
-    }
-
-    // HOD - Department-level management
-    if (role === "HOD") {
-      return [
-        ...commonItems,
-        {
-          key: "my-department",
-          icon: <ApartmentOutlined />,
-          label: <Link href="/hod/my-department">My Department</Link>,
-          onClick: handleMenuClick,
-        },
-        {
-          key: "groups",
-          icon: <TeamOutlined />,
-          label: <Link href="/hod/groups">Groups</Link>,
-          onClick: handleMenuClick,
-        },
-        {
-          key: "cells",
-          icon: <UsergroupAddOutlined />,
-          label: <Link href="/hod/cells">Cells</Link>,
-          onClick: handleMenuClick,
-        },
-        {
-          key: "members",
-          icon: <UserOutlined />,
-          label: <Link href="/hod/members">Members</Link>,
-          onClick: handleMenuClick,
-        },
-        {
-          key: "meetings",
-          icon: <CalendarOutlined />,
-          label: <Link href="/hod/meetings">Meetings</Link>,
-          onClick: handleMenuClick,
-        },
-        {
-          key: "campaigns",
-          icon: <ShareAltOutlined />,
-          label: <Link href="/hod/campaigns">Campaigns</Link>,
-          onClick: handleMenuClick,
-        },
-        {
-          key: "analytics",
-          icon: <BarChartOutlined />,
-          label: <Link href="/hod/analytics">Analytics</Link>,
-          onClick: handleMenuClick,
-        },
-        {
-          key: "settings",
-          icon: <SettingOutlined />,
-          label: "Settings",
-          children: [
-            {
-              key: "notifications",
-              icon: <BellOutlined />,
-              label: (
-                <Link href="/hod/settings/notifications">Notifications</Link>
-              ),
-              onClick: handleMenuClick,
-            },
-            {
-              key: "profile",
-              icon: <UserOutlined />,
-              label: <Link href="/profile">Profile</Link>,
-              onClick: handleMenuClick,
-            },
-            {
-              key: "logout",
-              icon: <LogoutOutlined />,
-              label: "Logout",
-              onClick: logout,
-              danger: true,
-            },
-          ],
-        },
-      ];
-    }
-
-    // SMALL GROUP LEADER - Group-level management
-    if (role === "SMALL_GROUP_LEADER") {
-      return [
-        ...commonItems,
         {
           key: "my-group",
           icon: <TeamOutlined />,
-          label: <Link href="/smallgroupleader/my-group">My Group</Link>,
+          label: <Link href="/member/my-group">My Group</Link>,
           onClick: handleMenuClick,
         },
-        {
-          key: "cells",
-          icon: <UsergroupAddOutlined />,
-          label: <Link href="/smallgroupleader/cells">Cells</Link>,
-          onClick: handleMenuClick,
-        },
-        {
-          key: "meetings",
-          icon: <CalendarOutlined />,
-          label: <Link href="/smallgroupleader/meetings">Meetings</Link>,
-          onClick: handleMenuClick,
-        },
-        {
-          key: "schedule",
-          icon: <ScheduleOutlined />,
-          label: <Link href="/smallgroupleader/schedule">Schedule</Link>,
-          onClick: handleMenuClick,
-        },
-        {
-          key: "follow-ups",
-          icon: <ClockCircleOutlined />,
-          label: <Link href="/smallgroupleader/follow-ups">Follow-ups</Link>,
-          onClick: handleMenuClick,
-        },
-        {
-          key: "members",
-          icon: <UserOutlined />,
-          label: <Link href="/smallgroupleader/members">Members</Link>,
-          onClick: handleMenuClick,
-        },
-        {
-          key: "interactions",
-          icon: <PhoneOutlined />,
-          label: (
-            <Link href="/smallgroupleader/interactions">Interactions</Link>
-          ),
-          onClick: handleMenuClick,
-        },
-        {
-          key: "campaigns",
-          icon: <ShareAltOutlined />,
-          label: <Link href="/smallgroupleader/campaigns">Campaigns</Link>,
-          onClick: handleMenuClick,
-        },
-        {
-          key: "analytics",
-          icon: <BarChartOutlined />,
-          label: <Link href="/smallgroupleader/analytics">Analytics</Link>,
-          onClick: handleMenuClick,
-        },
-        {
-          key: "settings",
-          icon: <SettingOutlined />,
-          label: "Settings",
-          children: [
-            {
-              key: "meeting-reminders",
-              icon: <BellOutlined />,
-              label: (
-                <Link href="/smallgroupleader/settings/meeting-reminders">
-                  Notifications
-                </Link>
-              ),
-              onClick: handleMenuClick,
-            },
-            {
-              key: "profile",
-              icon: <UserOutlined />,
-              label: <Link href="/profile">Profile</Link>,
-              onClick: handleMenuClick,
-            },
-            {
-              key: "logout",
-              icon: <LogoutOutlined />,
-              label: "Logout",
-              onClick: logout,
-              danger: true,
-            },
-          ],
-        },
-      ];
-    }
-
-    // CELL LEADER - Cell-level management
-    if (role === "CELL_LEADER") {
-      return [
-        ...commonItems,
         {
           key: "my-cell",
           icon: <UsergroupAddOutlined />,
-          label: <Link href="/cellleader/my-cell">My Cell</Link>,
+          label: <Link href="/member/my-cell">My Cell</Link>,
           onClick: handleMenuClick,
         },
         {
-          key: "meetings",
-          icon: <CalendarOutlined />,
-          label: <Link href="/cellleader/meetings">Meetings</Link>,
-          onClick: handleMenuClick,
-        },
-        {
-          key: "schedule",
-          icon: <ScheduleOutlined />,
-          label: <Link href="/cellleader/schedule">Schedule</Link>,
-          onClick: handleMenuClick,
-        },
-        {
-          key: "follow-ups",
-          icon: <ClockCircleOutlined />,
-          label: <Link href="/cellleader/follow-ups">Follow-ups</Link>,
-          onClick: handleMenuClick,
-        },
-        {
-          key: "members",
-          icon: <UserOutlined />,
-          label: <Link href="/cellleader/members">Members</Link>,
-          onClick: handleMenuClick,
-        },
-        {
-          key: "interactions",
-          icon: <PhoneOutlined />,
-          label: <Link href="/cellleader/interactions">Interactions</Link>,
+          key: "history",
+          icon: <FileTextOutlined />,
+          label: <Link href="/member/history">My History</Link>,
           onClick: handleMenuClick,
         },
         {
           key: "campaigns",
           icon: <ShareAltOutlined />,
-          label: <Link href="/cellleader/campaigns">Campaigns</Link>,
+          label: <Link href="/member/campaigns">Campaigns</Link>,
           onClick: handleMenuClick,
         },
         {
@@ -576,12 +259,10 @@ export default function DashboardLayout({
           label: "Settings",
           children: [
             {
-              key: "meeting-reminders",
+              key: "preferences",
               icon: <BellOutlined />,
               label: (
-                <Link href="/cellleader/settings/meeting-reminders">
-                  Notifications
-                </Link>
+                <Link href="/member/settings/preferences">Notifications</Link>
               ),
               onClick: handleMenuClick,
             },
@@ -603,31 +284,89 @@ export default function DashboardLayout({
       ];
     }
 
-    // MEMBER - Basic access
-    return [
-      ...commonItems,
+    // ALL LEADER ROLES - Universal leader navigation
+    // Dynamic nav for: CELL_LEADER, ZONE_LEADER, AREA_LEADER,
+    // COMMUNITY_LEADER, DISTRICT_LEADER, CAMPUS_LEADER, CAMPUS_PASTOR,
+    // GROUP_LEADER, GROUP_ADMIN, SPO, CHURCH_MINISTRY
+    const leaderItems = [
+      {
+        key: "dashboard",
+        icon: <DashboardOutlined />,
+        label: <Link href="/leader/dashboard">Dashboard</Link>,
+        onClick: handleMenuClick,
+      },
       {
         key: "my-group",
         icon: <TeamOutlined />,
-        label: <Link href="/member/my-group">My Group</Link>,
+        label: <Link href="/leader/my-group">My Unit</Link>,
         onClick: handleMenuClick,
       },
       {
-        key: "my-cell",
-        icon: <UsergroupAddOutlined />,
-        label: <Link href="/member/my-cell">My Cell</Link>,
+        key: "meetings",
+        icon: <CalendarOutlined />,
+        label: <Link href="/leader/meetings">Meetings</Link>,
         onClick: handleMenuClick,
       },
       {
-        key: "history",
-        icon: <FileTextOutlined />,
-        label: <Link href="/member/history">My History</Link>,
+        key: "schedule",
+        icon: <ScheduleOutlined />,
+        label: <Link href="/leader/schedule">Schedule</Link>,
+        onClick: handleMenuClick,
+      },
+      {
+        key: "follow-ups",
+        icon: <ClockCircleOutlined />,
+        label: <Link href="/leader/follow-ups">Follow-ups</Link>,
+        onClick: handleMenuClick,
+      },
+      {
+        key: "members",
+        icon: <UserOutlined />,
+        label: <Link href="/leader/members">Members</Link>,
+        onClick: handleMenuClick,
+      },
+      {
+        key: "interactions",
+        icon: <PhoneOutlined />,
+        label: <Link href="/leader/interactions">Interactions</Link>,
         onClick: handleMenuClick,
       },
       {
         key: "campaigns",
         icon: <ShareAltOutlined />,
-        label: <Link href="/member/campaigns">Campaigns</Link>,
+        label: <Link href="/leader/campaigns">Campaigns</Link>,
+        onClick: handleMenuClick,
+      },
+      {
+        key: "reports",
+        icon: <SolutionOutlined />,
+        label: "Reports",
+        children: [
+          {
+            key: "reports-list",
+            icon: <FileTextOutlined />,
+            label: <Link href="/leader/reports">My Reports</Link>,
+            onClick: handleMenuClick,
+          },
+          {
+            key: "reports-submit",
+            label: <Link href="/leader/reports/submit">Submit Report</Link>,
+            onClick: handleMenuClick,
+          },
+          {
+            key: "reports-analytics",
+            icon: <BarChartOutlined />,
+            label: (
+              <Link href="/leader/reports/analytics">Report Analytics</Link>
+            ),
+            onClick: handleMenuClick,
+          },
+        ],
+      },
+      {
+        key: "analytics",
+        icon: <BarChartOutlined />,
+        label: <Link href="/leader/analytics">Analytics</Link>,
         onClick: handleMenuClick,
       },
       {
@@ -636,10 +375,12 @@ export default function DashboardLayout({
         label: "Settings",
         children: [
           {
-            key: "preferences",
+            key: "notifications",
             icon: <BellOutlined />,
             label: (
-              <Link href="/member/settings/preferences">Notifications</Link>
+              <Link href="/leader/settings/meeting-reminders">
+                Notifications
+              </Link>
             ),
             onClick: handleMenuClick,
           },
@@ -659,6 +400,8 @@ export default function DashboardLayout({
         ],
       },
     ];
+
+    return leaderItems;
   };
 
   // Profile dropdown menu items

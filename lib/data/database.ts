@@ -5,6 +5,8 @@ import {
   MeetingLevel,
   CampaignInteractionType,
   InviteLinkType,
+  ReportStatus,
+  ReportFrequency,
 } from "@/lib/types";
 import {
   mockUsers,
@@ -22,6 +24,16 @@ import {
   mockInviteLinks,
   mockInviteLinkVisits,
 } from "./mockData";
+import {
+  mockReportTypes,
+  mockReportSubmissions,
+  mockMetricEntries,
+  mockReportComments,
+  mockReferralLinks,
+  mockReportNotifications,
+  mockStrategicIndicators,
+  mockKeyMetrics,
+} from "./reportingMockData";
 
 // ============================================================================
 // IN-MEMORY DATABASE (SINGLETON PATTERN)
@@ -46,6 +58,14 @@ const globalForDb = globalThis as unknown as {
     campaignInteractions: CampaignInteraction[];
     inviteLinks: InviteLink[];
     inviteLinkVisits: InviteLinkVisit[];
+    reportTypes: ReportType[];
+    reportSubmissions: ReportSubmission[];
+    metricEntries: MetricEntry[];
+    reportComments: ReportComment[];
+    referralLinks: ReferralLink[];
+    reportNotifications: ReportNotification[];
+    strategicIndicators: StrategicIndicator[];
+    keyMetrics: KeyMetric[];
   };
 };
 
@@ -65,6 +85,14 @@ if (!globalForDb.dbStore) {
     campaignInteractions: cloneData(mockCampaignInteractions),
     inviteLinks: cloneData(mockInviteLinks),
     inviteLinkVisits: cloneData(mockInviteLinkVisits),
+    reportTypes: cloneData(mockReportTypes),
+    reportSubmissions: cloneData(mockReportSubmissions),
+    metricEntries: cloneData(mockMetricEntries),
+    reportComments: cloneData(mockReportComments),
+    referralLinks: cloneData(mockReferralLinks),
+    reportNotifications: cloneData(mockReportNotifications),
+    strategicIndicators: cloneData(mockStrategicIndicators),
+    keyMetrics: cloneData(mockKeyMetrics),
   };
 }
 
@@ -82,6 +110,14 @@ const campaigns = globalForDb.dbStore.campaigns;
 const campaignInteractions = globalForDb.dbStore.campaignInteractions;
 const inviteLinks = globalForDb.dbStore.inviteLinks;
 const inviteLinkVisits = globalForDb.dbStore.inviteLinkVisits;
+const reportTypes = globalForDb.dbStore.reportTypes;
+const reportSubmissions = globalForDb.dbStore.reportSubmissions;
+const metricEntries = globalForDb.dbStore.metricEntries;
+const reportComments = globalForDb.dbStore.reportComments;
+const referralLinks = globalForDb.dbStore.referralLinks;
+const reportNotifications = globalForDb.dbStore.reportNotifications;
+const strategicIndicators = globalForDb.dbStore.strategicIndicators;
+const keyMetrics = globalForDb.dbStore.keyMetrics;
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 const generateId = () =>
@@ -1439,6 +1475,822 @@ export const analyticsDb = {
 };
 
 // ============================================================================
+// REPORT TYPE OPERATIONS
+// ============================================================================
+
+export const reportTypeDb = {
+  findAll: (filters?: ReportTypeFilters): ReportType[] => {
+    let result = [...reportTypes];
+    if (filters?.category)
+      result = result.filter((rt) => rt.category === filters.category);
+    if (filters?.frequency)
+      result = result.filter((rt) => rt.frequency === filters.frequency);
+    if (filters?.organizationalLevel)
+      result = result.filter(
+        (rt) => rt.organizationalLevel === filters.organizationalLevel
+      );
+    if (filters?.isActive !== undefined)
+      result = result.filter((rt) => rt.isActive === filters.isActive);
+    if (filters?.search) {
+      const q = filters.search.toLowerCase();
+      result = result.filter(
+        (rt) =>
+          rt.name.toLowerCase().includes(q) ||
+          rt.code.toLowerCase().includes(q) ||
+          rt.description?.toLowerCase().includes(q)
+      );
+    }
+    return result;
+  },
+
+  findById: (id: string): ReportType | undefined =>
+    reportTypes.find((rt) => rt.id === id),
+
+  findByCode: (code: string): ReportType | undefined =>
+    reportTypes.find((rt) => rt.code === code),
+
+  create: (
+    data: Omit<ReportType, "id" | "createdAt" | "updatedAt">
+  ): ReportType => {
+    const reportType: ReportType = {
+      ...data,
+      id: generateId(),
+      createdAt: now(),
+      updatedAt: now(),
+    };
+    reportTypes.push(reportType);
+    return reportType;
+  },
+
+  update: (id: string, data: Partial<ReportType>): ReportType | undefined => {
+    const idx = reportTypes.findIndex((rt) => rt.id === id);
+    if (idx === -1) return undefined;
+    reportTypes[idx] = { ...reportTypes[idx], ...data, updatedAt: now() };
+    return reportTypes[idx];
+  },
+
+  delete: (id: string): boolean => {
+    const idx = reportTypes.findIndex((rt) => rt.id === id);
+    if (idx === -1) return false;
+    reportTypes.splice(idx, 1);
+    return true;
+  },
+
+  count: (filters?: ReportTypeFilters): number =>
+    reportTypeDb.findAll(filters).length,
+};
+
+// ============================================================================
+// REPORT SUBMISSION OPERATIONS
+// ============================================================================
+
+export const reportSubmissionDb = {
+  findAll: (filters?: ReportSubmissionFilters): ReportSubmission[] => {
+    let result = [...reportSubmissions];
+    if (filters?.reportTypeId)
+      result = result.filter((rs) => rs.reportTypeId === filters.reportTypeId);
+    if (filters?.reportTypeCode) {
+      const rType = reportTypes.find(
+        (rt) => rt.code === filters.reportTypeCode
+      );
+      if (rType) result = result.filter((rs) => rs.reportTypeId === rType.id);
+    }
+    if (filters?.status)
+      result = result.filter((rs) => rs.status === filters.status);
+    if (filters?.submittedById)
+      result = result.filter(
+        (rs) => rs.submittedById === filters.submittedById
+      );
+    if (filters?.organizationalLevelType)
+      result = result.filter(
+        (rs) => rs.organizationalLevelType === filters.organizationalLevelType
+      );
+    if (filters?.organizationalUnitId)
+      result = result.filter(
+        (rs) => rs.organizationalUnitId === filters.organizationalUnitId
+      );
+    if (filters?.reportYear)
+      result = result.filter((rs) => rs.reportYear === filters.reportYear);
+    if (filters?.reportMonth)
+      result = result.filter((rs) => rs.reportMonth === filters.reportMonth);
+    if (filters?.reportWeek)
+      result = result.filter((rs) => rs.reportWeek === filters.reportWeek);
+    if (filters?.search) {
+      const q = filters.search.toLowerCase();
+      result = result.filter((rs) => {
+        const rType = reportTypes.find((rt) => rt.id === rs.reportTypeId);
+        return (
+          rType?.name.toLowerCase().includes(q) ||
+          rType?.code.toLowerCase().includes(q)
+        );
+      });
+    }
+    return result.sort(
+      (a, b) =>
+        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+    );
+  },
+
+  findById: (id: string): ReportSubmission | undefined =>
+    reportSubmissions.find((rs) => rs.id === id),
+
+  create: (
+    data: CreateReportSubmissionInput & {
+      submittedById: string;
+      submitterRole: string;
+    }
+  ): ReportSubmission => {
+    const submission: ReportSubmission = {
+      ...data,
+      id: generateId(),
+      status: ReportStatus.DRAFT,
+      isLocked: false,
+      lastEditedAt: now(),
+      createdAt: now(),
+      updatedAt: now(),
+    };
+    reportSubmissions.push(submission);
+    return submission;
+  },
+
+  update: (
+    id: string,
+    data: Partial<ReportSubmission>
+  ): ReportSubmission | undefined => {
+    const idx = reportSubmissions.findIndex((rs) => rs.id === id);
+    if (idx === -1) return undefined;
+    reportSubmissions[idx] = {
+      ...reportSubmissions[idx],
+      ...data,
+      updatedAt: now(),
+      lastEditedAt: now(),
+    };
+    return reportSubmissions[idx];
+  },
+
+  submit: (id: string): ReportSubmission | undefined => {
+    return reportSubmissionDb.update(id, {
+      status: ReportStatus.SUBMITTED,
+      submittedAt: now(),
+    });
+  },
+
+  approve: (
+    id: string,
+    approverId: string,
+    notes?: string
+  ): ReportSubmission | undefined => {
+    return reportSubmissionDb.update(id, {
+      status: ReportStatus.APPROVED,
+      approvedById: approverId,
+      approvedAt: now(),
+      approverNotes: notes,
+      isLocked: true,
+    });
+  },
+
+  requestEdits: (
+    id: string,
+    reviewerId: string,
+    notes: string
+  ): ReportSubmission | undefined => {
+    return reportSubmissionDb.update(id, {
+      status: ReportStatus.REQUIRES_EDITS,
+      reviewedById: reviewerId,
+      reviewerNotes: notes,
+      isLocked: false,
+    });
+  },
+
+  review: (
+    id: string,
+    reviewerId: string,
+    notes?: string
+  ): ReportSubmission | undefined => {
+    return reportSubmissionDb.update(id, {
+      status: ReportStatus.REVIEWED,
+      reviewedById: reviewerId,
+      reviewedAt: now(),
+      reviewerNotes: notes,
+    });
+  },
+
+  finalize: (
+    id: string,
+    reviewerId: string,
+    reviewerRole: string
+  ): ReportSubmission | undefined => {
+    return reportSubmissionDb.update(id, {
+      status: ReportStatus.FINALIZED,
+      finalReviewedById: reviewerId,
+      finalReviewedAt: now(),
+      finalReviewerRole: reviewerRole,
+      isLocked: true,
+    });
+  },
+
+  delete: (id: string): boolean => {
+    const idx = reportSubmissions.findIndex((rs) => rs.id === id);
+    if (idx === -1) return false;
+    reportSubmissions.splice(idx, 1);
+    return true;
+  },
+
+  count: (filters?: ReportSubmissionFilters): number =>
+    reportSubmissionDb.findAll(filters).length,
+};
+
+// ============================================================================
+// METRIC ENTRY OPERATIONS
+// ============================================================================
+
+export const metricEntryDb = {
+  findAll: (filters?: {
+    reportSubmissionId?: string;
+    keyMetricId?: string;
+    strategicIndicatorId?: string;
+  }): MetricEntry[] => {
+    let result = [...metricEntries];
+    if (filters?.reportSubmissionId)
+      result = result.filter(
+        (me) => me.reportSubmissionId === filters.reportSubmissionId
+      );
+    if (filters?.keyMetricId)
+      result = result.filter((me) => me.keyMetricId === filters.keyMetricId);
+    if (filters?.strategicIndicatorId)
+      result = result.filter(
+        (me) => me.strategicIndicatorId === filters.strategicIndicatorId
+      );
+    return result;
+  },
+
+  findById: (id: string): MetricEntry | undefined =>
+    metricEntries.find((me) => me.id === id),
+
+  findBySubmission: (reportSubmissionId: string): MetricEntry[] =>
+    metricEntries.filter((me) => me.reportSubmissionId === reportSubmissionId),
+
+  create: (
+    data: CreateMetricEntryInput & { reportSubmissionId: string }
+  ): MetricEntry => {
+    const goal = data.monthlyGoal ?? 0;
+    const achieved = data.monthlyAchieved ?? 0;
+    const performancePercentage =
+      goal > 0 ? Math.round((achieved / goal) * 1000) / 10 : 0;
+    const variance = achieved - goal;
+
+    const entry: MetricEntry = {
+      ...data,
+      id: generateId(),
+      performancePercentage,
+      variance,
+      monthlyGoalLocked: false,
+      monthlyAchievedLocked: false,
+      yearOnYearGoalLocked: false,
+      lastSavedAt: now(),
+      createdAt: now(),
+      updatedAt: now(),
+    };
+    metricEntries.push(entry);
+    return entry;
+  },
+
+  update: (id: string, data: Partial<MetricEntry>): MetricEntry | undefined => {
+    const idx = metricEntries.findIndex((me) => me.id === id);
+    if (idx === -1) return undefined;
+
+    const updated = {
+      ...metricEntries[idx],
+      ...data,
+      updatedAt: now(),
+      lastSavedAt: now(),
+    };
+
+    // Recalculate performance if goal/achieved changed
+    const goal = updated.monthlyGoal ?? 0;
+    const achieved = updated.monthlyAchieved ?? 0;
+    if (goal > 0) {
+      updated.performancePercentage = Math.round((achieved / goal) * 1000) / 10;
+      updated.variance = achieved - goal;
+    }
+
+    metricEntries[idx] = updated;
+    return metricEntries[idx];
+  },
+
+  delete: (id: string): boolean => {
+    const idx = metricEntries.findIndex((me) => me.id === id);
+    if (idx === -1) return false;
+    metricEntries.splice(idx, 1);
+    return true;
+  },
+
+  deleteBySubmission: (reportSubmissionId: string): number => {
+    const toRemove = metricEntries.filter(
+      (me) => me.reportSubmissionId === reportSubmissionId
+    );
+    toRemove.forEach((me) => {
+      const idx = metricEntries.findIndex((e) => e.id === me.id);
+      if (idx !== -1) metricEntries.splice(idx, 1);
+    });
+    return toRemove.length;
+  },
+};
+
+// ============================================================================
+// REPORT COMMENT OPERATIONS
+// ============================================================================
+
+export const reportCommentDb = {
+  findAll: (filters?: {
+    reportSubmissionId?: string;
+    userId?: string;
+    commentType?: string;
+  }): ReportComment[] => {
+    let result = [...reportComments];
+    if (filters?.reportSubmissionId)
+      result = result.filter(
+        (rc) => rc.reportSubmissionId === filters.reportSubmissionId
+      );
+    if (filters?.userId)
+      result = result.filter((rc) => rc.userId === filters.userId);
+    if (filters?.commentType)
+      result = result.filter((rc) => rc.commentType === filters.commentType);
+    return result.sort(
+      (a, b) =>
+        new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+    );
+  },
+
+  findById: (id: string): ReportComment | undefined =>
+    reportComments.find((rc) => rc.id === id),
+
+  findBySubmission: (reportSubmissionId: string): ReportComment[] =>
+    reportComments
+      .filter((rc) => rc.reportSubmissionId === reportSubmissionId)
+      .sort(
+        (a, b) =>
+          new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+      ),
+
+  create: (
+    data: CreateReportCommentInput & {
+      reportSubmissionId: string;
+      userId: string;
+      userRole: string;
+    }
+  ): ReportComment => {
+    const comment: ReportComment = {
+      ...data,
+      id: generateId(),
+      isInternal: data.isInternal ?? false,
+      createdAt: now(),
+      updatedAt: now(),
+    };
+    reportComments.push(comment);
+    return comment;
+  },
+
+  update: (
+    id: string,
+    data: Partial<ReportComment>
+  ): ReportComment | undefined => {
+    const idx = reportComments.findIndex((rc) => rc.id === id);
+    if (idx === -1) return undefined;
+    reportComments[idx] = { ...reportComments[idx], ...data, updatedAt: now() };
+    return reportComments[idx];
+  },
+
+  delete: (id: string): boolean => {
+    const idx = reportComments.findIndex((rc) => rc.id === id);
+    if (idx === -1) return false;
+    reportComments.splice(idx, 1);
+    return true;
+  },
+};
+
+// ============================================================================
+// REFERRAL LINK OPERATIONS
+// ============================================================================
+
+export const referralLinkDb = {
+  findAll: (filters?: {
+    createdById?: string;
+    isActive?: boolean;
+    isUsed?: boolean;
+    assignedRole?: string;
+  }): ReferralLink[] => {
+    let result = [...referralLinks];
+    if (filters?.createdById)
+      result = result.filter((rl) => rl.createdById === filters.createdById);
+    if (filters?.isActive !== undefined)
+      result = result.filter((rl) => rl.isActive === filters.isActive);
+    if (filters?.isUsed !== undefined)
+      result = result.filter((rl) => rl.isUsed === filters.isUsed);
+    if (filters?.assignedRole)
+      result = result.filter((rl) => rl.assignedRole === filters.assignedRole);
+    return result.sort(
+      (a, b) =>
+        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+    );
+  },
+
+  findById: (id: string): ReferralLink | undefined =>
+    referralLinks.find((rl) => rl.id === id),
+
+  findByCode: (code: string): ReferralLink | undefined =>
+    referralLinks.find((rl) => rl.code === code),
+
+  create: (
+    data: CreateReferralLinkInput & {
+      createdById: string;
+      createdByRole: string;
+    }
+  ): ReferralLink => {
+    const expiresAt = data.expiresInDays
+      ? new Date(Date.now() + data.expiresInDays * 86400000).toISOString()
+      : undefined;
+
+    const link: ReferralLink = {
+      id: generateId(),
+      code: generateCode() + "-" + generateCode(),
+      createdById: data.createdById,
+      createdByRole: data.createdByRole,
+      assignedRole: data.assignedRole,
+      organizationalLevelType: data.organizationalLevelType,
+      organizationalUnitId: data.organizationalUnitId,
+      isUsed: false,
+      isActive: true,
+      expiresAt,
+      createdAt: now(),
+      updatedAt: now(),
+    };
+    referralLinks.push(link);
+    return link;
+  },
+
+  markUsed: (code: string, userId: string): ReferralLink | undefined => {
+    const link = referralLinks.find((rl) => rl.code === code);
+    if (!link) return undefined;
+    link.isUsed = true;
+    link.usedById = userId;
+    link.usedAt = now();
+    link.updatedAt = now();
+    return link;
+  },
+
+  deactivate: (id: string): ReferralLink | undefined => {
+    const idx = referralLinks.findIndex((rl) => rl.id === id);
+    if (idx === -1) return undefined;
+    referralLinks[idx] = {
+      ...referralLinks[idx],
+      isActive: false,
+      updatedAt: now(),
+    };
+    return referralLinks[idx];
+  },
+
+  validate: (
+    code: string
+  ): { valid: boolean; link?: ReferralLink; error?: string } => {
+    const link = referralLinks.find((rl) => rl.code === code);
+    if (!link) return { valid: false, error: "Invalid referral code" };
+    if (link.isUsed)
+      return { valid: false, error: "Referral code already used" };
+    if (!link.isActive)
+      return { valid: false, error: "Referral code is inactive" };
+    if (link.expiresAt && new Date() > new Date(link.expiresAt)) {
+      return { valid: false, error: "Referral code has expired" };
+    }
+    return { valid: true, link };
+  },
+
+  delete: (id: string): boolean => {
+    const idx = referralLinks.findIndex((rl) => rl.id === id);
+    if (idx === -1) return false;
+    referralLinks.splice(idx, 1);
+    return true;
+  },
+
+  count: (filters?: {
+    createdById?: string;
+    isActive?: boolean;
+    isUsed?: boolean;
+  }): number => referralLinkDb.findAll(filters).length,
+};
+
+// ============================================================================
+// REPORT NOTIFICATION OPERATIONS
+// ============================================================================
+
+export const reportNotificationDb = {
+  findAll: (filters?: {
+    userId?: string;
+    isRead?: boolean;
+    notificationType?: string;
+  }): ReportNotification[] => {
+    let result = [...reportNotifications];
+    if (filters?.userId)
+      result = result.filter((rn) => rn.userId === filters.userId);
+    if (filters?.isRead !== undefined)
+      result = result.filter((rn) => rn.isRead === filters.isRead);
+    if (filters?.notificationType)
+      result = result.filter(
+        (rn) => rn.notificationType === filters.notificationType
+      );
+    return result.sort(
+      (a, b) =>
+        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+    );
+  },
+
+  findById: (id: string): ReportNotification | undefined =>
+    reportNotifications.find((rn) => rn.id === id),
+
+  findByUser: (userId: string): ReportNotification[] =>
+    reportNotifications
+      .filter((rn) => rn.userId === userId)
+      .sort(
+        (a, b) =>
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+      ),
+
+  create: (
+    data: Omit<ReportNotification, "id" | "createdAt">
+  ): ReportNotification => {
+    const notification: ReportNotification = {
+      ...data,
+      id: generateId(),
+      createdAt: now(),
+    };
+    reportNotifications.push(notification);
+    return notification;
+  },
+
+  markRead: (id: string): ReportNotification | undefined => {
+    const idx = reportNotifications.findIndex((rn) => rn.id === id);
+    if (idx === -1) return undefined;
+    reportNotifications[idx] = {
+      ...reportNotifications[idx],
+      isRead: true,
+      readAt: now(),
+    };
+    return reportNotifications[idx];
+  },
+
+  markAllRead: (userId: string): number => {
+    let count = 0;
+    reportNotifications.forEach((rn, idx) => {
+      if (rn.userId === userId && !rn.isRead) {
+        reportNotifications[idx] = { ...rn, isRead: true, readAt: now() };
+        count++;
+      }
+    });
+    return count;
+  },
+
+  countUnread: (userId: string): number =>
+    reportNotifications.filter((rn) => rn.userId === userId && !rn.isRead)
+      .length,
+
+  delete: (id: string): boolean => {
+    const idx = reportNotifications.findIndex((rn) => rn.id === id);
+    if (idx === -1) return false;
+    reportNotifications.splice(idx, 1);
+    return true;
+  },
+};
+
+// ============================================================================
+// STRATEGIC INDICATOR OPERATIONS
+// ============================================================================
+
+export const strategicIndicatorDb = {
+  findAll: (filters?: {
+    category?: string;
+    isActive?: boolean;
+  }): StrategicIndicator[] => {
+    let result = [...strategicIndicators];
+    if (filters?.category)
+      result = result.filter((si) => si.category === filters.category);
+    if (filters?.isActive !== undefined)
+      result = result.filter((si) => si.isActive === filters.isActive);
+    return result.sort((a, b) => a.displayOrder - b.displayOrder);
+  },
+
+  findById: (id: string): StrategicIndicator | undefined =>
+    strategicIndicators.find((si) => si.id === id),
+
+  create: (
+    data: Omit<StrategicIndicator, "id" | "createdAt" | "updatedAt">
+  ): StrategicIndicator => {
+    const indicator: StrategicIndicator = {
+      ...data,
+      id: generateId(),
+      createdAt: now(),
+      updatedAt: now(),
+    };
+    strategicIndicators.push(indicator);
+    return indicator;
+  },
+
+  update: (
+    id: string,
+    data: Partial<StrategicIndicator>
+  ): StrategicIndicator | undefined => {
+    const idx = strategicIndicators.findIndex((si) => si.id === id);
+    if (idx === -1) return undefined;
+    strategicIndicators[idx] = {
+      ...strategicIndicators[idx],
+      ...data,
+      updatedAt: now(),
+    };
+    return strategicIndicators[idx];
+  },
+
+  delete: (id: string): boolean => {
+    const idx = strategicIndicators.findIndex((si) => si.id === id);
+    if (idx === -1) return false;
+    strategicIndicators.splice(idx, 1);
+    return true;
+  },
+};
+
+// ============================================================================
+// KEY METRIC OPERATIONS
+// ============================================================================
+
+export const keyMetricDb = {
+  findAll: (filters?: {
+    strategicIndicatorId?: string;
+    isActive?: boolean;
+  }): KeyMetric[] => {
+    let result = [...keyMetrics];
+    if (filters?.strategicIndicatorId)
+      result = result.filter(
+        (km) => km.strategicIndicatorId === filters.strategicIndicatorId
+      );
+    if (filters?.isActive !== undefined)
+      result = result.filter((km) => km.isActive === filters.isActive);
+    return result.sort((a, b) => a.displayOrder - b.displayOrder);
+  },
+
+  findById: (id: string): KeyMetric | undefined =>
+    keyMetrics.find((km) => km.id === id),
+
+  findByIndicator: (strategicIndicatorId: string): KeyMetric[] =>
+    keyMetrics
+      .filter((km) => km.strategicIndicatorId === strategicIndicatorId)
+      .sort((a, b) => a.displayOrder - b.displayOrder),
+
+  create: (
+    data: Omit<KeyMetric, "id" | "createdAt" | "updatedAt">
+  ): KeyMetric => {
+    const metric: KeyMetric = {
+      ...data,
+      id: generateId(),
+      createdAt: now(),
+      updatedAt: now(),
+    };
+    keyMetrics.push(metric);
+    return metric;
+  },
+
+  update: (id: string, data: Partial<KeyMetric>): KeyMetric | undefined => {
+    const idx = keyMetrics.findIndex((km) => km.id === id);
+    if (idx === -1) return undefined;
+    keyMetrics[idx] = { ...keyMetrics[idx], ...data, updatedAt: now() };
+    return keyMetrics[idx];
+  },
+
+  delete: (id: string): boolean => {
+    const idx = keyMetrics.findIndex((km) => km.id === id);
+    if (idx === -1) return false;
+    keyMetrics.splice(idx, 1);
+    return true;
+  },
+};
+
+// ============================================================================
+// REPORT ANALYTICS OPERATIONS
+// ============================================================================
+
+export const reportAnalyticsDb = {
+  /** Get compliance metrics for a given time period and organizational unit */
+  getComplianceMetrics: (filters?: {
+    organizationalUnitId?: string;
+    reportYear?: number;
+    reportMonth?: number;
+  }): ReportComplianceMetrics => {
+    let submissions = [...reportSubmissions];
+    if (filters?.organizationalUnitId) {
+      submissions = submissions.filter(
+        (rs) => rs.organizationalUnitId === filters.organizationalUnitId
+      );
+    }
+    if (filters?.reportYear) {
+      submissions = submissions.filter(
+        (rs) => rs.reportYear === filters.reportYear
+      );
+    }
+    if (filters?.reportMonth) {
+      submissions = submissions.filter(
+        (rs) => rs.reportMonth === filters.reportMonth
+      );
+    }
+
+    const totalSubmitted = submissions.length;
+    const approved = submissions.filter((s) =>
+      [
+        ReportStatus.APPROVED,
+        ReportStatus.REVIEWED,
+        ReportStatus.FINALIZED,
+      ].includes(s.status)
+    ).length;
+    const pending = submissions.filter((s) =>
+      [ReportStatus.DRAFT, ReportStatus.SUBMITTED].includes(s.status)
+    ).length;
+    const needsEdits = submissions.filter(
+      (s) => s.status === ReportStatus.REQUIRES_EDITS
+    ).length;
+
+    // Estimate expected: assume 1 per campus per week-type report
+    const weeklyTypes = reportTypes.filter(
+      (rt) => rt.frequency === ReportFrequency.WEEKLY
+    ).length;
+    const totalExpected = CAMPUS_IDS_COUNT * weeklyTypes * 4; // ~4 weeks per month
+    const onTime = approved;
+    const late = needsEdits;
+    const missing = Math.max(0, totalExpected - totalSubmitted);
+    const complianceRate =
+      totalExpected > 0
+        ? Math.round((totalSubmitted / totalExpected) * 100)
+        : 0;
+
+    return {
+      totalExpected,
+      totalSubmitted,
+      onTime,
+      late,
+      pending,
+      missing,
+      complianceRate,
+    };
+  },
+
+  /** Get analytics overview with submission counts by status */
+  getOverview: (): ReportAnalyticsOverview => {
+    // Get compliance metrics
+    const compliance = reportAnalyticsDb.getComplianceMetrics({});
+
+    // Calculate top performers (simplified placeholder)
+    const topPerformers: ReportPerformanceMetrics[] = [];
+
+    // Calculate areas needing support (simplified placeholder)
+    const areasNeedingSupport: ReportPerformanceMetrics[] = [];
+
+    // Submissions by status
+    const byStatus: Record<string, number> = {};
+    for (const rs of reportSubmissions) {
+      byStatus[rs.status] = (byStatus[rs.status] ?? 0) + 1;
+    }
+
+    // Trend data (last 6 months)
+    const now = new Date();
+    const trendData = Array.from({ length: 6 }, (_, i) => {
+      const month = new Date(now.getFullYear(), now.getMonth() - (5 - i), 1);
+      const monthNum = month.getMonth() + 1;
+      const yearNum = month.getFullYear();
+      const monthSubmissions = reportSubmissions.filter(
+        (rs) => rs.reportMonth === monthNum && rs.reportYear === yearNum
+      );
+      const expectedCount = 10; // Simplified estimate
+      const submissions = monthSubmissions.length;
+      const complianceRate = expectedCount > 0 
+        ? Math.round((submissions / expectedCount) * 100) 
+        : 0;
+
+      return {
+        period: month.toLocaleDateString('en-US', { month: 'short', year: 'numeric' }),
+        submissions,
+        complianceRate,
+      };
+    });
+
+    return {
+      compliance,
+      topPerformers,
+      areasNeedingSupport,
+      submissionsByStatus: byStatus,
+      trendData,
+    };
+  },
+};
+
+// Count of campus IDs for expected calculation
+const CAMPUS_IDS_COUNT = 3;
+
+// ============================================================================
 // Combined Database Export (for backward compatibility)
 // ============================================================================
 export const db = {
@@ -1457,4 +2309,13 @@ export const db = {
   inviteLinks: inviteLinkDb,
   inviteLinkVisits: inviteLinkVisitDb,
   analytics: analyticsDb,
+  reportTypes: reportTypeDb,
+  reportSubmissions: reportSubmissionDb,
+  metricEntries: metricEntryDb,
+  reportComments: reportCommentDb,
+  referralLinks: referralLinkDb,
+  reportNotifications: reportNotificationDb,
+  strategicIndicators: strategicIndicatorDb,
+  keyMetrics: keyMetricDb,
+  reportAnalytics: reportAnalyticsDb,
 };

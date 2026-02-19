@@ -430,7 +430,7 @@ export default function AttendanceReportsPage() {
       <div className="mb-6">
         <AntButton
           icon={<ArrowLeftOutlined />}
-          onClick={() => router.push(`/groups/${groupId}`)}
+          onClick={() => router.push(`/leader/groups/${groupId}`)}
           className="mb-4"
         >
           Back to Group

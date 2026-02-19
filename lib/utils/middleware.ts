@@ -74,9 +74,9 @@ export async function requireRole(roles: UserRole[]) {
     const userRoleName =
       user.role === UserRole.SUPERADMIN
         ? "Super Administrator"
-        : user.role === UserRole.SMALL_GROUP_LEADER
-          ? "Group Leader"
-          : "Member";
+        : user.role === UserRole.MEMBER
+          ? "Member"
+          : "Leader";
 
     return {
       error: unauthorizedResponse(

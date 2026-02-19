@@ -304,7 +304,7 @@ export default function InteractionsPage() {
                         type="text"
                         icon={<EditOutlined />}
                         onClick={() =>
-                          router.push(`/interactions/${interaction.id}/edit`)
+                          router.push(`/leader/interactions/${interaction.id}/edit`)
                         }
                       />
                       <Popconfirm

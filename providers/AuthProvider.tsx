@@ -164,16 +164,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const getRoleBasedRedirect = (role: UserRole): string => {
-    switch (role) {
-      case USER_ROLES.SUPERADMIN:
-        return "/superadmin/dashboard";
-      case USER_ROLES.SMALL_GROUP_LEADER:
-        return "/leader/dashboard";
-      case USER_ROLES.MEMBER:
-        return "/member/dashboard";
-      default:
-        return "/";
-    }
+    if (role === USER_ROLES.SUPERADMIN) return "/superadmin/dashboard";
+    if (role === USER_ROLES.MEMBER) return "/member/dashboard";
+    // All leader roles go to /leader/
+    return "/leader/dashboard";
   };
 
   const value: AuthContextType = {
