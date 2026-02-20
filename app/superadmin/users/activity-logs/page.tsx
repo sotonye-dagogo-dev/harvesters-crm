@@ -3,16 +3,13 @@
 import { useEffect, useState } from "react";
 import DashboardLayout from "@/components/features/navigation/DashboardLayout";
 import { useAuth } from "@/providers/AuthProvider";
-import {
-  Card,
-  Avatar,
-  Tooltip,
-  message,
-} from "antd";
+import { Card, Avatar, Tooltip, message } from "antd";
 import Table from "@/components/ui/Table";
 import Button from "@/components/ui/Button";
 import StatusBadge from "@/components/ui/StatusBadge";
-import FilterToolbar, { type FilterConfig } from "@/components/ui/FilterToolbar";
+import FilterToolbar, {
+  type FilterConfig,
+} from "@/components/ui/FilterToolbar";
 import {
   UserOutlined,
   FilterOutlined,
@@ -318,9 +315,7 @@ export default function UserActivityLogsPage() {
       title: "Type",
       dataIndex: "actionType",
       key: "actionType",
-      render: (type: string) => (
-        <StatusBadge status={type} category="action" />
-      ),
+      render: (type: string) => <StatusBadge status={type} category="action" />,
     },
     {
       title: "Resource",
@@ -388,10 +383,7 @@ export default function UserActivityLogsPage() {
             <Button icon={<ReloadOutlined />} onClick={fetchActivityLogs}>
               Refresh
             </Button>
-            <Button
-              icon={<DownloadOutlined />}
-              onClick={handleExport}
-            >
+            <Button icon={<DownloadOutlined />} onClick={handleExport}>
               Export CSV
             </Button>
           </div>
@@ -401,12 +393,20 @@ export default function UserActivityLogsPage() {
         <Card>
           <FilterToolbar
             filters={activityFilters}
-            values={{ search: searchTerm, action: actionFilter, role: roleFilter, dateRange }}
+            values={{
+              search: searchTerm,
+              action: actionFilter,
+              role: roleFilter,
+              dateRange,
+            }}
             onChange={(key, value) => {
               if (key === "search") setSearchTerm(value as string);
-              else if (key === "action") setActionFilter((value as string) || "ALL");
-              else if (key === "role") setRoleFilter((value as string) || "ALL");
-              else if (key === "dateRange") setDateRange(value as [Dayjs | null, Dayjs | null] | null);
+              else if (key === "action")
+                setActionFilter((value as string) || "ALL");
+              else if (key === "role")
+                setRoleFilter((value as string) || "ALL");
+              else if (key === "dateRange")
+                setDateRange(value as [Dayjs | null, Dayjs | null] | null);
             }}
             onReset={() => {
               setSearchTerm("");

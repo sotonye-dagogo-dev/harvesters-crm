@@ -7,7 +7,9 @@ import {
   REPORT_PERIOD_LABELS,
 } from "@/lib/constants/reports";
 import dayjs from "dayjs";
-import FilterToolbar, { type FilterConfig } from "@/components/ui/FilterToolbar";
+import FilterToolbar, {
+  type FilterConfig,
+} from "@/components/ui/FilterToolbar";
 import type { Dayjs } from "dayjs";
 
 interface ReportFilterBarProps {

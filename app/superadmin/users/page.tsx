@@ -6,7 +6,9 @@ import { Input, Select, message, Form, DatePicker } from "antd";
 import { PasswordInput } from "@/components/ui/Input";
 import Modal, { ConfirmModal } from "@/components/ui/Modal";
 import Button from "@/components/ui/Button";
-import FilterToolbar, { type FilterConfig } from "@/components/ui/FilterToolbar";
+import FilterToolbar, {
+  type FilterConfig,
+} from "@/components/ui/FilterToolbar";
 import { PlusOutlined, SearchOutlined } from "@ant-design/icons";
 import UserCard from "@/components/features/users/UserCard";
 import EmptyState from "@/components/ui/EmptyState";
@@ -56,7 +58,9 @@ export default function UsersPage() {
   const [deactivateModalOpen, setDeactivateModalOpen] = useState(false);
   const [deactivateUserId, setDeactivateUserId] = useState<string | null>(null);
   const [deactivateLoading, setDeactivateLoading] = useState(false);
-  const deactivateUser = deactivateUserId ? users.find((u) => u.id === deactivateUserId) : null;
+  const deactivateUser = deactivateUserId
+    ? users.find((u) => u.id === deactivateUserId)
+    : null;
 
   useEffect(() => {
     fetchUsers();
@@ -325,9 +329,7 @@ export default function UsersPage() {
                 >
                   Cancel
                 </Button>
-                <Button htmlType="submit">
-                  Assign
-                </Button>
+                <Button htmlType="submit">Assign</Button>
               </div>
             </Form.Item>
           </Form>
@@ -408,7 +410,10 @@ export default function UsersPage() {
                     { label: "Campus Admin", value: UserRole.CAMPUS_ADMIN },
                     { label: "Zonal Leader", value: UserRole.ZONAL_LEADER },
                     { label: "HOD", value: UserRole.HOD },
-                    { label: "Small Group Leader", value: UserRole.SMALL_GROUP_LEADER },
+                    {
+                      label: "Small Group Leader",
+                      value: UserRole.SMALL_GROUP_LEADER,
+                    },
                     { label: "Cell Leader", value: UserRole.CELL_LEADER },
                     { label: "Data Entry", value: UserRole.DATA_ENTRY },
                     { label: "Member", value: UserRole.MEMBER },
@@ -420,7 +425,9 @@ export default function UsersPage() {
               <Form.Item
                 name="phone"
                 label="Phone"
-                rules={[{ required: true, message: "Phone number is required" }]}
+                rules={[
+                  { required: true, message: "Phone number is required" },
+                ]}
               >
                 <Input placeholder="Enter phone number" size="large" />
               </Form.Item>
@@ -432,9 +439,15 @@ export default function UsersPage() {
               <Form.Item
                 name="dateOfBirth"
                 label="Date of Birth"
-                rules={[{ required: true, message: "Date of birth is required" }]}
+                rules={[
+                  { required: true, message: "Date of birth is required" },
+                ]}
               >
-                <DatePicker className="w-full" size="large" format="D MMM YYYY" />
+                <DatePicker
+                  className="w-full"
+                  size="large"
+                  format="D MMM YYYY"
+                />
               </Form.Item>
               <Form.Item
                 name="gender"
@@ -483,7 +496,13 @@ export default function UsersPage() {
             </div>
             <Form.Item className="mb-0 mt-4">
               <div className="flex justify-end gap-2">
-                <Button variant="secondary" onClick={() => { setShowCreateModal(false); createForm.resetFields(); }}>
+                <Button
+                  variant="secondary"
+                  onClick={() => {
+                    setShowCreateModal(false);
+                    createForm.resetFields();
+                  }}
+                >
                   Cancel
                 </Button>
                 <Button htmlType="submit" loading={createLoading}>

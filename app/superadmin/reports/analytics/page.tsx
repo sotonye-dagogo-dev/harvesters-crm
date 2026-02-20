@@ -13,7 +13,9 @@ import {
 } from "antd";
 import Table from "@/components/ui/Table";
 import Button from "@/components/ui/Button";
-import FilterToolbar, { type FilterConfig } from "@/components/ui/FilterToolbar";
+import FilterToolbar, {
+  type FilterConfig,
+} from "@/components/ui/FilterToolbar";
 import {
   BarChartOutlined,
   FileTextOutlined,
@@ -121,28 +123,46 @@ export default function SuperadminReportAnalyticsPage() {
 
   const complianceColumns: ColumnsType<ComplianceRow> = [
     { title: "Campus", dataIndex: "campusName", key: "campusName" },
-    { title: "Expected", dataIndex: "totalExpected", key: "totalExpected", align: "center" },
-    { title: "Submitted", dataIndex: "submitted", key: "submitted", align: "center" },
+    {
+      title: "Expected",
+      dataIndex: "totalExpected",
+      key: "totalExpected",
+      align: "center",
+    },
+    {
+      title: "Submitted",
+      dataIndex: "submitted",
+      key: "submitted",
+      align: "center",
+    },
     {
       title: "On Time",
       dataIndex: "onTime",
       key: "onTime",
       align: "center",
-      render: (v: number) => <Text className="text-ds-status-success">{v}</Text>,
+      render: (v: number) => (
+        <Text className="text-ds-status-success">{v}</Text>
+      ),
     },
     {
       title: "Late",
       dataIndex: "late",
       key: "late",
       align: "center",
-      render: (v: number) => <Text className={v > 0 ? "text-ds-chart-4" : ""}>{v}</Text>,
+      render: (v: number) => (
+        <Text className={v > 0 ? "text-ds-chart-4" : ""}>{v}</Text>
+      ),
     },
     {
       title: "Missing",
       dataIndex: "missing",
       key: "missing",
       align: "center",
-      render: (v: number) => <Text className={v > 0 ? "text-ds-status-error font-semibold" : ""}>{v}</Text>,
+      render: (v: number) => (
+        <Text className={v > 0 ? "text-ds-status-error font-semibold" : ""}>
+          {v}
+        </Text>
+      ),
     },
     {
       title: "Compliance",
@@ -196,38 +216,53 @@ export default function SuperadminReportAnalyticsPage() {
       key: "yoyGrowth",
       align: "center",
       render: (v: number) => (
-        <Text className={v >= 0 ? "text-ds-status-success" : "text-ds-status-error"}>{v >= 0 ? "+" : ""}{v}%</Text>
+        <Text
+          className={v >= 0 ? "text-ds-status-success" : "text-ds-status-error"}
+        >
+          {v >= 0 ? "+" : ""}
+          {v}%
+        </Text>
       ),
     },
-    { title: "Reports", dataIndex: "reportCount", key: "reportCount", align: "center" },
+    {
+      title: "Reports",
+      dataIndex: "reportCount",
+      key: "reportCount",
+      align: "center",
+    },
   ];
 
   const currentYear = new Date().getFullYear();
   const years = Array.from({ length: 5 }, (_, i) => currentYear - i);
 
-  const analyticsFilters: FilterConfig[] = useMemo(() => [
-    {
-      key: "campus",
-      type: "select" as const,
-      label: "Campus",
-      placeholder: "All Campuses",
-      options: campuses.map((c) => ({ label: c.name, value: c.id })),
-      width: 180,
-    },
-    {
-      key: "year",
-      type: "select" as const,
-      label: "Year",
-      placeholder: "All Years",
-      options: years.map((y) => ({ label: String(y), value: String(y) })),
-      width: 120,
-    },
-  ], [campuses, years]);
+  const analyticsFilters: FilterConfig[] = useMemo(
+    () => [
+      {
+        key: "campus",
+        type: "select" as const,
+        label: "Campus",
+        placeholder: "All Campuses",
+        options: campuses.map((c) => ({ label: c.name, value: c.id })),
+        width: 180,
+      },
+      {
+        key: "year",
+        type: "select" as const,
+        label: "Year",
+        placeholder: "All Years",
+        options: years.map((y) => ({ label: String(y), value: String(y) })),
+        width: 120,
+      },
+    ],
+    [campuses, years]
+  );
 
   if (!role) {
     return (
       <DashboardLayout>
-        <div className="flex justify-center items-center h-64"><Spin size="large" /></div>
+        <div className="flex justify-center items-center h-64">
+          <Spin size="large" />
+        </div>
       </DashboardLayout>
     );
   }
@@ -238,7 +273,9 @@ export default function SuperadminReportAnalyticsPage() {
         {/* Header */}
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div>
-            <Title level={3} className="!mb-0">Report Analytics</Title>
+            <Title level={3} className="!mb-0">
+              Report Analytics
+            </Title>
             <Text className="text-ds-text-subtle">
               Organization-wide reporting insights and compliance tracking
             </Text>
@@ -247,23 +284,35 @@ export default function SuperadminReportAnalyticsPage() {
 
         <FilterToolbar
           filters={analyticsFilters}
-          values={{ campus: campusId, year: periodYear ? String(periodYear) : undefined }}
+          values={{
+            campus: campusId,
+            year: periodYear ? String(periodYear) : undefined,
+          }}
           onChange={(key, value) => {
             if (key === "campus") setCampusId(value as string | undefined);
-            if (key === "year") setPeriodYear(value ? Number(value) : undefined);
+            if (key === "year")
+              setPeriodYear(value ? Number(value) : undefined);
           }}
           onReset={() => {
             setCampusId(undefined);
             setPeriodYear(undefined);
           }}
           actions={
-            <Button icon={<ReloadOutlined />} variant="secondary" onClick={fetchAnalytics}>Refresh</Button>
+            <Button
+              icon={<ReloadOutlined />}
+              variant="secondary"
+              onClick={fetchAnalytics}
+            >
+              Refresh
+            </Button>
           }
         />
 
         {/* Stat Cards */}
         {loading && !stats ? (
-          <div className="flex justify-center py-12"><Spin size="large" /></div>
+          <div className="flex justify-center py-12">
+            <Spin size="large" />
+          </div>
         ) : stats ? (
           <Row gutter={[16, 16]}>
             <Col xs={24} sm={12} md={6}>
@@ -290,7 +339,9 @@ export default function SuperadminReportAnalyticsPage() {
                 <Statistic
                   title="Overdue"
                   value={stats.overdueReports}
-                  valueStyle={stats.overdueReports > 0 ? { color: "#ff4d4f" } : undefined}
+                  valueStyle={
+                    stats.overdueReports > 0 ? { color: "#ff4d4f" } : undefined
+                  }
                   prefix={<WarningOutlined />}
                 />
               </Card>
@@ -307,7 +358,11 @@ export default function SuperadminReportAnalyticsPage() {
             </Col>
             <Col xs={24} sm={8}>
               <Card>
-                <Statistic title="Drafts" value={stats.draftReports} prefix={<ClockCircleOutlined />} />
+                <Statistic
+                  title="Drafts"
+                  value={stats.draftReports}
+                  prefix={<ClockCircleOutlined />}
+                />
               </Card>
             </Col>
             <Col xs={24} sm={8}>
@@ -315,14 +370,22 @@ export default function SuperadminReportAnalyticsPage() {
                 <Statistic
                   title="Requires Edits"
                   value={stats.requiresEditsReports}
-                  valueStyle={stats.requiresEditsReports > 0 ? { color: "#faad14" } : undefined}
+                  valueStyle={
+                    stats.requiresEditsReports > 0
+                      ? { color: "#faad14" }
+                      : undefined
+                  }
                   prefix={<WarningOutlined />}
                 />
               </Card>
             </Col>
             <Col xs={24} sm={8}>
               <Card>
-                <Statistic title="Locked" value={stats.lockedReports} prefix={<LockOutlined />} />
+                <Statistic
+                  title="Locked"
+                  value={stats.lockedReports}
+                  prefix={<LockOutlined />}
+                />
               </Card>
             </Col>
           </Row>

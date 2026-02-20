@@ -5,17 +5,12 @@ import { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { useAuth } from "@/providers/AuthProvider";
 import DashboardLayout from "@/components/features/navigation/DashboardLayout";
-import {
-  Card,
-  Tag,
-  Spin,
-  message,
-  Empty,
-  Statistic,
-} from "antd";
+import { Card, Tag, Spin, message, Empty, Statistic } from "antd";
 import Table from "@/components/ui/Table";
 import Button from "@/components/ui/Button";
-import FilterToolbar, { type FilterConfig } from "@/components/ui/FilterToolbar";
+import FilterToolbar, {
+  type FilterConfig,
+} from "@/components/ui/FilterToolbar";
 import {
   ArrowLeftOutlined,
   CheckCircleOutlined,
@@ -200,7 +195,10 @@ export default function AttendanceHistoryPage() {
           <Card>
             <Empty description="You don't have permission to view this page" />
             <div className="text-center mt-4">
-              <Button variant="secondary" onClick={() => router.push("/superadmin/dashboard")}>
+              <Button
+                variant="secondary"
+                onClick={() => router.push("/superadmin/dashboard")}
+              >
                 Go to Dashboard
               </Button>
             </div>
@@ -369,7 +367,8 @@ export default function AttendanceHistoryPage() {
           values={{ status: statusFilter, dateRange }}
           onChange={(key, value) => {
             if (key === "status") setStatusFilter(value as string);
-            if (key === "dateRange") setDateRange(value as [Dayjs | null, Dayjs | null]);
+            if (key === "dateRange")
+              setDateRange(value as [Dayjs | null, Dayjs | null]);
           }}
           onReset={clearFilters}
           actions={

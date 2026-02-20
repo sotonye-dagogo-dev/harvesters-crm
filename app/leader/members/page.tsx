@@ -3,21 +3,13 @@
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import DashboardLayout from "@/components/features/navigation/DashboardLayout";
-import {
-  Card,
-  message,
-  Spin,
-  Space,
-  Avatar,
-} from "antd";
+import { Card, message, Spin, Space, Avatar } from "antd";
 import Table from "@/components/ui/Table";
 import StatusBadge, { BooleanBadge } from "@/components/ui/StatusBadge";
-import FilterToolbar, { type FilterConfig } from "@/components/ui/FilterToolbar";
-import {
-  UserOutlined,
-  PhoneOutlined,
-  MailOutlined,
-} from "@ant-design/icons";
+import FilterToolbar, {
+  type FilterConfig,
+} from "@/components/ui/FilterToolbar";
+import { UserOutlined, PhoneOutlined, MailOutlined } from "@ant-design/icons";
 import { UserRole } from "@/lib/types";
 
 const leaderMemberFilters: FilterConfig[] = [
@@ -112,9 +104,7 @@ export default function LeaderMembersPage() {
             <div className="font-semibold text-ds-text-primary">
               {record.firstName} {record.lastName}
             </div>
-            <div className="text-sm text-ds-text-subtle">
-              {record.location}
-            </div>
+            <div className="text-sm text-ds-text-subtle">{record.location}</div>
           </div>
         </Space>
       ),
@@ -126,15 +116,11 @@ export default function LeaderMembersPage() {
         <div className="space-y-1">
           <div className="flex items-center gap-2 text-sm">
             <MailOutlined className="text-ds-text-subtle" />
-            <span className="text-ds-text-secondary">
-              {record.email}
-            </span>
+            <span className="text-ds-text-secondary">{record.email}</span>
           </div>
           <div className="flex items-center gap-2 text-sm">
             <PhoneOutlined className="text-ds-text-subtle" />
-            <span className="text-ds-text-secondary">
-              {record.phone}
-            </span>
+            <span className="text-ds-text-secondary">{record.phone}</span>
           </div>
         </div>
       ),
@@ -156,7 +142,12 @@ export default function LeaderMembersPage() {
         const rate = record.attendanceRate || 0;
         const status = rate >= 80 ? "present" : rate >= 50 ? "late" : "absent";
         return (
-          <StatusBadge status={status} category="attendance" label={`${rate.toFixed(1)}%`} className="font-semibold" />
+          <StatusBadge
+            status={status}
+            category="attendance"
+            label={`${rate.toFixed(1)}%`}
+            className="font-semibold"
+          />
         );
       },
     },
@@ -165,7 +156,11 @@ export default function LeaderMembersPage() {
       key: "status",
       width: 120,
       render: (record: GroupMember) => (
-        <BooleanBadge value={record.isActive} trueLabel="Active" falseLabel="Inactive" />
+        <BooleanBadge
+          value={record.isActive}
+          trueLabel="Active"
+          falseLabel="Inactive"
+        />
       ),
     },
   ];
@@ -226,7 +221,8 @@ export default function LeaderMembersPage() {
               {
                 key: "viewDetails",
                 label: "View Details",
-                onClick: (record) => router.push(`/leader/members/${record.id}`),
+                onClick: (record) =>
+                  router.push(`/leader/members/${record.id}`),
               },
             ]}
             scroll={{ x: 1000 }}

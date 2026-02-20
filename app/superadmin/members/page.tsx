@@ -8,7 +8,9 @@ import { Spin, message } from "antd";
 import Card from "@/components/ui/Card";
 import Table from "@/components/ui/Table";
 import StatusBadge, { BooleanBadge } from "@/components/ui/StatusBadge";
-import FilterToolbar, { type FilterConfig } from "@/components/ui/FilterToolbar";
+import FilterToolbar, {
+  type FilterConfig,
+} from "@/components/ui/FilterToolbar";
 import { EditOutlined } from "@ant-design/icons";
 import type { ColumnsType } from "antd/es/table";
 
@@ -98,9 +100,7 @@ export default function MembersPage() {
       title: "Role",
       dataIndex: "role",
       key: "role",
-      render: (role: UserRole) => (
-        <StatusBadge status={role} category="role" />
-      ),
+      render: (role: UserRole) => <StatusBadge status={role} category="role" />,
       filters: [
         { text: "Superadmin", value: "SUPERADMIN" },
         { text: "Leader", value: "LEADER" },
@@ -112,7 +112,11 @@ export default function MembersPage() {
       dataIndex: "isActive",
       key: "isActive",
       render: (isActive: boolean) => (
-        <BooleanBadge value={isActive} trueLabel="Active" falseLabel="Inactive" />
+        <BooleanBadge
+          value={isActive}
+          trueLabel="Active"
+          falseLabel="Inactive"
+        />
       ),
     },
   ];
@@ -168,7 +172,8 @@ export default function MembersPage() {
                   key: "view",
                   label: "View",
                   icon: <EditOutlined />,
-                  onClick: (record) => router.push(`/superadmin/users/${record.id}`),
+                  onClick: (record) =>
+                    router.push(`/superadmin/users/${record.id}`),
                 },
               ]}
               pagination={{

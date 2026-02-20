@@ -4,15 +4,12 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/providers/AuthProvider";
 import DashboardLayout from "@/components/features/navigation/DashboardLayout";
-import {
-  message,
-  Card,
-  Space,
-  Popconfirm,
-} from "antd";
+import { message, Card, Space, Popconfirm } from "antd";
 import Button from "@/components/ui/Button";
 import StatusBadge from "@/components/ui/StatusBadge";
-import FilterToolbar, { type FilterConfig } from "@/components/ui/FilterToolbar";
+import FilterToolbar, {
+  type FilterConfig,
+} from "@/components/ui/FilterToolbar";
 import {
   PlusOutlined,
   SearchOutlined,
@@ -161,9 +158,7 @@ export default function InteractionsPage() {
           title="Access Denied"
           description="Only group leaders can view and manage interactions"
           action={
-            <Button
-              onClick={() => router.push("/leader/dashboard")}
-            >
+            <Button onClick={() => router.push("/leader/dashboard")}>
               Back to Dashboard
             </Button>
           }
@@ -270,7 +265,10 @@ export default function InteractionsPage() {
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-2">
                         {getInteractionIcon(interaction.type)}
-                        <StatusBadge status={interaction.type} category="interaction" />
+                        <StatusBadge
+                          status={interaction.type}
+                          category="interaction"
+                        />
                         <span className="text-ds-text-subtle text-sm">
                           with{" "}
                           <span className="font-medium dark:text-ds-text-primary">

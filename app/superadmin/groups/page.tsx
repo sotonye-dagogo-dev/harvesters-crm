@@ -5,7 +5,9 @@ import DashboardLayout from "@/components/features/navigation/DashboardLayout";
 import { useAuth } from "@/providers/AuthProvider";
 import { message } from "antd";
 import Button from "@/components/ui/Button";
-import FilterToolbar, { type FilterConfig } from "@/components/ui/FilterToolbar";
+import FilterToolbar, {
+  type FilterConfig,
+} from "@/components/ui/FilterToolbar";
 import { PlusOutlined, SearchOutlined } from "@ant-design/icons";
 import GroupCard from "@/components/features/groups/GroupCard";
 import EmptyState from "@/components/ui/EmptyState";
@@ -85,7 +87,8 @@ export default function GroupsPage() {
     );
   }
 
-  const canCreateGroup = user?.role === "SUPERADMIN" || user?.role === UserRole.SMALL_GROUP_LEADER;
+  const canCreateGroup =
+    user?.role === "SUPERADMIN" || user?.role === UserRole.SMALL_GROUP_LEADER;
 
   return (
     <DashboardLayout role={user?.role || UserRole.SUPERADMIN}>
