@@ -4,7 +4,6 @@ import { UserRole, Gender, EmploymentStatus, MaritalStatus } from "@/lib/types";
 import { useState, useEffect } from "react";
 import {
   Form,
-  Input,
   Button,
   Card,
   Typography,
@@ -17,6 +16,7 @@ import {
   Tag,
   Empty,
 } from "antd";
+import Input, { PasswordInput, TextArea } from "@/components/ui/Input";
 import {
   UserOutlined,
   MailOutlined,
@@ -337,7 +337,7 @@ export default function RegisterForm() {
               ]}
             >
               <Input
-                prefix={<MailOutlined className="text-gray-400" />}
+                prefix={<MailOutlined className="text-ds-text-subtle" />}
                 placeholder="your.email@example.com"
                 autoComplete="email"
               />
@@ -360,8 +360,8 @@ export default function RegisterForm() {
                 },
               ]}
             >
-              <Input.Password
-                prefix={<LockOutlined className="text-gray-400" />}
+              <PasswordInput
+                prefix={<LockOutlined className="text-ds-text-subtle" />}
                 placeholder="Create a strong password"
                 autoComplete="new-password"
               />
@@ -383,8 +383,8 @@ export default function RegisterForm() {
                 }),
               ]}
             >
-              <Input.Password
-                prefix={<LockOutlined className="text-gray-400" />}
+              <PasswordInput
+                prefix={<LockOutlined className="text-ds-text-subtle" />}
                 placeholder="Re-enter your password"
                 autoComplete="new-password"
               />
@@ -404,7 +404,7 @@ export default function RegisterForm() {
                 ]}
               >
                 <Input
-                  prefix={<UserOutlined className="text-gray-400" />}
+                  prefix={<UserOutlined className="text-ds-text-subtle" />}
                   placeholder="John"
                 />
               </Form.Item>
@@ -417,7 +417,7 @@ export default function RegisterForm() {
                 ]}
               >
                 <Input
-                  prefix={<UserOutlined className="text-gray-400" />}
+                  prefix={<UserOutlined className="text-ds-text-subtle" />}
                   placeholder="Doe"
                 />
               </Form.Item>
@@ -435,7 +435,7 @@ export default function RegisterForm() {
               ]}
             >
               <Input
-                prefix={<PhoneOutlined className="text-gray-400" />}
+                prefix={<PhoneOutlined className="text-ds-text-subtle" />}
                 placeholder="+2349015678900"
               />
             </Form.Item>
@@ -490,7 +490,7 @@ export default function RegisterForm() {
                   disabledDate={(current) =>
                     current && current > dayjs().subtract(13, "years")
                   }
-                  format="YYYY-MM-DD"
+                  format="D MMM YYYY"
                 />
               </Form.Item>
 
@@ -513,7 +513,7 @@ export default function RegisterForm() {
               name="address"
               rules={[{ required: true, message: "Please enter your address" }]}
             >
-              <Input.TextArea
+              <TextArea
                 placeholder="123 Main Street, City, State, ZIP"
                 rows={3}
               />
@@ -595,7 +595,7 @@ export default function RegisterForm() {
                 I agree to the{" "}
                 <Link
                   href="/terms"
-                  className="text-church-primary hover:text-church-primary/80"
+                  className="text-ds-brand-accent hover:text-ds-brand-accent-hover"
                   target="_blank"
                 >
                   Terms of Service
@@ -603,7 +603,7 @@ export default function RegisterForm() {
                 and{" "}
                 <Link
                   href="/privacy"
-                  className="text-church-primary hover:text-church-primary/80"
+                  className="text-ds-brand-accent hover:text-ds-brand-accent-hover"
                   target="_blank"
                 >
                   Privacy Policy
@@ -618,7 +618,7 @@ export default function RegisterForm() {
         return (
           <>
             <div className="text-center mb-6">
-              <TeamOutlined className="text-5xl text-church-primary mb-2" />
+              <TeamOutlined className="text-5xl text-ds-brand-accent mb-2" />
               <Title level={4}>Join a Small Group</Title>
               <Text type="secondary">
                 Select a group that matches your interests and location
@@ -638,8 +638,8 @@ export default function RegisterForm() {
                     hoverable
                     className={`cursor-pointer transition-all ${
                       selectedGroupForRequest === suggestion.id
-                        ? "border-church-primary border-2 bg-church-primary/5"
-                        : "border-gray-200"
+                        ? "border-ds-brand-accent border-2 bg-ds-brand-accent-subtle"
+                        : "border-ds-border-base"
                     }`}
                     onClick={() => setSelectedGroupForRequest(suggestion.id)}
                   >
@@ -650,7 +650,7 @@ export default function RegisterForm() {
                             {suggestion.name}
                           </Text>
                           {selectedGroupForRequest === suggestion.id && (
-                            <CheckCircleOutlined className="text-church-primary text-xl" />
+                            <CheckCircleOutlined className="text-ds-brand-accent text-xl" />
                           )}
                         </div>
                         <Text type="secondary" className="block mb-2">
@@ -663,7 +663,7 @@ export default function RegisterForm() {
                             </Tag>
                           ))}
                         </div>
-                        <div className="flex items-center gap-4 text-sm text-gray-600">
+                        <div className="flex items-center gap-4 text-sm text-ds-text-secondary">
                           <span>
                             <TeamOutlined /> {suggestion.memberCount} members
                           </span>
@@ -699,9 +699,9 @@ export default function RegisterForm() {
   };
 
   return (
-    <Card className="shadow-xl">
+    <Card className="shadow-ds-xl">
       <div className="text-center mb-8">
-        <div className="inline-flex items-center justify-center w-16 h-16 bg-church-primary rounded-full mb-4">
+        <div className="inline-flex items-center justify-center w-16 h-16 bg-ds-brand-accent rounded-full mb-4">
           <UserOutlined className="text-3xl text-white" />
         </div>
         <Title level={2} className="!mb-2">
@@ -796,7 +796,7 @@ export default function RegisterForm() {
         <Text type="secondary">Already have an account? </Text>
         <Link
           href="/login"
-          className="text-church-primary hover:text-church-primary/80 font-semibold"
+          className="text-ds-brand-accent hover:text-ds-brand-accent-hover font-semibold"
         >
           Sign In
         </Link>

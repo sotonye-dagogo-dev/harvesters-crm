@@ -30,8 +30,7 @@ import {
 } from "@ant-design/icons";
 import type { Dayjs } from "dayjs";
 import dayjs from "dayjs";
-
-const { TextArea } = Input;
+import { TextArea } from "@/components/ui/Input";
 
 interface Meeting {
   id: string;
@@ -257,7 +256,7 @@ export default function MeetingSchedulingPage() {
           </li>
         ))}
         {dayMeetings.length > 2 && (
-          <li className="text-[10px] sm:text-xs text-gray-500">
+          <li className="text-[10px] sm:text-xs text-ds-text-subtle">
             +{dayMeetings.length - 2} more
           </li>
         )}
@@ -300,10 +299,10 @@ export default function MeetingSchedulingPage() {
         {/* Header */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div>
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+            <h2 className="text-2xl font-bold text-ds-text-primary">
               Meeting Schedule
             </h2>
-            <p className="text-gray-600 dark:text-gray-400">
+            <p className="text-ds-text-secondary">
               Plan and manage your group meetings
             </p>
           </div>
@@ -369,7 +368,7 @@ export default function MeetingSchedulingPage() {
 
         {/* Selected Date Meetings */}
         <Card
-          title={`Meetings on ${selectedDate.format("MMMM D, YYYY")}`}
+          title={`Meetings on ${selectedDate.format("D MMM YYYY")}`}
           extra={
             <Tag color="blue" icon={<CalendarOutlined />}>
               {selectedDateMeetings.length} meeting
@@ -399,7 +398,7 @@ export default function MeetingSchedulingPage() {
                 <Card
                   key={meeting.id}
                   size="small"
-                  className="bg-gray-50 dark:bg-gray-800"
+                  className="bg-ds-surface-sunken"
                   extra={
                     <Tag
                       color={
@@ -429,11 +428,11 @@ export default function MeetingSchedulingPage() {
                       <h4 className="font-semibold text-base mb-2 break-words">
                         {meeting.topic}
                       </h4>
-                      <div className="text-sm text-gray-600 dark:text-gray-400 mb-2">
+                      <div className="text-sm text-ds-text-secondary mb-2">
                         <ClockCircleOutlined className="mr-2" />
                         {dayjs(meeting.date).format("h:mm A")}
                       </div>
-                      <p className="text-sm text-gray-700 dark:text-gray-300 break-words">
+                      <p className="text-sm text-ds-text-secondary break-words">
                         {meeting.summary}
                       </p>
                       <Tag
@@ -502,7 +501,7 @@ export default function MeetingSchedulingPage() {
           >
             <DatePicker
               showTime
-              format="YYYY-MM-DD HH:mm"
+              format="D MMM YYYY HH:mm"
               className="w-full"
               disabledDate={(current) =>
                 current && current < dayjs().startOf("day")

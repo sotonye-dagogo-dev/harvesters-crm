@@ -2,7 +2,9 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { Table, Button, Space, Spin, message, Typography } from "antd";
+import { Space, Spin, message, Typography } from "antd";
+import Button from "@/components/ui/Button";
+import Table from "@/components/ui/Table";
 import {
   PlusOutlined,
   FileTextOutlined,
@@ -133,7 +135,7 @@ export default function LeaderReportsPage() {
           <Text className="font-medium">
             {REPORT_PERIOD_LABELS[record.periodType]} — {record.periodYear}
           </Text>
-          <Text className="text-xs text-gray-500">
+          <Text className="text-xs text-ds-text-subtle">
             {record.periodType === ReportPeriodType.WEEKLY
               ? `Week ${record.periodWeek ?? record.periodMonth}`
               : `Month ${record.periodMonth}`}
@@ -184,21 +186,6 @@ export default function LeaderReportsPage() {
           ? `${record.submittedBy.firstName} ${record.submittedBy.lastName}`
           : "—",
     },
-    {
-      title: "Actions",
-      key: "actions",
-      fixed: "right",
-      width: 120,
-      render: (_, record) => (
-        <Button
-          type="link"
-          icon={<FileTextOutlined />}
-          onClick={() => router.push(`/leader/reports/${record.id}`)}
-        >
-          View
-        </Button>
-      ),
-    },
   ];
 
   if (!role) {
@@ -220,18 +207,17 @@ export default function LeaderReportsPage() {
             <Title level={3} className="!mb-0">
               Reports
             </Title>
-            <Text className="text-gray-500">
+            <Text className="text-ds-text-subtle">
               {roleConfig?.label} — Manage and track your reports
             </Text>
           </div>
 
           <Space>
-            <Button icon={<ReloadOutlined />} onClick={fetchReports}>
+            <Button variant="secondary" icon={<ReloadOutlined />} onClick={fetchReports}>
               Refresh
             </Button>
             {canCreate && (
               <Button
-                type="primary"
                 icon={<PlusOutlined />}
                 onClick={() => router.push("/leader/reports/new")}
               >
@@ -262,6 +248,14 @@ export default function LeaderReportsPage() {
           columns={columns}
           rowKey="id"
           loading={loading}
+          actions={[
+            {
+              key: "view",
+              label: "View",
+              icon: <FileTextOutlined />,
+              onClick: (record) => router.push(`/leader/reports/${record.id}`),
+            },
+          ]}
           pagination={{
             current: page,
             pageSize,
@@ -273,7 +267,7 @@ export default function LeaderReportsPage() {
           scroll={{ x: 900 }}
           onRow={(record) => ({
             onClick: () => router.push(`/leader/reports/${record.id}`),
-            className: "cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800",
+            className: "cursor-pointer hover:bg-ds-surface-sunken",
           })}
         />
       </div>

@@ -7,7 +7,6 @@ import { useAuth } from "@/providers/AuthProvider";
 import DashboardLayout from "@/components/features/navigation/DashboardLayout";
 import {
   Form,
-  Input,
   DatePicker,
   TimePicker,
   InputNumber,
@@ -18,8 +17,7 @@ import {
 } from "antd";
 import { SaveOutlined } from "@ant-design/icons";
 import dayjs from "dayjs";
-
-const { TextArea } = Input;
+import { TextArea } from "@/components/ui/Input";
 
 interface MeetingFormValues {
   date: dayjs.Dayjs;
@@ -145,7 +143,7 @@ export default function EditMeetingPage({
       <DashboardLayout role={user?.role || UserRole.SMALL_GROUP_LEADER}>
         <div className="flex items-center justify-center min-h-[60vh]">
           <Card>
-            <p className="text-gray-500">
+            <p className="text-ds-text-subtle">
               You don&apos;t have permission to edit this meeting
             </p>
             <Button
@@ -166,8 +164,8 @@ export default function EditMeetingPage({
     <DashboardLayout role={user?.role || UserRole.SMALL_GROUP_LEADER}>
       <div className="max-w-2xl mx-auto space-y-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Edit Meeting</h1>
-          <p className="text-gray-500 mt-1">
+          <h1 className="text-2xl font-bold text-ds-text-primary">Edit Meeting</h1>
+          <p className="text-ds-text-subtle mt-1">
             Update meeting details for {meeting.group?.name}
           </p>
         </div>
@@ -188,7 +186,7 @@ export default function EditMeetingPage({
             >
               <DatePicker
                 className="w-full"
-                format="MMMM D, YYYY"
+                format="D MMM YYYY"
                 placeholder="Select meeting date"
               />
             </Form.Item>

@@ -7,7 +7,6 @@ import { useAuth } from "@/providers/AuthProvider";
 import DashboardLayout from "@/components/features/navigation/DashboardLayout";
 import {
   Card,
-  Table,
   Tag,
   Spin,
   message,
@@ -18,6 +17,7 @@ import {
   Empty,
   Statistic,
 } from "antd";
+import Table from "@/components/ui/Table";
 import {
   ArrowLeftOutlined,
   CheckCircleOutlined,
@@ -137,7 +137,7 @@ export default function AttendanceHistoryPage() {
     // Prepare CSV content
     const headers = ["Date", "Time", "Duration", "Total Attendees", "Status"];
     const rows = filteredData.map((item) => [
-      format(new Date(item.meeting.date), "MMM d, yyyy"),
+      format(new Date(item.meeting.date), "d MMM yyyy"),
       item.meeting.startTime,
       `${item.meeting.startTime} - ${item.meeting.endTime}`,
       item.meeting.attendeeCount.toString(),
@@ -230,8 +230,8 @@ export default function AttendanceHistoryPage() {
       key: "date",
       render: (date: string) => (
         <div className="flex items-center gap-2">
-          <CalendarOutlined className="text-gray-400" />
-          <span>{format(new Date(date), "MMM d, yyyy")}</span>
+          <CalendarOutlined className="text-ds-text-subtle" />
+          <span>{format(new Date(date), "d MMM yyyy")}</span>
         </div>
       ),
       sorter: (a, b) =>
@@ -241,7 +241,7 @@ export default function AttendanceHistoryPage() {
       title: "Time",
       key: "time",
       render: (_, record) => (
-        <span className="text-gray-600">
+        <span className="text-ds-text-secondary">
           {record.meeting.startTime} - {record.meeting.endTime}
         </span>
       ),
@@ -285,9 +285,9 @@ export default function AttendanceHistoryPage() {
       ellipsis: true,
       render: (notes: string) =>
         notes ? (
-          <span className="text-gray-600">{notes}</span>
+          <span className="text-ds-text-secondary">{notes}</span>
         ) : (
-          <span className="text-gray-400 italic">No notes</span>
+          <span className="text-ds-text-subtle italic">No notes</span>
         ),
     },
   ];
@@ -309,10 +309,10 @@ export default function AttendanceHistoryPage() {
 
         <div className="flex items-center justify-between mb-4">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">
+            <h1 className="text-2xl font-bold text-ds-text-primary">
               Attendance History
             </h1>
-            <p className="text-gray-600">
+            <p className="text-ds-text-secondary">
               {member.firstName} {member.lastName} • {group.name}
             </p>
           </div>

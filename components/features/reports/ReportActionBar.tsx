@@ -1,6 +1,8 @@
 "use client";
 
-import { Button, Popconfirm, Space, Input, message } from "antd";
+import { Popconfirm, Space, message } from "antd";
+import Button from "@/components/ui/Button";
+import { TextArea } from "@/components/ui/Input";
 import {
   SendOutlined,
   CheckCircleOutlined,
@@ -37,16 +39,16 @@ const ACTION_ICONS: Record<string, React.ReactNode> = {
   "Lock Report": <LockOutlined />,
 };
 
-const ACTION_COLORS: Record<
+const ACTION_VARIANTS: Record<
   string,
-  "primary" | "default" | "dashed" | "text" | "link"
+  "primary" | "secondary" | "dashed" | "text" | "link"
 > = {
   "Submit Report": "primary",
   "Resubmit Report": "primary",
   "Approve Report": "primary",
-  "Request Edits": "default",
-  "Mark as Reviewed": "default",
-  "Lock Report": "default",
+  "Request Edits": "secondary",
+  "Mark as Reviewed": "secondary",
+  "Lock Report": "secondary",
 };
 
 const ACTIONS_REQUIRING_REASON = new Set(["Request Edits"]);
@@ -120,10 +122,10 @@ export default function ReportActionBar({
                 title={action.label}
                 description={
                   <div className="flex flex-col gap-2 min-w-[300px]">
-                    <span className="text-sm text-gray-600">
+                    <span className="text-sm text-ds-text-secondary">
                       Please provide a reason:
                     </span>
-                    <Input.TextArea
+                    <TextArea
                       value={reason}
                       onChange={(e) => setReason(e.target.value)}
                       rows={3}
@@ -138,7 +140,7 @@ export default function ReportActionBar({
               >
                 <Button
                   icon={ACTION_ICONS[action.label]}
-                  type={ACTION_COLORS[action.label] ?? "default"}
+                  variant={ACTION_VARIANTS[action.label] ?? "secondary"}
                   loading={loading}
                   danger={action.label === "Request Edits"}
                 >
@@ -158,7 +160,7 @@ export default function ReportActionBar({
             >
               <Button
                 icon={ACTION_ICONS[action.label]}
-                type={ACTION_COLORS[action.label] ?? "default"}
+                variant={ACTION_VARIANTS[action.label] ?? "secondary"}
                 loading={loading}
                 danger={action.label === "Lock Report"}
               >

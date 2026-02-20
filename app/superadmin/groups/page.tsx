@@ -3,7 +3,8 @@
 import { useEffect, useState } from "react";
 import DashboardLayout from "@/components/features/navigation/DashboardLayout";
 import { useAuth } from "@/providers/AuthProvider";
-import { Input, Button as AntButton, message } from "antd";
+import { Input, message } from "antd";
+import Button from "@/components/ui/Button";
 import { PlusOutlined, SearchOutlined } from "@ant-design/icons";
 import GroupCard from "@/components/features/groups/GroupCard";
 import EmptyState from "@/components/ui/EmptyState";
@@ -82,21 +83,20 @@ export default function GroupsPage() {
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+            <h2 className="text-2xl font-bold text-ds-text-primary">
               Fellowship Groups
             </h2>
-            <p className="text-gray-600 dark:text-gray-400 mt-1">
+            <p className="text-ds-text-secondary mt-1">
               Manage church fellowship groups and their activities
             </p>
           </div>
           {canCreateGroup && (
-            <AntButton
-              type="primary"
+            <Button
               icon={<PlusOutlined />}
               onClick={() => router.push("/superadmin/groups/new")}
             >
               Create Group
-            </AntButton>
+            </Button>
           )}
         </div>
 
@@ -108,13 +108,13 @@ export default function GroupsPage() {
           onChange={(e) => setSearchTerm(e.target.value)}
         />
 
-        <div className="text-sm text-gray-600 dark:text-gray-400">
+        <div className="text-sm text-ds-text-secondary">
           Showing {filteredGroups.length} of {groups.length} groups
         </div>
 
         {filteredGroups.length === 0 ? (
           <EmptyState
-            icon={<SearchOutlined className="text-gray-300" />}
+            icon={<SearchOutlined className="text-ds-text-subtle" />}
             title="No groups found"
             description={
               searchTerm
@@ -123,13 +123,12 @@ export default function GroupsPage() {
             }
             action={
               canCreateGroup ? (
-                <AntButton
-                  type="primary"
+                <Button
                   icon={<PlusOutlined />}
                   onClick={() => router.push("/superadmin/groups/new")}
                 >
                   Create First Group
-                </AntButton>
+                </Button>
               ) : undefined
             }
           />

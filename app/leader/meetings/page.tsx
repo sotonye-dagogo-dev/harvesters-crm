@@ -3,7 +3,8 @@
 import { useEffect, useState } from "react";
 import DashboardLayout from "@/components/features/navigation/DashboardLayout";
 import { useAuth } from "@/providers/AuthProvider";
-import { Button as AntButton, message, Tabs } from "antd";
+import { message, Tabs } from "antd";
+import Button from "@/components/ui/Button";
 import { PlusOutlined } from "@ant-design/icons";
 import MeetingCard from "@/components/features/meetings/MeetingCard";
 import EmptyState from "@/components/ui/EmptyState";
@@ -25,6 +26,7 @@ export default function MeetingsPage() {
 
   useEffect(() => {
     filterMeetings();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeTab, meetings]);
 
   const fetchMeetings = async () => {
@@ -34,7 +36,7 @@ export default function MeetingsPage() {
         const data = await response.json();
         setMeetings(data.data);
       }
-    } catch (error) {
+    } catch {
       message.error("Failed to load meetings");
     } finally {
       setLoading(false);
@@ -80,27 +82,26 @@ export default function MeetingsPage() {
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+            <h2 className="text-2xl font-bold text-ds-text-primary">
               Meetings
             </h2>
-            <p className="text-gray-600 dark:text-gray-400 mt-1">
+            <p className="text-ds-text-secondary mt-1">
               Track fellowship meetings and attendance
             </p>
           </div>
           {canCreateMeeting && user?.groupId && (
-            <AntButton
-              type="primary"
+            <Button
               icon={<PlusOutlined />}
               onClick={() => router.push("/leader/meetings/new")}
             >
               Log Meeting
-            </AntButton>
+            </Button>
           )}
         </div>
 
         <Tabs activeKey={activeTab} items={tabItems} onChange={setActiveTab} />
 
-        <div className="text-sm text-gray-600 dark:text-gray-400">
+        <div className="text-sm text-ds-text-secondary">
           Showing {filteredMeetings.length} meeting
           {filteredMeetings.length !== 1 ? "s" : ""}
         </div>
@@ -117,13 +118,12 @@ export default function MeetingsPage() {
             }
             action={
               canCreateMeeting && user?.groupId ? (
-                <AntButton
-                  type="primary"
+                <Button
                   icon={<PlusOutlined />}
                   onClick={() => router.push("/leader/meetings/new")}
                 >
                   Log First Meeting
-                </AntButton>
+                </Button>
               ) : undefined
             }
           />

@@ -7,20 +7,28 @@ interface CardProps extends AntCardProps {
   children: ReactNode;
 }
 
-export default function Card({
+function CardBase({
   children,
   className = "",
   ...props
 }: CardProps) {
   return (
     <AntCard
-      className={`shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-0.5 rounded-xl border border-gray-100 dark:border-slate-700 overflow-hidden ${className}`}
+      className={`shadow-ds-md hover:shadow-ds-lg transition-all duration-300 hover:-translate-y-0.5 rounded-[var(--ds-radius-xl)] border border-ds-border-base bg-ds-surface-elevated overflow-hidden ds-hover-glow ${className}`}
       {...props}
     >
       {children}
     </AntCard>
   );
 }
+
+/** Expose Ant Design Card sub-components on the wrapper */
+const Card = Object.assign(CardBase, {
+  Meta: AntCard.Meta,
+  Grid: AntCard.Grid,
+});
+
+export default Card;
 
 // Scrollable card for content that may overflow
 interface ScrollableCardProps extends CardProps {
@@ -37,7 +45,7 @@ export function ScrollableCard({
 }: ScrollableCardProps) {
   return (
     <AntCard
-      className={`shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-0.5 rounded-xl border border-gray-100 dark:border-slate-700 overflow-hidden ${className}`}
+      className={`shadow-ds-md hover:shadow-ds-lg transition-all duration-300 hover:-translate-y-0.5 rounded-[var(--ds-radius-xl)] border border-ds-border-base bg-ds-surface-elevated overflow-hidden ds-hover-glow ${className}`}
       {...props}
     >
       <div
@@ -67,19 +75,19 @@ export function StatCard({
   value,
   icon,
   trend,
-  color = "text-church-primary dark:text-green-400",
+  color = "text-ds-brand-accent",
   description,
 }: StatCardProps) {
   return (
-    <Card className="bg-gradient-to-br from-white to-gray-50 dark:from-slate-800 dark:to-slate-900 border-gray-200 dark:border-slate-700 overflow-hidden group">
+    <Card className="bg-ds-surface-elevated border-ds-border-base overflow-hidden group">
       <div className="flex items-start justify-between gap-4">
         <div className="flex-1 min-w-0">
-          <p className="text-gray-600 dark:text-gray-400 text-sm font-medium mb-2 truncate uppercase tracking-wide">
+          <p className="text-ds-text-secondary text-sm font-medium mb-2 truncate uppercase tracking-wide">
             {title}
           </p>
           <h3 className={`text-3xl font-bold ${color} m-0 mb-1`}>{value}</h3>
           {description && (
-            <p className="text-sm mt-2 text-gray-600 dark:text-gray-400 font-medium">
+            <p className="text-sm mt-2 text-ds-text-secondary font-medium">
               {description}
             </p>
           )}
@@ -88,14 +96,14 @@ export function StatCard({
               <span
                 className={`inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-full ${
                   trend.isPositive
-                    ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
-                    : "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
+                    ? "bg-ds-brand-accent-subtle text-ds-status-success"
+                    : "bg-ds-status-error/5 text-ds-status-error dark:bg-red-900/20"
                 }`}
               >
                 <span className="text-sm">{trend.isPositive ? "↑" : "↓"}</span>
                 {Math.abs(trend.value)}%
               </span>
-              <span className="text-xs text-gray-500 dark:text-gray-400">
+              <span className="text-xs text-ds-text-subtle">
                 from last period
               </span>
             </div>

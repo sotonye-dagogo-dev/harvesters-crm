@@ -213,7 +213,7 @@ export default function DashboardLayout({
   // Sidebar content (shared between desktop and mobile)
   const sidebarContent = (
     <>
-      <div className="h-20 flex items-center justify-center border-b border-white/10 backdrop-blur-sm px-4">
+      <div className="h-20 flex items-center justify-center border-b border-ds-border-subtle backdrop-blur-sm px-4">
         {!collapsed || isMobile ? (
           <div className="flex items-center justify-center w-full">
             <Image
@@ -226,7 +226,7 @@ export default function DashboardLayout({
             />
           </div>
         ) : (
-          <div className="w-12 h-12 rounded-xl flex items-center justify-center bg-white/10 backdrop-blur-sm">
+          <div className="w-12 h-12 rounded-xl flex items-center justify-center bg-ds-brand-accent-subtle backdrop-blur-sm">
             <Image
               src={logoSrc}
               alt="HICC"
@@ -240,21 +240,17 @@ export default function DashboardLayout({
       </div>
 
       <Menu
-        theme="dark"
         mode="inline"
         selectedKeys={getSelectedKeys()}
         items={getMenuItems()}
-        className="!bg-transparent !border-r-0 mt-4 px-2 [&_.ant-menu-item]:rounded-xl [&_.ant-menu-item]:mb-2 [&_.ant-menu-item:hover]:bg-white/10 [&_.ant-menu-item-selected]:bg-white/20 [&_.ant-menu-item-selected]:shadow-lg [&_.ant-menu-submenu-title]:rounded-xl [&_.ant-menu-submenu-title:hover]:bg-white/10"
+        className="!bg-transparent !border-r-0 mt-4 px-2 [&_.ant-menu-item]:rounded-xl [&_.ant-menu-item]:mb-2 [&_.ant-menu-item:hover]:!bg-ds-brand-accent-subtle [&_.ant-menu-item-selected]:!bg-ds-brand-accent [&_.ant-menu-item-selected]:!text-white [&_.ant-menu-item-selected]:shadow-ds-md [&_.ant-menu-submenu-title]:rounded-xl [&_.ant-menu-submenu-title:hover]:!bg-ds-brand-accent-subtle [&_.ant-menu-item]:!text-ds-text-secondary [&_.ant-menu-item-selected]:!text-ds-text-inverse"
         aria-label="Dashboard navigation menu"
       />
     </>
   );
 
   return (
-    <Layout
-      style={{ minHeight: "100vh" }}
-      className="bg-gradient-to-br from-slate-50 via-white to-slate-100 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900"
-    >
+    <Layout style={{ minHeight: "100vh" }} className="!bg-ds-surface-base">
       {/* Desktop Sidebar */}
       {!isMobile && (
         <Sider
@@ -262,9 +258,8 @@ export default function DashboardLayout({
           collapsed={collapsed}
           onCollapse={setCollapsed}
           width={260}
-          className="!bg-gradient-to-b !from-indigo-600 !via-indigo-700 !to-indigo-800 dark:!from-indigo-900 dark:!via-indigo-950 dark:!to-gray-950 shadow-2xl !fixed !left-0 !top-0 !bottom-0 !h-screen overflow-auto z-10 transition-all duration-300"
+          className="!bg-ds-surface-sidebar border-r border-ds-border-base shadow-ds-lg !fixed !left-0 !top-0 !bottom-0 !h-screen overflow-auto z-10 transition-all duration-300"
           trigger={null}
-          theme="dark"
         >
           {sidebarContent}
         </Sider>
@@ -283,7 +278,7 @@ export default function DashboardLayout({
             />
             <button
               onClick={() => setMobileDrawerOpen(false)}
-              className="text-white hover:text-gray-300"
+              className="text-ds-text-primary hover:text-ds-text-secondary"
               aria-label="Close menu"
             >
               <CloseOutlined />
@@ -294,7 +289,7 @@ export default function DashboardLayout({
         closable={false}
         onClose={() => setMobileDrawerOpen(false)}
         open={isMobile && mobileDrawerOpen}
-        className="[&_.ant-drawer-header]:!bg-gradient-to-r [&_.ant-drawer-header]:!from-indigo-600 [&_.ant-drawer-header]:!to-indigo-700 [&_.ant-drawer-body]:!bg-gradient-to-b [&_.ant-drawer-body]:!from-indigo-600 [&_.ant-drawer-body]:!via-indigo-700 [&_.ant-drawer-body]:!to-indigo-800 [&_.ant-drawer-body]:!p-0"
+        className="[&_.ant-drawer-header]:!bg-ds-surface-sidebar [&_.ant-drawer-header]:border-b [&_.ant-drawer-header]:border-ds-border-base [&_.ant-drawer-body]:!bg-ds-surface-sidebar [&_.ant-drawer-body]:!p-0"
         width={280}
       >
         {sidebarContent}
@@ -306,13 +301,13 @@ export default function DashboardLayout({
           marginLeft: isMobile ? 0 : collapsed ? 80 : 260,
         }}
       >
-        <Header className="!bg-white dark:!bg-gray-800 !p-0 shadow-sm sticky top-0 z-10 backdrop-blur-sm">
+        <Header className="!bg-ds-surface-header !p-0 shadow-ds-sm sticky top-0 z-10 backdrop-blur-sm border-b border-ds-border-subtle">
           <div className="flex items-center justify-between h-16 px-6">
             <div className="flex items-center gap-4">
               {isMobile && (
                 <button
                   onClick={() => setMobileDrawerOpen(true)}
-                  className="text-2xl text-gray-700 dark:text-white hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
+                  className="text-2xl text-ds-text-primary hover:text-ds-brand-accent transition-colors"
                   aria-label="Open menu"
                 >
                   <MenuOutlined />
@@ -321,7 +316,7 @@ export default function DashboardLayout({
               {!isMobile && (
                 <button
                   onClick={() => setCollapsed(!collapsed)}
-                  className="text-2xl text-gray-700 dark:text-white hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
+                  className="text-2xl text-ds-text-primary hover:text-ds-brand-accent transition-colors"
                   aria-label={collapsed ? "Expand menu" : "Collapse menu"}
                 >
                   <MenuOutlined />
@@ -338,14 +333,14 @@ export default function DashboardLayout({
                   placement="bottomRight"
                 >
                   <button
-                    className="flex items-center gap-2 px-3 py-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                    className="flex items-center gap-2 px-3 py-1 rounded-lg hover:bg-ds-brand-accent-subtle transition-colors"
                     aria-label="User profile menu"
                   >
-                    <div className="w-8 h-8 rounded-full bg-indigo-600 dark:bg-indigo-500 flex items-center justify-center text-white font-medium">
+                    <div className="w-8 h-8 rounded-full bg-ds-brand-accent flex items-center justify-center text-white font-medium">
                       {user.firstName?.[0]}
                       {user.lastName?.[0]}
                     </div>
-                    <span className="hidden sm:inline text-gray-700 dark:text-white font-medium">
+                    <span className="hidden sm:inline text-ds-text-primary font-medium">
                       {user.firstName} {user.lastName}
                     </span>
                   </button>

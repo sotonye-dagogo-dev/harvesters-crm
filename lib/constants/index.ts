@@ -678,10 +678,15 @@ export const FILE_UPLOAD = {
 // ============================================================================
 
 export const DATE_FORMATS = {
-  DISPLAY: "MMM D, YYYY",
+  /** Dayjs display format — 20 Feb 2026 */
+  DISPLAY: "D MMM YYYY",
+  /** Dayjs input/API — 2026-02-20 */
   INPUT: "YYYY-MM-DD",
+  /** Dayjs time — 3:30 PM */
   TIME: "h:mm A",
-  DATETIME: "MMM D, YYYY h:mm A",
+  /** Dayjs datetime — 20 Feb 2026 at 3:30 PM */
+  DATETIME: "D MMM YYYY [at] h:mm A",
+  /** ISO 8601 */
   ISO: "YYYY-MM-DDTHH:mm:ss.SSSZ",
 };
 

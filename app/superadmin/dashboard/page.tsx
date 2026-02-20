@@ -14,7 +14,8 @@ import {
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Card from "@/components/ui/Card";
-import { Spin, Button } from "antd";
+import Button from "@/components/ui/Button";
+import { Spin } from "antd";
 import { ReportOverviewWidget } from "@/components/features/reports";
 
 export default function SuperadminDashboard() {
@@ -59,25 +60,25 @@ export default function SuperadminDashboard() {
       title: "Total Members",
       value: analytics?.totalUsers || 0,
       icon: <UserOutlined />,
-      color: "text-blue-600 dark:text-blue-400",
+      color: "text-ds-chart-1",
     },
     {
       title: "Total Groups",
       value: analytics?.totalGroups || 0,
       icon: <TeamOutlined />,
-      color: "text-green-600 dark:text-green-400",
+      color: "text-ds-brand-accent",
     },
     {
       title: "Recent Meetings",
       value: analytics?.recentMeetings || 0,
       icon: <CalendarOutlined />,
-      color: "text-purple-600 dark:text-purple-400",
+      color: "text-ds-chart-3",
     },
     {
       title: "Recent Interactions",
       value: analytics?.recentInteractions || 0,
       icon: <PhoneOutlined />,
-      color: "text-orange-600 dark:text-orange-400",
+      color: "text-ds-chart-4",
     },
   ];
 
@@ -101,7 +102,7 @@ export default function SuperadminDashboard() {
       label: "Church-Wide Analytics",
       icon: <BarChartOutlined />,
       onClick: () => router.push("/superadmin/analytics"),
-      type: "primary" as const,
+      variant: "primary" as const,
     },
     {
       label: "Interest Insights",
@@ -130,15 +131,14 @@ export default function SuperadminDashboard() {
       <div className="space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+            <h2 className="text-2xl font-bold text-ds-text-primary mb-2">
               Dashboard
             </h2>
-            <p className="text-gray-600 dark:text-gray-400">
-              Welcome to Church Fellowship CRM
+            <p className="text-ds-text-secondary">
+              Welcome to Harvesters Small Groups CRM
             </p>
           </div>
           <Button
-            type="primary"
             icon={<BarChartOutlined />}
             onClick={() => router.push("/superadmin/analytics")}
             className="w-full sm:w-auto"
@@ -167,13 +167,13 @@ export default function SuperadminDashboard() {
             <Card
               key={index}
               title={metric.title}
-              className="h-full bg-white dark:bg-slate-800 border-gray-200 dark:border-slate-700"
+              className="h-full bg-ds-surface-elevated border-ds-border-base"
             >
               <div className="text-center py-8">
-                <div className="text-4xl font-bold text-church-primary dark:text-green-400 mb-2">
+                <div className="text-4xl font-bold text-ds-brand-accent mb-2">
                   {metric.value}
                 </div>
-                <p className="text-gray-600 dark:text-gray-400">
+                <p className="text-ds-text-secondary">
                   {metric.description}
                 </p>
               </div>
@@ -184,13 +184,13 @@ export default function SuperadminDashboard() {
         {/* Quick Actions */}
         <Card
           title="Quick Actions"
-          className="mt-6 bg-white dark:bg-slate-800 border-gray-200 dark:border-slate-700"
+          className="mt-6 bg-ds-surface-elevated border-ds-border-base"
         >
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mx-2 sm:mx-0">
             {quickActions.map((action, index) => (
               <Button
                 key={index}
-                type={action.type || "default"}
+                variant={action.variant || "secondary"}
                 size="large"
                 block
                 icon={action.icon}

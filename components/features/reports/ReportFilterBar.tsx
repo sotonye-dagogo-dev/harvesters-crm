@@ -1,6 +1,8 @@
 "use client";
 
-import { Select, DatePicker, Space, Button, Input } from "antd";
+import { Select, DatePicker, Space } from "antd";
+import Button from "@/components/ui/Button";
+import Input from "@/components/ui/Input";
 import { SearchOutlined, ClearOutlined } from "@ant-design/icons";
 import { ReportStatus, ReportPeriodType } from "@/lib/types";
 import {
@@ -62,7 +64,7 @@ export default function ReportFilterBar({
     <div className={`flex flex-wrap gap-3 items-center ${className ?? ""}`}>
       <Input
         placeholder="Search reports…"
-        prefix={<SearchOutlined className="text-gray-400" />}
+        prefix={<SearchOutlined className="text-ds-text-subtle" />}
         value={filters.search}
         onChange={(e) =>
           onChange({ ...filters, search: e.target.value || undefined })
@@ -151,7 +153,7 @@ export default function ReportFilterBar({
                 : undefined,
             })
           }
-          format="YYYY-MM-DD"
+          format="D MMM YYYY"
         />
       </Space.Compact>
 
@@ -160,7 +162,7 @@ export default function ReportFilterBar({
           icon={<ClearOutlined />}
           onClick={handleClear}
           size="small"
-          type="text"
+          variant="text"
         >
           Clear
         </Button>

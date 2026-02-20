@@ -81,7 +81,7 @@ export default function CampaignList({
           {scrollPosition > 0 && (
             <button
               onClick={() => handleScroll("left")}
-              className="absolute left-0 top-1/2 -translate-y-1/2 z-10 w-10 h-10 rounded-full bg-white dark:bg-gray-800 shadow-lg flex items-center justify-center hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+              className="absolute left-0 top-1/2 -translate-y-1/2 z-10 w-10 h-10 rounded-full bg-ds-surface-elevated shadow-lg flex items-center justify-center hover:bg-ds-surface-sunken transition-colors"
               aria-label="Scroll left"
             >
               <LeftOutlined />
@@ -107,7 +107,7 @@ export default function CampaignList({
           {/* Scroll Right Button */}
           <button
             onClick={() => handleScroll("right")}
-            className="absolute right-0 top-1/2 -translate-y-1/2 z-10 w-10 h-10 rounded-full bg-white dark:bg-gray-800 shadow-lg flex items-center justify-center hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+            className="absolute right-0 top-1/2 -translate-y-1/2 z-10 w-10 h-10 rounded-full bg-ds-surface-elevated shadow-lg flex items-center justify-center hover:bg-ds-surface-sunken transition-colors"
             aria-label="Scroll right"
           >
             <RightOutlined />

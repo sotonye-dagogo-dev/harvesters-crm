@@ -11,12 +11,14 @@ import {
   Tag,
   Collapse,
   message,
-  Table,
   Form,
-  Input,
   Switch,
   Space,
 } from "antd";
+import Input, { TextArea } from "@/components/ui/Input";
+import Table from "@/components/ui/Table";
+import { BooleanBadge } from "@/components/ui/StatusBadge";
+import { formatDateTime } from "@/lib/utils/format";
 import {
   ArrowLeftOutlined,
   HistoryOutlined,
@@ -336,7 +338,7 @@ export default function SuperadminTemplateDetailPage() {
     return (
       <DashboardLayout role={role}>
         <div className="text-center py-16">
-          <Text className="text-gray-500">Template not found</Text>
+          <Text className="text-ds-text-subtle">Template not found</Text>
           <br />
           <Button
             onClick={() => router.push("/superadmin/reports/templates")}
@@ -366,7 +368,7 @@ export default function SuperadminTemplateDetailPage() {
                 <Title level={3} className="!mb-0">
                   Editing: {template.name}
                 </Title>
-                <Text className="text-gray-500">
+                <Text className="text-ds-text-subtle">
                   Modify sections, sub-sections, and metrics below
                 </Text>
               </div>
@@ -401,7 +403,7 @@ export default function SuperadminTemplateDetailPage() {
                 label="Description"
                 className="!mb-0 mt-4"
               >
-                <Input.TextArea rows={2} />
+                <TextArea rows={2} />
               </Form.Item>
             </Card>
 
@@ -422,7 +424,7 @@ export default function SuperadminTemplateDetailPage() {
                 label="Change Notes (optional)"
                 className="!mb-4"
               >
-                <Input.TextArea
+                <TextArea
                   rows={2}
                   placeholder="Briefly describe what you changed (for version history)"
                 />
@@ -501,11 +503,7 @@ export default function SuperadminTemplateDetailPage() {
               <div className="flex items-center gap-2 mt-1">
                 <Tag>v{template.version}</Tag>
                 {template.isDefault && <Tag color="blue">Default</Tag>}
-                {template.isActive ? (
-                  <Tag color="green">Active</Tag>
-                ) : (
-                  <Tag color="red">Inactive</Tag>
-                )}
+                <BooleanBadge value={template.isActive} trueLabel="Active" falseLabel="Inactive" />
               </div>
             </div>
           </div>
@@ -543,10 +541,10 @@ export default function SuperadminTemplateDetailPage() {
               )}
             </Descriptions.Item>
             <Descriptions.Item label="Created">
-              {new Date(template.createdAt).toLocaleString()}
+              {formatDateTime(template.createdAt)}
             </Descriptions.Item>
             <Descriptions.Item label="Last Updated">
-              {new Date(template.updatedAt).toLocaleString()}
+              {formatDateTime(template.updatedAt)}
             </Descriptions.Item>
           </Descriptions>
         </Card>
@@ -566,7 +564,7 @@ export default function SuperadminTemplateDetailPage() {
                         Required
                       </Tag>
                     )}
-                    <Text className="text-xs text-gray-400">
+                    <Text className="text-xs text-ds-text-subtle">
                       {section.metrics.length +
                         (section.subSections ?? []).reduce(
                           (sum, ss) => sum + ss.metrics.length,
@@ -582,7 +580,7 @@ export default function SuperadminTemplateDetailPage() {
                 children: (
                   <div className="flex flex-col gap-4">
                     {section.description && (
-                      <Text className="text-gray-500">
+                      <Text className="text-ds-text-subtle">
                         {section.description}
                       </Text>
                     )}
@@ -606,10 +604,10 @@ export default function SuperadminTemplateDetailPage() {
                         key={sub.id}
                         size="small"
                         title={sub.name}
-                        className="bg-gray-50 dark:bg-gray-700/50"
+                        className="bg-ds-surface-sunken"
                       >
                         {sub.description && (
-                          <Text className="text-gray-500 text-sm block mb-2">
+                          <Text className="text-ds-text-subtle text-sm block mb-2">
                             {sub.description}
                           </Text>
                         )}
@@ -652,7 +650,7 @@ export default function SuperadminTemplateDetailPage() {
                   title: "Date",
                   dataIndex: "createdAt",
                   key: "createdAt",
-                  render: (v: string) => new Date(v).toLocaleString(),
+                  render: (v: string) => formatDateTime(v),
                 },
               ]}
               rowKey="id"

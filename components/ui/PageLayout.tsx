@@ -1,5 +1,5 @@
 import { ReactNode } from "react";
-import { Spin, Empty, Card as AntCard } from "antd";
+import { Spin, Empty } from "antd";
 import Card from "./Card";
 
 interface PageHeaderProps {
@@ -18,13 +18,11 @@ export function PageHeader({
   return (
     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
       <div>
-        <h2 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
+        <h2 className="text-2xl font-bold text-ds-text-primary flex items-center gap-2">
           {icon}
           {title}
         </h2>
-        {subtitle && (
-          <p className="text-gray-600 dark:text-gray-400 mt-1">{subtitle}</p>
-        )}
+        {subtitle && <p className="text-ds-text-secondary mt-1">{subtitle}</p>}
       </div>
       {actions && <div className="flex flex-wrap gap-2">{actions}</div>}
     </div>
@@ -39,7 +37,7 @@ export function PageLoading({ message = "Loading..." }: PageLoadingProps) {
   return (
     <div className="flex flex-col items-center justify-center h-96 gap-4">
       <Spin size="large" />
-      {message && <p className="text-gray-600 dark:text-gray-400">{message}</p>}
+      {message && <p className="text-ds-text-secondary">{message}</p>}
     </div>
   );
 }
@@ -60,12 +58,14 @@ export function PageEmpty({
   return (
     <Card>
       <div className="text-center py-12">
-        {icon && <div className="text-6xl text-gray-300 mb-4">{icon}</div>}
-        <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-2">
+        {icon && (
+          <div className="text-6xl text-ds-text-subtle mb-4">{icon}</div>
+        )}
+        <h3 className="text-lg font-semibold text-ds-text-primary mb-2">
           {title}
         </h3>
         {description && (
-          <p className="text-gray-500 dark:text-gray-400 mb-4">{description}</p>
+          <p className="text-ds-text-secondary mb-4">{description}</p>
         )}
         {action && <div className="mt-4">{action}</div>}
       </div>
@@ -80,15 +80,15 @@ interface PageErrorProps {
 
 export function PageError({ error, onRetry }: PageErrorProps) {
   return (
-    <AntCard>
+    <Card>
       <Empty
         description={
           <div className="space-y-4">
-            <p className="text-red-600 dark:text-red-400">{error}</p>
+            <p className="text-ds-status-error">{error}</p>
             {onRetry && (
               <button
                 onClick={onRetry}
-                className="px-4 py-2 bg-church-primary text-white rounded hover:bg-opacity-90"
+                className="px-4 py-2 bg-ds-brand-accent text-white rounded-[var(--ds-radius-lg)] hover:bg-ds-brand-accent-hover transition-colors"
               >
                 Try Again
               </button>
@@ -96,7 +96,7 @@ export function PageError({ error, onRetry }: PageErrorProps) {
           </div>
         }
       />
-    </AntCard>
+    </Card>
   );
 }
 

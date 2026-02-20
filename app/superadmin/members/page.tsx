@@ -4,7 +4,10 @@ import { UserRole } from "@/lib/types";
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import DashboardLayout from "@/components/features/navigation/DashboardLayout";
-import { Card, Table, Select, Tag, Button, Space, Spin, message } from "antd";
+import { Select, Spin, message } from "antd";
+import Card from "@/components/ui/Card";
+import Table from "@/components/ui/Table";
+import StatusBadge, { BooleanBadge } from "@/components/ui/StatusBadge";
 import { EditOutlined } from "@ant-design/icons";
 import { SearchInput } from "@/components/ui/SearchInput";
 import type { ColumnsType } from "antd/es/table";
@@ -74,22 +77,9 @@ export default function MembersPage() {
       title: "Role",
       dataIndex: "role",
       key: "role",
-      render: (role: UserRole) => {
-        const colors: Record<UserRole, string> = {
-          [UserRole.SUPERADMIN]: "red",
-          [UserRole.GROUP_PASTOR]: "volcano",
-          [UserRole.GROUP_ADMIN]: "orange",
-          [UserRole.CAMPUS_PASTOR]: "gold",
-          [UserRole.ZONAL_LEADER]: "purple",
-          [UserRole.CAMPUS_ADMIN]: "geekblue",
-          [UserRole.HOD]: "blue",
-          [UserRole.SMALL_GROUP_LEADER]: "cyan",
-          [UserRole.CELL_LEADER]: "lime",
-          [UserRole.DATA_ENTRY]: "magenta",
-          [UserRole.MEMBER]: "green",
-        };
-        return <Tag color={colors[role]}>{role}</Tag>;
-      },
+      render: (role: UserRole) => (
+        <StatusBadge status={role} category="role" />
+      ),
       filters: [
         { text: "Superadmin", value: "SUPERADMIN" },
         { text: "Leader", value: "LEADER" },
@@ -101,24 +91,7 @@ export default function MembersPage() {
       dataIndex: "isActive",
       key: "isActive",
       render: (isActive: boolean) => (
-        <Tag color={isActive ? "success" : "error"}>
-          {isActive ? "Active" : "Inactive"}
-        </Tag>
-      ),
-    },
-    {
-      title: "Actions",
-      key: "actions",
-      render: (_, record) => (
-        <Space>
-          <Button
-            type="link"
-            icon={<EditOutlined />}
-            onClick={() => router.push(`/superadmin/users/${record.id}`)}
-          >
-            View
-          </Button>
-        </Space>
+        <BooleanBadge value={isActive} trueLabel="Active" falseLabel="Inactive" />
       ),
     },
   ];
@@ -136,16 +109,16 @@ export default function MembersPage() {
       <div className="space-y-6">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+            <h1 className="text-2xl font-bold text-ds-text-primary">
               Members Directory
             </h1>
-            <p className="text-gray-600 dark:text-gray-400 mt-1">
+            <p className="text-ds-text-secondary mt-1">
               Manage all church members
             </p>
           </div>
         </div>
 
-        <Card className="dark:bg-slate-800 dark:border-slate-700">
+        <Card className="dark:bg-ds-surface-elevated dark:border-ds-border-base">
           <div className="flex flex-col sm:flex-row gap-4 mb-6">
             <SearchInput
               placeholder="Search by name or email"
@@ -178,6 +151,14 @@ export default function MembersPage() {
               columns={columns}
               dataSource={filteredMembers}
               rowKey="id"
+              actions={[
+                {
+                  key: "view",
+                  label: "View",
+                  icon: <EditOutlined />,
+                  onClick: (record) => router.push(`/superadmin/users/${record.id}`),
+                },
+              ]}
               pagination={{
                 pageSize: 10,
                 showSizeChanger: true,

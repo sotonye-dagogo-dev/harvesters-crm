@@ -156,7 +156,7 @@ export default function ManageAttendancePage() {
       <DashboardLayout role={user?.role || UserRole.SMALL_GROUP_LEADER}>
         <div className="flex items-center justify-center min-h-[60vh]">
           <Card>
-            <p className="text-gray-500">
+            <p className="text-ds-text-subtle">
               You don&apos;t have permission to manage attendance for this
               meeting
             </p>
@@ -176,12 +176,12 @@ export default function ManageAttendancePage() {
     <DashboardLayout role={user?.role || UserRole.SMALL_GROUP_LEADER}>
       <div className="max-w-3xl mx-auto space-y-6">
         <div className="mb-6">
-          <h1 className="text-2xl font-bold text-gray-900">
+          <h1 className="text-2xl font-bold text-ds-text-primary">
             Manage Attendance
           </h1>
-          <p className="text-gray-500 mt-1">
+          <p className="text-ds-text-subtle mt-1">
             {meeting.group?.name} •{" "}
-            {format(new Date(meeting.date), "MMMM d, yyyy")}
+            {format(new Date(meeting.date), "d MMM yyyy")}
           </p>
         </div>
 
@@ -219,8 +219,8 @@ export default function ManageAttendancePage() {
                   return (
                     <List.Item
                       key={member.id}
-                      className={`cursor-pointer hover:bg-gray-50 transition-colors ${
-                        isAttended ? "bg-green-50" : isAbsent ? "bg-red-50" : ""
+                      className={`cursor-pointer hover:bg-ds-surface-sunken transition-colors ${
+                        isAttended ? "bg-ds-status-success/5" : isAbsent ? "bg-ds-status-error/5" : ""
                       }`}
                       onClick={() => handleToggleAttendance(member.id)}
                     >
@@ -246,10 +246,10 @@ export default function ManageAttendancePage() {
                           <div className="flex items-center gap-2">
                             {member.firstName} {member.lastName}
                             {isAttended && (
-                              <CheckCircleOutlined className="text-green-600" />
+                              <CheckCircleOutlined className="text-ds-status-success" />
                             )}
                             {isAbsent && (
-                              <CloseCircleOutlined className="text-red-600" />
+                              <CloseCircleOutlined className="text-ds-status-error" />
                             )}
                           </div>
                         }
@@ -257,7 +257,7 @@ export default function ManageAttendancePage() {
                           <div className="flex items-center gap-2">
                             <span>{member.email}</span>
                             {isAbsent && (
-                              <span className="text-xs text-red-600 font-medium">
+                              <span className="text-xs text-ds-status-error font-medium">
                                 • Absent
                               </span>
                             )}
@@ -278,15 +278,15 @@ export default function ManageAttendancePage() {
             <div className="mt-4 pt-4 border-t space-y-2">
               <div className="flex items-center justify-between text-sm">
                 <div>
-                  <span className="font-semibold text-green-600">Present:</span>{" "}
+                  <span className="font-semibold text-ds-status-success">Present:</span>{" "}
                   {attendeeIds.length} members
                 </div>
                 <div>
-                  <span className="font-semibold text-red-600">Absent:</span>{" "}
+                  <span className="font-semibold text-ds-status-error">Absent:</span>{" "}
                   {groupMembers.length - attendeeIds.length} members
                 </div>
               </div>
-              <div className="text-sm text-gray-600">
+              <div className="text-sm text-ds-text-secondary">
                 <span className="font-semibold">Attendance Rate:</span>{" "}
                 {groupMembers.length > 0
                   ? Math.round((attendeeIds.length / groupMembers.length) * 100)

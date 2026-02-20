@@ -1,83 +1,103 @@
-import { Input as AntInput, InputProps } from "antd";
-import { TextAreaProps } from "antd/es/input";
+import { forwardRef, type ReactNode } from "react";
+import { Input as AntInput, type InputProps, type InputRef } from "antd";
+import type { TextAreaProps } from "antd/es/input";
+
+/** Ref type for AntInput.TextArea – derived from the component itself. */
+type TextAreaRefType = React.ComponentRef<typeof AntInput.TextArea>;
+
+// ─── Shared DS styling ──────────────────────────────────────────────────────
+
+const DS_INPUT_CLASS =
+  "rounded-[var(--ds-radius-lg)] shadow-ds-sm hover:shadow-ds-md transition-all duration-200";
+
+/** Thin label + error shell. Renders nothing extra when both are absent. */
+function FieldShell({
+  label,
+  error,
+  children,
+}: {
+  label?: ReactNode;
+  error?: string;
+  children: ReactNode;
+}) {
+  if (!label && !error) return <>{children}</>;
+  return (
+    <div className="w-full">
+      {label && (
+        <label className="block text-sm font-semibold text-ds-text-primary mb-2">
+          {label}
+        </label>
+      )}
+      {children}
+      {error && (
+        <p className="mt-2 text-sm text-ds-status-error flex items-center gap-1">
+          <span>⚠</span> {error}
+        </p>
+      )}
+    </div>
+  );
+}
+
+// ─── Input ──────────────────────────────────────────────────────────────────
 
 interface CustomInputProps extends InputProps {
-  label?: string;
+  label?: ReactNode;
   error?: string;
 }
 
-export default function Input({ label, error, ...props }: CustomInputProps) {
-  return (
-    <div className="w-full">
-      {label && (
-        <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-          {label}
-        </label>
-      )}
+const Input = forwardRef<InputRef, CustomInputProps>(
+  ({ label, error, className, ...props }, ref) => (
+    <FieldShell label={label} error={error}>
       <AntInput
+        ref={ref}
         {...props}
-        status={error ? "error" : undefined}
-        className={`rounded-lg shadow-sm hover:shadow-md transition-all duration-200 ${props.className || ""}`}
+        status={error ? "error" : props.status}
+        className={`${DS_INPUT_CLASS} ${className || ""}`}
       />
-      {error && (
-        <p className="mt-2 text-sm text-red-600 dark:text-red-400 flex items-center gap-1">
-          <span>⚠</span> {error}
-        </p>
-      )}
-    </div>
-  );
-}
+    </FieldShell>
+  )
+);
+Input.displayName = "Input";
+export default Input;
+
+// ─── TextArea ───────────────────────────────────────────────────────────────
 
 interface TextAreaCustomProps extends TextAreaProps {
-  label?: string;
+  label?: ReactNode;
   error?: string;
 }
 
-export function TextArea({ label, error, ...props }: TextAreaCustomProps) {
-  return (
-    <div className="w-full">
-      {label && (
-        <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-          {label}
-        </label>
-      )}
+export const TextArea = forwardRef<TextAreaRefType, TextAreaCustomProps>(
+  ({ label, error, className, ...props }, ref) => (
+    <FieldShell label={label} error={error}>
       <AntInput.TextArea
+        ref={ref}
         {...props}
-        status={error ? "error" : undefined}
-        className={`rounded-lg shadow-sm hover:shadow-md transition-all duration-200 ${props.className || ""}`}
+        status={error ? "error" : props.status}
+        className={`${DS_INPUT_CLASS} ${className || ""}`}
       />
-      {error && (
-        <p className="mt-2 text-sm text-red-600 dark:text-red-400 flex items-center gap-1">
-          <span>⚠</span> {error}
-        </p>
-      )}
-    </div>
-  );
-}
+    </FieldShell>
+  )
+);
+TextArea.displayName = "TextArea";
+
+// ─── PasswordInput ──────────────────────────────────────────────────────────
 
 interface PasswordInputProps extends InputProps {
-  label?: string;
+  label?: ReactNode;
   error?: string;
 }
 
-export function PasswordInput({ label, error, ...props }: PasswordInputProps) {
-  return (
-    <div className="w-full">
-      {label && (
-        <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-          {label}
-        </label>
-      )}
+export const PasswordInput = forwardRef<InputRef, PasswordInputProps>(
+  ({ label, error, className, ...props }, ref) => (
+    <FieldShell label={label} error={error}>
       <AntInput.Password
+        ref={ref}
         {...props}
-        status={error ? "error" : undefined}
-        className={`rounded-lg shadow-sm hover:shadow-md transition-all duration-200 ${props.className || ""}`}
+        status={error ? "error" : props.status}
+        className={`${DS_INPUT_CLASS} ${className || ""}`}
       />
-      {error && (
-        <p className="mt-2 text-sm text-red-600 dark:text-red-400 flex items-center gap-1">
-          <span>⚠</span> {error}
-        </p>
-      )}
-    </div>
-  );
-}
+    </FieldShell>
+  )
+);
+PasswordInput.displayName = "PasswordInput";

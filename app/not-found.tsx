@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { Button, Result } from "antd";
+import { Result } from "antd";
+import Button from "@/components/ui/Button";
 import { HomeOutlined, DashboardOutlined } from "@ant-design/icons";
 import { useAuth } from "@/providers/AuthProvider";
 import { getDashboardRoute } from "@/lib/constants/roles";
@@ -10,7 +11,7 @@ export default function NotFoundPage() {
   const { user } = useAuth();
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-green-50 to-amber-50 dark:from-slate-950 dark:to-slate-900 p-4">
+    <div className="min-h-screen flex items-center justify-center bg-ds-surface-base p-4">
       <Result
         status="404"
         title="404"
@@ -21,7 +22,6 @@ export default function NotFoundPage() {
               <>
                 <Link href={user?.role ? getDashboardRoute(user.role) : "/"}>
                   <Button
-                    type="primary"
                     size="large"
                     icon={<DashboardOutlined />}
                   >
@@ -29,14 +29,14 @@ export default function NotFoundPage() {
                   </Button>
                 </Link>
                 <Link href="/">
-                  <Button size="large" icon={<HomeOutlined />}>
+                  <Button variant="secondary" size="large" icon={<HomeOutlined />}>
                     Home
                   </Button>
                 </Link>
               </>
             ) : (
               <Link href="/">
-                <Button type="primary" size="large" icon={<HomeOutlined />}>
+                <Button size="large" icon={<HomeOutlined />}>
                   Back Home
                 </Button>
               </Link>

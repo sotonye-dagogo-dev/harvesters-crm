@@ -3,12 +3,12 @@
 import { UserRole } from "@/lib/types";
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
+import { formatDateTime } from "@/lib/utils/format";
 import DashboardLayout from "@/components/features/navigation/DashboardLayout";
 import {
   Card,
   Descriptions,
   Button as AntButton,
-  Tag,
   Spin,
   message,
   Modal,
@@ -16,6 +16,7 @@ import {
   Form,
   Input,
 } from "antd";
+import StatusBadge, { BooleanBadge } from "@/components/ui/StatusBadge";
 import {
   EditOutlined,
   DeleteOutlined,
@@ -37,6 +38,7 @@ export default function UserDetailsPage() {
 
   useEffect(() => {
     fetchUser();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userId]);
 
   const fetchUser = async () => {
@@ -49,7 +51,7 @@ export default function UserDetailsPage() {
         message.error("User not found");
         router.push("/superadmin/users");
       }
-    } catch (error) {
+    } catch {
       message.error("Failed to load user");
     } finally {
       setLoading(false);
@@ -74,7 +76,7 @@ export default function UserDetailsPage() {
         const error = await response.json();
         message.error(error.error || "Failed to update role");
       }
-    } catch (error) {
+    } catch {
       message.error("An error occurred");
     }
   };
@@ -107,7 +109,7 @@ export default function UserDetailsPage() {
             const error = await response.json();
             message.error(error.error || "Failed to update user");
           }
-        } catch (error) {
+        } catch {
           message.error("An error occurred");
         }
       },
@@ -166,7 +168,7 @@ export default function UserDetailsPage() {
     return (
       <DashboardLayout role={UserRole.SUPERADMIN}>
         <div className="text-center py-12">
-          <p className="text-gray-500">User not found</p>
+          <p className="text-ds-text-subtle">User not found</p>
         </div>
       </DashboardLayout>
     );
@@ -176,7 +178,7 @@ export default function UserDetailsPage() {
     <DashboardLayout role={UserRole.SUPERADMIN}>
       <div className="space-y-6">
         <div className="flex items-center justify-between">
-          <h2 className="text-2xl font-bold text-gray-900">User Details</h2>
+          <h2 className="text-2xl font-bold text-ds-text-primary">User Details</h2>
           <div className="flex gap-2">
             <AntButton
               icon={<EditOutlined />}
@@ -212,25 +214,13 @@ export default function UserDetailsPage() {
               size={80}
             />
             <div className="flex-1">
-              <h3 className="text-xl font-semibold text-gray-900">
+              <h3 className="text-xl font-semibold text-ds-text-primary">
                 {user.firstName} {user.lastName}
               </h3>
-              <p className="text-gray-600">{user.email}</p>
+              <p className="text-ds-text-secondary">{user.email}</p>
               <div className="mt-2 flex gap-2">
-                <Tag
-                  color={
-                    user.role === UserRole.SUPERADMIN
-                      ? "red"
-                      : user.role === UserRole.SMALL_GROUP_LEADER
-                        ? "blue"
-                        : "green"
-                  }
-                >
-                  {user.role}
-                </Tag>
-                <Tag color={user.isActive ? "success" : "error"}>
-                  {user.isActive ? "Active" : "Inactive"}
-                </Tag>
+                <StatusBadge status={user.role} category="role" />
+                <BooleanBadge value={user.isActive} trueLabel="Active" falseLabel="Inactive" />
               </div>
             </div>
           </div>
@@ -260,10 +250,10 @@ export default function UserDetailsPage() {
                 : "Not provided"}
             </Descriptions.Item>
             <Descriptions.Item label="Created At" span={2}>
-              {new Date(user.createdAt).toLocaleString()}
+              {formatDateTime(user.createdAt)}
             </Descriptions.Item>
             <Descriptions.Item label="Updated At" span={2}>
-              {new Date(user.updatedAt).toLocaleString()}
+              {formatDateTime(user.updatedAt)}
             </Descriptions.Item>
           </Descriptions>
         </Card>
@@ -276,7 +266,7 @@ export default function UserDetailsPage() {
           okText="Change Role"
         >
           <div className="py-4">
-            <p className="text-gray-600 mb-4">
+            <p className="text-ds-text-secondary mb-4">
               Select the new role for {user.firstName} {user.lastName}:
             </p>
             <Select

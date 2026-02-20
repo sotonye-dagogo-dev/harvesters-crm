@@ -12,10 +12,10 @@ import {
   message,
   Row,
   Col,
-  Table,
   Empty,
   Alert,
 } from "antd";
+import Table from "@/components/ui/Table";
 import {
   TeamOutlined,
   CalendarOutlined,
@@ -90,7 +90,7 @@ export default function GroupAnalyticsPage() {
     return (
       <DashboardLayout role={UserRole.SMALL_GROUP_LEADER}>
         <div className="text-center py-12">
-          <Card className="bg-white dark:bg-slate-800">
+          <Card className="bg-ds-surface-elevated">
             <Empty description="Analytics data not available" />
           </Card>
         </div>
@@ -105,7 +105,7 @@ export default function GroupAnalyticsPage() {
       render: (_, record) => (
         <div>
           <div className="font-medium">{record.memberName}</div>
-          <div className="text-sm text-gray-500">{record.memberId}</div>
+          <div className="text-sm text-ds-text-subtle">{record.memberId}</div>
         </div>
       ),
       sorter: (a, b) => a.memberName.localeCompare(b.memberName),
@@ -130,7 +130,7 @@ export default function GroupAnalyticsPage() {
             }
             style={{ width: "100px" }}
           />
-          <span className="text-xs text-gray-600">
+          <span className="text-xs text-ds-text-secondary">
             {record.meetingsAttended} / {record.totalMeetings}
           </span>
         </div>
@@ -150,10 +150,10 @@ export default function GroupAnalyticsPage() {
     <DashboardLayout role={UserRole.SMALL_GROUP_LEADER}>
       <div className="space-y-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+          <h1 className="text-2xl font-bold text-ds-text-primary mb-2">
             Group Analytics Dashboard
           </h1>
-          <p className="text-gray-600 dark:text-gray-400">
+          <p className="text-ds-text-secondary">
             {analytics.groupName}
           </p>
         </div>
@@ -177,7 +177,7 @@ export default function GroupAnalyticsPage() {
               title="Total Members"
               value={analytics.totalMembers}
               icon={<TeamOutlined />}
-              color="text-blue-600"
+              color="text-ds-chart-1"
               description="In your group"
             />
           </Col>
@@ -186,7 +186,7 @@ export default function GroupAnalyticsPage() {
               title="Active Members"
               value={analytics.activeMembers}
               icon={<TrophyOutlined />}
-              color="text-green-600"
+              color="text-ds-status-success"
               description={`${((analytics.activeMembers / analytics.totalMembers) * 100).toFixed(0)}% of total`}
             />
           </Col>
@@ -195,7 +195,7 @@ export default function GroupAnalyticsPage() {
               title="At Risk Members"
               value={analytics.atRiskMembers}
               icon={<WarningOutlined />}
-              color="text-red-600"
+              color="text-ds-status-error"
               description="Need attention"
             />
           </Col>
@@ -204,7 +204,7 @@ export default function GroupAnalyticsPage() {
               title="Total Meetings"
               value={analytics.totalMeetings}
               icon={<CalendarOutlined />}
-              color="text-purple-600"
+              color="text-ds-chart-3"
               description="All time"
             />
           </Col>
@@ -215,7 +215,7 @@ export default function GroupAnalyticsPage() {
           <Row gutter={24}>
             <Col xs={24} md={8}>
               <div className="text-center p-4">
-                <div className="text-sm text-gray-600 mb-2">
+                <div className="text-sm text-ds-text-secondary mb-2">
                   Average Attendance Rate
                 </div>
                 <Progress
@@ -234,7 +234,7 @@ export default function GroupAnalyticsPage() {
             </Col>
             <Col xs={24} md={8}>
               <div className="text-center p-4">
-                <div className="text-sm text-gray-600 mb-2">
+                <div className="text-sm text-ds-text-secondary mb-2">
                   Meeting Frequency Adherence
                 </div>
                 <Progress
@@ -249,7 +249,7 @@ export default function GroupAnalyticsPage() {
                         : "#ff4d4f"
                   }
                 />
-                <div className="text-xs text-gray-500 mt-2">
+                <div className="text-xs text-ds-text-subtle mt-2">
                   {analytics.meetingFrequencyAdherence >= 80
                     ? "On track"
                     : analytics.meetingFrequencyAdherence >= 60
@@ -260,15 +260,15 @@ export default function GroupAnalyticsPage() {
             </Col>
             <Col xs={24} md={8}>
               <div className="text-center p-4">
-                <div className="text-sm text-gray-600 mb-2">Recent Trend</div>
+                <div className="text-sm text-ds-text-secondary mb-2">Recent Trend</div>
                 <div className="flex flex-col items-center gap-2">
                   <RiseOutlined
                     className={`text-5xl ${
                       analytics.recentTrend === "improving"
-                        ? "text-green-500"
+                        ? "text-ds-status-success"
                         : analytics.recentTrend === "stable"
-                          ? "text-blue-500"
-                          : "text-red-500"
+                          ? "text-ds-chart-1"
+                          : "text-ds-status-error"
                     }`}
                     style={{
                       transform:
@@ -301,7 +301,7 @@ export default function GroupAnalyticsPage() {
         {/* Member Performance Table */}
         <Card
           title="Member Performance Breakdown"
-          className="bg-white dark:bg-slate-800"
+          className="bg-ds-surface-elevated"
         >
           <Table
             columns={columns}
@@ -319,7 +319,7 @@ export default function GroupAnalyticsPage() {
             locale={{
               emptyText: <Empty description="No member data available" />,
             }}
-            className="[&_.ant-table]:bg-white dark:[&_.ant-table]:bg-slate-800 [&_.ant-table-thead>tr>th]:bg-gray-50 dark:[&_.ant-table-thead>tr>th]:bg-slate-700 [&_.ant-table-thead>tr>th]:text-gray-900 dark:[&_.ant-table-thead>tr>th]:text-white [&_.ant-table-tbody>tr>td]:bg-white dark:[&_.ant-table-tbody>tr>td]:bg-slate-800 [&_.ant-table-tbody>tr>td]:text-gray-900 dark:[&_.ant-table-tbody>tr>td]:text-gray-200 [&_.ant-table-tbody>tr:hover>td]:bg-gray-50 dark:[&_.ant-table-tbody>tr:hover>td]:bg-slate-700"
+            className="[&_.ant-table]:bg-ds-surface-elevated [&_.ant-table-thead>tr>th]:bg-ds-surface-sunken [&_.ant-table-thead>tr>th]:text-ds-text-primary [&_.ant-table-tbody>tr>td]:bg-ds-surface-elevated [&_.ant-table-tbody>tr>td]:text-ds-text-primary [&_.ant-table-tbody>tr:hover>td]:bg-ds-surface-sunken"
           />
         </Card>
       </div>

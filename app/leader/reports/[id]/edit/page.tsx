@@ -2,7 +2,8 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { useRouter, useParams } from "next/navigation";
-import { Spin, Typography, Button, message } from "antd";
+import { Spin, Typography, message } from "antd";
+import Button from "@/components/ui/Button";
 import { ArrowLeftOutlined } from "@ant-design/icons";
 import { ReportStatus, MetricFieldType } from "@/lib/types";
 import { useAuth } from "@/providers/AuthProvider";
@@ -265,9 +266,10 @@ export default function EditReportPage() {
     return (
       <DashboardLayout role={role}>
         <div className="text-center py-16">
-          <Text className="text-gray-500">Report not found</Text>
+          <Text className="text-ds-text-subtle">Report not found</Text>
           <br />
           <Button
+            variant="secondary"
             onClick={() => router.push("/leader/reports")}
             className="mt-4"
           >
@@ -282,11 +284,12 @@ export default function EditReportPage() {
     return (
       <DashboardLayout role={role}>
         <div className="text-center py-16">
-          <Text className="text-gray-500">
+          <Text className="text-ds-text-subtle">
             This report is locked and cannot be edited.
           </Text>
           <br />
           <Button
+            variant="secondary"
             onClick={() => router.push(`/leader/reports/${reportId}`)}
             className="mt-4"
           >
@@ -327,13 +330,13 @@ export default function EditReportPage() {
           <Button
             icon={<ArrowLeftOutlined />}
             onClick={() => router.push(`/leader/reports/${reportId}`)}
-            type="text"
+            variant="text"
           />
           <div>
             <Title level={3} className="!mb-0">
               {isPostSubmitEdit ? "Submit Edit Request" : "Edit Report"}
             </Title>
-            <Text className="text-gray-500">
+            <Text className="text-ds-text-subtle">
               {isPostSubmitEdit
                 ? "Changes will be submitted as an edit request for review"
                 : "Update report data and save or submit"}
@@ -366,7 +369,7 @@ export default function EditReportPage() {
           />
         ) : (
           <div className="text-center py-16">
-            <Text className="text-gray-500">
+            <Text className="text-ds-text-subtle">
               Template information not available. Cannot render edit form.
             </Text>
           </div>

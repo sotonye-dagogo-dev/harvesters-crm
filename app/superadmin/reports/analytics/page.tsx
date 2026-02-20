@@ -6,7 +6,6 @@ import {
   Spin,
   message,
   Typography,
-  Table,
   Select,
   Row,
   Col,
@@ -14,6 +13,7 @@ import {
   Progress,
   Button,
 } from "antd";
+import Table from "@/components/ui/Table";
 import {
   BarChartOutlined,
   FileTextOutlined,
@@ -128,21 +128,21 @@ export default function SuperadminReportAnalyticsPage() {
       dataIndex: "onTime",
       key: "onTime",
       align: "center",
-      render: (v: number) => <Text className="text-green-600">{v}</Text>,
+      render: (v: number) => <Text className="text-ds-status-success">{v}</Text>,
     },
     {
       title: "Late",
       dataIndex: "late",
       key: "late",
       align: "center",
-      render: (v: number) => <Text className={v > 0 ? "text-orange-500" : ""}>{v}</Text>,
+      render: (v: number) => <Text className={v > 0 ? "text-ds-chart-4" : ""}>{v}</Text>,
     },
     {
       title: "Missing",
       dataIndex: "missing",
       key: "missing",
       align: "center",
-      render: (v: number) => <Text className={v > 0 ? "text-red-500 font-semibold" : ""}>{v}</Text>,
+      render: (v: number) => <Text className={v > 0 ? "text-ds-status-error font-semibold" : ""}>{v}</Text>,
     },
     {
       title: "Compliance",
@@ -196,7 +196,7 @@ export default function SuperadminReportAnalyticsPage() {
       key: "yoyGrowth",
       align: "center",
       render: (v: number) => (
-        <Text className={v >= 0 ? "text-green-600" : "text-red-500"}>{v >= 0 ? "+" : ""}{v}%</Text>
+        <Text className={v >= 0 ? "text-ds-status-success" : "text-ds-status-error"}>{v >= 0 ? "+" : ""}{v}%</Text>
       ),
     },
     { title: "Reports", dataIndex: "reportCount", key: "reportCount", align: "center" },
@@ -220,7 +220,7 @@ export default function SuperadminReportAnalyticsPage() {
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div>
             <Title level={3} className="!mb-0">Report Analytics</Title>
-            <Text className="text-gray-500">
+            <Text className="text-ds-text-subtle">
               Organization-wide reporting insights and compliance tracking
             </Text>
           </div>

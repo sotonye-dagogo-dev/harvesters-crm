@@ -1,7 +1,9 @@
 "use client";
 
-import { UserRole, CampaignStatus } from "@/lib/types";
-import { Tag, Button, Avatar, Tooltip, Progress } from "antd";
+import { UserRole } from "@/lib/types";
+import { Tag, Avatar, Tooltip, Progress } from "antd";
+import Button from "@/components/ui/Button";
+import StatusBadge from "@/components/ui/StatusBadge";
 import {
   EyeOutlined,
   HeartOutlined,
@@ -55,27 +57,11 @@ export default function CampaignBanner({
   const progressPercent = Math.min((hoursElapsed / 24) * 100, 100);
   const hoursRemaining = Math.max(24 - hoursElapsed, 0);
 
-  // Get status color
-  const getStatusColor = (status: CampaignStatus) => {
-    switch (status) {
-      case "ACTIVE":
-        return "success";
-      case "DRAFT":
-        return "processing";
-      case "EXPIRED":
-        return "default";
-      case "ARCHIVED":
-        return "warning";
-      default:
-        return "default";
-    }
-  };
-
   // Render media
   const renderMedia = () => {
     if (campaign.mediaType === "IMAGE" && campaign.mediaUrl) {
       return (
-        <div className="relative w-full h-96 bg-gradient-to-br from-indigo-100 to-purple-100 dark:from-indigo-900 dark:to-purple-900">
+        <div className="relative w-full h-96 bg-gradient-to-br from-ds-brand-accent-subtle to-purple-100 dark:from-ds-brand-accent dark:to-purple-900">
           <Image
             src={campaign.mediaUrl}
             alt={campaign.title}
@@ -102,7 +88,7 @@ export default function CampaignBanner({
 
     // Gradient background for text-only campaigns
     return (
-      <div className="relative w-full h-96 bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 flex items-center justify-center text-white p-12">
+      <div className="relative w-full h-96 bg-gradient-to-br from-ds-brand-accent via-purple-500 to-pink-500 flex items-center justify-center text-white p-12">
         <div className="text-center">
           <h1 className="text-4xl font-bold mb-4">{campaign.title}</h1>
           <p className="text-xl opacity-90">{campaign.description}</p>
@@ -112,9 +98,9 @@ export default function CampaignBanner({
   };
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden">
+    <div className="bg-ds-surface-elevated rounded-lg shadow-lg overflow-hidden">
       {/* Header */}
-      <div className="p-4 border-b border-gray-200 dark:border-gray-700">
+      <div className="p-4 border-b border-ds-border-base">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             {createdBy && (
@@ -122,7 +108,7 @@ export default function CampaignBanner({
                 size={48}
                 src={createdBy.profilePicture}
                 icon={<UserOutlined />}
-                className="bg-indigo-500"
+                className="bg-ds-brand-accent"
               >
                 {createdBy.firstName.charAt(0)}
                 {createdBy.lastName.charAt(0)}
@@ -130,21 +116,19 @@ export default function CampaignBanner({
             )}
             <div>
               <div className="flex items-center gap-2">
-                <h3 className="font-semibold text-gray-900 dark:text-white">
+                <h3 className="font-semibold text-ds-text-primary">
                   {createdBy
                     ? `${createdBy.firstName} ${createdBy.lastName}`
                     : "Church Campaign"}
                 </h3>
-                <Tag color={getStatusColor(campaign.status)}>
-                  {campaign.status}
-                </Tag>
+                <StatusBadge status={campaign.status} category="campaign" />
               </div>
-              <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+              <div className="flex items-center gap-2 text-sm text-ds-text-subtle">
                 <span>
                   {formatDistanceToNow(createdAt, { addSuffix: true })}
                 </span>
                 <span>•</span>
-                <span>{format(createdAt, "MMM d, yyyy HH:mm")}</span>
+                <span>{format(createdAt, "d MMM yyyy HH:mm")}</span>
               </div>
             </div>
           </div>
@@ -186,11 +170,11 @@ export default function CampaignBanner({
         {!isExpired && campaign.status === "ACTIVE" && (
           <div className="mt-3">
             <div className="flex items-center justify-between mb-1">
-              <span className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1">
+              <span className="text-xs text-ds-text-subtle flex items-center gap-1">
                 <ClockCircleOutlined />
                 {hoursRemaining.toFixed(1)} hours remaining
               </span>
-              <span className="text-xs text-gray-500 dark:text-gray-400">
+              <span className="text-xs text-ds-text-subtle">
                 {progressPercent.toFixed(0)}%
               </span>
             </div>
@@ -213,17 +197,16 @@ export default function CampaignBanner({
 
       {/* Campaign Details */}
       <div className="p-4">
-        <h2 className="text-2xl font-bold mb-2 text-gray-900 dark:text-white">
+        <h2 className="text-2xl font-bold mb-2 text-ds-text-primary">
           {campaign.title}
         </h2>
-        <p className="text-gray-600 dark:text-gray-300 mb-4">
+        <p className="text-ds-text-secondary mb-4">
           {campaign.description}
         </p>
 
         {/* Call to Action */}
         {campaign.ctaText && campaign.ctaUrl && (
           <Button
-            type="primary"
             size="large"
             href={campaign.ctaUrl}
             target="_blank"
@@ -236,7 +219,7 @@ export default function CampaignBanner({
         {/* Target Audience */}
         {campaign.targetAudience && campaign.targetAudience.length > 0 && (
           <div className="mb-4">
-            <span className="text-sm text-gray-500 dark:text-gray-400 mr-2">
+            <span className="text-sm text-ds-text-subtle mr-2">
               Target Audience:
             </span>
             {campaign.targetAudience.map((audience) => (
@@ -248,22 +231,22 @@ export default function CampaignBanner({
         )}
 
         {/* Stats */}
-        <div className="flex items-center justify-between pt-4 border-t border-gray-200 dark:border-gray-700">
+        <div className="flex items-center justify-between pt-4 border-t border-ds-border-base">
           <div className="flex items-center gap-6">
             <Tooltip title="Views">
-              <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
+              <div className="flex items-center gap-2 text-ds-text-secondary">
                 <EyeOutlined className="text-lg" />
                 <span className="font-medium">{campaign.viewCount || 0}</span>
               </div>
             </Tooltip>
             <Tooltip title="Likes">
-              <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
+              <div className="flex items-center gap-2 text-ds-text-secondary">
                 <HeartOutlined className="text-lg" />
                 <span className="font-medium">{campaign.likeCount || 0}</span>
               </div>
             </Tooltip>
             <Tooltip title="Shares">
-              <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
+              <div className="flex items-center gap-2 text-ds-text-secondary">
                 <ShareAltOutlined className="text-lg" />
                 <span className="font-medium">{campaign.shareCount || 0}</span>
               </div>
@@ -274,13 +257,14 @@ export default function CampaignBanner({
           {showActions && (
             <div className="flex items-center gap-2">
               <Button
+                variant="secondary"
                 icon={<HeartOutlined />}
                 onClick={onLike}
-                className="hover:text-red-500 hover:border-red-500"
+                className="hover:text-ds-status-error hover:border-red-500"
               >
                 Like
               </Button>
-              <Button icon={<ShareAltOutlined />} onClick={onShare}>
+              <Button variant="secondary" icon={<ShareAltOutlined />} onClick={onShare}>
                 Share
               </Button>
             </div>

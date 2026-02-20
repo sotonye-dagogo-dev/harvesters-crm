@@ -1,7 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { Form, Input, Button, Card, Typography, Alert, Checkbox, Collapse, Tag } from "antd";
+import { Form, Typography, Alert, Checkbox, Collapse, Tag } from "antd";
+import Button from "@/components/ui/Button";
+import Card from "@/components/ui/Card";
+import Input, { PasswordInput } from "@/components/ui/Input";
 import { MailOutlined, LockOutlined, UserOutlined, BugOutlined } from "@ant-design/icons";
 import Link from "next/link";
 import { useAuth } from "@/providers/AuthProvider";
@@ -59,9 +62,9 @@ export default function LoginForm({ showDevCredentials = false }: LoginFormProps
   };
 
   return (
-    <Card className="shadow-xl">
+    <Card className="shadow-ds-xl">
       <div className="text-center mb-8">
-        <div className="inline-flex items-center justify-center w-16 h-16 bg-church-primary rounded-full mb-4">
+        <div className="inline-flex items-center justify-center w-16 h-16 bg-ds-brand-accent rounded-full mb-4">
           <UserOutlined className="text-3xl text-white" />
         </div>
         <Title level={2} className="!mb-2">
@@ -98,7 +101,7 @@ export default function LoginForm({ showDevCredentials = false }: LoginFormProps
           ]}
         >
           <Input
-            prefix={<MailOutlined className="text-gray-400" />}
+            prefix={<MailOutlined className="text-ds-text-subtle" />}
             placeholder="your.email@example.com"
             autoComplete="email"
           />
@@ -109,8 +112,8 @@ export default function LoginForm({ showDevCredentials = false }: LoginFormProps
           name="password"
           rules={[{ required: true, message: "Please enter your password" }]}
         >
-          <Input.Password
-            prefix={<LockOutlined className="text-gray-400" />}
+          <PasswordInput
+            prefix={<LockOutlined className="text-ds-text-subtle" />}
             placeholder="Enter your password"
             autoComplete="current-password"
           />
@@ -123,7 +126,7 @@ export default function LoginForm({ showDevCredentials = false }: LoginFormProps
             </Form.Item>
             <Link
               href="/forgot-password"
-              className="text-church-primary hover:text-church-primary/80"
+              className="text-ds-brand-accent hover:text-ds-brand-accent-hover"
             >
               Forgot password?
             </Link>
@@ -132,7 +135,6 @@ export default function LoginForm({ showDevCredentials = false }: LoginFormProps
 
         <Form.Item>
           <Button
-            type="primary"
             htmlType="submit"
             loading={loading}
             block
@@ -146,16 +148,16 @@ export default function LoginForm({ showDevCredentials = false }: LoginFormProps
           <Text type="secondary">Don&apos;t have an account? </Text>
           <Link
             href="/register"
-            className="text-church-primary hover:text-church-primary/80 font-semibold"
+            className="text-ds-brand-accent hover:text-ds-brand-accent-hover font-semibold"
           >
             Sign Up
           </Link>
         </div>
       </Form>
 
-      <div className="mt-8 pt-6 border-t border-gray-200">
+      <div className="mt-8 pt-6 border-t border-ds-border-base">
         <Text type="secondary" className="text-xs text-center block">
-          By signing in, you agree to our <Link href="/terms" className="text-church-primary hover:text-church-primary/80">Terms of Service</Link> and <Link href="/privacy" className="text-church-primary hover:text-church-primary/80">Privacy Policy</Link>.
+          By signing in, you agree to our <Link href="/terms" className="text-ds-brand-accent hover:text-ds-brand-accent-hover">Terms of Service</Link> and <Link href="/privacy" className="text-ds-brand-accent hover:text-ds-brand-accent-hover">Privacy Policy</Link>.
         </Text>
       </div>
 
@@ -168,7 +170,7 @@ export default function LoginForm({ showDevCredentials = false }: LoginFormProps
               {
                 key: "dev-creds",
                 label: (
-                  <span className="text-xs font-medium text-orange-600 dark:text-orange-400 flex items-center gap-1">
+                  <span className="text-xs font-medium text-ds-chart-4 flex items-center gap-1">
                     <BugOutlined /> Dev Credentials
                   </span>
                 ),
@@ -179,13 +181,13 @@ export default function LoginForm({ showDevCredentials = false }: LoginFormProps
                         key={cred.email}
                         type="button"
                         onClick={() => fillCredentials(cred.email, cred.password)}
-                        className="w-full text-left px-2.5 py-1.5 rounded-md border border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors cursor-pointer"
+                        className="w-full text-left px-2.5 py-1.5 rounded-md border border-ds-border-subtle hover:bg-ds-brand-accent-subtle transition-colors cursor-pointer"
                       >
                         <div className="flex items-center justify-between gap-2">
                           <Tag color={cred.color} className="!m-0 !text-[10px] !leading-tight !px-1.5">
                             {cred.role}
                           </Tag>
-                          <Text className="!text-[11px] text-gray-500 truncate flex-1 text-right">
+                          <Text className="!text-[11px] text-ds-text-subtle truncate flex-1 text-right">
                             {cred.email}
                           </Text>
                         </div>

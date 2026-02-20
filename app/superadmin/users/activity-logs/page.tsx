@@ -5,8 +5,6 @@ import DashboardLayout from "@/components/features/navigation/DashboardLayout";
 import { useAuth } from "@/providers/AuthProvider";
 import {
   Card,
-  Table,
-  Tag,
   Input,
   Select,
   DatePicker,
@@ -16,6 +14,8 @@ import {
   Tooltip,
   message,
 } from "antd";
+import Table from "@/components/ui/Table";
+import StatusBadge from "@/components/ui/StatusBadge";
 import {
   UserOutlined,
   SearchOutlined,
@@ -79,10 +79,12 @@ export default function UserActivityLogsPage() {
 
   useEffect(() => {
     fetchActivityLogs();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
     filterActivities();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchTerm, actionFilter, roleFilter, dateRange, activities]);
 
   const fetchActivityLogs = async () => {
@@ -91,7 +93,7 @@ export default function UserActivityLogsPage() {
       // Mock activity logs - in production, this would come from API
       const mockLogs: ActivityLog[] = generateMockActivityLogs();
       setActivities(mockLogs);
-    } catch (error) {
+    } catch {
       message.error("Failed to load activity logs");
     } finally {
       setLoading(false);
@@ -198,55 +200,21 @@ export default function UserActivityLogsPage() {
   const getActionIcon = (actionType: ActivityLog["actionType"]) => {
     switch (actionType) {
       case "CREATE":
-        return <PlusOutlined className="text-green-600" />;
+        return <PlusOutlined className="text-ds-status-success" />;
       case "UPDATE":
-        return <EditOutlined className="text-blue-600" />;
+        return <EditOutlined className="text-ds-chart-1" />;
       case "DELETE":
-        return <DeleteOutlined className="text-red-600" />;
+        return <DeleteOutlined className="text-ds-status-error" />;
       case "LOGIN":
-        return <CheckCircleOutlined className="text-green-600" />;
+        return <CheckCircleOutlined className="text-ds-status-success" />;
       case "LOGOUT":
-        return <CloseCircleOutlined className="text-gray-600" />;
+        return <CloseCircleOutlined className="text-ds-text-secondary" />;
       case "APPROVE":
-        return <CheckCircleOutlined className="text-green-600" />;
+        return <CheckCircleOutlined className="text-ds-status-success" />;
       case "REJECT":
-        return <CloseCircleOutlined className="text-red-600" />;
+        return <CloseCircleOutlined className="text-ds-status-error" />;
       default:
-        return <SwapOutlined className="text-gray-600" />;
-    }
-  };
-
-  const getActionColor = (actionType: ActivityLog["actionType"]) => {
-    switch (actionType) {
-      case "CREATE":
-        return "green";
-      case "UPDATE":
-        return "blue";
-      case "DELETE":
-        return "red";
-      case "LOGIN":
-        return "cyan";
-      case "LOGOUT":
-        return "default";
-      case "APPROVE":
-        return "green";
-      case "REJECT":
-        return "red";
-      default:
-        return "default";
-    }
-  };
-
-  const getRoleColor = (role: string) => {
-    switch (role) {
-      case "SUPERADMIN":
-        return "red";
-      case UserRole.SMALL_GROUP_LEADER:
-        return "blue";
-      case "MEMBER":
-        return "green";
-      default:
-        return "default";
+        return <SwapOutlined className="text-ds-text-secondary" />;
     }
   };
 
@@ -262,7 +230,7 @@ export default function UserActivityLogsPage() {
         "IP Address",
       ],
       ...filteredActivities.map((log) => [
-        dayjs(log.timestamp).format("YYYY-MM-DD HH:mm:ss"),
+        dayjs(log.timestamp).format("D MMM YYYY HH:mm:ss"),
         log.userName,
         log.userRole,
         log.action,
@@ -294,7 +262,7 @@ export default function UserActivityLogsPage() {
           <Avatar size="small" icon={<UserOutlined />} />
           <div>
             <div className="font-medium">{name}</div>
-            <Tag color={getRoleColor(record.userRole)}>{record.userRole}</Tag>
+            <StatusBadge status={record.userRole} category="role" />
           </div>
         </div>
       ),
@@ -315,9 +283,7 @@ export default function UserActivityLogsPage() {
       dataIndex: "actionType",
       key: "actionType",
       render: (type: string) => (
-        <Tag color={getActionColor(type as ActivityLog["actionType"])}>
-          {type}
-        </Tag>
+        <StatusBadge status={type} category="action" />
       ),
     },
     {
@@ -340,7 +306,7 @@ export default function UserActivityLogsPage() {
       dataIndex: "ipAddress",
       key: "ipAddress",
       render: (ip: string) => (
-        <span className="text-gray-500 text-xs">{ip}</span>
+        <span className="text-ds-text-subtle text-xs">{ip}</span>
       ),
     },
     {
@@ -348,7 +314,7 @@ export default function UserActivityLogsPage() {
       dataIndex: "timestamp",
       key: "timestamp",
       render: (timestamp: string) => (
-        <Tooltip title={dayjs(timestamp).format("YYYY-MM-DD HH:mm:ss")}>
+        <Tooltip title={dayjs(timestamp).format("D MMM YYYY HH:mm:ss")}>
           <span className="text-sm">{dayjs(timestamp).fromNow()}</span>
         </Tooltip>
       ),
@@ -375,10 +341,10 @@ export default function UserActivityLogsPage() {
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-2xl font-bold text-gray-900">
+            <h2 className="text-2xl font-bold text-ds-text-primary">
               User Activity Logs
             </h2>
-            <p className="text-gray-600 mt-1">
+            <p className="text-ds-text-secondary mt-1">
               Track and monitor all user actions across the system
             </p>
           </div>
@@ -439,11 +405,11 @@ export default function UserActivityLogsPage() {
               onChange={(dates) =>
                 setDateRange(dates as [Dayjs | null, Dayjs | null])
               }
-              format="YYYY-MM-DD"
+              format="D MMM YYYY"
             />
           </div>
           <div className="mt-4 flex items-center justify-between">
-            <span className="text-sm text-gray-600">
+            <span className="text-sm text-ds-text-secondary">
               <FilterOutlined /> Showing {filteredActivities.length} of{" "}
               {activities.length} activities
             </span>

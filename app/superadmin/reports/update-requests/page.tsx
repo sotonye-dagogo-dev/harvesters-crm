@@ -3,16 +3,16 @@
 import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import {
-  Table,
   Button,
   Spin,
   message,
   Typography,
-  Tag,
   Modal,
-  Input,
-  Space,
 } from "antd";
+import { TextArea } from "@/components/ui/Input";
+import Table from "@/components/ui/Table";
+import StatusBadge from "@/components/ui/StatusBadge";
+import { formatDate } from "@/lib/utils/format";
 import {
   CheckCircleOutlined,
   CloseCircleOutlined,
@@ -27,12 +27,6 @@ import DashboardLayout from "@/components/features/navigation/DashboardLayout";
 
 const { Title, Text } = Typography;
 const { confirm } = Modal;
-
-const STATUS_COLORS: Record<string, string> = {
-  PENDING: "orange",
-  APPROVED: "green",
-  REJECTED: "red",
-};
 
 interface UpdateRequestItem {
   id: string;
@@ -82,7 +76,7 @@ export default function SuperadminUpdateRequestsPage() {
   const handleApprove = (id: string) => {
     confirm({
       title: "Approve Update Request",
-      icon: <CheckCircleOutlined className="!text-green-500" />,
+      icon: <CheckCircleOutlined className="!text-ds-status-success" />,
       content: "This will apply the requested changes to the report. Continue?",
       okText: "Approve",
       onOk: async () => {
@@ -108,7 +102,7 @@ export default function SuperadminUpdateRequestsPage() {
       content: (
         <div className="mt-4">
           <Text className="mb-2 block">Optionally provide a reason for rejection:</Text>
-          <Input.TextArea
+          <TextArea
             rows={3}
             placeholder="Reason for rejection..."
             onChange={(e) => { reason = e.target.value; }}
@@ -158,7 +152,7 @@ export default function SuperadminUpdateRequestsPage() {
       key: "status",
       width: 120,
       render: (status: ReportUpdateRequestStatus) => (
-        <Tag color={STATUS_COLORS[status] || "default"}>{status}</Tag>
+        <StatusBadge status={status} category="request" />
       ),
       filters: Object.values(ReportUpdateRequestStatus).map((s) => ({
         text: s,
@@ -169,48 +163,8 @@ export default function SuperadminUpdateRequestsPage() {
     {
       title: "Requested",
       key: "createdAt",
-      render: (_, r) => new Date(r.createdAt).toLocaleDateString(),
+      render: (_, r) => formatDate(r.createdAt),
       sorter: (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
-    },
-    {
-      title: "Actions",
-      key: "actions",
-      fixed: "right",
-      width: 220,
-      render: (_, r) => (
-        <Space size="small">
-          <Button
-            type="link"
-            icon={<EyeOutlined />}
-            size="small"
-            onClick={() => router.push(`/superadmin/reports/${r.reportId}`)}
-          >
-            Report
-          </Button>
-          {r.status === ReportUpdateRequestStatus.PENDING && (
-            <>
-              <Button
-                type="link"
-                icon={<CheckCircleOutlined />}
-                size="small"
-                className="!text-green-600"
-                onClick={() => handleApprove(r.id)}
-              >
-                Approve
-              </Button>
-              <Button
-                type="link"
-                danger
-                icon={<CloseCircleOutlined />}
-                size="small"
-                onClick={() => handleReject(r.id)}
-              >
-                Reject
-              </Button>
-            </>
-          )}
-        </Space>
-      ),
     },
   ];
 
@@ -228,7 +182,7 @@ export default function SuperadminUpdateRequestsPage() {
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div>
             <Title level={3} className="!mb-0">Report Update Requests</Title>
-            <Text className="text-gray-500">
+            <Text className="text-ds-text-subtle">
               Review and process requests to update locked or finalized reports
             </Text>
           </div>
@@ -240,6 +194,29 @@ export default function SuperadminUpdateRequestsPage() {
           columns={columns}
           rowKey="id"
           loading={loading}
+          actions={[
+            {
+              key: "report",
+              label: "View Report",
+              icon: <EyeOutlined />,
+              onClick: (r) => router.push(`/superadmin/reports/${r.reportId}`),
+            },
+            {
+              key: "approve",
+              label: "Approve",
+              icon: <CheckCircleOutlined />,
+              hidden: (r) => r.status !== ReportUpdateRequestStatus.PENDING,
+              onClick: (r) => handleApprove(r.id),
+            },
+            {
+              key: "reject",
+              label: "Reject",
+              icon: <CloseCircleOutlined />,
+              danger: true,
+              hidden: (r) => r.status !== ReportUpdateRequestStatus.PENDING,
+              onClick: (r) => handleReject(r.id),
+            },
+          ]}
           scroll={{ x: 800 }}
           pagination={{
             current: page,

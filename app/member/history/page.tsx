@@ -3,6 +3,7 @@
 import { UserRole } from "@/lib/types";
 import { useState, useEffect, useCallback } from "react";
 import { useAuth } from "@/providers/AuthProvider";
+import { formatDateLong } from "@/lib/utils/format";
 import DashboardLayout from "@/components/features/navigation/DashboardLayout";
 import {
   Card,
@@ -10,11 +11,11 @@ import {
   Row,
   Col,
   Timeline,
-  Tag,
   message,
   Spin,
   Empty,
 } from "antd";
+import { BooleanBadge } from "@/components/ui/StatusBadge";
 import {
   CalendarOutlined,
   CheckCircleOutlined,
@@ -110,14 +111,14 @@ export default function MemberHistoryPage() {
     <DashboardLayout role={UserRole.MEMBER}>
       <div className="space-y-8">
         {/* Page Header */}
-        <div className="bg-gradient-to-r from-green-50 to-blue-50 dark:from-slate-800 dark:to-slate-900 p-6 rounded-2xl shadow-lg border border-gray-200 dark:border-slate-700">
-          <h2 className="text-3xl font-bold text-gray-900 dark:text-white flex items-center gap-3">
-            <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-xl flex items-center justify-center">
-              <CalendarOutlined className="text-2xl text-blue-600 dark:text-blue-400" />
+        <div className="bg-gradient-to-r from-green-50 to-blue-50 dark:from-slate-800 dark:to-slate-900 p-6 rounded-2xl shadow-lg border border-ds-border-base">
+          <h2 className="text-3xl font-bold text-ds-text-primary flex items-center gap-3">
+            <div className="w-12 h-12 bg-ds-chart-1/10 dark:bg-blue-900/30 rounded-xl flex items-center justify-center">
+              <CalendarOutlined className="text-2xl text-ds-chart-1" />
             </div>
             My Participation History
           </h2>
-          <p className="text-gray-600 dark:text-gray-400 mt-2 ml-15">
+          <p className="text-ds-text-secondary mt-2 ml-15">
             Track your fellowship meeting attendance and engagement
           </p>
         </div>
@@ -125,7 +126,7 @@ export default function MemberHistoryPage() {
         {/* Statistics */}
         <Row gutter={[16, 16]}>
           <Col xs={24} sm={12} lg={6}>
-            <Card className="shadow-lg hover:shadow-xl transition-all duration-300">
+            <Card className="shadow-lg hover:shadow-ds-xl transition-all duration-300">
               <Statistic
                 title="Total Meetings"
                 value={stats.totalMeetings}
@@ -135,7 +136,7 @@ export default function MemberHistoryPage() {
             </Card>
           </Col>
           <Col xs={24} sm={12} lg={6}>
-            <Card className="shadow-lg hover:shadow-xl transition-all duration-300">
+            <Card className="shadow-lg hover:shadow-ds-xl transition-all duration-300">
               <Statistic
                 title="Attended"
                 value={stats.attended}
@@ -145,7 +146,7 @@ export default function MemberHistoryPage() {
             </Card>
           </Col>
           <Col xs={24} sm={12} lg={6}>
-            <Card className="shadow-lg hover:shadow-xl transition-all duration-300">
+            <Card className="shadow-lg hover:shadow-ds-xl transition-all duration-300">
               <Statistic
                 title="Missed"
                 value={stats.missed}
@@ -155,7 +156,7 @@ export default function MemberHistoryPage() {
             </Card>
           </Col>
           <Col xs={24} sm={12} lg={6}>
-            <Card className="shadow-lg hover:shadow-xl transition-all duration-300">
+            <Card className="shadow-lg hover:shadow-ds-xl transition-all duration-300">
               <Statistic
                 title="Attendance Rate"
                 value={stats.attendanceRate}
@@ -175,7 +176,7 @@ export default function MemberHistoryPage() {
               Meeting Timeline
             </span>
           }
-          className="shadow-xl"
+          className="shadow-ds-xl"
         >
           {history.length === 0 ? (
             <Empty description="No participation history found" />
@@ -195,23 +196,16 @@ export default function MemberHistoryPage() {
                 >
                   <div className="py-2">
                     <div className="flex items-center gap-2 mb-1">
-                      <span className="font-semibold text-gray-900 dark:text-white">
-                        {new Date(item.date).toLocaleDateString("en-US", {
-                          weekday: "long",
-                          year: "numeric",
-                          month: "long",
-                          day: "numeric",
-                        })}
+                      <span className="font-semibold text-ds-text-primary">
+                        {formatDateLong(item.date)}
                       </span>
-                      <Tag color={item.attended ? "success" : "error"}>
-                        {item.attended ? "Attended" : "Absent"}
-                      </Tag>
+                      <BooleanBadge value={item.attended} trueLabel="Attended" falseLabel="Absent" />
                     </div>
-                    <div className="text-gray-600 dark:text-gray-400">
+                    <div className="text-ds-text-secondary">
                       {item.groupName}
                     </div>
                     {item.notes && (
-                      <div className="text-sm text-gray-500 dark:text-gray-500 mt-1 italic">
+                      <div className="text-sm text-ds-text-subtle dark:text-ds-text-subtle mt-1 italic">
                         {item.notes}
                       </div>
                     )}

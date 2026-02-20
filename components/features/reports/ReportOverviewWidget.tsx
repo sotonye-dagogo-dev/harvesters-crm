@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Card, Spin, Progress, Empty, Tooltip } from "antd";
+import { Spin, Progress, Empty, Tooltip } from "antd";
+import Card from "@/components/ui/Card";
 import {
   FileTextOutlined,
   CheckCircleOutlined,
@@ -98,7 +99,7 @@ export default function ReportOverviewWidget({
       <Card
         title={
           <div className="flex items-center gap-2">
-            <FileTextOutlined className="text-blue-500" />
+            <FileTextOutlined className="text-ds-chart-1" />
             <span>Reports Overview</span>
           </div>
         }
@@ -120,12 +121,12 @@ export default function ReportOverviewWidget({
         title={
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <FileTextOutlined className="text-blue-500" />
+              <FileTextOutlined className="text-ds-chart-1" />
               <span>Reports Overview</span>
             </div>
             <Link
               href={reportsPath}
-              className="text-sm text-blue-600 hover:text-blue-700"
+              className="text-sm text-ds-chart-1 hover:text-blue-700"
             >
               Go to Reports <RightOutlined />
             </Link>
@@ -134,13 +135,13 @@ export default function ReportOverviewWidget({
         className="shadow-sm"
       >
         <div className="text-center py-6">
-          <FileTextOutlined className="text-4xl text-gray-300 mb-3" />
-          <p className="text-gray-500">
+          <FileTextOutlined className="text-4xl text-ds-text-subtle mb-3" />
+          <p className="text-ds-text-subtle">
             View and manage your reports
           </p>
           <Link
             href={reportsPath}
-            className="text-blue-600 hover:text-blue-700 text-sm mt-2 inline-block"
+            className="text-ds-chart-1 hover:text-blue-700 text-sm mt-2 inline-block"
           >
             Open Reports →
           </Link>
@@ -154,8 +155,8 @@ export default function ReportOverviewWidget({
     {
       label: "Total",
       value: stats.totalReports,
-      icon: <FileTextOutlined className="text-blue-500" />,
-      color: "text-blue-600 dark:text-blue-400",
+      icon: <FileTextOutlined className="text-ds-chart-1" />,
+      color: "text-ds-chart-1",
     },
     {
       label: "Submitted",
@@ -166,26 +167,26 @@ export default function ReportOverviewWidget({
     {
       label: "Approved",
       value: stats.approvedReports,
-      icon: <CheckCircleOutlined className="text-green-500" />,
-      color: "text-green-600 dark:text-green-400",
+      icon: <CheckCircleOutlined className="text-ds-status-success" />,
+      color: "text-ds-status-success",
     },
     {
       label: "Drafts",
       value: stats.draftReports,
-      icon: <EditOutlined className="text-gray-500" />,
-      color: "text-gray-600 dark:text-gray-400",
+      icon: <EditOutlined className="text-ds-text-subtle" />,
+      color: "text-ds-text-secondary",
     },
     {
       label: "Needs Edits",
       value: stats.requiresEditsReports,
-      icon: <WarningOutlined className="text-orange-500" />,
-      color: "text-orange-600 dark:text-orange-400",
+      icon: <WarningOutlined className="text-ds-chart-4" />,
+      color: "text-ds-chart-4",
     },
     {
       label: "Overdue",
       value: stats.overdueReports,
-      icon: <ClockCircleOutlined className="text-red-500" />,
-      color: "text-red-600 dark:text-red-400",
+      icon: <ClockCircleOutlined className="text-ds-status-error" />,
+      color: "text-ds-status-error",
     },
   ];
 
@@ -203,11 +204,11 @@ export default function ReportOverviewWidget({
       title={
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <FileTextOutlined className="text-blue-500" />
+            <FileTextOutlined className="text-ds-chart-1" />
             <span>Reports Overview</span>
             {stats.overdueReports > 0 && (
               <Tooltip title={`${stats.overdueReports} overdue report${stats.overdueReports !== 1 ? "s" : ""}`}>
-                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400">
+                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-ds-status-error/10 text-red-700 dark:bg-red-900/30 dark:text-ds-status-error">
                   {stats.overdueReports} overdue
                 </span>
               </Tooltip>
@@ -215,7 +216,7 @@ export default function ReportOverviewWidget({
           </div>
           <Link
             href={reportsPath}
-            className="text-sm text-blue-600 hover:text-blue-700"
+            className="text-sm text-ds-chart-1 hover:text-blue-700"
           >
             View All <RightOutlined />
           </Link>
@@ -225,7 +226,7 @@ export default function ReportOverviewWidget({
     >
       <div className="space-y-5">
         {/* Compliance Rate */}
-        <div className="flex items-center gap-4 p-3 bg-gray-50 dark:bg-slate-700/50 rounded-lg">
+        <div className="flex items-center gap-4 p-3 bg-ds-surface-sunken/50 rounded-lg">
           <Progress
             type="circle"
             percent={compliancePercent}
@@ -234,23 +235,23 @@ export default function ReportOverviewWidget({
             format={(pct) => `${pct}%`}
           />
           <div>
-            <div className="text-sm font-medium text-gray-500 dark:text-gray-400">
+            <div className="text-sm font-medium text-ds-text-subtle">
               Compliance Rate
             </div>
-            <div className="text-lg font-semibold text-gray-900 dark:text-white">
+            <div className="text-lg font-semibold text-ds-text-primary">
               {compliancePercent >= 80
                 ? "On Track"
                 : compliancePercent >= 50
                   ? "Needs Attention"
                   : "Below Target"}
             </div>
-            <div className="text-xs text-gray-400 dark:text-gray-500">
+            <div className="text-xs text-ds-text-subtle">
               {stats.approvedReports} of {stats.totalReports} reports approved
             </div>
           </div>
           {stats.lockedReports > 0 && (
             <Tooltip title={`${stats.lockedReports} locked report${stats.lockedReports !== 1 ? "s" : ""}`}>
-              <div className="ml-auto flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400">
+              <div className="ml-auto flex items-center gap-1 text-xs text-ds-text-subtle">
                 <LockOutlined />
                 <span>{stats.lockedReports} locked</span>
               </div>
@@ -263,13 +264,13 @@ export default function ReportOverviewWidget({
           {metrics.map((metric) => (
             <div
               key={metric.label}
-              className="text-center p-2 rounded-lg border border-gray-100 dark:border-slate-600 hover:shadow-sm transition-shadow"
+              className="text-center p-2 rounded-lg border border-ds-border-subtle hover:shadow-sm transition-shadow"
             >
               <div className="mb-1">{metric.icon}</div>
               <div className={`text-xl font-bold ${metric.color}`}>
                 {metric.value}
               </div>
-              <div className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+              <div className="text-xs text-ds-text-subtle mt-0.5">
                 {metric.label}
               </div>
             </div>

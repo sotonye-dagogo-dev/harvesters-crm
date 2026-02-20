@@ -3,7 +3,6 @@
 import { useEffect, useState, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import {
-  Table,
   Button,
   Space,
   Spin,
@@ -12,9 +11,12 @@ import {
   Tag,
   Modal,
   Form,
-  Input,
   Switch,
 } from "antd";
+import Input, { TextArea } from "@/components/ui/Input";
+import Table from "@/components/ui/Table";
+import { BooleanBadge } from "@/components/ui/StatusBadge";
+import { formatDate } from "@/lib/utils/format";
 import {
   PlusOutlined,
   ReloadOutlined,
@@ -236,58 +238,14 @@ export default function SuperadminTemplatesPage() {
       title: "Status",
       key: "status",
       width: 100,
-      render: (_, r) =>
-        r.isActive ? (
-          <Tag color="green">Active</Tag>
-        ) : (
-          <Tag color="red">Inactive</Tag>
-        ),
+      render: (_, r) => <BooleanBadge value={r.isActive} trueLabel="Active" falseLabel="Inactive" />,
     },
     {
       title: "Last Updated",
       key: "updatedAt",
-      render: (_, r) => new Date(r.updatedAt).toLocaleDateString(),
+      render: (_, r) => formatDate(r.updatedAt),
       sorter: (a, b) =>
         new Date(a.updatedAt).getTime() - new Date(b.updatedAt).getTime(),
-    },
-    {
-      title: "Actions",
-      key: "actions",
-      fixed: "right",
-      width: 240,
-      render: (_, r) => (
-        <Space size="small">
-          <Button
-            type="link"
-            icon={<EyeOutlined />}
-            size="small"
-            onClick={() => router.push(`/superadmin/reports/templates/${r.id}`)}
-          >
-            View
-          </Button>
-          <Button
-            type="link"
-            icon={<EditOutlined />}
-            size="small"
-            onClick={() =>
-              router.push(`/superadmin/reports/templates/${r.id}?edit=true`)
-            }
-          >
-            Edit
-          </Button>
-          {r.isActive && (
-            <Button
-              type="link"
-              danger
-              icon={<DeleteOutlined />}
-              size="small"
-              onClick={() => handleDeactivate(r.id, r.name)}
-            >
-              Deactivate
-            </Button>
-          )}
-        </Space>
-      ),
     },
   ];
 
@@ -309,7 +267,7 @@ export default function SuperadminTemplatesPage() {
             <Title level={3} className="!mb-0">
               Report Templates
             </Title>
-            <Text className="text-gray-500">
+            <Text className="text-ds-text-subtle">
               Manage the structure and sections of report templates
             </Text>
           </div>
@@ -332,6 +290,28 @@ export default function SuperadminTemplatesPage() {
           columns={columns}
           rowKey="id"
           loading={loading}
+          actions={[
+            {
+              key: "view",
+              label: "View",
+              icon: <EyeOutlined />,
+              onClick: (r) => router.push(`/superadmin/reports/templates/${r.id}`),
+            },
+            {
+              key: "edit",
+              label: "Edit",
+              icon: <EditOutlined />,
+              onClick: (r) => router.push(`/superadmin/reports/templates/${r.id}?edit=true`),
+            },
+            {
+              key: "deactivate",
+              label: "Deactivate",
+              icon: <DeleteOutlined />,
+              danger: true,
+              hidden: (r) => !r.isActive,
+              onClick: (r) => handleDeactivate(r.id, r.name),
+            },
+          ]}
           scroll={{ x: 800 }}
           pagination={{ pageSize: 10, showTotal: (t) => `${t} templates` }}
         />
@@ -374,7 +354,7 @@ export default function SuperadminTemplatesPage() {
             </Form.Item>
           </div>
           <Form.Item name="description" label="Description" className="!mb-6">
-            <Input.TextArea
+            <TextArea
               rows={2}
               placeholder="Brief description of this template"
             />
@@ -387,7 +367,7 @@ export default function SuperadminTemplatesPage() {
             }}
           />
 
-          <div className="flex justify-end gap-2 mt-6 pt-4 border-t border-gray-200 dark:border-gray-700">
+          <div className="flex justify-end gap-2 mt-6 pt-4 border-t border-ds-border-base">
             <Button
               onClick={() => {
                 setCreateModalOpen(false);

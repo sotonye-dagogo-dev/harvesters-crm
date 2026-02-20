@@ -1,6 +1,7 @@
 "use client";
 
-import { Card, Empty } from "antd";
+import { Empty } from "antd";
+import Card from "@/components/ui/Card";
 import { CHART_COLORS } from "@/lib/constants";
 import {
   BarChart,
@@ -60,12 +61,12 @@ export default function AttendanceChart({
             dataKey="date"
             tick={{ fontSize: 12 }}
             stroke="currentColor"
-            className="text-gray-600 dark:text-gray-400"
+            className="text-ds-text-secondary"
           />
           <YAxis
             tick={{ fontSize: 12 }}
             stroke="currentColor"
-            className="text-gray-600 dark:text-gray-400"
+            className="text-ds-text-secondary"
           />
           <Tooltip
             contentStyle={{

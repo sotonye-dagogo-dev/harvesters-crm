@@ -12,7 +12,6 @@ import {
   Typography,
   Divider,
   Alert,
-  Input,
 } from "antd";
 import {
   ArrowLeftOutlined,
@@ -26,11 +25,11 @@ import type { ReportFormData } from "@/components/features/reports/ReportForm";
 import { REPORT_PERIOD_LABELS } from "@/lib/constants/reports";
 import dayjs from "dayjs";
 import weekOfYear from "dayjs/plugin/weekOfYear";
+import { TextArea } from "@/components/ui/Input";
 
 dayjs.extend(weekOfYear);
 
 const { Title, Text } = Typography;
-const { TextArea } = Input;
 
 const DATA_ENTRY_ROLES: UserRole[] = [
   UserRole.SUPERADMIN,
@@ -298,7 +297,7 @@ export default function DataEntryPage() {
               <HistoryOutlined className="mr-2" />
               Historical Data Entry
             </Title>
-            <Text className="text-gray-500">
+            <Text className="text-ds-text-subtle">
               Enter report data for a past period
             </Text>
           </div>
@@ -313,7 +312,7 @@ export default function DataEntryPage() {
         />
 
         {/* Configuration */}
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+        <div className="bg-ds-surface-elevated p-6 rounded-xl shadow-sm border border-ds-border-base">
           <Form layout="vertical">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               <Form.Item label="Report Template" required>
@@ -429,7 +428,7 @@ export default function DataEntryPage() {
             loading={saving}
           />
         ) : (
-          <div className="text-center py-16 text-gray-500">
+          <div className="text-center py-16 text-ds-text-subtle">
             <Text>Select a report template to begin</Text>
           </div>
         )}

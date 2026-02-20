@@ -127,13 +127,13 @@ export default function NotificationsPage() {
   const getNotificationIcon = (type: string) => {
     switch (type) {
       case "MEETING_REMINDER":
-        return <CalendarOutlined className="text-blue-500" />;
+        return <CalendarOutlined className="text-ds-chart-1" />;
       case "REQUEST_STATUS":
-        return <TeamOutlined className="text-green-500" />;
+        return <TeamOutlined className="text-ds-status-success" />;
       case "ROLE_ASSIGNMENT":
-        return <UserOutlined className="text-purple-500" />;
+        return <UserOutlined className="text-ds-chart-3" />;
       default:
-        return <BellOutlined className="text-gray-500" />;
+        return <BellOutlined className="text-ds-text-subtle" />;
     }
   };
 
@@ -174,11 +174,11 @@ export default function NotificationsPage() {
         <div>
           <div className="flex items-center justify-between mb-4">
             <div>
-              <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+              <h1 className="text-2xl font-bold text-ds-text-primary flex items-center gap-2">
                 <BellOutlined />
                 Notifications
               </h1>
-              <p className="text-gray-600">
+              <p className="text-ds-text-secondary">
                 {unreadNotifications.length} unread notification
                 {unreadNotifications.length !== 1 ? "s" : ""}
               </p>
@@ -209,7 +209,7 @@ export default function NotificationsPage() {
                 renderItem={(notification) => (
                   <List.Item
                     key={notification.id}
-                    className={`cursor-pointer transition-colors hover:bg-gray-50 ${!notification.read ? "bg-blue-50" : ""}`}
+                    className={`cursor-pointer transition-colors hover:bg-ds-surface-sunken ${!notification.read ? "bg-ds-chart-1/5" : ""}`}
                     onClick={() => handleNotificationClick(notification)}
                     actions={[
                       !notification.read && (
@@ -271,13 +271,13 @@ export default function NotificationsPage() {
                       }
                       description={
                         <div>
-                          <p className="text-gray-700 mb-1">
+                          <p className="text-ds-text-secondary mb-1">
                             {notification.message}
                           </p>
-                          <span className="text-sm text-gray-500">
+                          <span className="text-sm text-ds-text-subtle">
                             {format(
                               new Date(notification.createdAt),
-                              "MMM d, yyyy 'at' h:mm a"
+                              "d MMM yyyy 'at' h:mm a"
                             )}
                           </span>
                         </div>
@@ -302,7 +302,7 @@ export default function NotificationsPage() {
                   renderItem={(notification) => (
                     <List.Item
                       key={notification.id}
-                      className="cursor-pointer transition-colors hover:bg-gray-50 bg-blue-50"
+                      className="cursor-pointer transition-colors hover:bg-ds-surface-sunken bg-ds-chart-1/5"
                       onClick={() => handleNotificationClick(notification)}
                       actions={[
                         <AntButton
@@ -352,13 +352,13 @@ export default function NotificationsPage() {
                         }
                         description={
                           <div>
-                            <p className="text-gray-700 mb-1">
+                            <p className="text-ds-text-secondary mb-1">
                               {notification.message}
                             </p>
-                            <span className="text-sm text-gray-500">
+                            <span className="text-sm text-ds-text-subtle">
                               {format(
                                 new Date(notification.createdAt),
-                                "MMM d, yyyy 'at' h:mm a"
+                                "d MMM yyyy 'at' h:mm a"
                               )}
                             </span>
                           </div>

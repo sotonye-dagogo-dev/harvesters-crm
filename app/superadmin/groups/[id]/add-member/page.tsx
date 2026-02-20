@@ -5,7 +5,9 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/providers/AuthProvider";
 import DashboardLayout from "@/components/features/navigation/DashboardLayout";
-import { Card, Select, Button, message, Spin, Empty, Avatar } from "antd";
+import { Select, message, Spin, Empty, Avatar } from "antd";
+import Button from "@/components/ui/Button";
+import Card from "@/components/ui/Card";
 import { UserAddOutlined, UserOutlined } from "@ant-design/icons";
 
 export default function AddMemberPage({ params }: { params: { id: string } }) {
@@ -118,11 +120,10 @@ export default function AddMemberPage({ params }: { params: { id: string } }) {
       <DashboardLayout role={UserRole.SUPERADMIN}>
         <div className="flex items-center justify-center min-h-[60vh]">
           <Card>
-            <p className="text-gray-500">
+            <p className="text-ds-text-subtle">
               You don&apos;t have permission to add members to this group
             </p>
             <Button
-              type="primary"
               onClick={() => router.push(`/superadmin/groups/${params.id}`)}
             >
               Back to Group
@@ -137,8 +138,8 @@ export default function AddMemberPage({ params }: { params: { id: string } }) {
     <DashboardLayout role={UserRole.SUPERADMIN}>
       <div className="max-w-2xl mx-auto space-y-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Add Member</h1>
-          <p className="text-gray-500 mt-1">Add a member to {group.name}</p>
+          <h1 className="text-2xl font-bold text-ds-text-primary">Add Member</h1>
+          <p className="text-ds-text-subtle mt-1">Add a member to {group.name}</p>
         </div>
 
         <Card>
@@ -148,7 +149,6 @@ export default function AddMemberPage({ params }: { params: { id: string } }) {
               image={Empty.PRESENTED_IMAGE_SIMPLE}
             >
               <Button
-                type="primary"
                 onClick={() => router.push(`/superadmin/groups/${params.id}`)}
               >
                 Back to Group
@@ -157,7 +157,7 @@ export default function AddMemberPage({ params }: { params: { id: string } }) {
           ) : (
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-ds-text-secondary mb-2">
                   Select Member
                 </label>
                 <Select
@@ -195,7 +195,7 @@ export default function AddMemberPage({ params }: { params: { id: string } }) {
                           <div className="font-medium">
                             {member.firstName} {member.lastName}
                           </div>
-                          <div className="text-xs text-gray-500">
+                          <div className="text-xs text-ds-text-subtle">
                             {member.email}
                           </div>
                         </div>
@@ -203,19 +203,19 @@ export default function AddMemberPage({ params }: { params: { id: string } }) {
                     );
                   }}
                 />
-                <p className="text-sm text-gray-500 mt-2">
+                <p className="text-sm text-ds-text-subtle mt-2">
                   Showing {availableMembers.length} member(s) without a group
                 </p>
               </div>
 
               <div className="flex gap-2 justify-end pt-4">
                 <Button
+                  variant="secondary"
                   onClick={() => router.push(`/superadmin/groups/${params.id}`)}
                 >
                   Cancel
                 </Button>
                 <Button
-                  type="primary"
                   icon={<UserAddOutlined />}
                   onClick={handleAddMember}
                   loading={submitting}

@@ -1,6 +1,7 @@
 "use client";
 
-import { Collapse, Card as AntCard, Empty } from "antd";
+import { Collapse, Empty } from "antd";
+import Card from "@/components/ui/Card";
 import { MetricFieldType } from "@/lib/types";
 import ReportMetricField from "./ReportMetricField";
 
@@ -131,7 +132,7 @@ export default function ReportSectionCard({
   const sectionContent = (
     <div className="flex flex-col gap-6">
       {section.description && (
-        <p className="text-sm text-gray-500 dark:text-gray-400 -mt-1">
+        <p className="text-sm text-ds-text-subtle -mt-1">
           {section.description}
         </p>
       )}
@@ -144,19 +145,19 @@ export default function ReportSectionCard({
         section.subSections
           .sort((a, b) => a.order - b.order)
           .map((sub) => (
-            <AntCard
+            <Card
               key={sub.name}
               size="small"
               title={sub.name}
-              className="bg-gray-50 dark:bg-gray-800/50"
+              className="bg-ds-surface-sunken/50"
             >
               {sub.description && (
-                <p className="text-xs text-gray-500 dark:text-gray-400 mb-3">
+                <p className="text-xs text-ds-text-subtle mb-3">
                   {sub.description}
                 </p>
               )}
               {renderMetrics(sub.metrics)}
-            </AntCard>
+            </Card>
           ))}
     </div>
   );
@@ -172,9 +173,9 @@ export default function ReportSectionCard({
             <div className="flex items-center gap-2">
               <span className="font-medium">{section.sectionName}</span>
               {section.isRequired && (
-                <span className="text-xs text-red-500">(Required)</span>
+                <span className="text-xs text-ds-status-error">(Required)</span>
               )}
-              <span className="text-xs text-gray-400">
+              <span className="text-xs text-ds-text-subtle">
                 {section.metrics.length +
                   (section.subSections?.reduce(
                     (sum, s) => sum + s.metrics.length,

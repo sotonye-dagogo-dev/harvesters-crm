@@ -2,7 +2,10 @@
 
 import { useEffect, useState } from "react";
 import DashboardLayout from "@/components/features/navigation/DashboardLayout";
-import { Input, Select, Button as AntButton, message, Modal, Form, DatePicker } from "antd";
+import { Input, Select, message, Form, DatePicker } from "antd";
+import { PasswordInput } from "@/components/ui/Input";
+import Modal, { ConfirmModal } from "@/components/ui/Modal";
+import Button from "@/components/ui/Button";
 import { PlusOutlined, SearchOutlined } from "@ant-design/icons";
 import UserCard from "@/components/features/users/UserCard";
 import EmptyState from "@/components/ui/EmptyState";
@@ -27,6 +30,10 @@ export default function UsersPage() {
   const [groups, setGroups] = useState<Group[]>([]);
   const [form] = Form.useForm();
   const [createForm] = Form.useForm();
+  const [deactivateModalOpen, setDeactivateModalOpen] = useState(false);
+  const [deactivateUserId, setDeactivateUserId] = useState<string | null>(null);
+  const [deactivateLoading, setDeactivateLoading] = useState(false);
+  const deactivateUser = deactivateUserId ? users.find((u) => u.id === deactivateUserId) : null;
 
   useEffect(() => {
     fetchUsers();
@@ -35,6 +42,7 @@ export default function UsersPage() {
 
   useEffect(() => {
     filterUsers();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchTerm, roleFilter, users]);
 
   const fetchUsers = async () => {
@@ -44,7 +52,7 @@ export default function UsersPage() {
         const data = await response.json();
         setUsers(data.data);
       }
-    } catch (error) {
+    } catch {
       message.error("Failed to load users");
     } finally {
       setLoading(false);
@@ -58,7 +66,7 @@ export default function UsersPage() {
         const data = await response.json();
         setGroups(data.data);
       }
-    } catch (error) {
+    } catch {
       console.error("Failed to load groups");
     }
   };
@@ -85,40 +93,38 @@ export default function UsersPage() {
     setFilteredUsers(filtered);
   };
 
-  const handleDeactivate = async (userId: string) => {
-    const user = users.find((u) => u.id === userId);
-    if (!user) return;
+  const handleDeactivate = (userId: string) => {
+    setDeactivateUserId(userId);
+    setDeactivateModalOpen(true);
+  };
 
-    Modal.confirm({
-      title: user.isActive ? "Deactivate User" : "Activate User",
-      content: `Are you sure you want to ${
-        user.isActive ? "deactivate" : "activate"
-      } this user?`,
-      okText: "Confirm",
-      cancelText: "Cancel",
-      okButtonProps: user.isActive ? { danger: true } : undefined,
-      onOk: async () => {
-        try {
-          const response = await fetch(`/api/users/${userId}`, {
-            method: "PUT",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ isActive: !user.isActive }),
-          });
+  const handleConfirmDeactivate = async () => {
+    if (!deactivateUserId || !deactivateUser) return;
 
-          if (response.ok) {
-            message.success(
-              `User ${user.isActive ? "deactivated" : "activated"} successfully`
-            );
-            fetchUsers();
-          } else {
-            const error = await response.json();
-            message.error(error.error || "Failed to update user");
-          }
-        } catch (error) {
-          message.error("An error occurred");
-        }
-      },
-    });
+    setDeactivateLoading(true);
+    try {
+      const response = await fetch(`/api/users/${deactivateUserId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ isActive: !deactivateUser.isActive }),
+      });
+
+      if (response.ok) {
+        message.success(
+          `User ${deactivateUser.isActive ? "deactivated" : "activated"} successfully`
+        );
+        fetchUsers();
+      } else {
+        const error = await response.json();
+        message.error(error.error || "Failed to update user");
+      }
+    } catch {
+      message.error("An error occurred");
+    } finally {
+      setDeactivateLoading(false);
+      setDeactivateModalOpen(false);
+      setDeactivateUserId(null);
+    }
   };
 
   const handleAssignGroup = (userId: string) => {
@@ -148,7 +154,7 @@ export default function UsersPage() {
         const error = await response.json();
         message.error(error.error || "Failed to assign user");
       }
-    } catch (error) {
+    } catch {
       message.error("An error occurred");
     }
   };
@@ -201,20 +207,19 @@ export default function UsersPage() {
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-2xl font-bold text-gray-900">
+            <h2 className="text-2xl font-bold text-ds-text-primary">
               User Management
             </h2>
-            <p className="text-gray-600 mt-1">
+            <p className="text-ds-text-secondary mt-1">
               Manage church members, leaders, and administrators
             </p>
           </div>
-          <AntButton
-            type="primary"
+          <Button
             icon={<PlusOutlined />}
             onClick={() => setShowCreateModal(true)}
           >
             Add User
-          </AntButton>
+          </Button>
         </div>
 
         <div className="flex flex-col sm:flex-row gap-4">
@@ -240,13 +245,13 @@ export default function UsersPage() {
           />
         </div>
 
-        <div className="text-sm text-gray-600">
+        <div className="text-sm text-ds-text-secondary">
           Showing {filteredUsers.length} of {users.length} users
         </div>
 
         {filteredUsers.length === 0 ? (
           <EmptyState
-            icon={<SearchOutlined className="text-gray-300" />}
+            icon={<SearchOutlined className="text-ds-text-subtle" />}
             title="No users found"
             description={
               searchTerm || roleFilter !== "ALL"
@@ -278,6 +283,7 @@ export default function UsersPage() {
             setSelectedUserId(null);
           }}
           footer={null}
+          size="sm"
         >
           <Form form={form} layout="vertical" onFinish={handleAssignSubmit}>
             <Form.Item
@@ -296,7 +302,8 @@ export default function UsersPage() {
             </Form.Item>
             <Form.Item className="mb-0">
               <div className="flex justify-end gap-2">
-                <AntButton
+                <Button
+                  variant="secondary"
                   onClick={() => {
                     setShowAssignModal(false);
                     form.resetFields();
@@ -304,10 +311,10 @@ export default function UsersPage() {
                   }}
                 >
                   Cancel
-                </AntButton>
-                <AntButton type="primary" htmlType="submit">
+                </Button>
+                <Button htmlType="submit">
                   Assign
-                </AntButton>
+                </Button>
               </div>
             </Form.Item>
           </Form>
@@ -322,7 +329,7 @@ export default function UsersPage() {
             createForm.resetFields();
           }}
           footer={null}
-          width={640}
+          size="lg"
         >
           <Form
             form={createForm}
@@ -371,7 +378,7 @@ export default function UsersPage() {
                   { min: 8, message: "Password must be at least 8 characters" },
                 ]}
               >
-                <Input.Password placeholder="Set password" size="large" />
+                <PasswordInput placeholder="Set password" size="large" />
               </Form.Item>
               <Form.Item
                 name="role"
@@ -414,7 +421,7 @@ export default function UsersPage() {
                 label="Date of Birth"
                 rules={[{ required: true, message: "Date of birth is required" }]}
               >
-                <DatePicker className="w-full" size="large" format="YYYY-MM-DD" />
+                <DatePicker className="w-full" size="large" format="D MMM YYYY" />
               </Form.Item>
               <Form.Item
                 name="gender"
@@ -463,16 +470,30 @@ export default function UsersPage() {
             </div>
             <Form.Item className="mb-0 mt-4">
               <div className="flex justify-end gap-2">
-                <AntButton onClick={() => { setShowCreateModal(false); createForm.resetFields(); }}>
+                <Button variant="secondary" onClick={() => { setShowCreateModal(false); createForm.resetFields(); }}>
                   Cancel
-                </AntButton>
-                <AntButton type="primary" htmlType="submit" loading={createLoading}>
+                </Button>
+                <Button htmlType="submit" loading={createLoading}>
                   Create User
-                </AntButton>
+                </Button>
               </div>
             </Form.Item>
           </Form>
         </Modal>
+
+        {/* Deactivate/Activate User Confirm Modal */}
+        <ConfirmModal
+          open={deactivateModalOpen}
+          title={deactivateUser?.isActive ? "Deactivate User" : "Activate User"}
+          content={`Are you sure you want to ${deactivateUser?.isActive ? "deactivate" : "activate"} this user?`}
+          danger={deactivateUser?.isActive ?? false}
+          confirmLoading={deactivateLoading}
+          onConfirm={handleConfirmDeactivate}
+          onCancel={() => {
+            setDeactivateModalOpen(false);
+            setDeactivateUserId(null);
+          }}
+        />
       </div>
     </DashboardLayout>
   );

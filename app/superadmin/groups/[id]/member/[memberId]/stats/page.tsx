@@ -9,13 +9,13 @@ import {
   Card,
   Descriptions,
   Progress,
-  Tag,
   Spin,
   message,
-  Table,
   Empty,
   Button as AntButton,
 } from "antd";
+import Table from "@/components/ui/Table";
+import StatusBadge, { BooleanBadge } from "@/components/ui/StatusBadge";
 import {
   ArrowLeftOutlined,
   CheckCircleOutlined,
@@ -107,7 +107,7 @@ export default function MemberStatsPage() {
       title: "Date",
       key: "date",
       render: (_, record) =>
-        format(new Date(record.meeting.date), "MMM d, yyyy"),
+        format(new Date(record.meeting.date), "d MMM yyyy"),
       sorter: (a, b) =>
         new Date(b.meeting.date).getTime() - new Date(a.meeting.date).getTime(),
     },
@@ -134,16 +134,9 @@ export default function MemberStatsPage() {
     {
       title: "Status",
       key: "status",
-      render: (_, record) =>
-        record.attended ? (
-          <Tag icon={<CheckCircleOutlined />} color="success">
-            Attended
-          </Tag>
-        ) : (
-          <Tag icon={<CloseCircleOutlined />} color="error">
-            Absent
-          </Tag>
-        ),
+      render: (_, record) => (
+        <BooleanBadge value={record.attended} trueLabel="Attended" falseLabel="Absent" />
+      ),
       filters: [
         { text: "Attended", value: true },
         { text: "Absent", value: false },
@@ -186,7 +179,7 @@ export default function MemberStatsPage() {
       <DashboardLayout role={UserRole.SUPERADMIN}>
         <div className="flex items-center justify-center min-h-[60vh]">
           <Card>
-            <p className="text-gray-500">
+            <p className="text-ds-text-subtle">
               You don&apos;t have permission to view these statistics
             </p>
           </Card>
@@ -206,10 +199,10 @@ export default function MemberStatsPage() {
             <ArrowLeftOutlined />
             Back to Group
           </button>
-          <h1 className="text-2xl font-bold text-gray-900">
+          <h1 className="text-2xl font-bold text-ds-text-primary">
             Member Participation Statistics
           </h1>
-          <p className="text-gray-500 mt-1">
+          <p className="text-ds-text-subtle mt-1">
             {member.firstName} {member.lastName} • {group.name}
           </p>
         </div>
@@ -228,22 +221,10 @@ export default function MemberStatsPage() {
                 {member.phone}
               </Descriptions.Item>
               <Descriptions.Item label="Role">
-                <Tag
-                  color={
-                    member.role === UserRole.SUPERADMIN
-                      ? "red"
-                      : member.role === UserRole.SMALL_GROUP_LEADER
-                        ? "blue"
-                        : "green"
-                  }
-                >
-                  {member.role}
-                </Tag>
+                <StatusBadge status={member.role} category="role" />
               </Descriptions.Item>
               <Descriptions.Item label="Status">
-                <Tag color={member.isActive ? "success" : "default"}>
-                  {member.isActive ? "Active" : "Inactive"}
-                </Tag>
+                <BooleanBadge value={member.isActive} trueLabel="Active" falseLabel="Inactive" />
               </Descriptions.Item>
             </Descriptions>
           </Card>
@@ -254,22 +235,22 @@ export default function MemberStatsPage() {
               title="Total Meetings"
               value={stats.totalMeetings}
               icon={<CalendarOutlined />}
-              color="text-blue-600"
+              color="text-ds-chart-1"
             />
             <StatCard
               title="Attended"
               value={stats.attended}
               icon={<CheckCircleOutlined />}
-              color="text-green-600"
+              color="text-ds-status-success"
             />
             <StatCard
               title="Missed"
               value={stats.missed}
               icon={<CloseCircleOutlined />}
-              color="text-red-600"
+              color="text-ds-status-error"
             />
             <Card className="text-center">
-              <div className="text-sm text-gray-600 mb-2">Attendance Rate</div>
+              <div className="text-sm text-ds-text-secondary mb-2">Attendance Rate</div>
               <Progress
                 type="circle"
                 percent={Math.round(stats.attendanceRate)}

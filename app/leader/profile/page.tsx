@@ -9,8 +9,8 @@ import {
   Spin,
   Button as AntButton,
   message,
-  Tag,
 } from "antd";
+import StatusBadge from "@/components/ui/StatusBadge";
 import { EditOutlined, LockOutlined } from "@ant-design/icons";
 import ProfileAvatar from "@/components/features/users/ProfileAvatar";
 import { useRouter } from "next/navigation";
@@ -58,7 +58,7 @@ export default function LeaderProfilePage() {
     return (
       <DashboardLayout role={UserRole.SMALL_GROUP_LEADER}>
         <div className="text-center py-12">
-          <p className="text-gray-500 dark:text-gray-400">Profile not found</p>
+          <p className="text-ds-text-subtle">Profile not found</p>
         </div>
       </DashboardLayout>
     );
@@ -68,7 +68,7 @@ export default function LeaderProfilePage() {
     <DashboardLayout role={UserRole.SMALL_GROUP_LEADER}>
       <div className="space-y-6">
         <div className="flex items-center justify-between">
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+          <h2 className="text-2xl font-bold text-ds-text-primary">
             My Profile
           </h2>
           <div className="flex gap-3">
@@ -88,7 +88,7 @@ export default function LeaderProfilePage() {
           </div>
         </div>
 
-        <Card className="max-w-4xl bg-white dark:bg-slate-800 text-gray-900 dark:text-gray-100">
+        <Card className="max-w-4xl bg-ds-surface-elevated text-ds-text-primary">
           <div className="flex items-start gap-6 mb-6">
             <ProfileAvatar
               firstName={profile.firstName}
@@ -97,14 +97,14 @@ export default function LeaderProfilePage() {
               size={80}
             />
             <div>
-              <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
+              <h3 className="text-xl font-semibold text-ds-text-primary">
                 {profile.firstName} {profile.lastName}
               </h3>
-              <p className="text-gray-600 dark:text-gray-400">
+              <p className="text-ds-text-secondary">
                 {profile.email}
               </p>
               <div className="mt-2">
-                <Tag color="blue">Group Leader</Tag>
+                <StatusBadge status="SMALL_GROUP_LEADER" category="role" />
               </div>
             </div>
           </div>
@@ -112,7 +112,7 @@ export default function LeaderProfilePage() {
           <Descriptions
             column={1}
             bordered
-            className="[&_.ant-descriptions-item-label]:bg-gray-50 dark:[&_.ant-descriptions-item-label]:bg-slate-700 [&_.ant-descriptions-item-label]:text-gray-900 dark:[&_.ant-descriptions-item-label]:text-white [&_.ant-descriptions-item-content]:bg-white dark:[&_.ant-descriptions-item-content]:bg-slate-800 [&_.ant-descriptions-item-content]:text-gray-900 dark:[&_.ant-descriptions-item-content]:text-gray-200"
+            className="[&_.ant-descriptions-item-label]:bg-ds-surface-sunken [&_.ant-descriptions-item-label]:text-ds-text-primary [&_.ant-descriptions-item-content]:bg-ds-surface-elevated [&_.ant-descriptions-item-content]:text-ds-text-primary"
           >
             <Descriptions.Item label="Phone">
               {profile.phone || "Not provided"}

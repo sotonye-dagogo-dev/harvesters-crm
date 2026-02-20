@@ -1,6 +1,7 @@
 "use client";
 
-import { Card, Statistic, Tag, Tooltip } from "antd";
+import { Statistic, Tag, Tooltip } from "antd";
+import Card from "@/components/ui/Card";
 import {
   ArrowUpOutlined,
   ArrowDownOutlined,
@@ -38,7 +39,7 @@ export default function StatCard({
   onClick,
 }: StatCardProps) {
   const colorClasses = {
-    primary: "from-indigo-500 to-purple-600",
+    primary: "from-ds-brand-accent to-purple-600",
     success: "from-green-500 to-emerald-600",
     warning: "from-yellow-500 to-orange-600",
     danger: "from-red-500 to-pink-600",
@@ -47,19 +48,19 @@ export default function StatCard({
 
   const iconBgClasses = {
     primary:
-      "bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400",
+      "bg-ds-brand-accent-subtle dark:bg-ds-brand-accent/30 text-ds-brand-accent dark:text-ds-brand-accent",
     success:
-      "bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400",
+      "bg-ds-status-success/10 dark:bg-green-900/30 text-ds-status-success",
     warning:
       "bg-yellow-100 dark:bg-yellow-900/30 text-yellow-600 dark:text-yellow-400",
-    danger: "bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400",
-    info: "bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400",
+    danger: "bg-ds-status-error/10 dark:bg-red-900/30 text-ds-status-error",
+    info: "bg-ds-chart-1/10 dark:bg-blue-900/30 text-ds-chart-1",
   };
 
   return (
     <Card
       loading={loading}
-      className={`shadow-md hover:shadow-xl transition-all duration-300 ${
+      className={`shadow-md hover:shadow-ds-xl transition-all duration-300 ${
         onClick ? "cursor-pointer" : ""
       } overflow-hidden relative`}
       onClick={onClick}
@@ -73,12 +74,12 @@ export default function StatCard({
         <div className="flex items-start justify-between mb-4">
           <div className="flex-1">
             <div className="flex items-center gap-2 mb-1">
-              <span className="text-gray-600 dark:text-gray-400 text-sm font-medium">
+              <span className="text-ds-text-secondary text-sm font-medium">
                 {title}
               </span>
               {description && (
                 <Tooltip title={description}>
-                  <InfoCircleOutlined className="text-gray-400 text-xs cursor-help" />
+                  <InfoCircleOutlined className="text-ds-text-subtle text-xs cursor-help" />
                 </Tooltip>
               )}
             </div>
@@ -92,7 +93,7 @@ export default function StatCard({
                 fontWeight: "bold",
                 color: "inherit",
               }}
-              className="[&_.ant-statistic-content]:text-gray-900 [&_.ant-statistic-content]:dark:text-white"
+              className="[&_.ant-statistic-content]:text-ds-text-primary [&_.ant-statistic-content]:dark:text-ds-text-primary"
             />
           </div>
 
@@ -106,7 +107,7 @@ export default function StatCard({
         </div>
 
         {trend && (
-          <div className="flex items-center gap-2 pt-3 border-t border-gray-200 dark:border-gray-700">
+          <div className="flex items-center gap-2 pt-3 border-t border-ds-border-base">
             <Tag
               color={trend.isPositive ? "success" : "error"}
               icon={
@@ -116,7 +117,7 @@ export default function StatCard({
             >
               {Math.abs(trend.value)}%
             </Tag>
-            <span className="text-xs text-gray-500 dark:text-gray-400">
+            <span className="text-xs text-ds-text-subtle">
               {trend.label || "vs last period"}
             </span>
           </div>

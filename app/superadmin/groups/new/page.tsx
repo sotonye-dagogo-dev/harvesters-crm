@@ -56,8 +56,8 @@ export default function CreateGroupPage() {
     <DashboardLayout role={user?.role || UserRole.SUPERADMIN}>
       <div className="space-y-6">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900">Create New Group</h2>
-          <p className="text-gray-600 mt-1">
+          <h2 className="text-2xl font-bold text-ds-text-primary">Create New Group</h2>
+          <p className="text-ds-text-secondary mt-1">
             Set up a new fellowship group for your church
           </p>
         </div>

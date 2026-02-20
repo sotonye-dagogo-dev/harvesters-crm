@@ -7,6 +7,7 @@
 
 import { UserRole, NotificationType, ReportStatus } from "@/lib/types";
 import { db } from "@/lib/data/database";
+import { formatDate } from "@/lib/utils/format";
 
 /**
  * Send meeting reminder notification to all group members
@@ -53,7 +54,7 @@ export async function sendMeetingReminder(
         userId: member.id,
         type: NotificationType.MEETING_REMINDER,
         title: "Upcoming Group Meeting",
-        message: `Your ${group.name} meeting is scheduled for ${new Date(meeting.date).toLocaleDateString()} at ${meeting.startTime}`,
+        message: `Your ${group.name} meeting is scheduled for ${formatDate(meeting.date)} at ${meeting.startTime}`,
         relatedId: meetingId,
       });
     }
@@ -829,8 +830,8 @@ export async function sendReportDeadlineReminder(
       : "Report Deadline Approaching";
 
     const body = isFinal
-      ? `Your ${report.periodType} report is due tomorrow (${deadline.toLocaleDateString()}). Please submit it as soon as possible.`
-      : `Your ${report.periodType} report is due in ${daysLeft} day(s) on ${deadline.toLocaleDateString()}. Please ensure it is completed and submitted on time.`;
+      ? `Your ${report.periodType} report is due tomorrow (${formatDate(deadline)}). Please submit it as soon as possible.`
+      : `Your ${report.periodType} report is due in ${daysLeft} day(s) on ${formatDate(deadline)}. Please ensure it is completed and submitted on time.`;
 
     db.notifications.create({
       userId: report.submittedById,

@@ -74,7 +74,7 @@ export default function CampaignStory({
 
     // Gradient background for text-only campaigns
     return (
-      <div className="w-full h-full bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 flex items-center justify-center text-white font-bold text-xl">
+      <div className="w-full h-full bg-gradient-to-br from-ds-brand-accent via-purple-500 to-pink-500 flex items-center justify-center text-white font-bold text-xl">
         {campaign.title.charAt(0)}
       </div>
     );
@@ -94,7 +94,7 @@ export default function CampaignStory({
               isExpired
                 ? "from-gray-300 to-gray-400 dark:from-gray-600 dark:to-gray-700"
                 : campaign.status === "ACTIVE"
-                  ? "from-indigo-500 via-purple-500 to-pink-500"
+                  ? "from-ds-brand-accent via-purple-500 to-pink-500"
                   : "from-yellow-400 to-orange-500"
             } p-0.5 transition-all duration-300 group-hover:scale-110`}
             style={{
@@ -111,10 +111,10 @@ export default function CampaignStory({
           />
 
           {/* Avatar */}
-          <div className="relative bg-white dark:bg-gray-800 rounded-full p-1">
+          <div className="relative bg-ds-surface-elevated rounded-full p-1">
             <Avatar
               size={config.avatarSize}
-              className="border-2 border-white dark:border-gray-800"
+              className="border-2 border-ds-surface-elevated dark:border-ds-surface-elevated"
               src={getAvatarContent()}
             >
               {campaign.title.charAt(0)}
@@ -125,12 +125,12 @@ export default function CampaignStory({
           {!isExpired && campaign.status === "ACTIVE" && (
             <Badge
               count="Live"
-              className="absolute bottom-0 right-0 [&_.ant-badge-count]:text-xs [&_.ant-badge-count]:px-2 [&_.ant-badge-count]:bg-green-500"
+              className="absolute bottom-0 right-0 [&_.ant-badge-count]:text-xs [&_.ant-badge-count]:px-2 [&_.ant-badge-count]:bg-ds-status-success/50"
             />
           )}
 
           {isExpired && (
-            <div className="absolute bottom-0 right-0 w-6 h-6 bg-gray-400 dark:bg-gray-600 rounded-full flex items-center justify-center border-2 border-white dark:border-gray-800">
+            <div className="absolute bottom-0 right-0 w-6 h-6 bg-ds-text-subtle dark:bg-ds-text-subtle rounded-full flex items-center justify-center border-2 border-ds-surface-elevated dark:border-ds-surface-elevated">
               <ClockCircleOutlined className="text-xs text-white" />
             </div>
           )}
@@ -139,14 +139,14 @@ export default function CampaignStory({
         {/* Campaign Title/Creator Name */}
         <div className="text-center max-w-full">
           <p
-            className={`${config.nameClass} font-medium truncate text-gray-700 dark:text-gray-300 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors`}
+            className={`${config.nameClass} font-medium truncate text-ds-text-secondary group-hover:text-ds-brand-accent dark:group-hover:text-ds-brand-accent transition-colors`}
           >
             {createdBy
               ? `${createdBy.firstName} ${createdBy.lastName}`
               : campaign.title}
           </p>
           {!isExpired && (
-            <p className="text-xs text-gray-500 dark:text-gray-400">
+            <p className="text-xs text-ds-text-subtle">
               {formatDistanceToNow(createdAt, { addSuffix: true })}
             </p>
           )}

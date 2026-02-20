@@ -284,14 +284,14 @@ export default function NewReportPage() {
             <Title level={3} className="!mb-0">
               Create New Report
             </Title>
-            <Text className="text-gray-500">
+            <Text className="text-ds-text-subtle">
               Select a template and fill in the report data
             </Text>
           </div>
         </div>
 
         {/* Configuration */}
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+        <div className="bg-ds-surface-elevated p-6 rounded-xl shadow-sm border border-ds-border-base">
           <Form layout="vertical">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               <Form.Item label="Report Template" required>
@@ -362,7 +362,7 @@ export default function NewReportPage() {
                 <Form.Item label="Historical Data Entry">
                   <Space>
                     <Switch checked={isDataEntry} onChange={setIsDataEntry} />
-                    <Text className="text-sm text-gray-500">
+                    <Text className="text-sm text-ds-text-subtle">
                       {isDataEntry
                         ? "Entering historical data"
                         : "Current period report"}
@@ -386,7 +386,7 @@ export default function NewReportPage() {
             loading={saving}
           />
         ) : (
-          <div className="text-center py-16 text-gray-500">
+          <div className="text-center py-16 text-ds-text-subtle">
             <Text>Select a report template to begin</Text>
           </div>
         )}

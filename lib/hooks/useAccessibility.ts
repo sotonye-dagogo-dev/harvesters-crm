@@ -134,7 +134,7 @@ export function useSkipLink() {
   const skipLinkProps = {
     href: `#${mainContentId}`,
     className:
-      "sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:px-4 focus:py-2 focus:bg-church-primary focus:text-white focus:rounded",
+      "sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:px-4 focus:py-2 focus:bg-ds-brand-accent focus:text-white focus:rounded",
     onClick: (e: React.MouseEvent<HTMLAnchorElement>) => {
       e.preventDefault();
       const mainContent = document.getElementById(mainContentId);

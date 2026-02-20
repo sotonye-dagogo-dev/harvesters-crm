@@ -3,6 +3,7 @@
 import { UserRole } from "@/lib/types";
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
+import { formatDate } from "@/lib/utils/format";
 import DashboardLayout from "@/components/features/navigation/DashboardLayout";
 import { useAuth } from "@/providers/AuthProvider";
 import {
@@ -12,9 +13,9 @@ import {
   Tag,
   Spin,
   message,
-  Table,
   Modal,
 } from "antd";
+import Table from "@/components/ui/Table";
 import {
   EditOutlined,
   DeleteOutlined,
@@ -104,7 +105,7 @@ export default function GroupDetailsPage() {
       content: (
         <div>
           <p>Are you sure you want to delete this group?</p>
-          <p className="text-red-600 mt-2">
+          <p className="text-ds-status-error mt-2">
             Warning: This will also delete all meetings and interactions
             associated with this group. This action cannot be undone.
           </p>
@@ -167,34 +168,6 @@ export default function GroupDetailsPage() {
         </Tag>
       ),
     },
-    {
-      title: "Actions",
-      key: "actions",
-      render: (_, record) => (
-        <div className="flex gap-2">
-          <AntButton
-            size="small"
-            onClick={() =>
-              router.push(
-                `/superadmin/groups/${groupId}/member/${record.id}/stats`
-              )
-            }
-          >
-            View Stats
-          </AntButton>
-          {user?.role === UserRole.SUPERADMIN &&
-            record.id !== group?.leaderId && (
-              <AntButton
-                size="small"
-                danger
-                onClick={() => handleRemoveMember(record.id)}
-              >
-                Remove
-              </AntButton>
-            )}
-        </div>
-      ),
-    },
   ];
 
   if (loading) {
@@ -211,7 +184,7 @@ export default function GroupDetailsPage() {
     return (
       <DashboardLayout role={user?.role || UserRole.SUPERADMIN}>
         <div className="text-center py-12">
-          <p className="text-gray-500">Group not found</p>
+          <p className="text-ds-text-subtle">Group not found</p>
         </div>
       </DashboardLayout>
     );
@@ -222,8 +195,8 @@ export default function GroupDetailsPage() {
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-2xl font-bold text-gray-900">{group.name}</h2>
-            <p className="text-gray-600 mt-1">{group.description}</p>
+            <h2 className="text-2xl font-bold text-ds-text-primary">{group.name}</h2>
+            <p className="text-ds-text-secondary mt-1">{group.description}</p>
           </div>
           {user?.role === UserRole.SUPERADMIN && (
             <div className="flex flex-wrap gap-2">
@@ -273,19 +246,19 @@ export default function GroupDetailsPage() {
             title="Total Members"
             value={group.memberCount}
             icon={<UserAddOutlined />}
-            color="text-blue-600 dark:text-blue-400"
+            color="text-ds-chart-1"
           />
           <StatCard
             title="Recent Meetings"
             value={group.recentMeetings?.length || 0}
             icon={<CalendarOutlined />}
-            color="text-green-600 dark:text-green-400"
+            color="text-ds-status-success"
           />
           <StatCard
             title="Attendance Rate"
             value={`${group.attendanceRate?.toFixed(0) || 0}%`}
             icon={<CalendarOutlined />}
-            color="text-purple-600 dark:text-purple-400"
+            color="text-ds-chart-3"
           />
         </div>
 
@@ -303,7 +276,7 @@ export default function GroupDetailsPage() {
               {group.memberCount}
             </Descriptions.Item>
             <Descriptions.Item label="Created" span={2}>
-              {new Date(group.createdAt).toLocaleDateString()}
+              {formatDate(group.createdAt)}
             </Descriptions.Item>
           </Descriptions>
         </Card>
@@ -313,6 +286,24 @@ export default function GroupDetailsPage() {
             dataSource={members}
             columns={columns}
             rowKey="id"
+            actions={[
+              {
+                key: "viewStats",
+                label: "View Stats",
+                onClick: (record) => router.push(`/superadmin/groups/${groupId}/member/${record.id}/stats`),
+              },
+              {
+                key: "remove",
+                label: "Remove",
+                danger: true,
+                hidden: (record) => user?.role !== UserRole.SUPERADMIN || record.id === group?.leaderId,
+                confirm: {
+                  title: "Remove Member",
+                  description: "Are you sure you want to remove this member from the group?",
+                },
+                onClick: (record) => handleRemoveMember(record.id),
+              },
+            ]}
             scroll={{ x: 1000 }}
             pagination={{ pageSize: 10 }}
           />

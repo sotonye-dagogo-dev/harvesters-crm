@@ -10,7 +10,6 @@ import {
   Space,
   Typography,
   Collapse,
-  Table,
   Popconfirm,
   Form,
   Modal,
@@ -19,6 +18,8 @@ import {
   Empty,
   Tooltip,
 } from "antd";
+import Table from "@/components/ui/Table";
+import { TextArea } from "@/components/ui/Input";
 import {
   PlusOutlined,
   DeleteOutlined,
@@ -209,7 +210,7 @@ function MetricEditorModal({
         </Form.Item>
 
         <Form.Item name="description" label="Description">
-          <Input.TextArea
+          <TextArea
             rows={2}
             placeholder="Brief description of this metric"
           />
@@ -306,7 +307,7 @@ function MetricTable({
       key: "order",
       width: 50,
       render: (_: unknown, __: MetricInput, idx: number) => (
-        <Text className="text-gray-400">{idx + 1}</Text>
+        <Text className="text-ds-text-subtle">{idx + 1}</Text>
       ),
     },
     {
@@ -314,7 +315,7 @@ function MetricTable({
       dataIndex: "name",
       key: "name",
       render: (name: string) => (
-        <Text className={!name ? "text-red-400 italic" : ""}>
+        <Text className={!name ? "text-ds-status-error italic" : ""}>
           {name || "Unnamed metric"}
         </Text>
       ),
@@ -802,7 +803,7 @@ export default function TemplateSectionBuilder({
                     Required
                   </Tag>
                 )}
-                <Text className="text-xs text-gray-400">
+                <Text className="text-xs text-ds-text-subtle">
                   {section.metrics.length +
                     section.subSections.reduce(
                       (sum, ss) => sum + ss.metrics.length,
@@ -863,7 +864,7 @@ export default function TemplateSectionBuilder({
               {!readOnly && (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <Text className="text-xs text-gray-500">Section Name</Text>
+                    <Text className="text-xs text-ds-text-subtle">Section Name</Text>
                     <Input
                       value={section.name}
                       onChange={(e) =>
@@ -876,8 +877,8 @@ export default function TemplateSectionBuilder({
                     />
                   </div>
                   <div>
-                    <Text className="text-xs text-gray-500">Description</Text>
-                    <Input.TextArea
+                    <Text className="text-xs text-ds-text-subtle">Description</Text>
+                    <TextArea
                       value={section.description ?? ""}
                       onChange={(e) =>
                         updateSection(section.key, {
@@ -955,7 +956,7 @@ export default function TemplateSectionBuilder({
                     <Card
                       key={sub.key}
                       size="small"
-                      className="mb-3 bg-gray-50 dark:bg-gray-700/50"
+                      className="mb-3 bg-ds-surface-sunken"
                       title={
                         !readOnly ? (
                           <Input
@@ -995,10 +996,10 @@ export default function TemplateSectionBuilder({
                     >
                       {!readOnly && (
                         <div className="mb-3">
-                          <Text className="text-xs text-gray-500">
+                          <Text className="text-xs text-ds-text-subtle">
                             Description
                           </Text>
-                          <Input.TextArea
+                          <TextArea
                             value={sub.description ?? ""}
                             onChange={(e) =>
                               updateSubSection(section.key, sub.key, {

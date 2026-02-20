@@ -42,21 +42,21 @@ export default function Home() {
         <div className="w-full mx-auto flex flex-col gap-6 items-center justify-center px-4 py-12 sm:px-6 lg:px-8">
           {/* Hero Section - Reduced and Centered */}
           <div className="text-center mb-16 flex flex-col gap-6">
-            <div className="inline-block px-4 py-2 bg-green-100 dark:bg-green-900/30 rounded-full">
-              <span className="text-sm font-medium text-green-900 dark:text-green-300">
+            <div className="inline-block px-4 py-2 bg-ds-brand-accent-subtle rounded-full">
+              <span className="text-sm font-medium text-ds-brand-accent">
                 Changing Lives | Pioneering Thriving Churches
               </span>
             </div>
 
-            <h1 className="text-5xl text-gray-900 dark:text-gray-100 sm:text-6xl md:text-7xl font-bold leading-tight">
+            <h1 className="text-5xl text-ds-text-primary sm:text-6xl md:text-7xl font-bold leading-tight">
               Harvesters{" "}
-              <span className="text-transparent bg-clip-text bg-linear-to-r from-green-600 to-emerald-600 dark:from-green-400 dark:to-emerald-400">
+              <span className="text-transparent bg-clip-text bg-linear-to-r from-ds-brand-accent to-emerald-600 dark:to-emerald-400">
                 Small Groups CRM
               </span>
             </h1>
 
             <div className="px-8 md:px-16">
-              <p className="text-center text-xl sm:text-2xl text-gray-600 dark:text-gray-300 leading-relaxed">
+              <p className="text-center text-xl sm:text-2xl text-ds-text-secondary leading-relaxed">
                 Connect people with God and influence culture through thriving
                 small groups at Harvesters International Christian Centre.
               </p>
@@ -69,7 +69,7 @@ export default function Home() {
                   variant="primary"
                   size="large"
                   icon={<RocketOutlined />}
-                  className="w-full sm:w-auto px-10 py-6 text-lg font-semibold shadow-xl hover:shadow-2xl transition-all"
+                  className="w-full sm:w-auto px-10 py-6 text-lg font-semibold shadow-ds-xl hover:shadow-ds-xl transition-all"
                 >
                   Get Started Free
                 </Button>
@@ -79,7 +79,7 @@ export default function Home() {
                   variant="outline"
                   size="large"
                   icon={<DashboardOutlined />}
-                  className="w-full sm:w-auto px-10 py-6 text-lg font-semibold border-2 hover:bg-gray-50 dark:hover:bg-slate-800"
+                  className="w-full sm:w-auto px-10 py-6 text-lg font-semibold border-2 hover:bg-ds-brand-accent-subtle"
                 >
                   Sign In
                 </Button>
@@ -88,11 +88,11 @@ export default function Home() {
           </div>
 
           {/* Benefits Section - Simplified */}
-          <div className="w-5/6 mx-auto bg-slate-300/30 dark:bg-slate-800/60 backdrop-blur-sm rounded-3xl p-8 sm:p-12 border border-gray-200 dark:border-slate-700">
-            <h2 className="text-3xl sm:text-4xl font-bold text-center text-gray-900 dark:text-white mb-4">
+          <div className="w-5/6 mx-auto bg-ds-surface-elevated/80 backdrop-blur-sm rounded-3xl p-8 sm:p-12 border border-ds-border-base">
+            <h2 className="text-3xl sm:text-4xl font-bold text-center text-ds-text-primary mb-4">
               Our Small Groups Platform
             </h2>
-            <p className="text-center text-gray-600 dark:text-gray-400 mb-10 max-w-2xl mx-auto">
+            <p className="text-center text-ds-text-secondary mb-10 max-w-2xl mx-auto">
               With over 70,000 worshippers across Nigeria, UK, and USA,
               we&apos;re pioneering a new way to manage and grow small group
               ministry.
@@ -100,37 +100,37 @@ export default function Home() {
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               <div className="text-center space-y-3">
-                <div className="w-16 h-16 bg-gradient-to-br from-green-100 to-green-200 dark:from-green-900/30 dark:to-green-800/30 rounded-2xl flex items-center justify-center mx-auto">
-                  <TeamOutlined className="text-green-600 dark:text-green-400 text-3xl" />
+                <div className="w-16 h-16 bg-ds-brand-accent-subtle rounded-2xl flex items-center justify-center mx-auto">
+                  <TeamOutlined className="text-ds-brand-accent text-3xl" />
                 </div>
-                <h3 className="text-xl font-bold text-gray-900 dark:text-white">
+                <h3 className="text-xl font-bold text-ds-text-primary">
                   Connect People & God
                 </h3>
-                <p className="text-gray-600 dark:text-gray-400">
+                <p className="text-ds-text-secondary">
                   Manage small groups across multiple campuses with ease.
                 </p>
               </div>
 
               <div className="text-center space-y-3">
-                <div className="w-16 h-16 bg-gradient-to-br from-blue-100 to-blue-200 dark:from-blue-900/30 dark:to-blue-800/30 rounded-2xl flex items-center justify-center mx-auto">
-                  <BarChartOutlined className="text-blue-600 dark:text-blue-400 text-3xl" />
+                <div className="w-16 h-16 bg-ds-chart-1/10 rounded-2xl flex items-center justify-center mx-auto">
+                  <BarChartOutlined className="text-ds-chart-1 text-3xl" />
                 </div>
-                <h3 className="text-xl font-bold text-gray-900 dark:text-white">
+                <h3 className="text-xl font-bold text-ds-text-primary">
                   Bring Hope & Change
                 </h3>
-                <p className="text-gray-600 dark:text-gray-400">
+                <p className="text-ds-text-secondary">
                   Track engagement and foster transformational encounters.
                 </p>
               </div>
 
               <div className="text-center space-y-3">
-                <div className="w-16 h-16 bg-gradient-to-br from-rose-100 to-rose-200 dark:from-rose-900/30 dark:to-rose-800/30 rounded-2xl flex items-center justify-center mx-auto">
-                  <HeartOutlined className="text-rose-600 dark:text-rose-400 text-3xl" />
+                <div className="w-16 h-16 bg-ds-chart-6/10 rounded-2xl flex items-center justify-center mx-auto">
+                  <HeartOutlined className="text-ds-chart-6 text-3xl" />
                 </div>
-                <h3 className="text-xl font-bold text-gray-900 dark:text-white">
+                <h3 className="text-xl font-bold text-ds-text-primary">
                   Influence Culture
                 </h3>
-                <p className="text-gray-600 dark:text-gray-400">
+                <p className="text-ds-text-secondary">
                   Lead people to become fully devoted followers of Christ.
                 </p>
               </div>
@@ -139,7 +139,7 @@ export default function Home() {
 
           {/* Footer CTA */}
           <div className="text-center mt-16 space-y-4">
-            <p className="text-lg text-gray-600 dark:text-gray-400">
+            <p className="text-lg text-ds-text-secondary">
               Join the Harvesters family and experience impactful,
               transformational encounters
             </p>
@@ -147,7 +147,7 @@ export default function Home() {
               <Button
                 variant="primary"
                 size="large"
-                className="px-8 py-4 text-base font-semibold shadow-lg hover:shadow-xl transition-all"
+                className="px-8 py-4 text-base font-semibold shadow-lg hover:shadow-ds-xl transition-all"
               >
                 Join a Small Group Today
               </Button>

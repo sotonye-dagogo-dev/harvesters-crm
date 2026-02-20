@@ -5,7 +5,9 @@ import { use, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/providers/AuthProvider";
 import DashboardLayout from "@/components/features/navigation/DashboardLayout";
-import { Card, Descriptions, Button, Spin, Tag, message, Image } from "antd";
+import { Descriptions, Spin, Tag, message, Image } from "antd";
+import Button from "@/components/ui/Button";
+import Card from "@/components/ui/Card";
 import {
   ClockCircleOutlined,
   CalendarOutlined,
@@ -61,9 +63,8 @@ export default function MemberMeetingDetailsPage({
       <DashboardLayout role={user?.role || UserRole.MEMBER}>
         <div className="flex items-center justify-center min-h-[60vh]">
           <Card>
-            <p className="text-gray-500">Meeting not found</p>
+            <p className="text-ds-text-subtle">Meeting not found</p>
             <Button
-              type="primary"
               onClick={() => router.push("/member/my-group")}
             >
               Back to My Group
@@ -87,15 +88,16 @@ export default function MemberMeetingDetailsPage({
       <div className="max-w-4xl mx-auto space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+            <h1 className="text-2xl font-bold text-ds-text-primary">
               Meeting Details
             </h1>
-            <p className="text-gray-500 mt-1">
+            <p className="text-ds-text-subtle mt-1">
               {meeting.group?.name || "Unknown Group"} •{" "}
-              {format(new Date(meeting.date), "MMMM d, yyyy")}
+              {format(new Date(meeting.date), "d MMM yyyy")}
             </p>
           </div>
           <Button
+            variant="secondary"
             icon={<ArrowLeftOutlined />}
             onClick={() => router.push("/member/my-group")}
           >
@@ -115,7 +117,7 @@ export default function MemberMeetingDetailsPage({
                   </span>
                 }
               >
-                {format(new Date(meeting.date), "EEEE, MMMM d, yyyy")}
+                {format(new Date(meeting.date), "EEEE, d MMM yyyy")}
               </Descriptions.Item>
               <Descriptions.Item
                 label={
@@ -164,7 +166,7 @@ export default function MemberMeetingDetailsPage({
               <Descriptions.Item label="Created At" span={2}>
                 {format(
                   new Date(meeting.createdAt),
-                  "MMMM d, yyyy 'at' h:mm a"
+                  "d MMM yyyy 'at' h:mm a"
                 )}
               </Descriptions.Item>
             </Descriptions>
@@ -180,7 +182,7 @@ export default function MemberMeetingDetailsPage({
                 </span>
               }
             >
-              <p className="text-gray-700 dark:text-gray-300 whitespace-pre-wrap">
+              <p className="text-ds-text-secondary whitespace-pre-wrap">
                 {meeting.notes}
               </p>
             </Card>

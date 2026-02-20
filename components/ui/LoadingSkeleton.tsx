@@ -22,7 +22,10 @@ export function CardSkeleton({ count = 1 }: { count?: number }) {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       {Array.from({ length: count }).map((_, i) => (
-        <div key={i} className="bg-white rounded-lg shadow p-6">
+        <div
+          key={i}
+          className="bg-ds-surface-elevated rounded-[var(--ds-radius-xl)] shadow-ds-md p-6 ds-skeleton"
+        >
           <Skeleton active paragraph={{ rows: 3 }} />
         </div>
       ))}
@@ -32,8 +35,8 @@ export function CardSkeleton({ count = 1 }: { count?: number }) {
 
 export function TableSkeleton() {
   return (
-    <div className="bg-white rounded-lg shadow">
-      <div className="p-6">
+    <div className="bg-ds-surface-elevated rounded-[var(--ds-radius-lg)] shadow-ds-md">
+      <div className="p-6 ds-skeleton">
         <Skeleton active paragraph={{ rows: 5 }} />
       </div>
     </div>

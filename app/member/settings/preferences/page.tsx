@@ -79,14 +79,14 @@ export default function PreferencesPage() {
   return (
     <DashboardLayout role={user?.role || UserRole.MEMBER}>
       <div className="space-y-8">
-        <div className="bg-gradient-to-r from-green-50 to-blue-50 dark:from-slate-800 dark:to-slate-900 p-6 rounded-2xl shadow-lg border border-gray-200 dark:border-slate-700">
-          <h2 className="text-3xl font-bold text-gray-900 dark:text-white flex items-center gap-3">
-            <div className="w-12 h-12 bg-green-100 dark:bg-green-900/30 rounded-xl flex items-center justify-center">
-              <BellOutlined className="text-2xl text-green-600 dark:text-green-400" />
+        <div className="bg-gradient-to-r from-green-50 to-blue-50 dark:from-slate-800 dark:to-slate-900 p-6 rounded-2xl shadow-lg border border-ds-border-base">
+          <h2 className="text-3xl font-bold text-ds-text-primary flex items-center gap-3">
+            <div className="w-12 h-12 bg-ds-status-success/10 dark:bg-green-900/30 rounded-xl flex items-center justify-center">
+              <BellOutlined className="text-2xl text-ds-status-success" />
             </div>
             Notification Preferences
           </h2>
-          <p className="text-gray-600 dark:text-gray-400 mt-3 text-lg">
+          <p className="text-ds-text-secondary mt-3 text-lg">
             Manage your notification preferences and how you receive updates
           </p>
         </div>
@@ -98,15 +98,15 @@ export default function PreferencesPage() {
               In-App Notifications
             </div>
           }
-          className="max-w-4xl shadow-xl"
+          className="max-w-4xl shadow-ds-xl"
         >
           <div className="space-y-1">
-            <div className="flex items-center justify-between py-4 px-4 rounded-xl hover:bg-gray-50 dark:hover:bg-slate-800 transition-all duration-200">
+            <div className="flex items-center justify-between py-4 px-4 rounded-xl hover:bg-ds-surface-sunken transition-all duration-200">
               <div className="flex-1">
-                <div className="font-semibold text-gray-900 dark:text-white text-base">
+                <div className="font-semibold text-ds-text-primary text-base">
                   Meeting Reminders
                 </div>
-                <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                <div className="text-sm text-ds-text-secondary mt-1">
                   Get notified about upcoming meetings
                 </div>
               </div>
@@ -121,12 +121,12 @@ export default function PreferencesPage() {
 
             <Divider className="my-2" />
 
-            <div className="flex items-center justify-between py-4 px-4 rounded-xl hover:bg-gray-50 dark:hover:bg-slate-800 transition-all duration-200">
+            <div className="flex items-center justify-between py-4 px-4 rounded-xl hover:bg-ds-surface-sunken transition-all duration-200">
               <div className="flex-1">
-                <div className="font-semibold text-gray-900 dark:text-white text-base">
+                <div className="font-semibold text-ds-text-primary text-base">
                   Membership Requests
                 </div>
-                <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                <div className="text-sm text-ds-text-secondary mt-1">
                   Notifications for new membership requests (Leaders only)
                 </div>
               </div>
@@ -142,12 +142,12 @@ export default function PreferencesPage() {
 
             <Divider className="my-2" />
 
-            <div className="flex items-center justify-between py-4 px-4 rounded-xl hover:bg-gray-50 dark:hover:bg-slate-800 transition-all duration-200">
+            <div className="flex items-center justify-between py-4 px-4 rounded-xl hover:bg-ds-surface-sunken transition-all duration-200">
               <div className="flex-1">
-                <div className="font-semibold text-gray-900 dark:text-white text-base">
+                <div className="font-semibold text-ds-text-primary text-base">
                   Role Changes
                 </div>
-                <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                <div className="text-sm text-ds-text-secondary mt-1">
                   Notifications when your role is updated
                 </div>
               </div>
@@ -160,12 +160,12 @@ export default function PreferencesPage() {
 
             <Divider className="my-2" />
 
-            <div className="flex items-center justify-between py-4 px-4 rounded-xl hover:bg-gray-50 dark:hover:bg-slate-800 transition-all duration-200">
+            <div className="flex items-center justify-between py-4 px-4 rounded-xl hover:bg-ds-surface-sunken transition-all duration-200">
               <div className="flex-1">
-                <div className="font-semibold text-gray-900 dark:text-white text-base">
+                <div className="font-semibold text-ds-text-primary text-base">
                   New Members
                 </div>
-                <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                <div className="text-sm text-ds-text-secondary mt-1">
                   Notifications when new members join your group (Leaders only)
                 </div>
               </div>
@@ -181,10 +181,10 @@ export default function PreferencesPage() {
 
             <div className="flex items-center justify-between py-2">
               <div>
-                <div className="font-medium text-gray-900">
+                <div className="font-medium text-ds-text-primary">
                   Member Removal Alerts
                 </div>
-                <div className="text-sm text-gray-500">
+                <div className="text-sm text-ds-text-subtle">
                   Notifications when you are removed from a group
                 </div>
               </div>
@@ -200,10 +200,10 @@ export default function PreferencesPage() {
 
                 <div className="flex items-center justify-between py-2">
                   <div>
-                    <div className="font-medium text-gray-900">
+                    <div className="font-medium text-ds-text-primary">
                       Follow-up Reminders
                     </div>
-                    <div className="text-sm text-gray-500">
+                    <div className="text-sm text-ds-text-subtle">
                       Reminders for scheduled member follow-ups
                     </div>
                   </div>
@@ -219,10 +219,10 @@ export default function PreferencesPage() {
 
                 <div className="flex items-center justify-between py-2">
                   <div>
-                    <div className="font-medium text-gray-900">
+                    <div className="font-medium text-ds-text-primary">
                       Inactive Member Alerts
                     </div>
-                    <div className="text-sm text-gray-500">
+                    <div className="text-sm text-ds-text-subtle">
                       Notifications about members with low attendance
                     </div>
                   </div>
@@ -272,11 +272,11 @@ export default function PreferencesPage() {
           <div className="space-y-4">
             <div className="flex items-center justify-between py-2">
               <div>
-                <div className="font-medium text-gray-900 flex items-center gap-2">
+                <div className="font-medium text-ds-text-primary flex items-center gap-2">
                   <MailOutlined />
                   Email Notifications
                 </div>
-                <div className="text-sm text-gray-500">
+                <div className="text-sm text-ds-text-subtle">
                   Receive notification emails at {user?.email}
                 </div>
               </div>
@@ -292,11 +292,11 @@ export default function PreferencesPage() {
 
             <div className="flex items-center justify-between py-2">
               <div>
-                <div className="font-medium text-gray-900 flex items-center gap-2">
+                <div className="font-medium text-ds-text-primary flex items-center gap-2">
                   <PhoneOutlined />
                   SMS Notifications
                 </div>
-                <div className="text-sm text-gray-500">
+                <div className="text-sm text-ds-text-subtle">
                   Receive text messages for critical updates (coming soon)
                 </div>
               </div>
@@ -310,8 +310,8 @@ export default function PreferencesPage() {
             </div>
           </div>
 
-          <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded">
-            <p className="text-sm text-blue-800">
+          <div className="mt-4 p-3 bg-ds-chart-1/5 border border-blue-200 rounded">
+            <p className="text-sm text-ds-chart-1">
               <strong>Note:</strong> Email and SMS notifications are currently
               in mock mode. In production, these will be delivered through
               proper email/SMS services.

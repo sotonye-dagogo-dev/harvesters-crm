@@ -3,6 +3,7 @@
 import { useEffect, useState, useMemo } from "react";
 import { Tag, Tooltip } from "antd";
 import { ClockCircleOutlined, WarningOutlined } from "@ant-design/icons";
+import { formatDateTime } from "@/lib/utils/format";
 
 interface ReportDeadlineCountdownProps {
   deadline: string;
@@ -60,7 +61,7 @@ export default function ReportDeadlineCountdown({
   }
 
   return (
-    <Tooltip title={`Deadline: ${deadlineDate.toLocaleString()}`}>
+    <Tooltip title={`Deadline: ${formatDateTime(deadlineDate)}`}>
       <Tag color={color} icon={<ClockCircleOutlined />} className={className}>
         {label} remaining
       </Tag>

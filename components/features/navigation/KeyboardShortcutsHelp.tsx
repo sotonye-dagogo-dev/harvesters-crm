@@ -1,6 +1,6 @@
 "use client";
 
-import { Modal } from "antd";
+import Modal from "@/components/ui/Modal";
 import { KeyOutlined } from "@ant-design/icons";
 import { useState } from "react";
 
@@ -87,7 +87,7 @@ export function KeyboardShortcutsHelp() {
     <>
       <button
         onClick={() => setIsOpen(true)}
-        className="fixed bottom-4 right-4 z-40 w-12 h-12 bg-church-primary text-white rounded-full shadow-lg hover:bg-church-primary/90 transition-all flex items-center justify-center"
+        className="fixed bottom-4 right-4 z-40 w-12 h-12 bg-ds-brand-accent text-white rounded-full shadow-lg hover:bg-ds-brand-accent/90 transition-all flex items-center justify-center"
         aria-label="Show keyboard shortcuts"
         title="Keyboard shortcuts (Press ?)"
       >
@@ -104,23 +104,23 @@ export function KeyboardShortcutsHelp() {
         <div className="space-y-6">
           {Object.entries(groupedShortcuts).map(([category, items]) => (
             <div key={category}>
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">
+              <h3 className="text-lg font-semibold text-ds-text-primary mb-3">
                 {category}
               </h3>
               <div className="space-y-2">
                 {items.map((shortcut, index) => (
                   <div
                     key={index}
-                    className="flex justify-between items-center py-2 border-b border-gray-100 last:border-0"
+                    className="flex justify-between items-center py-2 border-b border-ds-border-subtle last:border-0"
                   >
-                    <span className="text-gray-700">
+                    <span className="text-ds-text-secondary">
                       {shortcut.description}
                     </span>
                     <div className="flex gap-1">
                       {shortcut.keys.map((key, keyIndex) => (
                         <kbd
                           key={keyIndex}
-                          className="px-2 py-1 text-xs font-semibold text-gray-800 bg-gray-100 border border-gray-300 rounded"
+                          className="px-2 py-1 text-xs font-semibold text-ds-text-primary bg-ds-surface-sunken border border-ds-border-strong rounded"
                         >
                           {key}
                         </kbd>
@@ -132,8 +132,8 @@ export function KeyboardShortcutsHelp() {
             </div>
           ))}
 
-          <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded">
-            <p className="text-sm text-blue-900">
+          <div className="mt-6 p-4 bg-ds-chart-1/5 border border-blue-200 rounded">
+            <p className="text-sm text-ds-chart-1">
               <strong>Tip:</strong> Press{" "}
               <kbd className="px-1 py-0.5 text-xs font-semibold bg-white border border-blue-300 rounded">
                 ?

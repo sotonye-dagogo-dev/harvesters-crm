@@ -85,8 +85,8 @@ export default function EditProfilePage() {
     <DashboardLayout role={user?.role || UserRole.MEMBER}>
       <div className="space-y-6">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900">Edit Profile</h2>
-          <p className="text-gray-600 mt-1">Update your personal information</p>
+          <h2 className="text-2xl font-bold text-ds-text-primary">Edit Profile</h2>
+          <p className="text-ds-text-secondary mt-1">Update your personal information</p>
         </div>
 
         <Card className="max-w-2xl">
@@ -99,10 +99,10 @@ export default function EditProfilePage() {
                 size={64}
               />
               <div>
-                <p className="text-sm font-medium text-gray-700">
+                <p className="text-sm font-medium text-ds-text-secondary">
                   Profile Picture
                 </p>
-                <p className="text-xs text-gray-500">
+                <p className="text-xs text-ds-text-subtle">
                   Upload a new profile photo
                 </p>
               </div>

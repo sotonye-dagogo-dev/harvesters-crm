@@ -3,7 +3,9 @@
 import { useState } from "react";
 import { useAuth } from "@/providers/AuthProvider";
 import DashboardLayout from "@/components/features/navigation/DashboardLayout";
-import { Form, Button as AntButton, Card, message } from "antd";
+import { Form, message } from "antd";
+import Button from "@/components/ui/Button";
+import Card from "@/components/ui/Card";
 import { SaveOutlined } from "@ant-design/icons";
 import { useRouter } from "next/navigation";
 import { PasswordInput } from "@/components/ui/Input";
@@ -44,7 +46,7 @@ export default function ChangePasswordPage() {
         const error = await response.json();
         message.error(error.error || "Failed to change password");
       }
-    } catch (error) {
+    } catch {
       message.error("An error occurred while changing password");
     } finally {
       setSaving(false);
@@ -55,8 +57,8 @@ export default function ChangePasswordPage() {
     <DashboardLayout role={user?.role || UserRole.MEMBER}>
       <div className="space-y-6">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900">Change Password</h2>
-          <p className="text-gray-600 mt-1">
+          <h2 className="text-2xl font-bold text-ds-text-primary">Change Password</h2>
+          <p className="text-ds-text-secondary mt-1">
             Update your password to keep your account secure
           </p>
         </div>
@@ -113,17 +115,16 @@ export default function ChangePasswordPage() {
             </Form.Item>
 
             <div className="flex gap-3 justify-end mt-6">
-              <AntButton onClick={() => router.push("/member/profile")}>
+              <Button variant="secondary" onClick={() => router.push("/member/profile")}>
                 Cancel
-              </AntButton>
-              <AntButton
-                type="primary"
+              </Button>
+              <Button
                 htmlType="submit"
                 icon={<SaveOutlined />}
                 loading={saving}
               >
                 Change Password
-              </AntButton>
+              </Button>
             </div>
           </Form>
         </Card>

@@ -25,9 +25,9 @@ import { useRouter } from "next/navigation";
 import DashboardLayout from "@/components/features/navigation/DashboardLayout";
 import { Dayjs } from "dayjs";
 import { UserRole } from "@/lib/types";
+import { TextArea } from "@/components/ui/Input";
 
 const { Title, Text } = Typography;
-const { TextArea } = Input;
 
 interface Group {
   id: string;
@@ -157,8 +157,8 @@ export default function CreateBroadcastMeetingPage() {
           </Button>
 
           <div className="flex items-center gap-3 mb-2">
-            <div className="inline-flex items-center justify-center w-12 h-12 bg-church-primary/10 rounded-lg">
-              <BellOutlined className="text-2xl text-church-primary" />
+            <div className="inline-flex items-center justify-center w-12 h-12 bg-ds-brand-accent-subtle rounded-lg">
+              <BellOutlined className="text-2xl text-ds-brand-accent" />
             </div>
             <Title level={2} className="!mb-0">
               Create Broadcast Meeting
@@ -187,10 +187,10 @@ export default function CreateBroadcastMeetingPage() {
             autoComplete="off"
           >
             {/* Group Selection */}
-            <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg mb-6">
+            <div className="bg-ds-surface-sunken p-4 rounded-lg mb-6">
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-2">
-                  <TeamOutlined className="text-lg text-church-primary" />
+                  <TeamOutlined className="text-lg text-ds-brand-accent" />
                   <Text strong>Select Target Groups</Text>
                 </div>
                 <div className="flex gap-2">
@@ -254,7 +254,7 @@ export default function CreateBroadcastMeetingPage() {
             {/* Meeting Details */}
             <div className="space-y-4">
               <div className="flex items-center gap-2 mb-4">
-                <CalendarOutlined className="text-lg text-church-primary" />
+                <CalendarOutlined className="text-lg text-ds-brand-accent" />
                 <Text strong>Meeting Details</Text>
               </div>
 
@@ -285,7 +285,7 @@ export default function CreateBroadcastMeetingPage() {
                   },
                 ]}
               >
-                <DatePicker className="w-full" format="YYYY-MM-DD" />
+                <DatePicker className="w-full" format="D MMM YYYY" />
               </Form.Item>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

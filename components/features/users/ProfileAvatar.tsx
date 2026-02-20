@@ -30,7 +30,7 @@ export default function ProfileAvatar({
   return (
     <Avatar
       size={size}
-      className={`bg-church-primary ${className}`}
+      className={`bg-ds-brand-accent ${className}`}
       icon={!firstName && !lastName ? <UserOutlined /> : undefined}
     >
       {getInitials()}

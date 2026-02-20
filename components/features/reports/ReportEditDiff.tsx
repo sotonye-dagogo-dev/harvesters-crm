@@ -63,25 +63,25 @@ function DiffValue({
   const hasChanged = origStr !== propStr;
 
   if (!hasChanged) {
-    return <Text className="text-gray-500">{origStr}</Text>;
+    return <Text className="text-ds-text-subtle">{origStr}</Text>;
   }
 
   // Determine direction for numeric values
   let changeIcon = <MinusOutlined />;
-  let changeColor = "text-gray-500";
+  let changeColor = "text-ds-text-subtle";
   if (typeof original === "number" && typeof proposed === "number") {
     if (proposed > original) {
       changeIcon = <ArrowUpOutlined />;
-      changeColor = "text-green-600";
+      changeColor = "text-ds-status-success";
     } else if (proposed < original) {
       changeIcon = <ArrowDownOutlined />;
-      changeColor = "text-red-600";
+      changeColor = "text-ds-status-error";
     }
   }
 
   return (
     <div className="flex items-center gap-2">
-      <Text delete className="text-gray-400">
+      <Text delete className="text-ds-text-subtle">
         {origStr}
       </Text>
       <span className={changeColor}>{changeIcon}</span>
@@ -166,7 +166,7 @@ export default function ReportEditDiff({
                         {(metric.originalMonthlyGoal !== undefined ||
                           metric.monthlyGoal !== undefined) && (
                           <div className="flex flex-col gap-0.5">
-                            <span className="text-xs text-gray-400">Goal</span>
+                            <span className="text-xs text-ds-text-subtle">Goal</span>
                             <DiffValue
                               original={metric.originalMonthlyGoal}
                               proposed={metric.monthlyGoal}
@@ -177,7 +177,7 @@ export default function ReportEditDiff({
                         {(metric.originalMonthlyAchieved !== undefined ||
                           metric.monthlyAchieved !== undefined) && (
                           <div className="flex flex-col gap-0.5">
-                            <span className="text-xs text-gray-400">
+                            <span className="text-xs text-ds-text-subtle">
                               Achieved
                             </span>
                             <DiffValue
@@ -190,7 +190,7 @@ export default function ReportEditDiff({
                         {(metric.originalYoyGoal !== undefined ||
                           metric.yoyGoal !== undefined) && (
                           <div className="flex flex-col gap-0.5">
-                            <span className="text-xs text-gray-400">
+                            <span className="text-xs text-ds-text-subtle">
                               YoY Goal
                             </span>
                             <DiffValue
@@ -210,7 +210,7 @@ export default function ReportEditDiff({
             /* side-by-side mode */
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <Text className="text-sm font-medium text-gray-500 mb-2 block">
+                <Text className="text-sm font-medium text-ds-text-subtle mb-2 block">
                   Original
                 </Text>
                 <Descriptions column={1} size="small" bordered>
@@ -255,7 +255,7 @@ export default function ReportEditDiff({
                 </Descriptions>
               </div>
               <div>
-                <Text className="text-sm font-medium text-blue-600 mb-2 block">
+                <Text className="text-sm font-medium text-ds-chart-1 mb-2 block">
                   Proposed
                 </Text>
                 <Descriptions column={1} size="small" bordered>

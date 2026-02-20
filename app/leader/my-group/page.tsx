@@ -10,12 +10,13 @@ import {
   Descriptions,
   Button as AntButton,
   message,
-  Table,
   Tag,
   Row,
   Col,
   Progress,
 } from "antd";
+import Table from "@/components/ui/Table";
+import StatusBadge from "@/components/ui/StatusBadge";
 import {
   CalendarOutlined,
   UserOutlined,
@@ -224,7 +225,7 @@ export default function MyGroupPage() {
       title: "Date",
       dataIndex: "date",
       key: "date",
-      render: (date: string) => dayjs(date).format("MMM D, YYYY"),
+      render: (date: string) => dayjs(date).format("D MMM YYYY"),
       sorter: (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime(),
     },
     {
@@ -256,18 +257,6 @@ export default function MyGroupPage() {
       ),
       sorter: (a, b) => a.attendanceRate - b.attendanceRate,
     },
-    {
-      title: "Actions",
-      key: "actions",
-      render: (_, record) => (
-        <AntButton
-          size="small"
-          onClick={() => router.push(`/leader/meetings/${record.id}`)}
-        >
-          View Details
-        </AntButton>
-      ),
-    },
   ];
 
   const memberColumns: ColumnsType<MemberSummary> = [
@@ -279,7 +268,7 @@ export default function MyGroupPage() {
           <div className="font-medium">
             {record.firstName} {record.lastName}
           </div>
-          <div className="text-xs text-gray-500">{record.email}</div>
+          <div className="text-xs text-ds-text-subtle">{record.email}</div>
         </div>
       ),
       sorter: (a, b) => a.firstName.localeCompare(b.firstName),
@@ -312,19 +301,7 @@ export default function MyGroupPage() {
       title: "Status",
       dataIndex: "status",
       key: "status",
-      render: (status: string) => {
-        const config = {
-          active: { color: "green", icon: <CheckCircleOutlined /> },
-          "at-risk": { color: "orange", icon: <ClockCircleOutlined /> },
-          inactive: { color: "red", icon: <CloseCircleOutlined /> },
-        };
-        const { color, icon } = config[status as keyof typeof config];
-        return (
-          <Tag color={color} icon={icon}>
-            {status.toUpperCase().replace("-", " ")}
-          </Tag>
-        );
-      },
+      render: (status: string) => <StatusBadge status={status} category="engagement" />,
       filters: [
         { text: "Active", value: "active" },
         { text: "At Risk", value: "at-risk" },
@@ -337,7 +314,7 @@ export default function MyGroupPage() {
       dataIndex: "lastSeen",
       key: "lastSeen",
       render: (date: string) =>
-        date === "Never" ? date : dayjs(date).format("MMM D, YYYY"),
+        date === "Never" ? date : dayjs(date).format("D MMM YYYY"),
     },
   ];
 
@@ -382,7 +359,7 @@ export default function MyGroupPage() {
               title="Total Members"
               value={group.memberCount}
               icon={<UserOutlined />}
-              color="text-blue-600"
+              color="text-ds-chart-1"
             />
           </Col>
           <Col xs={24} sm={12} md={6}>
@@ -390,7 +367,7 @@ export default function MyGroupPage() {
               title="Active Members"
               value={activeMembersCount}
               icon={<CheckCircleOutlined />}
-              color="text-green-600"
+              color="text-ds-status-success"
             />
           </Col>
           <Col xs={24} sm={12} md={6}>
@@ -398,7 +375,7 @@ export default function MyGroupPage() {
               title="At Risk"
               value={atRiskCount}
               icon={<ClockCircleOutlined />}
-              color="text-orange-600"
+              color="text-ds-chart-4"
             />
           </Col>
           <Col xs={24} sm={12} md={6}>
@@ -406,7 +383,7 @@ export default function MyGroupPage() {
               title="Attendance Rate"
               value={`${group.attendanceRate?.toFixed(0) || 0}%`}
               icon={<CalendarOutlined />}
-              color="text-purple-600"
+              color="text-ds-chart-3"
             />
           </Col>
         </Row>
@@ -426,7 +403,7 @@ export default function MyGroupPage() {
               {group.memberCount}
             </Descriptions.Item>
             <Descriptions.Item label="Created">
-              {dayjs(group.createdAt).format("MMM D, YYYY")}
+              {dayjs(group.createdAt).format("D MMM YYYY")}
             </Descriptions.Item>
           </Descriptions>
         </Card>
@@ -494,6 +471,13 @@ export default function MyGroupPage() {
             dataSource={recentMeetings}
             columns={meetingColumns}
             rowKey="id"
+            actions={[
+              {
+                key: "viewDetails",
+                label: "View Details",
+                onClick: (record) => router.push(`/leader/meetings/${record.id}`),
+              },
+            ]}
             pagination={false}
             scroll={{ x: 800 }}
             locale={{

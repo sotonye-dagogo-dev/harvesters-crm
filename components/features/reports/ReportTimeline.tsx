@@ -13,6 +13,7 @@ import {
   FileAddOutlined,
   AlertOutlined,
 } from "@ant-design/icons";
+import { formatDateTime } from "@/lib/utils/format";
 import { ReportEventType } from "@/lib/types";
 
 const { Text } = Typography;
@@ -165,16 +166,16 @@ export default function ReportTimeline({
                   {config.label}
                 </Text>
                 {event.previousStatus && event.newStatus && (
-                  <span className="text-xs text-gray-500">
+                  <span className="text-xs text-ds-text-subtle">
                     <Tag className="text-xs">{event.previousStatus}</Tag>
                     →
                     <Tag className="text-xs">{event.newStatus}</Tag>
                   </span>
                 )}
               </div>
-              <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
+              <div className="flex items-center gap-2 text-xs text-ds-text-subtle">
                 <span>
-                  {new Date(event.timestamp).toLocaleString()}
+                  {formatDateTime(event.timestamp)}
                 </span>
                 {event.actorName && (
                   <>
@@ -184,7 +185,7 @@ export default function ReportTimeline({
                 )}
               </div>
               {event.details && Object.keys(event.details).length > 0 && (
-                <Text className="text-xs text-gray-500 mt-1">
+                <Text className="text-xs text-ds-text-subtle mt-1">
                   {event.details.reason
                     ? String(event.details.reason)
                     : event.details.notes

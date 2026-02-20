@@ -10,10 +10,10 @@ import {
   Select,
   Input,
   Card,
-  Tag,
   Space,
   Popconfirm,
 } from "antd";
+import StatusBadge from "@/components/ui/StatusBadge";
 import {
   PlusOutlined,
   SearchOutlined,
@@ -33,26 +33,13 @@ const { Search } = Input;
 const getInteractionIcon = (type: string) => {
   switch (type) {
     case "CALL":
-      return <PhoneOutlined className="text-blue-600" />;
+      return <PhoneOutlined className="text-ds-chart-1" />;
     case "FOLLOW_UP":
-      return <MessageOutlined className="text-green-600" />;
+      return <MessageOutlined className="text-ds-status-success" />;
     case "CHECK_IN":
-      return <CheckCircleOutlined className="text-purple-600" />;
+      return <CheckCircleOutlined className="text-ds-chart-3" />;
     default:
       return <MessageOutlined />;
-  }
-};
-
-const getInteractionColor = (type: string) => {
-  switch (type) {
-    case "CALL":
-      return "blue";
-    case "FOLLOW_UP":
-      return "green";
-    case "CHECK_IN":
-      return "purple";
-    default:
-      return "default";
   }
 };
 
@@ -170,10 +157,10 @@ export default function InteractionsPage() {
       <DashboardLayout role={UserRole.SMALL_GROUP_LEADER}>
         <div className="space-y-6">
           <div>
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+            <h2 className="text-2xl font-bold text-ds-text-primary">
               Interactions
             </h2>
-            <p className="text-gray-600 dark:text-gray-400 mt-1">
+            <p className="text-ds-text-secondary mt-1">
               Loading interactions...
             </p>
           </div>
@@ -190,10 +177,10 @@ export default function InteractionsPage() {
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+            <h2 className="text-2xl font-bold text-ds-text-primary">
               Interactions
             </h2>
-            <p className="text-gray-600 dark:text-gray-400 mt-1">
+            <p className="text-ds-text-secondary mt-1">
               Showing {filteredInteractions.length} of {interactions.length}{" "}
               interaction(s)
             </p>
@@ -269,27 +256,25 @@ export default function InteractionsPage() {
               return (
                 <Card
                   key={interaction.id}
-                  className="hover:shadow-md transition-shadow dark:bg-slate-800 dark:border-slate-700"
+                  className="hover:shadow-md transition-shadow dark:bg-ds-surface-elevated dark:border-ds-border-base"
                 >
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-2">
                         {getInteractionIcon(interaction.type)}
-                        <Tag color={getInteractionColor(interaction.type)}>
-                          {interaction.type.replace("_", " ")}
-                        </Tag>
-                        <span className="text-gray-500 dark:text-gray-400 text-sm">
+                        <StatusBadge status={interaction.type} category="interaction" />
+                        <span className="text-ds-text-subtle text-sm">
                           with{" "}
-                          <span className="font-medium dark:text-gray-200">
+                          <span className="font-medium dark:text-ds-text-primary">
                             {interaction.member.firstName}{" "}
                             {interaction.member.lastName}
                           </span>
                         </span>
                       </div>
-                      <p className="text-gray-700 dark:text-gray-300 mb-2">
+                      <p className="text-ds-text-secondary mb-2">
                         {interaction.notes}
                       </p>
-                      <div className="flex items-center gap-4 text-xs text-gray-500 dark:text-gray-400">
+                      <div className="flex items-center gap-4 text-xs text-ds-text-subtle">
                         <span>
                           By: {interaction.leader.firstName}{" "}
                           {interaction.leader.lastName}
@@ -297,7 +282,7 @@ export default function InteractionsPage() {
                         <span>
                           {format(
                             new Date(interaction.timestamp),
-                            "MMM dd, yyyy 'at' h:mm a"
+                            "d MMM yyyy 'at' h:mm a"
                           )}
                         </span>
                       </div>

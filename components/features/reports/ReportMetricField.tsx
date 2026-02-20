@@ -1,6 +1,7 @@
 "use client";
 
-import { InputNumber, Input, Tooltip, Tag } from "antd";
+import { InputNumber, Tooltip, Tag } from "antd";
+import { TextArea } from "@/components/ui/Input";
 import { LockOutlined } from "@ant-design/icons";
 import { MetricFieldType } from "@/lib/types";
 import { METRIC_FIELD_TYPE_LABELS } from "@/lib/constants/reports";
@@ -73,18 +74,18 @@ export default function ReportMetricField({
     return (
       <div className={`flex flex-col gap-1.5 ${className ?? ""}`}>
         <div className="flex items-center gap-2">
-          <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+          <label className="text-sm font-medium text-ds-text-secondary">
             {name}
-            {isRequired && <span className="text-red-500 ml-0.5">*</span>}
+            {isRequired && <span className="text-ds-status-error ml-0.5">*</span>}
           </label>
           {isLocked && (
             <Tooltip title="This field is locked">
-              <LockOutlined className="text-gray-400" />
+              <LockOutlined className="text-ds-text-subtle" />
             </Tooltip>
           )}
           <Tag className="text-xs">{fieldTypeLabel}</Tag>
         </div>
-        <Input.TextArea
+        <TextArea
           value={value.textValue}
           onChange={(e) => onChange({ ...value, textValue: e.target.value })}
           disabled={disabled}
@@ -105,13 +106,13 @@ export default function ReportMetricField({
   return (
     <div className={`flex flex-col gap-1.5 ${className ?? ""}`}>
       <div className="flex items-center gap-2">
-        <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+        <label className="text-sm font-medium text-ds-text-secondary">
           {name}
-          {isRequired && <span className="text-red-500 ml-0.5">*</span>}
+          {isRequired && <span className="text-ds-status-error ml-0.5">*</span>}
         </label>
         {isLocked && (
           <Tooltip title="This field is locked">
-            <LockOutlined className="text-gray-400" />
+            <LockOutlined className="text-ds-text-subtle" />
           </Tooltip>
         )}
         <Tag className="text-xs">{fieldTypeLabel}</Tag>
@@ -120,7 +121,7 @@ export default function ReportMetricField({
       <div className="flex flex-wrap items-center gap-4">
         {capturesGoal && (
           <div className="flex flex-col gap-0.5">
-            <span className="text-xs text-gray-500 dark:text-gray-400">
+            <span className="text-xs text-ds-text-subtle">
               Monthly Goal
             </span>
             <InputNumber
@@ -139,7 +140,7 @@ export default function ReportMetricField({
 
         {capturesAchieved && (
           <div className="flex flex-col gap-0.5">
-            <span className="text-xs text-gray-500 dark:text-gray-400">
+            <span className="text-xs text-ds-text-subtle">
               Monthly Achieved
             </span>
             <InputNumber
@@ -158,7 +159,7 @@ export default function ReportMetricField({
 
         {capturesYoY && (
           <div className="flex flex-col gap-0.5">
-            <span className="text-xs text-gray-500 dark:text-gray-400">
+            <span className="text-xs text-ds-text-subtle">
               YoY Goal
             </span>
             <InputNumber
@@ -178,7 +179,7 @@ export default function ReportMetricField({
         {/* Auto-computed percentage when both goal and achieved exist */}
         {capturesGoal && capturesAchieved && (
           <div className="flex flex-col gap-0.5">
-            <span className="text-xs text-gray-500 dark:text-gray-400">
+            <span className="text-xs text-ds-text-subtle">
               Achievement %
             </span>
             <Tooltip title="Auto-calculated: (Achieved / Goal) × 100">
@@ -207,7 +208,7 @@ export default function ReportMetricField({
         {/* YoY growth display */}
         {capturesYoY && yoyGrowth !== undefined && (
           <div className="flex flex-col gap-0.5">
-            <span className="text-xs text-gray-500 dark:text-gray-400">
+            <span className="text-xs text-ds-text-subtle">
               YoY Growth
             </span>
             <Tooltip title="Auto-calculated: ((Achieved − Last Year) / Last Year) × 100">

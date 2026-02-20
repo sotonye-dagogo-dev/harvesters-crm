@@ -2,7 +2,9 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { useRouter, useParams } from "next/navigation";
-import { Spin, Typography, Button, Card, message } from "antd";
+import { Spin, Typography, message } from "antd";
+import Button from "@/components/ui/Button";
+import Card from "@/components/ui/Card";
 import { ArrowLeftOutlined } from "@ant-design/icons";
 import { ReportEventType } from "@/lib/types";
 import { useAuth } from "@/providers/AuthProvider";
@@ -67,13 +69,13 @@ export default function SuperadminReportHistoryPage() {
           <Button
             icon={<ArrowLeftOutlined />}
             onClick={() => router.push(`/superadmin/reports/${reportId}`)}
-            type="text"
+            variant="text"
           />
           <div>
             <Title level={3} className="!mb-0">
               Report History
             </Title>
-            <Text className="text-gray-500">Full audit trail of actions</Text>
+            <Text className="text-ds-text-subtle">Full audit trail of actions</Text>
           </div>
         </div>
 

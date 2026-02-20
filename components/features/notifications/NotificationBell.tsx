@@ -3,7 +3,8 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/providers/AuthProvider";
-import { Badge, Dropdown, List, Button as AntButton, Empty } from "antd";
+import { Badge, Dropdown, List, Empty } from "antd";
+import Button from "@/components/ui/Button";
 import { BellOutlined, CheckOutlined } from "@ant-design/icons";
 import { format } from "date-fns";
 import { getRoleConfig } from "@/lib/constants/roles";
@@ -111,10 +112,10 @@ export default function NotificationBell() {
   const dropdownContent = (
     <div className="w-80 max-h-96 overflow-y-auto bg-white rounded-lg shadow-lg">
       <div className="p-4 border-b flex items-center justify-between">
-        <h3 className="font-semibold text-gray-900">Notifications</h3>
+        <h3 className="font-semibold text-ds-text-primary">Notifications</h3>
         {notifications.length > 0 && (
-          <AntButton
-            type="link"
+          <Button
+            variant="link"
             size="small"
             onClick={() => {
               const routePrefix = user?.role
@@ -129,7 +130,7 @@ export default function NotificationBell() {
             }}
           >
             View All
-          </AntButton>
+          </Button>
         )}
       </div>
       {notifications.length === 0 ? (
@@ -145,12 +146,12 @@ export default function NotificationBell() {
           renderItem={(notification) => (
             <List.Item
               key={notification.id}
-              className="cursor-pointer hover:bg-gray-50 transition-colors px-4"
+              className="cursor-pointer hover:bg-ds-surface-sunken transition-colors px-4"
               onClick={() => handleNotificationClick(notification)}
               actions={[
-                <AntButton
+                <Button
                   key={`mark-read-${notification.id}`}
-                  type="text"
+                  variant="text"
                   size="small"
                   icon={<CheckOutlined />}
                   onClick={(e) => handleMarkAsRead(notification.id, e)}
@@ -165,15 +166,15 @@ export default function NotificationBell() {
                 }
                 description={
                   <div>
-                    <p className="text-xs text-gray-600 mb-1">
+                    <p className="text-xs text-ds-text-secondary mb-1">
                       {notification.message.length > 60
                         ? `${notification.message.substring(0, 60)}...`
                         : notification.message}
                     </p>
-                    <span className="text-xs text-gray-400">
+                    <span className="text-xs text-ds-text-subtle">
                       {format(
                         new Date(notification.createdAt),
-                        "MMM d, h:mm a"
+                        "d MMM, h:mm a"
                       )}
                     </span>
                   </div>
@@ -197,8 +198,8 @@ export default function NotificationBell() {
         }
       }}
     >
-      <AntButton
-        type="text"
+      <Button
+        variant="text"
         icon={
           <Badge count={notifications.length} size="small" offset={[-2, 2]}>
             <BellOutlined className="text-xl" />

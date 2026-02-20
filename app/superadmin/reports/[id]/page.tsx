@@ -18,6 +18,7 @@ import {
 } from "@ant-design/icons";
 import { ReportStatus, MetricFieldType, ReportEventType } from "@/lib/types";
 import { useAuth } from "@/providers/AuthProvider";
+import { formatDateTime, formatDate } from "@/lib/utils/format";
 import DashboardLayout from "@/components/features/navigation/DashboardLayout";
 import {
   ReportStatusBadge,
@@ -222,7 +223,7 @@ export default function SuperadminReportDetailPage() {
     return (
       <DashboardLayout role={role}>
         <div className="text-center py-16">
-          <Text className="text-gray-500">Report not found</Text>
+          <Text className="text-ds-text-subtle">Report not found</Text>
           <br />
           <Button
             onClick={() => router.push("/superadmin/reports")}
@@ -391,7 +392,7 @@ export default function SuperadminReportDetailPage() {
               <div className="flex items-center gap-3 mt-1">
                 <ReportStatusBadge status={report.status} />
                 <ReportDeadlineCountdown deadline={report.deadline} />
-                <Text className="text-sm text-gray-500">
+                <Text className="text-sm text-ds-text-subtle">
                   {periodLabel} — {report.periodYear}
                   {report.periodType === "WEEKLY"
                     ? `, Week ${report.periodWeek ?? report.periodMonth}`
@@ -471,10 +472,10 @@ export default function SuperadminReportDetailPage() {
                         </Descriptions.Item>
                       )}
                       <Descriptions.Item label="Created">
-                        {new Date(report.createdAt).toLocaleString()}
+                        {formatDateTime(report.createdAt)}
                       </Descriptions.Item>
                       <Descriptions.Item label="Last Updated">
-                        {new Date(report.updatedAt).toLocaleString()}
+                        {formatDateTime(report.updatedAt)}
                       </Descriptions.Item>
                       {report.isDataEntry && (
                         <Descriptions.Item label="Data Entry">
@@ -482,7 +483,7 @@ export default function SuperadminReportDetailPage() {
                             ? `${report.dataEntryBy.firstName} ${report.dataEntryBy.lastName}`
                             : "Yes"}
                           {report.dataEntryDate &&
-                            ` (${new Date(report.dataEntryDate).toLocaleDateString()})`}
+                            ` (${formatDate(report.dataEntryDate)})`}
                         </Descriptions.Item>
                       )}
                     </Descriptions>
@@ -506,7 +507,7 @@ export default function SuperadminReportDetailPage() {
                     ))
                   ) : (
                     <Card size="small">
-                      <Text className="text-gray-400">
+                      <Text className="text-ds-text-subtle">
                         No sections have been filled in yet.
                       </Text>
                     </Card>

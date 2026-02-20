@@ -2,7 +2,10 @@
 
 import { Suspense, useEffect, useState, useCallback } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Table, Button, Space, Spin, message, Typography, Tag } from "antd";
+import { Space, Spin, message, Typography } from "antd";
+import Button from "@/components/ui/Button";
+import Table from "@/components/ui/Table";
+import StatusBadge from "@/components/ui/StatusBadge";
 import {
   EyeOutlined,
   ReloadOutlined,
@@ -148,7 +151,7 @@ function SuperadminReportsPageContent() {
           <Text className="font-medium">
             {REPORT_PERIOD_LABELS[r.periodType]} — {r.periodYear}
           </Text>
-          <Text className="text-xs text-gray-500">
+          <Text className="text-xs text-ds-text-subtle">
             {r.periodType === ReportPeriodType.WEEKLY
               ? `Week ${r.periodWeek ?? r.periodMonth}`
               : `Month ${r.periodMonth}`}
@@ -202,26 +205,8 @@ function SuperadminReportsPageContent() {
     {
       title: "Data Entry",
       key: "dataEntry",
-      render: (_, r) => (r.isDataEntry ? <Tag color="orange">DE</Tag> : null),
+      render: (_, r) => (r.isDataEntry ? <StatusBadge status="DATA_ENTRY" category="role" label="DE" /> : null),
       width: 80,
-    },
-    {
-      title: "",
-      key: "actions",
-      fixed: "right",
-      width: 100,
-      render: (_, r) => (
-        <Button
-          type="link"
-          icon={<EyeOutlined />}
-          onClick={(e) => {
-            e.stopPropagation();
-            router.push(`/superadmin/reports/${r.id}`);
-          }}
-        >
-          View
-        </Button>
-      ),
     },
   ];
 
@@ -245,7 +230,7 @@ function SuperadminReportsPageContent() {
                 ? `Reports — ${groupName}`
                 : "All Reports"}
             </Title>
-            <Text className="text-gray-500">
+            <Text className="text-ds-text-subtle">
               {filters.groupId
                 ? "Showing reports scoped to this group"
                 : "Church-wide report oversight and management"}
@@ -253,11 +238,12 @@ function SuperadminReportsPageContent() {
             {filters.groupId && (
               <div className="mt-1">
                 <Button
-                  type="link"
+                  variant="link"
                   size="small"
                   className="!p-0"
                   onClick={() => {
-                    const { groupId: _, ...rest } = filters;
+                    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                    const { groupId: _groupId, ...rest } = filters;
                     setFilters(rest);
                     setGroupName(null);
                     setPage(1);
@@ -271,10 +257,11 @@ function SuperadminReportsPageContent() {
             )}
           </div>
           <Space>
-            <Button icon={<ReloadOutlined />} onClick={fetchReports}>
+            <Button variant="secondary" icon={<ReloadOutlined />} onClick={fetchReports}>
               Refresh
             </Button>
             <Button
+              variant="secondary"
               icon={<FileTextOutlined />}
               onClick={() => router.push("/superadmin/reports/templates")}
             >
@@ -299,6 +286,14 @@ function SuperadminReportsPageContent() {
           columns={columns}
           rowKey="id"
           loading={loading}
+          actions={[
+            {
+              key: "view",
+              label: "View",
+              icon: <EyeOutlined />,
+              onClick: (r) => router.push(`/superadmin/reports/${r.id}`),
+            },
+          ]}
           pagination={{
             current: page,
             pageSize,
@@ -310,7 +305,7 @@ function SuperadminReportsPageContent() {
           scroll={{ x: 1000 }}
           onRow={(record) => ({
             onClick: () => router.push(`/superadmin/reports/${record.id}`),
-            className: "cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800",
+            className: "cursor-pointer hover:bg-ds-surface-sunken",
           })}
         />
       </div>

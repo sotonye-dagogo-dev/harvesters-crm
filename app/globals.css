@@ -1,43 +1,271 @@
+/* ══════════════════════════════════════════════════════════════════════════════
+   1. IMPORTS
+   ══════════════════════════════════════════════════════════════════════════════ */
 @import "tailwindcss";
 @custom-variant dark (&:where(.dark, .dark *));
 
+/* ══════════════════════════════════════════════════════════════════════════════
+   2. PALETTE TOKENS  +  3. SEMANTIC TOKENS — LIGHT (:root)
+   ══════════════════════════════════════════════════════════════════════════════ */
 :root {
-  --background: #ffffff;
-  --foreground: #141414;
-  --primary: #1b4b3e;
-  --secondary: #8b7355;
-  --accent: #d4a373;
+  /* ── Palette ─────────────────────────────────────────── */
+  /* Brand Black Scale */
+  --palette-black-base: #0a0a0b;
+  --palette-black-soft: #111214;
+  --palette-black-elevated: #16171a;
+
+  /* Emerald Accent Scale */
+  --palette-emerald-900: #064e3b;
+  --palette-emerald-700: #047857;
+  --palette-emerald-600: #059669;
+  --palette-emerald-500: #10b981;
+  --palette-emerald-400: #34d399;
+  --palette-emerald-200: #a7f3d0;
+  --palette-emerald-50: #ecfdf5;
+
+  /* Neutral Scale */
+  --palette-neutral-950: #0a0a0a;
+  --palette-neutral-900: #0f172a;
+  --palette-neutral-800: #1e293b;
+  --palette-neutral-700: #374151;
+  --palette-neutral-600: #4b5563;
+  --palette-neutral-500: #64748b;
+  --palette-neutral-400: #94a3b8;
+  --palette-neutral-300: #cbd5e1;
+  --palette-neutral-200: #e5e7eb;
+  --palette-neutral-100: #f1f5f9;
+  --palette-neutral-50: #f8f9fb;
+  --palette-neutral-0: #ffffff;
+
+  /* ── Brand / Accent ──────────────────────────────────── */
+  --ds-brand-accent: var(--palette-emerald-500);
+  --ds-brand-accent-hover: var(--palette-emerald-600);
+  --ds-brand-accent-subtle: var(--palette-emerald-50);
+  --ds-brand-black: var(--palette-black-base);
+  --ds-brand-black-soft: var(--palette-black-soft);
+  --ds-brand-black-elevated: var(--palette-black-elevated);
+
+  /* ── Status ──────────────────────────────────────────── */
+  --ds-status-success: #15803d;
+  --ds-status-warning: #b45309;
+  --ds-status-error: #dc2626;
+  --ds-status-info: var(--palette-emerald-700);
+
+  /* ── Surfaces ────────────────────────────────────────── */
+  --ds-surface-base: var(--palette-neutral-50);
+  --ds-surface-elevated: var(--palette-neutral-0);
+  --ds-surface-sunken: var(--palette-neutral-100);
+  --ds-surface-overlay: var(--palette-neutral-0);
+  --ds-surface-sidebar: var(--palette-neutral-0);
+  --ds-surface-header: var(--palette-neutral-0);
+  --ds-surface-glass: rgba(255, 255, 255, 0.7);
+
+  /* ── Text ────────────────────────────────────────────── */
+  --ds-text-primary: var(--palette-neutral-900);
+  --ds-text-secondary: var(--palette-neutral-500);
+  --ds-text-subtle: var(--palette-neutral-400);
+  --ds-text-inverse: var(--palette-neutral-0);
+  --ds-text-link: var(--palette-emerald-600);
+
+  /* ── Borders ─────────────────────────────────────────── */
+  --ds-border-base: var(--palette-neutral-200);
+  --ds-border-strong: var(--palette-neutral-300);
+  --ds-border-subtle: var(--palette-neutral-100);
+  --ds-border-glass: rgba(255, 255, 255, 0.6);
+
+  /* ── Glow ────────────────────────────────────────────── */
+  --ds-glow-accent-soft: 0 0 0 1px rgba(16, 185, 129, 0.2);
+  --ds-glow-accent-strong: 0 0 20px rgba(16, 185, 129, 0.25);
+
+  /* ── Chart / Categorical ─────────────────────────────── */
+  --ds-chart-1: #2563eb;
+  --ds-chart-2: #10b981;
+  --ds-chart-3: #7c3aed;
+  --ds-chart-4: #ea580c;
+  --ds-chart-5: #0891b2;
+  --ds-chart-6: #be185d;
+
+  /* ── Shape ───────────────────────────────────────────── */
+  --ds-radius-sm: 4px;
+  --ds-radius-md: 8px;
+  --ds-radius-lg: 12px;
+  --ds-radius-xl: 20px;
+  --ds-radius-2xl: 24px;
+  --ds-radius-full: 9999px;
+
+  /* ── Shadows ─────────────────────────────────────────── */
+  --ds-shadow-sm:
+    0 1px 3px 0 rgb(0 0 0 / 0.06), 0 1px 2px -1px rgb(0 0 0 / 0.04);
+  --ds-shadow-md:
+    0 4px 8px -2px rgb(0 0 0 / 0.08), 0 2px 4px -2px rgb(0 0 0 / 0.05);
+  --ds-shadow-lg:
+    0 12px 20px -4px rgb(0 0 0 / 0.1), 0 4px 8px -4px rgb(0 0 0 / 0.06);
+  --ds-shadow-xl:
+    0 24px 32px -8px rgb(0 0 0 / 0.12), 0 8px 16px -6px rgb(0 0 0 / 0.07);
+
+  /* ── Typography ──────────────────────────────────────── */
+  --ds-font-sans:
+    "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --ds-font-mono: "JetBrains Mono", "Fira Code", "Cascadia Code", monospace;
+
+  /* ── Legacy aliases (migration bridge — remove after full migration) ── */
+  --background: var(--ds-surface-base);
+  --foreground: var(--ds-text-primary);
+  --primary: var(--ds-brand-accent);
+  --secondary: var(--ds-text-secondary);
+  --accent: var(--ds-brand-accent);
 }
 
+/* ══════════════════════════════════════════════════════════════════════════════
+   4. SEMANTIC TOKENS — DARK OVERRIDE (.dark)
+   ══════════════════════════════════════════════════════════════════════════════ */
 .dark {
-  --background: #0f172a;
-  --foreground: #f1f5f9;
-  --primary: #22c55e;
-  --secondary: #94a3b8;
-  --accent: #fbbf24;
+  /* ── Surfaces ────────────────────────────────────────── */
+  --ds-surface-base: var(--palette-black-base);
+  --ds-surface-elevated: var(--palette-black-soft);
+  --ds-surface-sunken: var(--palette-black-base);
+  --ds-surface-overlay: var(--palette-black-soft);
+  --ds-surface-sidebar: var(--palette-black-base);
+  --ds-surface-header: var(--palette-black-soft);
+  --ds-surface-glass: rgba(255, 255, 255, 0.04);
+
+  /* ── Brand accent — UNCHANGED across themes ──────────── */
+  --ds-brand-accent-subtle: rgba(16, 185, 129, 0.12);
+
+  /* ── Status ──────────────────────────────────────────── */
+  --ds-status-success: #4ade80;
+  --ds-status-warning: #fbbf24;
+  --ds-status-error: #f87171;
+  --ds-status-info: var(--palette-emerald-400);
+
+  /* ── Text ────────────────────────────────────────────── */
+  --ds-text-primary: #f8fafc;
+  --ds-text-secondary: var(--palette-neutral-400);
+  --ds-text-subtle: #475569;
+  --ds-text-inverse: var(--palette-neutral-900);
+  --ds-text-link: var(--palette-emerald-400);
+
+  /* ── Borders ─────────────────────────────────────────── */
+  --ds-border-base: rgba(255, 255, 255, 0.08);
+  --ds-border-strong: rgba(255, 255, 255, 0.14);
+  --ds-border-subtle: rgba(255, 255, 255, 0.04);
+  --ds-border-glass: rgba(255, 255, 255, 0.08);
+
+  /* ── Glow ────────────────────────────────────────────── */
+  --ds-glow-accent-soft: 0 0 0 1px rgba(16, 185, 129, 0.25);
+  --ds-glow-accent-strong: 0 0 20px rgba(16, 185, 129, 0.3);
+
+  /* ── Chart — brighter for dark backgrounds ───────────── */
+  --ds-chart-1: #60a5fa;
+  --ds-chart-2: #34d399;
+  --ds-chart-3: #a78bfa;
+  --ds-chart-4: #fb923c;
+  --ds-chart-5: #22d3ee;
+  --ds-chart-6: #f472b6;
+
+  /* ── Shadows — deeper in dark mode ───────────────────── */
+  --ds-shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 0.3);
+  --ds-shadow-md:
+    0 4px 8px -2px rgb(0 0 0 / 0.5), 0 2px 4px -2px rgb(0 0 0 / 0.35);
+  --ds-shadow-lg:
+    0 12px 20px -4px rgb(0 0 0 / 0.6), 0 4px 8px -4px rgb(0 0 0 / 0.4);
+  --ds-shadow-xl:
+    0 24px 32px -8px rgb(0 0 0 / 0.7), 0 8px 16px -6px rgb(0 0 0 / 0.5);
+
+  /* ── Legacy aliases (dark) ───────────────────────────── */
+  --background: var(--ds-surface-base);
+  --foreground: var(--ds-text-primary);
+  --primary: var(--ds-brand-accent);
+  --secondary: var(--ds-text-secondary);
+  --accent: var(--ds-brand-accent);
 }
 
+/* ══════════════════════════════════════════════════════════════════════════════
+   5. @THEME INLINE — Tailwind Utility Exposure
+   ══════════════════════════════════════════════════════════════════════════════ */
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --color-primary: var(--primary);
-  --color-secondary: var(--secondary);
-  --color-accent: var(--accent);
-  --color-church-green: #1b4b3e;
+  /* Brand */
+  --color-ds-brand-accent: var(--ds-brand-accent);
+  --color-ds-brand-accent-hover: var(--ds-brand-accent-hover);
+  --color-ds-brand-accent-subtle: var(--ds-brand-accent-subtle);
+  --color-ds-brand-black: var(--ds-brand-black);
+  --color-ds-brand-black-soft: var(--ds-brand-black-soft);
+  --color-ds-brand-black-elevated: var(--ds-brand-black-elevated);
+
+  /* Status */
+  --color-ds-status-success: var(--ds-status-success);
+  --color-ds-status-warning: var(--ds-status-warning);
+  --color-ds-status-error: var(--ds-status-error);
+  --color-ds-status-info: var(--ds-status-info);
+
+  /* Surfaces */
+  --color-ds-surface-base: var(--ds-surface-base);
+  --color-ds-surface-elevated: var(--ds-surface-elevated);
+  --color-ds-surface-sunken: var(--ds-surface-sunken);
+  --color-ds-surface-overlay: var(--ds-surface-overlay);
+  --color-ds-surface-sidebar: var(--ds-surface-sidebar);
+  --color-ds-surface-header: var(--ds-surface-header);
+  --color-ds-surface-glass: var(--ds-surface-glass);
+
+  /* Text */
+  --color-ds-text-primary: var(--ds-text-primary);
+  --color-ds-text-secondary: var(--ds-text-secondary);
+  --color-ds-text-subtle: var(--ds-text-subtle);
+  --color-ds-text-inverse: var(--ds-text-inverse);
+  --color-ds-text-link: var(--ds-text-link);
+
+  /* Borders */
+  --color-ds-border-base: var(--ds-border-base);
+  --color-ds-border-strong: var(--ds-border-strong);
+  --color-ds-border-subtle: var(--ds-border-subtle);
+  --color-ds-border-glass: var(--ds-border-glass);
+
+  /* Charts */
+  --color-ds-chart-1: var(--ds-chart-1);
+  --color-ds-chart-2: var(--ds-chart-2);
+  --color-ds-chart-3: var(--ds-chart-3);
+  --color-ds-chart-4: var(--ds-chart-4);
+  --color-ds-chart-5: var(--ds-chart-5);
+  --color-ds-chart-6: var(--ds-chart-6);
+
+  /* Radii */
+  --radius-ds-sm: var(--ds-radius-sm);
+  --radius-ds-md: var(--ds-radius-md);
+  --radius-ds-lg: var(--ds-radius-lg);
+  --radius-ds-xl: var(--ds-radius-xl);
+  --radius-ds-2xl: var(--ds-radius-2xl);
+  --radius-ds-full: var(--ds-radius-full);
+
+  /* Shadows */
+  --shadow-ds-sm: var(--ds-shadow-sm);
+  --shadow-ds-md: var(--ds-shadow-md);
+  --shadow-ds-lg: var(--ds-shadow-lg);
+  --shadow-ds-xl: var(--ds-shadow-xl);
+
+  /* Typography */
+  --font-ds-sans: var(--ds-font-sans);
+  --font-ds-mono: var(--ds-font-mono);
+
+  /* Legacy color aliases (migration bridge) */
+  --color-background: var(--ds-surface-base);
+  --color-foreground: var(--ds-text-primary);
+  --color-primary: var(--ds-brand-accent);
+  --color-secondary: var(--ds-text-secondary);
+  --color-accent: var(--ds-brand-accent);
+  --color-church-green: var(--ds-brand-accent);
+  --color-church-primary: var(--ds-brand-accent);
   --color-warm-brown: #8b7355;
   --color-golden-accent: #d4a373;
+  --color-church-accent: #d4a373;
 }
 
+/* ══════════════════════════════════════════════════════════════════════════════
+   6. BASE STYLES
+   ══════════════════════════════════════════════════════════════════════════════ */
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family:
-    "Inter",
-    -apple-system,
-    BlinkMacSystemFont,
-    "Segoe UI",
-    "Roboto",
-    sans-serif;
+  background: var(--ds-surface-base);
+  color: var(--ds-text-primary);
+  font-family: var(--ds-font-sans);
   font-feature-settings: "cv02", "cv03", "cv04", "cv11";
 }
 
@@ -52,7 +280,6 @@ body {
   overflow-x: hidden;
 }
 
-/* Smooth scrolling */
 html {
   scroll-behavior: smooth;
 }
@@ -64,27 +291,184 @@ html {
 }
 
 ::-webkit-scrollbar-track {
-  @apply bg-gray-100 dark:bg-gray-800;
+  background: var(--ds-surface-sunken);
 }
 
 ::-webkit-scrollbar-thumb {
-  @apply bg-gray-400 dark:bg-gray-600 rounded;
+  background: var(--ds-border-strong);
+  border-radius: var(--ds-radius-full);
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  @apply bg-gray-500 dark:bg-gray-500;
+  background: var(--ds-text-subtle);
 }
 
-/* Transitions */
+/* ══════════════════════════════════════════════════════════════════════════════
+   7. UTILITY CLASSES
+   ══════════════════════════════════════════════════════════════════════════════ */
 @layer utilities {
   .transition-base {
-    transition: all 200ms ease-in-out;
+    transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .glass-surface {
+    background: var(--ds-surface-glass);
+    -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(12px);
+    border: 1px solid var(--ds-border-glass);
+  }
+
+  .ds-hover-glow:hover {
+    box-shadow: var(--ds-glow-accent-soft);
+    border-color: var(--ds-brand-accent);
+    transition:
+      box-shadow 200ms ease-in-out,
+      border-color 200ms ease-in-out;
+  }
+
+  .ds-glow-active {
+    box-shadow: var(--ds-glow-accent-strong);
+    border-color: var(--ds-brand-accent);
   }
 }
 
-/* Accessibility Styles */
+/* Skeleton loading shimmer */
+@keyframes ds-shimmer {
+  0% {
+    background-position: -200% center;
+  }
+  100% {
+    background-position: 200% center;
+  }
+}
 
-/* Screen reader only - visually hidden but accessible to screen readers */
+.ds-skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--ds-surface-sunken) 25%,
+    rgba(16, 185, 129, 0.06) 50%,
+    var(--ds-surface-sunken) 75%
+  );
+  background-size: 200% 100%;
+  animation: ds-shimmer 1.5s ease-in-out infinite;
+  border-radius: var(--ds-radius-md);
+}
+
+/* ══════════════════════════════════════════════════════════════════════════════
+   8. COMPONENT-SCOPE OVERRIDES
+   ══════════════════════════════════════════════════════════════════════════════ */
+
+/* Ant Design Switch */
+.ant-switch {
+  min-width: 44px !important;
+  height: 22px !important;
+  line-height: 20px !important;
+  border-radius: 100px !important;
+  background-color: rgba(0, 0, 0, 0.25) !important;
+  vertical-align: middle !important;
+}
+
+.ant-switch-checked {
+  background-color: var(--ds-brand-accent) !important;
+}
+
+.ant-switch-handle {
+  width: 18px !important;
+  height: 18px !important;
+  border-radius: 50% !important;
+  top: 2px !important;
+  inset-inline-start: 2px !important;
+}
+
+.ant-switch-checked .ant-switch-handle {
+  inset-inline-start: calc(100% - 20px) !important;
+}
+
+.ant-switch-handle::before {
+  border-radius: 50% !important;
+  box-shadow: 0 2px 4px 0 rgba(0, 35, 11, 0.2) !important;
+  transition: all 0.2s ease-in-out !important;
+}
+
+.ant-switch-loading .ant-switch-handle::before {
+  box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.1) !important;
+}
+
+.ant-switch-disabled {
+  opacity: 0.4 !important;
+  cursor: not-allowed !important;
+}
+
+.ant-switch:focus-visible {
+  outline: 2px solid var(--ds-brand-accent) !important;
+  outline-offset: 2px !important;
+  box-shadow: var(--ds-glow-accent-soft) !important;
+}
+
+/* Ant Design Table — zebra, hover, borders */
+.ant-table {
+  border-radius: var(--ds-radius-lg) !important;
+  overflow: hidden;
+}
+
+.ant-table-thead > tr > th {
+  background: var(--ds-surface-sunken) !important;
+  border-bottom: 1px solid var(--ds-border-base) !important;
+  font-weight: 600 !important;
+  color: var(--ds-text-primary) !important;
+}
+
+.ant-table-tbody > tr:nth-child(even) > td {
+  background: var(--ds-surface-base) !important;
+}
+
+.ant-table-tbody > tr:nth-child(odd) > td {
+  background: var(--ds-surface-elevated) !important;
+}
+
+.ant-table-tbody > tr:hover > td {
+  background: var(--ds-brand-accent-subtle) !important;
+}
+
+.ant-table-tbody > tr > td {
+  border-bottom: 1px solid var(--ds-border-subtle) !important;
+  color: var(--ds-text-primary) !important;
+}
+
+/* Ant Design Modal */
+.ant-modal-content {
+  border-radius: var(--ds-radius-2xl) !important;
+  overflow: hidden;
+}
+
+.ant-modal-header {
+  background: var(--ds-surface-glass) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+  backdrop-filter: blur(12px) !important;
+  border-bottom: 1px solid var(--ds-border-glass) !important;
+}
+
+/* Ant Design Form inputs */
+.ant-input,
+.ant-select-selector,
+.ant-picker {
+  border-radius: var(--ds-radius-lg) !important;
+  border-color: var(--ds-border-base) !important;
+  background: var(--ds-surface-sunken) !important;
+}
+
+.ant-input:focus,
+.ant-input-focused,
+.ant-select-focused .ant-select-selector {
+  border-color: var(--ds-brand-accent) !important;
+  box-shadow: var(--ds-glow-accent-soft) !important;
+}
+
+/* ══════════════════════════════════════════════════════════════════════════════
+   9. ACCESSIBILITY & MOTION
+   ══════════════════════════════════════════════════════════════════════════════ */
+
+/* Screen reader only */
 .sr-only {
   position: absolute;
   width: 1px;
@@ -97,7 +481,6 @@ html {
   border-width: 0;
 }
 
-/* Show on focus - for skip links */
 .sr-only:focus,
 .sr-only:active {
   position: static;
@@ -108,47 +491,38 @@ html {
   white-space: normal;
 }
 
-/* Focus styles - visible focus indicators */
+/* Focus styles */
 *:focus-visible {
-  outline: 2px solid var(--primary);
+  outline: 2px solid var(--ds-brand-accent);
   outline-offset: 2px;
   border-radius: 2px;
 }
 
-/* Remove default focus outline for mouse users (but keep for keyboard) */
 *:focus:not(:focus-visible) {
   outline: none;
 }
 
-/* High contrast focus for important interactive elements */
 button:focus-visible,
 a:focus-visible,
 input:focus-visible,
 select:focus-visible,
 textarea:focus-visible {
-  outline: 3px solid var(--primary);
+  outline: 3px solid var(--ds-brand-accent);
   outline-offset: 2px;
 }
 
-/* Keyboard-only focus ring for Ant Design components */
 .ant-btn:focus-visible,
 .ant-input:focus-visible,
 .ant-select:focus-visible {
-  outline: 2px solid var(--primary) !important;
+  outline: 2px solid var(--ds-brand-accent) !important;
   outline-offset: 2px !important;
 }
 
-/* Improved focus for dark backgrounds */
-.dark *:focus-visible {
-  outline-color: var(--accent);
-}
-
-/* Ensure sufficient color contrast */
 .text-muted {
-  color: #6b7280; /* Meets WCAG AA for normal text */
+  color: var(--ds-text-secondary);
 }
 
-/* Reduce motion for users who prefer it */
+/* Reduce motion */
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -160,7 +534,7 @@ textarea:focus-visible {
   }
 }
 
-/* High contrast mode support */
+/* High contrast mode */
 @media (prefers-contrast: high) {
   * {
     border-color: currentColor;
@@ -172,16 +546,16 @@ textarea:focus-visible {
   }
 }
 
-/* Skip link styles */
+/* Skip link */
 .skip-link {
   position: absolute;
   top: -40px;
   left: 0;
-  background: var(--primary);
+  background: var(--ds-brand-accent);
   color: white;
   padding: 8px 16px;
   text-decoration: none;
-  border-radius: 0 0 4px 0;
+  border-radius: 0 0 var(--ds-radius-sm) 0;
   z-index: 100;
   transition: top 0.2s;
 }
@@ -190,7 +564,7 @@ textarea:focus-visible {
   top: 0;
 }
 
-/* Ensure interactive elements have minimum size (44x44 per WCAG) */
+/* Minimum touch targets (WCAG) */
 button,
 a,
 input[type="checkbox"],
@@ -199,70 +573,7 @@ input[type="radio"] {
   min-height: 44px;
 }
 
-/* Exception for inline text links */
 a:not(.ant-btn) {
   min-width: auto;
   min-height: initial;
-}
-
-/* Ant Design Switch Customization - Proper Toggle Appearance */
-/* Ensure switches are rectangular with rounded ends, not circular */
-.ant-switch {
-  min-width: 44px !important;
-  height: 22px !important;
-  line-height: 20px !important;
-  border-radius: 100px !important; /* Fully rounded ends */
-  background-color: rgba(0, 0, 0, 0.25) !important;
-  vertical-align: middle !important;
-}
-
-.ant-switch-checked {
-  background-color: #1b4b3e !important; /* Church green */
-}
-
-.dark .ant-switch-checked {
-  background-color: #22c55e !important; /* Green for dark mode */
-}
-
-/* Handle (the small circle that moves) */
-.ant-switch-handle {
-  width: 18px !important;
-  height: 18px !important;
-  border-radius: 50% !important; /* Perfect circle */
-  top: 2px !important;
-  inset-inline-start: 2px !important;
-}
-
-.ant-switch-checked .ant-switch-handle {
-  inset-inline-start: calc(100% - 20px) !important;
-}
-
-/* Smooth transition for handle movement */
-.ant-switch-handle::before {
-  border-radius: 50% !important;
-  box-shadow: 0 2px 4px 0 rgba(0, 35, 11, 0.2) !important;
-  transition: all 0.2s ease-in-out !important;
-}
-
-/* Loading state */
-.ant-switch-loading .ant-switch-handle::before {
-  box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.1) !important;
-}
-
-/* Disabled state */
-.ant-switch-disabled {
-  opacity: 0.4 !important;
-  cursor: not-allowed !important;
-}
-
-/* Focus state for accessibility */
-.ant-switch:focus-visible {
-  outline: 2px solid var(--primary) !important;
-  outline-offset: 2px !important;
-  box-shadow: 0 0 0 2px rgba(27, 75, 62, 0.2) !important;
-}
-
-.dark .ant-switch:focus-visible {
-  outline-color: var(--accent) !important;
-  box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.2) !important;
 }

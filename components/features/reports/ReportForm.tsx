@@ -1,7 +1,9 @@
 "use client";
 
 import { useCallback, useMemo, useState } from "react";
-import { Button, message, Input, Space, Divider, Typography } from "antd";
+import { message, Space, Divider, Typography } from "antd";
+import Button from "@/components/ui/Button";
+import { TextArea } from "@/components/ui/Input";
 import { SaveOutlined, SendOutlined } from "@ant-design/icons";
 import ReportSectionCard from "./ReportSectionCard";
 import ReportStatusBadge from "./ReportStatusBadge";
@@ -324,7 +326,7 @@ export default function ReportForm({
             {status && <ReportStatusBadge status={status} />}
             {deadline && <ReportDeadlineCountdown deadline={deadline} />}
             {lockLabel && effectiveReadOnly && (
-              <Text className="text-xs text-gray-400 italic">{lockLabel}</Text>
+              <Text className="text-xs text-ds-text-subtle italic">{lockLabel}</Text>
             )}
           </div>
         </div>
@@ -333,6 +335,7 @@ export default function ReportForm({
           <Space>
             {onSaveDraft && (
               <Button
+                variant="secondary"
                 icon={<SaveOutlined />}
                 onClick={handleSaveDraft}
                 loading={loading}
@@ -346,7 +349,6 @@ export default function ReportForm({
                 status === ReportStatus.DRAFT ||
                 status === ReportStatus.REQUIRES_EDITS) && (
                 <Button
-                  type="primary"
                   icon={<SendOutlined />}
                   onClick={handleSubmit}
                   loading={loading}
@@ -377,7 +379,7 @@ export default function ReportForm({
       {/* Notes */}
       <div className="flex flex-col gap-2">
         <Text strong>Notes</Text>
-        <Input.TextArea
+        <TextArea
           value={notes}
           onChange={(e) => setNotes(e.target.value)}
           rows={3}
@@ -392,9 +394,10 @@ export default function ReportForm({
       {!effectiveReadOnly && (
         <>
           <Divider className="my-0" />
-          <div className="flex justify-end gap-3 sticky bottom-0 bg-white dark:bg-gray-900 py-4 -mx-6 px-6 border-t border-gray-200 dark:border-gray-700 z-10">
+          <div className="flex justify-end gap-3 sticky bottom-0 bg-ds-surface-elevated py-4 -mx-6 px-6 border-t border-ds-border-base z-10">
             {onSaveDraft && (
               <Button
+                variant="secondary"
                 icon={<SaveOutlined />}
                 onClick={handleSaveDraft}
                 loading={loading}
@@ -408,7 +411,6 @@ export default function ReportForm({
                 status === ReportStatus.DRAFT ||
                 status === ReportStatus.REQUIRES_EDITS) && (
                 <Button
-                  type="primary"
                   icon={<SendOutlined />}
                   onClick={handleSubmit}
                   loading={loading}
