@@ -7,19 +7,28 @@ import {
   Card,
   message,
   Spin,
-  Input,
   Space,
   Avatar,
 } from "antd";
 import Table from "@/components/ui/Table";
 import StatusBadge, { BooleanBadge } from "@/components/ui/StatusBadge";
+import FilterToolbar, { type FilterConfig } from "@/components/ui/FilterToolbar";
 import {
   UserOutlined,
   PhoneOutlined,
   MailOutlined,
-  SearchOutlined,
 } from "@ant-design/icons";
 import { UserRole } from "@/lib/types";
+
+const leaderMemberFilters: FilterConfig[] = [
+  {
+    key: "search",
+    type: "search",
+    label: "Members",
+    placeholder: "Search members by name or email...",
+    width: 400,
+  },
+];
 
 interface GroupMember {
   id: string;
@@ -189,13 +198,14 @@ export default function LeaderMembersPage() {
 
         {/* Search and Filters */}
         <Card className="shadow-lg dark:bg-ds-surface-elevated dark:border-ds-border-base">
-          <Input
-            placeholder="Search members by name or email..."
-            prefix={<SearchOutlined />}
-            size="large"
-            value={searchText}
-            onChange={(e) => setSearchText(e.target.value)}
-            className="max-w-md"
+          <FilterToolbar
+            filters={leaderMemberFilters}
+            values={{ search: searchText }}
+            onChange={(key, value) => {
+              if (key === "search") setSearchText(value as string);
+            }}
+            onReset={() => setSearchText("")}
+            className="!mb-0"
           />
         </Card>
 

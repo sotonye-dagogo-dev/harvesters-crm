@@ -1,17 +1,14 @@
 "use client";
 
-import { Select, DatePicker, Space } from "antd";
-import Button from "@/components/ui/Button";
-import Input from "@/components/ui/Input";
-import { SearchOutlined, ClearOutlined } from "@ant-design/icons";
+import { useMemo } from "react";
 import { ReportStatus, ReportPeriodType } from "@/lib/types";
 import {
   REPORT_STATUS_LABELS,
   REPORT_PERIOD_LABELS,
 } from "@/lib/constants/reports";
 import dayjs from "dayjs";
-
-const { RangePicker } = DatePicker;
+import FilterToolbar, { type FilterConfig } from "@/components/ui/FilterToolbar";
+import type { Dayjs } from "dayjs";
 
 interface ReportFilterBarProps {
   filters: ReportFilters;
@@ -41,7 +38,7 @@ export type { ReportFilters };
 
 /**
  * Filter bar for report list pages.
- * Shows status, period type, campus, template, search, and date range filters.
+ * Composes FilterToolbar with domain-specific filter configs.
  */
 export default function ReportFilterBar({
   filters,
@@ -52,121 +49,102 @@ export default function ReportFilterBar({
   showTemplateFilter = true,
   className,
 }: ReportFilterBarProps) {
-  const handleClear = () => {
-    onChange({});
+  const filterConfigs = useMemo<FilterConfig[]>(() => {
+    const configs: FilterConfig[] = [
+      {
+        key: "search",
+        type: "search",
+        label: "Search",
+        placeholder: "Search reports…",
+        width: 192,
+      },
+      {
+        key: "status",
+        type: "select",
+        label: "Status",
+        placeholder: "Status",
+        options: Object.entries(REPORT_STATUS_LABELS).map(([value, label]) => ({
+          value,
+          label,
+        })),
+        width: 160,
+      },
+      {
+        key: "periodType",
+        type: "select",
+        label: "Period",
+        placeholder: "Period",
+        options: Object.entries(REPORT_PERIOD_LABELS).map(([value, label]) => ({
+          value,
+          label,
+        })),
+        width: 144,
+      },
+    ];
+
+    if (showCampusFilter && campuses.length > 0) {
+      configs.push({
+        key: "campusId",
+        type: "select",
+        label: "Campus",
+        placeholder: "Campus",
+        options: campuses.map((c) => ({ value: c.id, label: c.name })),
+        width: 176,
+      });
+    }
+
+    if (showTemplateFilter && templates.length > 0) {
+      configs.push({
+        key: "templateId",
+        type: "select",
+        label: "Template",
+        placeholder: "Template",
+        options: templates.map((t) => ({ value: t.id, label: t.name })),
+        width: 192,
+      });
+    }
+
+    configs.push({
+      key: "dateRange",
+      type: "dateRange",
+      label: "Date Range",
+    });
+
+    return configs;
+  }, [campuses, templates, showCampusFilter, showTemplateFilter]);
+
+  // Convert ISO string date range to Dayjs for FilterToolbar
+  const toolbarValues: Record<string, unknown> = {
+    ...filters,
+    dateRange: filters.dateRange
+      ? [dayjs(filters.dateRange[0]), dayjs(filters.dateRange[1])]
+      : undefined,
   };
 
-  const hasActiveFilters = Object.values(filters).some(
-    (v) => v !== undefined && v !== ""
-  );
+  const handleChange = (key: string, value: unknown) => {
+    if (key === "dateRange") {
+      const dates = value as [Dayjs, Dayjs] | null;
+      onChange({
+        ...filters,
+        dateRange: dates
+          ? [
+              dates[0].startOf("day").toISOString(),
+              dates[1].endOf("day").toISOString(),
+            ]
+          : undefined,
+      });
+    } else {
+      onChange({ ...filters, [key]: value || undefined });
+    }
+  };
 
   return (
-    <div className={`flex flex-wrap gap-3 items-center ${className ?? ""}`}>
-      <Input
-        placeholder="Search reports…"
-        prefix={<SearchOutlined className="text-ds-text-subtle" />}
-        value={filters.search}
-        onChange={(e) =>
-          onChange({ ...filters, search: e.target.value || undefined })
-        }
-        allowClear
-        className="w-48"
-      />
-
-      <Select
-        placeholder="Status"
-        value={filters.status}
-        onChange={(value) =>
-          onChange({ ...filters, status: value || undefined })
-        }
-        allowClear
-        className="w-40"
-        options={Object.entries(REPORT_STATUS_LABELS).map(([value, label]) => ({
-          value,
-          label,
-        }))}
-      />
-
-      <Select
-        placeholder="Period"
-        value={filters.periodType}
-        onChange={(value) =>
-          onChange({ ...filters, periodType: value || undefined })
-        }
-        allowClear
-        className="w-36"
-        options={Object.entries(REPORT_PERIOD_LABELS).map(([value, label]) => ({
-          value,
-          label,
-        }))}
-      />
-
-      {showCampusFilter && campuses.length > 0 && (
-        <Select
-          placeholder="Campus"
-          value={filters.campusId}
-          onChange={(value) =>
-            onChange({ ...filters, campusId: value || undefined })
-          }
-          allowClear
-          className="w-44"
-          showSearch
-          filterOption={(input, option) =>
-            (option?.label ?? "").toLowerCase().includes(input.toLowerCase())
-          }
-          options={campuses.map((c) => ({ value: c.id, label: c.name }))}
-        />
-      )}
-
-      {showTemplateFilter && templates.length > 0 && (
-        <Select
-          placeholder="Template"
-          value={filters.templateId}
-          onChange={(value) =>
-            onChange({ ...filters, templateId: value || undefined })
-          }
-          allowClear
-          className="w-48"
-          showSearch
-          filterOption={(input, option) =>
-            (option?.label ?? "").toLowerCase().includes(input.toLowerCase())
-          }
-          options={templates.map((t) => ({ value: t.id, label: t.name }))}
-        />
-      )}
-
-      <Space.Compact>
-        <RangePicker
-          value={
-            filters.dateRange
-              ? [dayjs(filters.dateRange[0]), dayjs(filters.dateRange[1])]
-              : null
-          }
-          onChange={(dates) =>
-            onChange({
-              ...filters,
-              dateRange: dates
-                ? [
-                    dates[0]!.startOf("day").toISOString(),
-                    dates[1]!.endOf("day").toISOString(),
-                  ]
-                : undefined,
-            })
-          }
-          format="D MMM YYYY"
-        />
-      </Space.Compact>
-
-      {hasActiveFilters && (
-        <Button
-          icon={<ClearOutlined />}
-          onClick={handleClear}
-          size="small"
-          variant="text"
-        >
-          Clear
-        </Button>
-      )}
-    </div>
+    <FilterToolbar
+      filters={filterConfigs}
+      values={toolbarValues}
+      onChange={handleChange}
+      onReset={() => onChange({})}
+      className={className}
+    />
   );
 }

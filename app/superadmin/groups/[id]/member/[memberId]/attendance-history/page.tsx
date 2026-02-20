@@ -10,32 +10,48 @@ import {
   Tag,
   Spin,
   message,
-  DatePicker,
-  Select,
-  Space,
-  Button as AntButton,
   Empty,
   Statistic,
 } from "antd";
 import Table from "@/components/ui/Table";
+import Button from "@/components/ui/Button";
+import FilterToolbar, { type FilterConfig } from "@/components/ui/FilterToolbar";
 import {
   ArrowLeftOutlined,
   CheckCircleOutlined,
   CloseCircleOutlined,
   CalendarOutlined,
   DownloadOutlined,
-  FilterOutlined,
 } from "@ant-design/icons";
 import { format } from "date-fns";
 import type { ColumnsType } from "antd/es/table";
-import { Dayjs } from "dayjs";
-
-const { RangePicker } = DatePicker;
+import type { Dayjs } from "dayjs";
 
 interface MeetingAttendance {
   meeting: MeetingWithDetails;
   attended: boolean;
 }
+
+const attendanceFilters: FilterConfig[] = [
+  {
+    key: "status",
+    type: "select",
+    label: "Status",
+    placeholder: "All Status",
+    allowClear: false,
+    options: [
+      { label: "All Status", value: "ALL" },
+      { label: "Attended", value: "ATTENDED" },
+      { label: "Absent", value: "ABSENT" },
+    ],
+    width: 150,
+  },
+  {
+    key: "dateRange",
+    type: "dateRange",
+    label: "Date Range",
+  },
+];
 
 export default function AttendanceHistoryPage() {
   const router = useRouter();
@@ -184,9 +200,9 @@ export default function AttendanceHistoryPage() {
           <Card>
             <Empty description="You don't have permission to view this page" />
             <div className="text-center mt-4">
-              <AntButton onClick={() => router.push("/superadmin/dashboard")}>
+              <Button variant="secondary" onClick={() => router.push("/superadmin/dashboard")}>
                 Go to Dashboard
-              </AntButton>
+              </Button>
             </div>
           </Card>
         </div>
@@ -295,7 +311,8 @@ export default function AttendanceHistoryPage() {
   return (
     <DashboardLayout role={UserRole.SUPERADMIN}>
       <div className="max-w-7xl mx-auto space-y-6">
-        <AntButton
+        <Button
+          variant="secondary"
           icon={<ArrowLeftOutlined />}
           onClick={() =>
             router.push(
@@ -305,7 +322,7 @@ export default function AttendanceHistoryPage() {
           className="mb-4"
         >
           Back to Stats
-        </AntButton>
+        </Button>
 
         <div className="flex items-center justify-between mb-4">
           <div>
@@ -347,39 +364,24 @@ export default function AttendanceHistoryPage() {
         </div>
 
         {/* Filters */}
-        <Card className="mb-6">
-          <div className="flex flex-col md:flex-row gap-4 items-start md:items-center justify-between">
-            <Space wrap>
-              <Select
-                value={statusFilter}
-                onChange={setStatusFilter}
-                style={{ width: 150 }}
-                options={[
-                  { label: "All Status", value: "ALL" },
-                  { label: "Attended", value: "ATTENDED" },
-                  { label: "Absent", value: "ABSENT" },
-                ]}
-                prefix={<FilterOutlined />}
-              />
-              <RangePicker
-                value={dateRange}
-                onChange={(dates) =>
-                  setDateRange(dates as [Dayjs | null, Dayjs | null])
-                }
-                format="MMM D, YYYY"
-              />
-              <AntButton onClick={clearFilters}>Clear Filters</AntButton>
-            </Space>
-            <AntButton
-              type="primary"
+        <FilterToolbar
+          filters={attendanceFilters}
+          values={{ status: statusFilter, dateRange }}
+          onChange={(key, value) => {
+            if (key === "status") setStatusFilter(value as string);
+            if (key === "dateRange") setDateRange(value as [Dayjs | null, Dayjs | null]);
+          }}
+          onReset={clearFilters}
+          actions={
+            <Button
               icon={<DownloadOutlined />}
               onClick={handleExportCSV}
               disabled={filteredData.length === 0}
             >
               Export CSV
-            </AntButton>
-          </div>
-        </Card>
+            </Button>
+          }
+        />
 
         {/* Attendance Table */}
         <Card>

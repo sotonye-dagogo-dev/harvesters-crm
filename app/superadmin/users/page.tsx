@@ -6,6 +6,7 @@ import { Input, Select, message, Form, DatePicker } from "antd";
 import { PasswordInput } from "@/components/ui/Input";
 import Modal, { ConfirmModal } from "@/components/ui/Modal";
 import Button from "@/components/ui/Button";
+import FilterToolbar, { type FilterConfig } from "@/components/ui/FilterToolbar";
 import { PlusOutlined, SearchOutlined } from "@ant-design/icons";
 import UserCard from "@/components/features/users/UserCard";
 import EmptyState from "@/components/ui/EmptyState";
@@ -14,7 +15,29 @@ import { useRouter } from "next/navigation";
 import { UserRole } from "@/lib/types";
 import dayjs from "dayjs";
 
-const { Search } = Input;
+const userPageFilters: FilterConfig[] = [
+  {
+    key: "search",
+    type: "search",
+    label: "Users",
+    placeholder: "Search by name or email",
+    width: "100%",
+  },
+  {
+    key: "role",
+    type: "select",
+    label: "Role",
+    placeholder: "All Roles",
+    allowClear: false,
+    options: [
+      { label: "All Roles", value: "ALL" },
+      { label: "Superadmin", value: "SUPERADMIN" },
+      { label: "Leader", value: "LEADER" },
+      { label: "Member", value: "MEMBER" },
+    ],
+    width: 200,
+  },
+];
 
 export default function UsersPage() {
   const router = useRouter();
@@ -222,28 +245,18 @@ export default function UsersPage() {
           </Button>
         </div>
 
-        <div className="flex flex-col sm:flex-row gap-4">
-          <Search
-            placeholder="Search by name or email"
-            allowClear
-            size="large"
-            prefix={<SearchOutlined />}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="flex-1"
-          />
-          <Select
-            size="large"
-            value={roleFilter}
-            onChange={setRoleFilter}
-            style={{ width: 200 }}
-            options={[
-              { label: "All Roles", value: "ALL" },
-              { label: "Superadmin", value: "SUPERADMIN" },
-              { label: "Leader", value: "LEADER" },
-              { label: "Member", value: "MEMBER" },
-            ]}
-          />
-        </div>
+        <FilterToolbar
+          filters={userPageFilters}
+          values={{ search: searchTerm, role: roleFilter }}
+          onChange={(key, value) => {
+            if (key === "search") setSearchTerm(value as string);
+            if (key === "role") setRoleFilter(value as string);
+          }}
+          onReset={() => {
+            setSearchTerm("");
+            setRoleFilter("ALL");
+          }}
+        />
 
         <div className="text-sm text-ds-text-secondary">
           Showing {filteredUsers.length} of {users.length} users

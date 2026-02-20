@@ -5,15 +5,14 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/providers/AuthProvider";
 import DashboardLayout from "@/components/features/navigation/DashboardLayout";
 import {
-  Button as AntButton,
   message,
-  Select,
-  Input,
   Card,
   Space,
   Popconfirm,
 } from "antd";
+import Button from "@/components/ui/Button";
 import StatusBadge from "@/components/ui/StatusBadge";
+import FilterToolbar, { type FilterConfig } from "@/components/ui/FilterToolbar";
 import {
   PlusOutlined,
   SearchOutlined,
@@ -28,7 +27,29 @@ import EmptyState from "@/components/ui/EmptyState";
 import { CardSkeleton } from "@/components/ui/LoadingSkeleton";
 import { UserRole } from "@/lib/types";
 
-const { Search } = Input;
+const interactionFilters: FilterConfig[] = [
+  {
+    key: "search",
+    type: "search",
+    label: "Interactions",
+    placeholder: "Search by member name or notes...",
+    width: 400,
+  },
+  {
+    key: "type",
+    type: "select",
+    label: "Type",
+    placeholder: "All Types",
+    allowClear: false,
+    options: [
+      { label: "All Types", value: "ALL" },
+      { label: "Phone Call", value: "CALL" },
+      { label: "Follow-up", value: "FOLLOW_UP" },
+      { label: "Check-in", value: "CHECK_IN" },
+    ],
+    width: 200,
+  },
+];
 
 const getInteractionIcon = (type: string) => {
   switch (type) {
@@ -140,12 +161,11 @@ export default function InteractionsPage() {
           title="Access Denied"
           description="Only group leaders can view and manage interactions"
           action={
-            <AntButton
-              type="primary"
+            <Button
               onClick={() => router.push("/leader/dashboard")}
             >
               Back to Dashboard
-            </AntButton>
+            </Button>
           }
         />
       </DashboardLayout>
@@ -186,39 +206,28 @@ export default function InteractionsPage() {
             </p>
           </div>
           {user.groupId && (
-            <AntButton
-              type="primary"
+            <Button
               icon={<PlusOutlined />}
               onClick={() => router.push("/leader/interactions/new")}
             >
               Log Interaction
-            </AntButton>
+            </Button>
           )}
         </div>
 
         {/* Filters */}
-        <div className="flex gap-4">
-          <Search
-            placeholder="Search by member name or notes..."
-            allowClear
-            enterButton={<SearchOutlined />}
-            size="large"
-            style={{ maxWidth: 400 }}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            value={searchQuery}
-          />
-          <Select
-            value={typeFilter}
-            onChange={setTypeFilter}
-            size="large"
-            style={{ width: 200 }}
-          >
-            <Select.Option value="ALL">All Types</Select.Option>
-            <Select.Option value="CALL">Phone Call</Select.Option>
-            <Select.Option value="FOLLOW_UP">Follow-up</Select.Option>
-            <Select.Option value="CHECK_IN">Check-in</Select.Option>
-          </Select>
-        </div>
+        <FilterToolbar
+          filters={interactionFilters}
+          values={{ search: searchQuery, type: typeFilter }}
+          onChange={(key, value) => {
+            if (key === "search") setSearchQuery(value as string);
+            if (key === "type") setTypeFilter(value as string);
+          }}
+          onReset={() => {
+            setSearchQuery("");
+            setTypeFilter("ALL");
+          }}
+        />
 
         {/* Interactions List */}
         {filteredInteractions.length === 0 ? (
@@ -229,12 +238,11 @@ export default function InteractionsPage() {
               description="Start logging calls, follow-ups, and check-ins with your group members"
               action={
                 user.groupId ? (
-                  <AntButton
-                    type="primary"
+                  <Button
                     onClick={() => router.push("/leader/interactions/new")}
                   >
                     Log Interaction
-                  </AntButton>
+                  </Button>
                 ) : undefined
               }
             />
@@ -289,8 +297,8 @@ export default function InteractionsPage() {
                     </div>
                     {canEdit && (
                       <Space>
-                        <AntButton
-                          type="text"
+                        <Button
+                          variant="text"
                           icon={<EditOutlined />}
                           onClick={() =>
                             router.push(
@@ -305,8 +313,8 @@ export default function InteractionsPage() {
                           okText="Yes"
                           cancelText="No"
                         >
-                          <AntButton
-                            type="text"
+                          <Button
+                            variant="text"
                             danger
                             icon={<DeleteOutlined />}
                           />

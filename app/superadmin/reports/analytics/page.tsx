@@ -1,19 +1,19 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
 import {
   Card,
   Spin,
   message,
   Typography,
-  Select,
   Row,
   Col,
   Statistic,
   Progress,
-  Button,
 } from "antd";
 import Table from "@/components/ui/Table";
+import Button from "@/components/ui/Button";
+import FilterToolbar, { type FilterConfig } from "@/components/ui/FilterToolbar";
 import {
   BarChartOutlined,
   FileTextOutlined,
@@ -205,6 +205,25 @@ export default function SuperadminReportAnalyticsPage() {
   const currentYear = new Date().getFullYear();
   const years = Array.from({ length: 5 }, (_, i) => currentYear - i);
 
+  const analyticsFilters: FilterConfig[] = useMemo(() => [
+    {
+      key: "campus",
+      type: "select" as const,
+      label: "Campus",
+      placeholder: "All Campuses",
+      options: campuses.map((c) => ({ label: c.name, value: c.id })),
+      width: 180,
+    },
+    {
+      key: "year",
+      type: "select" as const,
+      label: "Year",
+      placeholder: "All Years",
+      options: years.map((y) => ({ label: String(y), value: String(y) })),
+      width: 120,
+    },
+  ], [campuses, years]);
+
   if (!role) {
     return (
       <DashboardLayout>
@@ -224,26 +243,23 @@ export default function SuperadminReportAnalyticsPage() {
               Organization-wide reporting insights and compliance tracking
             </Text>
           </div>
-          <div className="flex items-center gap-3">
-            <Select
-              placeholder="All Campuses"
-              allowClear
-              className="min-w-[180px]"
-              value={campusId}
-              onChange={(v) => setCampusId(v)}
-              options={campuses.map((c) => ({ label: c.name, value: c.id }))}
-            />
-            <Select
-              placeholder="All Years"
-              allowClear
-              className="min-w-[120px]"
-              value={periodYear}
-              onChange={(v) => setPeriodYear(v)}
-              options={years.map((y) => ({ label: String(y), value: y }))}
-            />
-            <Button icon={<ReloadOutlined />} onClick={fetchAnalytics}>Refresh</Button>
-          </div>
         </div>
+
+        <FilterToolbar
+          filters={analyticsFilters}
+          values={{ campus: campusId, year: periodYear ? String(periodYear) : undefined }}
+          onChange={(key, value) => {
+            if (key === "campus") setCampusId(value as string | undefined);
+            if (key === "year") setPeriodYear(value ? Number(value) : undefined);
+          }}
+          onReset={() => {
+            setCampusId(undefined);
+            setPeriodYear(undefined);
+          }}
+          actions={
+            <Button icon={<ReloadOutlined />} variant="secondary" onClick={fetchAnalytics}>Refresh</Button>
+          }
+        />
 
         {/* Stat Cards */}
         {loading && !stats ? (

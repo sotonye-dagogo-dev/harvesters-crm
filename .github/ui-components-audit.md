@@ -533,11 +533,20 @@ interface FilterToolbarProps {
 
 **Priority: MEDIUM**
 
-- [ ] **2F-1** Create `FilterToolbar.tsx` — config-driven reusable filter bar
-- [ ] **2F-2** Migrate 7 ad-hoc filter bars to FilterToolbar
+- [x] **2F-1** Create `FilterToolbar.tsx` — config-driven reusable filter bar
+- [x] **2F-2** Migrate 9 ad-hoc filter bars to FilterToolbar:
+  - [x] `superadmin/users/activity-logs/page.tsx` (P1 — Search + 2 Selects + DateRange)
+  - [x] `components/features/reports/ReportFilterBar.tsx` (P1 — Search + 4 Selects + DateRange)
+  - [x] `superadmin/groups/[id]/member/[memberId]/attendance-history/page.tsx` (P2 — Select + DateRange + Export action)
+  - [x] `superadmin/members/page.tsx` (P2 — Search + Select)
+  - [x] `superadmin/users/page.tsx` (P2 — Search + Select)
+  - [x] `leader/interactions/page.tsx` (P2 — Search + Select)
+  - [x] `superadmin/reports/analytics/page.tsx` (P3 — 2 Selects + Refresh action)
+  - [x] `superadmin/groups/page.tsx` (P3 — Search)
+  - [x] `leader/members/page.tsx` (P3 — Search)
 - [ ] **2F-3** Migrate 4 files to use `ProfileAvatar` instead of raw Avatar
-- [ ] **2F-4** Deprecate & remove unused `Layout.tsx`
-- [ ] **2F-5** Deprecate & remove unused `ErrorBoundary.tsx`
+- [x] **2F-4** Deprecate & remove unused `Layout.tsx`
+- [x] **2F-5** Deprecate & remove unused `ErrorBoundary.tsx`
 - [ ] **2F-6** Final verification — grep for remaining direct antd imports of wrapped components
 
 ---

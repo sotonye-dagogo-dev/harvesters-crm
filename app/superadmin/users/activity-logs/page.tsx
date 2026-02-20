@@ -5,20 +5,16 @@ import DashboardLayout from "@/components/features/navigation/DashboardLayout";
 import { useAuth } from "@/providers/AuthProvider";
 import {
   Card,
-  Input,
-  Select,
-  DatePicker,
-  Button as AntButton,
-  Space,
   Avatar,
   Tooltip,
   message,
 } from "antd";
 import Table from "@/components/ui/Table";
+import Button from "@/components/ui/Button";
 import StatusBadge from "@/components/ui/StatusBadge";
+import FilterToolbar, { type FilterConfig } from "@/components/ui/FilterToolbar";
 import {
   UserOutlined,
-  SearchOutlined,
   FilterOutlined,
   DownloadOutlined,
   ReloadOutlined,
@@ -37,8 +33,48 @@ import { UserRole } from "@/lib/types";
 
 dayjs.extend(relativeTime);
 
-const { RangePicker } = DatePicker;
-const { Search } = Input;
+const activityFilters: FilterConfig[] = [
+  {
+    key: "search",
+    type: "search",
+    label: "Search",
+    placeholder: "Search users, actions, or resources",
+    width: 280,
+  },
+  {
+    key: "action",
+    type: "select",
+    label: "Action",
+    placeholder: "Filter by action",
+    options: [
+      { label: "All Actions", value: "ALL" },
+      { label: "Create", value: "CREATE" },
+      { label: "Update", value: "UPDATE" },
+      { label: "Delete", value: "DELETE" },
+      { label: "Login", value: "LOGIN" },
+      { label: "Logout", value: "LOGOUT" },
+      { label: "Approve", value: "APPROVE" },
+      { label: "Reject", value: "REJECT" },
+    ],
+  },
+  {
+    key: "role",
+    type: "select",
+    label: "Role",
+    placeholder: "Filter by role",
+    options: [
+      { label: "All Roles", value: "ALL" },
+      { label: "Superadmin", value: "SUPERADMIN" },
+      { label: "Leader", value: "LEADER" },
+      { label: "Member", value: "MEMBER" },
+    ],
+  },
+  {
+    key: "dateRange",
+    type: "dateRange",
+    label: "Date Range",
+  },
+];
 
 interface ActivityLog {
   id: string;
@@ -348,87 +384,43 @@ export default function UserActivityLogsPage() {
               Track and monitor all user actions across the system
             </p>
           </div>
-          <Space>
-            <AntButton icon={<ReloadOutlined />} onClick={fetchActivityLogs}>
+          <div className="flex gap-2">
+            <Button icon={<ReloadOutlined />} onClick={fetchActivityLogs}>
               Refresh
-            </AntButton>
-            <AntButton
-              type="primary"
+            </Button>
+            <Button
               icon={<DownloadOutlined />}
               onClick={handleExport}
             >
               Export CSV
-            </AntButton>
-          </Space>
+            </Button>
+          </div>
         </div>
 
         {/* Filters */}
         <Card>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <Search
-              placeholder="Search users, actions, or resources"
-              allowClear
-              prefix={<SearchOutlined />}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              size="large"
-            />
-            <Select
-              placeholder="Filter by action"
-              size="large"
-              value={actionFilter}
-              onChange={setActionFilter}
-              options={[
-                { label: "All Actions", value: "ALL" },
-                { label: "Create", value: "CREATE" },
-                { label: "Update", value: "UPDATE" },
-                { label: "Delete", value: "DELETE" },
-                { label: "Login", value: "LOGIN" },
-                { label: "Logout", value: "LOGOUT" },
-                { label: "Approve", value: "APPROVE" },
-                { label: "Reject", value: "REJECT" },
-              ]}
-            />
-            <Select
-              placeholder="Filter by role"
-              size="large"
-              value={roleFilter}
-              onChange={setRoleFilter}
-              options={[
-                { label: "All Roles", value: "ALL" },
-                { label: "Superadmin", value: "SUPERADMIN" },
-                { label: "Leader", value: "LEADER" },
-                { label: "Member", value: "MEMBER" },
-              ]}
-            />
-            <RangePicker
-              size="large"
-              onChange={(dates) =>
-                setDateRange(dates as [Dayjs | null, Dayjs | null])
-              }
-              format="D MMM YYYY"
-            />
-          </div>
+          <FilterToolbar
+            filters={activityFilters}
+            values={{ search: searchTerm, action: actionFilter, role: roleFilter, dateRange }}
+            onChange={(key, value) => {
+              if (key === "search") setSearchTerm(value as string);
+              else if (key === "action") setActionFilter((value as string) || "ALL");
+              else if (key === "role") setRoleFilter((value as string) || "ALL");
+              else if (key === "dateRange") setDateRange(value as [Dayjs | null, Dayjs | null] | null);
+            }}
+            onReset={() => {
+              setSearchTerm("");
+              setActionFilter("ALL");
+              setRoleFilter("ALL");
+              setDateRange(null);
+            }}
+            className="!mb-0"
+          />
           <div className="mt-4 flex items-center justify-between">
             <span className="text-sm text-ds-text-secondary">
               <FilterOutlined /> Showing {filteredActivities.length} of{" "}
               {activities.length} activities
             </span>
-            {(searchTerm ||
-              actionFilter !== "ALL" ||
-              roleFilter !== "ALL" ||
-              dateRange) && (
-              <AntButton
-                size="small"
-                onClick={() => {
-                  setSearchTerm("");
-                  setActionFilter("ALL");
-                  setRoleFilter("ALL");
-                  setDateRange(null);
-                }}
-              >
-                Clear Filters
-              </AntButton>
-            )}
           </div>
         </Card>
 

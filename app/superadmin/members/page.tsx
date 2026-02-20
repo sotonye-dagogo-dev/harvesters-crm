@@ -4,14 +4,13 @@ import { UserRole } from "@/lib/types";
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import DashboardLayout from "@/components/features/navigation/DashboardLayout";
-import { Select, Spin, message } from "antd";
+import { Spin, message } from "antd";
 import Card from "@/components/ui/Card";
 import Table from "@/components/ui/Table";
 import StatusBadge, { BooleanBadge } from "@/components/ui/StatusBadge";
+import FilterToolbar, { type FilterConfig } from "@/components/ui/FilterToolbar";
 import { EditOutlined } from "@ant-design/icons";
-import { SearchInput } from "@/components/ui/SearchInput";
 import type { ColumnsType } from "antd/es/table";
-const { Option } = Select;
 
 interface Member {
   id: string;
@@ -31,6 +30,28 @@ export default function MembersPage() {
   const [loading, setLoading] = useState(true);
   const [searchText, setSearchText] = useState("");
   const [roleFilter, setRoleFilter] = useState<string | undefined>();
+
+  const memberFilters: FilterConfig[] = [
+    {
+      key: "search",
+      type: "search",
+      label: "Members",
+      placeholder: "Search by name or email",
+      width: "100%",
+    },
+    {
+      key: "role",
+      type: "select",
+      label: "Role",
+      placeholder: "Filter by role",
+      options: [
+        { label: "Superadmin", value: "SUPERADMIN" },
+        { label: "Leader", value: "LEADER" },
+        { label: "Member", value: "MEMBER" },
+      ],
+      width: 200,
+    },
+  ];
 
   const fetchMembers = useCallback(async () => {
     try {
@@ -119,28 +140,19 @@ export default function MembersPage() {
         </div>
 
         <Card className="dark:bg-ds-surface-elevated dark:border-ds-border-base">
-          <div className="flex flex-col sm:flex-row gap-4 mb-6">
-            <SearchInput
-              placeholder="Search by name or email"
-              allowClear
-              size="large"
-              value={searchText}
-              onChange={(e) => setSearchText(e.target.value)}
-              className="flex-1"
-            />
-            <Select
-              placeholder="Filter by role"
-              allowClear
-              size="large"
-              style={{ width: 200 }}
-              value={roleFilter}
-              onChange={setRoleFilter}
-            >
-              <Option value="SUPERADMIN">Superadmin</Option>
-              <Option value="LEADER">Leader</Option>
-              <Option value="MEMBER">Member</Option>
-            </Select>
-          </div>
+          <FilterToolbar
+            filters={memberFilters}
+            values={{ search: searchText, role: roleFilter }}
+            onChange={(key, value) => {
+              if (key === "search") setSearchText(value as string);
+              if (key === "role") setRoleFilter(value as string | undefined);
+            }}
+            onReset={() => {
+              setSearchText("");
+              setRoleFilter(undefined);
+            }}
+            className="!mb-0"
+          />
 
           {loading ? (
             <div className="flex justify-center items-center py-20">

@@ -3,8 +3,9 @@
 import { useEffect, useState } from "react";
 import DashboardLayout from "@/components/features/navigation/DashboardLayout";
 import { useAuth } from "@/providers/AuthProvider";
-import { Input, message } from "antd";
+import { message } from "antd";
 import Button from "@/components/ui/Button";
+import FilterToolbar, { type FilterConfig } from "@/components/ui/FilterToolbar";
 import { PlusOutlined, SearchOutlined } from "@ant-design/icons";
 import GroupCard from "@/components/features/groups/GroupCard";
 import EmptyState from "@/components/ui/EmptyState";
@@ -12,7 +13,15 @@ import { CardSkeleton } from "@/components/ui/LoadingSkeleton";
 import { useRouter } from "next/navigation";
 import { UserRole } from "@/lib/types";
 
-const { Search } = Input;
+const groupFilters: FilterConfig[] = [
+  {
+    key: "search",
+    type: "search",
+    label: "Groups",
+    placeholder: "Search groups by name, description, or leader",
+    width: "100%",
+  },
+];
 
 export default function GroupsPage() {
   const { user } = useAuth();
@@ -100,12 +109,13 @@ export default function GroupsPage() {
           )}
         </div>
 
-        <Search
-          placeholder="Search groups by name, description, or leader"
-          allowClear
-          size="large"
-          prefix={<SearchOutlined />}
-          onChange={(e) => setSearchTerm(e.target.value)}
+        <FilterToolbar
+          filters={groupFilters}
+          values={{ search: searchTerm }}
+          onChange={(key, value) => {
+            if (key === "search") setSearchTerm(value as string);
+          }}
+          onReset={() => setSearchTerm("")}
         />
 
         <div className="text-sm text-ds-text-secondary">
