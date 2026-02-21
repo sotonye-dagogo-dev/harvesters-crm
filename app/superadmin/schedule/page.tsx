@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { Select, message } from "antd";
 import { UserRole } from "@/lib/types";
 import DashboardLayout from "@/components/features/navigation/DashboardLayout";
@@ -15,21 +15,21 @@ export default function SuperadminSchedulePage() {
   const [groups, setGroups] = useState<GroupOption[]>([]);
   const [selectedGroupId, setSelectedGroupId] = useState<string | undefined>();
 
-  const fetchGroups = useCallback(async () => {
-    try {
-      const response = await fetch("/api/groups");
-      if (response.ok) {
-        const result = await response.json();
-        setGroups(result.data || []);
-      }
-    } catch {
-      message.error("Failed to load groups");
-    }
-  }, []);
-
   useEffect(() => {
+    const fetchGroups = async () => {
+      try {
+        const response = await fetch("/api/groups");
+        if (response.ok) {
+          const result = await response.json();
+          setGroups(result.data || []);
+        }
+      } catch {
+        message.error("Failed to load groups");
+      }
+    };
+
     fetchGroups();
-  }, [fetchGroups]);
+  }, []);
 
   // Build query params — show all meetings by default, filter by group if selected
   const queryParams = selectedGroupId ? `?groupId=${selectedGroupId}` : "";
