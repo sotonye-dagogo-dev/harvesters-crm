@@ -1,6 +1,5 @@
 "use client";
 
-import { UserRole } from "@/lib/types";
 import { useEffect, useState } from "react";
 import { useAuth } from "@/providers/AuthProvider";
 import DashboardLayout from "@/components/features/navigation/DashboardLayout";
@@ -67,6 +66,52 @@ export default function GroupAnalyticsPage() {
   };
 
   if (!user?.groupId) {
+    const SCOPED_ROLES = [
+      "GROUP_PASTOR",
+      "GROUP_ADMIN",
+      "CAMPUS_PASTOR",
+      "CAMPUS_ADMIN",
+      "ZONAL_LEADER",
+      "HOD",
+    ];
+    const isScopedLeader = user?.role && SCOPED_ROLES.includes(user.role);
+
+    if (isScopedLeader) {
+      return (
+        <DashboardLayout role={user?.role}>
+          <div className="space-y-6">
+            <div>
+              <h1 className="text-2xl font-bold text-ds-text-primary mb-2">
+                Analytics Overview
+              </h1>
+              <p className="text-ds-text-secondary">
+                As a senior leader, detailed analytics for your scope are
+                available on the dashboard.
+              </p>
+            </div>
+            <Card>
+              <div className="text-center py-12">
+                <TeamOutlined className="text-6xl text-ds-text-subtle mb-4" />
+                <h3 className="text-lg font-semibold text-ds-text-secondary mb-2">
+                  Senior Leader Analytics
+                </h3>
+                <p className="text-ds-text-subtle">
+                  Visit the{" "}
+                  <a
+                    href="/leader/dashboard"
+                    className="text-ds-brand-accent hover:underline"
+                  >
+                    Dashboard
+                  </a>{" "}
+                  for overview metrics of your scope.
+                </p>
+              </div>
+            </Card>
+          </div>
+        </DashboardLayout>
+      );
+    }
+
     return (
       <div className="p-8">
         <Card>
@@ -78,7 +123,7 @@ export default function GroupAnalyticsPage() {
 
   if (loading) {
     return (
-      <DashboardLayout role={UserRole.SMALL_GROUP_LEADER}>
+      <DashboardLayout role={user?.role}>
         <div className="flex items-center justify-center h-96">
           <Spin size="large" />
         </div>
@@ -88,7 +133,7 @@ export default function GroupAnalyticsPage() {
 
   if (!analytics) {
     return (
-      <DashboardLayout role={UserRole.SMALL_GROUP_LEADER}>
+      <DashboardLayout role={user?.role}>
         <div className="text-center py-12">
           <Card className="bg-ds-surface-elevated">
             <Empty description="Analytics data not available" />
@@ -147,15 +192,13 @@ export default function GroupAnalyticsPage() {
   ];
 
   return (
-    <DashboardLayout role={UserRole.SMALL_GROUP_LEADER}>
+    <DashboardLayout role={user?.role}>
       <div className="space-y-6">
         <div>
           <h1 className="text-2xl font-bold text-ds-text-primary mb-2">
             Group Analytics Dashboard
           </h1>
-          <p className="text-ds-text-secondary">
-            {analytics.groupName}
-          </p>
+          <p className="text-ds-text-secondary">{analytics.groupName}</p>
         </div>
 
         {/* Alert for At-Risk Members */}
@@ -260,7 +303,9 @@ export default function GroupAnalyticsPage() {
             </Col>
             <Col xs={24} md={8}>
               <div className="text-center p-4">
-                <div className="text-sm text-ds-text-secondary mb-2">Recent Trend</div>
+                <div className="text-sm text-ds-text-secondary mb-2">
+                  Recent Trend
+                </div>
                 <div className="flex flex-col items-center gap-2">
                   <RiseOutlined
                     className={`text-5xl ${

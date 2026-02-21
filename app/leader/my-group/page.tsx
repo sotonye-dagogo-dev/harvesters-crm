@@ -1,6 +1,5 @@
 "use client";
 
-import { UserRole } from "@/lib/types";
 import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import DashboardLayout from "@/components/features/navigation/DashboardLayout";
@@ -192,9 +191,19 @@ export default function MyGroupPage() {
     }
   }, [user?.groupId, fetchGroupData]);
 
-  if (!user?.groupId) {
+  const SCOPED_ROLES = [
+    "GROUP_PASTOR",
+    "GROUP_ADMIN",
+    "CAMPUS_PASTOR",
+    "CAMPUS_ADMIN",
+    "ZONAL_LEADER",
+    "HOD",
+  ];
+  const isScopedLeader = user?.role && SCOPED_ROLES.includes(user.role);
+
+  if (!user?.groupId && !isScopedLeader) {
     return (
-      <DashboardLayout role={UserRole.SMALL_GROUP_LEADER}>
+      <DashboardLayout role={user?.role}>
         <PageEmpty
           icon={<TeamOutlined />}
           title="No Group Assigned"
@@ -204,9 +213,48 @@ export default function MyGroupPage() {
     );
   }
 
+  if (isScopedLeader && !user?.groupId) {
+    return (
+      <DashboardLayout role={user?.role}>
+        <PageContainer>
+          <PageHeader
+            title="My Scope Overview"
+            subtitle="As a senior leader, use the Groups, Members, and Meetings pages to manage your scope."
+          />
+          <Card>
+            <div className="text-center py-12">
+              <TeamOutlined className="text-6xl text-ds-text-subtle mb-4" />
+              <h3 className="text-lg font-semibold text-ds-text-secondary mb-2">
+                Senior Leader View
+              </h3>
+              <p className="text-ds-text-subtle">
+                As a {user?.role?.replace(/_/g, " ").toLowerCase()}, you oversee
+                multiple groups. Visit the{" "}
+                <a
+                  href="/leader/groups"
+                  className="text-ds-brand-accent hover:underline"
+                >
+                  Groups
+                </a>{" "}
+                or{" "}
+                <a
+                  href="/leader/members"
+                  className="text-ds-brand-accent hover:underline"
+                >
+                  Members
+                </a>{" "}
+                page to manage your scope.
+              </p>
+            </div>
+          </Card>
+        </PageContainer>
+      </DashboardLayout>
+    );
+  }
+
   if (loading) {
     return (
-      <DashboardLayout role={UserRole.SMALL_GROUP_LEADER}>
+      <DashboardLayout role={user?.role}>
         <PageLoading message="Loading group data..." />
       </DashboardLayout>
     );
@@ -214,7 +262,7 @@ export default function MyGroupPage() {
 
   if (!group) {
     return (
-      <DashboardLayout role={UserRole.SMALL_GROUP_LEADER}>
+      <DashboardLayout role={user?.role}>
         <PageEmpty title="Group not found" />
       </DashboardLayout>
     );
@@ -301,7 +349,9 @@ export default function MyGroupPage() {
       title: "Status",
       dataIndex: "status",
       key: "status",
-      render: (status: string) => <StatusBadge status={status} category="engagement" />,
+      render: (status: string) => (
+        <StatusBadge status={status} category="engagement" />
+      ),
       filters: [
         { text: "Active", value: "active" },
         { text: "At Risk", value: "at-risk" },
@@ -329,7 +379,7 @@ export default function MyGroupPage() {
   ).length;
 
   return (
-    <DashboardLayout role={UserRole.SMALL_GROUP_LEADER}>
+    <DashboardLayout role={user?.role}>
       <PageContainer>
         <PageHeader
           title={group.name}
@@ -475,7 +525,8 @@ export default function MyGroupPage() {
               {
                 key: "viewDetails",
                 label: "View Details",
-                onClick: (record) => router.push(`/leader/meetings/${record.id}`),
+                onClick: (record) =>
+                  router.push(`/leader/meetings/${record.id}`),
               },
             ]}
             pagination={false}

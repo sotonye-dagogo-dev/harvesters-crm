@@ -1,10 +1,10 @@
 "use client";
 
-import { UserRole } from "@/lib/types";
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { formatDate, formatDateLong } from "@/lib/utils/format";
 import DashboardLayout from "@/components/features/navigation/DashboardLayout";
+import { useAuth } from "@/providers/AuthProvider";
 import {
   Card,
   Descriptions,
@@ -61,6 +61,7 @@ export default function MemberDetailPage({
   params: { id: string };
 }) {
   const router = useRouter();
+  const { user } = useAuth();
   const [member, setMember] = useState<MemberDetails | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -87,7 +88,7 @@ export default function MemberDetailPage({
 
   if (loading) {
     return (
-      <DashboardLayout role={UserRole.SMALL_GROUP_LEADER}>
+      <DashboardLayout role={user?.role}>
         <div className="flex items-center justify-center min-h-[400px]">
           <Spin size="large" />
         </div>
@@ -97,7 +98,7 @@ export default function MemberDetailPage({
 
   if (!member) {
     return (
-      <DashboardLayout role={UserRole.SMALL_GROUP_LEADER}>
+      <DashboardLayout role={user?.role}>
         <Card>
           <div className="text-center py-8">
             <p className="text-ds-text-subtle mb-4">Member not found</p>
@@ -115,7 +116,7 @@ export default function MemberDetailPage({
   }
 
   return (
-    <DashboardLayout role={UserRole.SMALL_GROUP_LEADER}>
+    <DashboardLayout role={user?.role}>
       <div className="space-y-8">
         {/* Back Button */}
         <Button
@@ -156,7 +157,11 @@ export default function MemberDetailPage({
                 </span>
               </Space>
               <div className="mt-3">
-                <BooleanBadge value={member.isActive} trueLabel="Active" falseLabel="Inactive" />
+                <BooleanBadge
+                  value={member.isActive}
+                  trueLabel="Active"
+                  falseLabel="Inactive"
+                />
               </div>
             </div>
           </div>
@@ -244,7 +249,11 @@ export default function MemberDetailPage({
                       <span className="font-semibold text-ds-text-primary">
                         {formatDateLong(meeting.date)}
                       </span>
-                      <BooleanBadge value={meeting.attended} trueLabel="Attended" falseLabel="Absent" />
+                      <BooleanBadge
+                        value={meeting.attended}
+                        trueLabel="Attended"
+                        falseLabel="Absent"
+                      />
                     </div>
                     {meeting.notes && (
                       <div className="text-sm text-ds-text-subtle dark:text-ds-text-subtle mt-1 italic">

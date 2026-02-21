@@ -3,18 +3,11 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "@/providers/AuthProvider";
 import DashboardLayout from "@/components/features/navigation/DashboardLayout";
-import {
-  Card,
-  Descriptions,
-  Spin,
-  Button as AntButton,
-  message,
-} from "antd";
+import { Card, Descriptions, Spin, Button as AntButton, message } from "antd";
 import StatusBadge from "@/components/ui/StatusBadge";
 import { EditOutlined, LockOutlined } from "@ant-design/icons";
 import ProfileAvatar from "@/components/features/users/ProfileAvatar";
 import { useRouter } from "next/navigation";
-import { UserRole } from "@/lib/types";
 
 export default function LeaderProfilePage() {
   const { user } = useAuth();
@@ -46,7 +39,7 @@ export default function LeaderProfilePage() {
 
   if (loading) {
     return (
-      <DashboardLayout role={UserRole.SMALL_GROUP_LEADER}>
+      <DashboardLayout role={user?.role}>
         <div className="flex items-center justify-center h-96">
           <Spin size="large" />
         </div>
@@ -56,7 +49,7 @@ export default function LeaderProfilePage() {
 
   if (!profile) {
     return (
-      <DashboardLayout role={UserRole.SMALL_GROUP_LEADER}>
+      <DashboardLayout role={user?.role}>
         <div className="text-center py-12">
           <p className="text-ds-text-subtle">Profile not found</p>
         </div>
@@ -65,7 +58,7 @@ export default function LeaderProfilePage() {
   }
 
   return (
-    <DashboardLayout role={UserRole.SMALL_GROUP_LEADER}>
+    <DashboardLayout role={user?.role}>
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <h2 className="text-2xl font-bold text-ds-text-primary">
@@ -100,9 +93,7 @@ export default function LeaderProfilePage() {
               <h3 className="text-xl font-semibold text-ds-text-primary">
                 {profile.firstName} {profile.lastName}
               </h3>
-              <p className="text-ds-text-secondary">
-                {profile.email}
-              </p>
+              <p className="text-ds-text-secondary">{profile.email}</p>
               <div className="mt-2">
                 <StatusBadge status="SMALL_GROUP_LEADER" category="role" />
               </div>

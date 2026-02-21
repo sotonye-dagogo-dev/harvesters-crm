@@ -18,6 +18,8 @@ interface GroupCardProps {
     meetingFrequency?: string;
     isActive?: boolean;
   };
+  /** Route prefix for the group link (e.g. "/superadmin/groups" or "/leader/groups"). Defaults to "/superadmin/groups". */
+  routePrefix?: string;
   showActions?: boolean;
   onEdit?: (groupId: string) => void;
   onDelete?: (groupId: string) => void;
@@ -25,6 +27,7 @@ interface GroupCardProps {
 
 export default function GroupCard({
   group,
+  routePrefix = "/superadmin/groups",
   showActions = false,
   onEdit,
   onDelete,
@@ -57,7 +60,7 @@ export default function GroupCard({
       <div className="space-y-3">
         <div>
           <Link
-            href={`/groups/${group.id}`}
+            href={`${routePrefix}/${group.id}`}
             className="text-lg font-semibold text-ds-text-primary hover:text-ds-brand-accent"
           >
             {group.name}

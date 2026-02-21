@@ -11,3 +11,5 @@ export { default as ReportForm } from "./ReportForm";
 export { default as ReportOverviewWidget } from "./ReportOverviewWidget";
 export { default as TemplateSectionBuilder } from "./TemplateSectionBuilder";
 export type { SectionInput, SubSectionInput, MetricInput } from "./TemplateSectionBuilder";
+export { default as ReportNewView } from "./ReportNewView";
+export { default as ReportDataEntryView } from "./ReportDataEntryView";

@@ -3,12 +3,12 @@ import LoginForm from "@/components/features/auth/LoginForm";
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
 
 export const metadata: Metadata = {
-  title: "Login - Harvesters Small Groups CRM",
+  title: "Login - Harvesters Church CRM",
   description: "Sign in to access your church fellowship account",
 };
 
 export default function LoginPage() {
-  const isDev = process.env.NODE_ENV === "development";
+  const isDev = process.env.NEXT_PUBLIC_SHOW_DEV_CREDENTIALS === "true";
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-ds-surface-base p-4">

@@ -11,6 +11,7 @@ import {
   BarChartOutlined,
   PieChartOutlined,
 } from "@ant-design/icons";
+
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Card from "@/components/ui/Card";
@@ -57,7 +58,7 @@ export default function SuperadminDashboard() {
   // Dynamic stats configuration
   const stats = [
     {
-      title: "Total Members",
+      title: "Total Users",
       value: analytics?.totalUsers || 0,
       icon: <UserOutlined />,
       color: "text-ds-chart-1",
@@ -135,7 +136,7 @@ export default function SuperadminDashboard() {
               Dashboard
             </h2>
             <p className="text-ds-text-secondary">
-              Welcome to Harvesters Small Groups CRM
+              Welcome to Harvesters Church CRM
             </p>
           </div>
           <Button
@@ -173,9 +174,7 @@ export default function SuperadminDashboard() {
                 <div className="text-4xl font-bold text-ds-brand-accent mb-2">
                   {metric.value}
                 </div>
-                <p className="text-ds-text-secondary">
-                  {metric.description}
-                </p>
+                <p className="text-ds-text-secondary">{metric.description}</p>
               </div>
             </Card>
           ))}

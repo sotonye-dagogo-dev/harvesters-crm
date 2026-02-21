@@ -5,7 +5,7 @@ import { ThemeToggle } from "@/components/ui/ThemeToggle";
 import { Spin } from "antd";
 
 export const metadata: Metadata = {
-  title: "Register - Harvesters Small Groups CRM",
+  title: "Register - Harvesters Church CRM",
   description: "Create your church fellowship account",
 };
 

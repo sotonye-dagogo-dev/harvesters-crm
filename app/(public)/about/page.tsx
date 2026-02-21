@@ -37,7 +37,7 @@ export default function AboutPage() {
       icon: <TeamOutlined className="text-4xl" />,
       title: "Bring Hope & Change",
       description:
-        "We are committed to changing lives by providing hope, support, and transformation through small group communities.",
+        "We are committed to changing lives by providing hope, support, and transformation through church communities.",
       color:
         "bg-ds-status-success/5 dark:bg-green-900/20 text-ds-status-success",
     },
@@ -46,8 +46,7 @@ export default function AboutPage() {
       title: "Develop Devoted Followers",
       description:
         "We lead people to become fully devoted followers of Christ through intentional discipleship and pastoral care.",
-      color:
-        "bg-purple-50 dark:bg-purple-900/20 text-ds-chart-3",
+      color: "bg-purple-50 dark:bg-purple-900/20 text-ds-chart-3",
     },
   ];
 
@@ -239,18 +238,18 @@ export default function AboutPage() {
         </div>
       </section>
 
-      {/* Small Groups CRM Section */}
+      {/* Church CRM Section */}
       <section className="py-16 px-4">
         <div className="max-w-6xl mx-auto">
           <div className="bg-gradient-to-r from-green-600 to-blue-600 rounded-3xl shadow-ds-xl p-8 md:p-12 text-white">
             <h2 className="text-4xl font-bold mb-6">
-              Small Groups: The Heart of Our Community
+              Community Groups: The Heart of Our Church
             </h2>
             <p className="text-lg leading-relaxed mb-6 opacity-95">
               At Harvesters, we believe that life transformation happens best in
-              the context of small group communities. Our Small Groups CRM
-              platform empowers leaders to effectively manage fellowships, track
-              engagement, and provide exceptional pastoral care.
+              the context of community groups. Our Church CRM platform empowers
+              leaders to effectively manage fellowships, track engagement, and
+              provide exceptional pastoral care.
             </p>
             <p className="text-lg leading-relaxed opacity-95">
               Through intentional discipleship, consistent follow-up, and
@@ -262,7 +261,7 @@ export default function AboutPage() {
                 href="/register"
                 className="inline-block px-8 py-4 bg-white text-ds-status-success rounded-lg hover:bg-ds-surface-sunken transition-colors shadow-lg font-semibold text-lg"
               >
-                Join a Small Group Today
+                Join Harvesters Today
               </Link>
             </div>
           </div>

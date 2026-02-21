@@ -147,7 +147,7 @@ export default function LeaderRequestsPage() {
 
   if (loading) {
     return (
-      <DashboardLayout role={UserRole.SMALL_GROUP_LEADER}>
+      <DashboardLayout role={user?.role}>
         <div className="flex items-center justify-center min-h-[60vh]">
           <Spin size="large" />
         </div>
@@ -262,7 +262,9 @@ export default function LeaderRequestsPage() {
               </Descriptions.Item>
               {member?.location && (
                 <Descriptions.Item
-                  label={<EnvironmentOutlined className="text-ds-text-subtle" />}
+                  label={
+                    <EnvironmentOutlined className="text-ds-text-subtle" />
+                  }
                   span={2}
                 >
                   {member.location}
@@ -315,62 +317,62 @@ export default function LeaderRequestsPage() {
   };
 
   return (
-    <DashboardLayout role={UserRole.SMALL_GROUP_LEADER}>
+    <DashboardLayout role={user?.role}>
       <div className="max-w-6xl mx-auto space-y-6">
         <div>
-        <h1 className="text-2xl font-bold text-ds-text-primary mb-2">
-          Membership Requests
-        </h1>
-        <p className="text-ds-text-secondary">
-          Review and manage membership requests for your group
-        </p>
-      </div>
+          <h1 className="text-2xl font-bold text-ds-text-primary mb-2">
+            Membership Requests
+          </h1>
+          <p className="text-ds-text-secondary">
+            Review and manage membership requests for your group
+          </p>
+        </div>
 
-      <Tabs defaultActiveKey="pending">
-        <TabPane
-          tab={
-            <span>
-              <ClockCircleOutlined />
-              Pending ({pendingRequests.length})
-            </span>
-          }
-          key="pending"
-        >
-          {pendingRequests.length === 0 ? (
-            <EmptyState
-              icon={<ClockCircleOutlined />}
-              title="No Pending Requests"
-              description="There are no pending membership requests for your group at this time."
-            />
-          ) : (
-            <div className="space-y-4">
-              {pendingRequests.map(renderRequestCard)}
-            </div>
-          )}
-        </TabPane>
+        <Tabs defaultActiveKey="pending">
+          <TabPane
+            tab={
+              <span>
+                <ClockCircleOutlined />
+                Pending ({pendingRequests.length})
+              </span>
+            }
+            key="pending"
+          >
+            {pendingRequests.length === 0 ? (
+              <EmptyState
+                icon={<ClockCircleOutlined />}
+                title="No Pending Requests"
+                description="There are no pending membership requests for your group at this time."
+              />
+            ) : (
+              <div className="space-y-4">
+                {pendingRequests.map(renderRequestCard)}
+              </div>
+            )}
+          </TabPane>
 
-        <TabPane
-          tab={
-            <span>
-              <CheckCircleOutlined />
-              History ({processedRequests.length})
-            </span>
-          }
-          key="history"
-        >
-          {processedRequests.length === 0 ? (
-            <EmptyState
-              icon={<CheckCircleOutlined />}
-              title="No Request History"
-              description="No requests have been processed yet."
-            />
-          ) : (
-            <div className="space-y-4">
-              {processedRequests.map(renderRequestCard)}
-            </div>
-          )}
-        </TabPane>
-      </Tabs>
+          <TabPane
+            tab={
+              <span>
+                <CheckCircleOutlined />
+                History ({processedRequests.length})
+              </span>
+            }
+            key="history"
+          >
+            {processedRequests.length === 0 ? (
+              <EmptyState
+                icon={<CheckCircleOutlined />}
+                title="No Request History"
+                description="No requests have been processed yet."
+              />
+            ) : (
+              <div className="space-y-4">
+                {processedRequests.map(renderRequestCard)}
+              </div>
+            )}
+          </TabPane>
+        </Tabs>
       </div>
     </DashboardLayout>
   );

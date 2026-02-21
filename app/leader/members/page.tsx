@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import DashboardLayout from "@/components/features/navigation/DashboardLayout";
+import { useAuth } from "@/providers/AuthProvider";
 import { Card, message, Spin, Space, Avatar } from "antd";
 import Table from "@/components/ui/Table";
 import StatusBadge, { BooleanBadge } from "@/components/ui/StatusBadge";
@@ -10,7 +11,6 @@ import FilterToolbar, {
   type FilterConfig,
 } from "@/components/ui/FilterToolbar";
 import { UserOutlined, PhoneOutlined, MailOutlined } from "@ant-design/icons";
-import { UserRole } from "@/lib/types";
 
 const leaderMemberFilters: FilterConfig[] = [
   {
@@ -37,6 +37,7 @@ interface GroupMember {
 
 export default function LeaderMembersPage() {
   const router = useRouter();
+  const { user } = useAuth();
   const [members, setMembers] = useState<GroupMember[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchText, setSearchText] = useState("");
@@ -167,7 +168,7 @@ export default function LeaderMembersPage() {
 
   if (loading) {
     return (
-      <DashboardLayout role={UserRole.SMALL_GROUP_LEADER}>
+      <DashboardLayout role={user?.role}>
         <div className="flex items-center justify-center min-h-[400px]">
           <Spin size="large" />
         </div>
@@ -176,7 +177,7 @@ export default function LeaderMembersPage() {
   }
 
   return (
-    <DashboardLayout role={UserRole.SMALL_GROUP_LEADER}>
+    <DashboardLayout role={user?.role}>
       <div className="space-y-8">
         {/* Page Header */}
         <div className="bg-gradient-to-r from-green-50 to-blue-50 dark:from-slate-800 dark:to-slate-900 p-6 rounded-2xl shadow-lg border border-ds-border-base">

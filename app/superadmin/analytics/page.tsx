@@ -87,7 +87,7 @@ export default function ChurchAnalyticsPage() {
     if (!analytics) return;
 
     const csvContent = [
-      ["Harvesters Small Groups CRM - Analytics Report"],
+      ["Harvesters Church CRM - Analytics Report"],
       ["Generated:", formatDateTime(new Date())],
       [],
       ["Overall Statistics"],
@@ -390,7 +390,9 @@ export default function ChurchAnalyticsPage() {
                 <div className="text-3xl font-bold text-ds-status-success">
                   {analytics.activeMembers}
                 </div>
-                <div className="text-sm text-ds-text-secondary mt-1">Active Members</div>
+                <div className="text-sm text-ds-text-secondary mt-1">
+                  Active Members
+                </div>
                 <div className="text-xs text-ds-text-subtle mt-1">
                   {(
                     (analytics.activeMembers / analytics.totalMembers) *
@@ -418,7 +420,9 @@ export default function ChurchAnalyticsPage() {
                 <div className="text-3xl font-bold text-ds-status-error">
                   {analytics.atRiskMembers}
                 </div>
-                <div className="text-sm text-ds-text-secondary mt-1">At Risk</div>
+                <div className="text-sm text-ds-text-secondary mt-1">
+                  At Risk
+                </div>
                 <div className="text-xs text-ds-text-subtle mt-1">
                   {(
                     (analytics.atRiskMembers / analytics.totalMembers) *
@@ -431,7 +435,9 @@ export default function ChurchAnalyticsPage() {
                 <div className="text-3xl font-bold text-ds-chart-1">
                   {analytics.totalMeetings}
                 </div>
-                <div className="text-sm text-ds-text-secondary mt-1">Total Meetings</div>
+                <div className="text-sm text-ds-text-secondary mt-1">
+                  Total Meetings
+                </div>
                 <div className="text-xs text-ds-text-subtle mt-1">
                   All groups
                 </div>

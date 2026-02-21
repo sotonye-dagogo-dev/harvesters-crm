@@ -10,9 +10,9 @@ import {
 } from "@ant-design/icons";
 
 export const metadata: Metadata = {
-  title: "Privacy Policy | Harvesters Small Groups CRM",
+  title: "Privacy Policy | Harvesters Church CRM",
   description:
-    "Privacy Policy for Harvesters International Christian Centre Small Groups CRM. Learn how we collect, use, protect, and manage member data.",
+    "Privacy Policy for Harvesters International Christian Centre Church CRM. Learn how we collect, use, protect, and manage member data.",
   keywords:
     "Harvesters privacy policy, data protection, HICC CRM privacy, member data security",
 };
@@ -31,8 +31,7 @@ export default function PrivacyPage() {
       title: "Privacy by Design",
       description:
         "Privacy is built into every feature. We collect only what's necessary for small group management.",
-      color:
-        "bg-purple-50 dark:bg-purple-900/20 text-ds-chart-3",
+      color: "bg-purple-50 dark:bg-purple-900/20 text-ds-chart-3",
     },
     {
       icon: <SafetyOutlined className="text-3xl" />,
@@ -47,8 +46,7 @@ export default function PrivacyPage() {
       title: "Your Control",
       description:
         "You have the right to access, update, and request deletion of your personal data at any time.",
-      color:
-        "bg-ds-chart-4/5 dark:bg-orange-900/20 text-ds-chart-4",
+      color: "bg-ds-chart-4/5 dark:bg-orange-900/20 text-ds-chart-4",
     },
   ];
 
@@ -474,7 +472,7 @@ export default function PrivacyPage() {
                 <p className="font-semibold text-ds-text-primary">
                   Harvesters International Christian Centre
                 </p>
-                <p>Small Groups CRM Privacy Team</p>
+                <p>Church CRM Privacy Team</p>
                 <p>Email: support@harvestersng.org</p>
                 <p>Website: harvestersng.org</p>
                 <p className="mt-2 text-sm">

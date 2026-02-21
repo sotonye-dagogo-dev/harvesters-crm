@@ -1,7 +1,7 @@
 "use client";
 
 import { UserRole, Gender, EmploymentStatus, MaritalStatus } from "@/lib/types";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import {
   Form,
   Button,
@@ -15,6 +15,7 @@ import {
   Spin,
   Tag,
   Empty,
+  Divider,
 } from "antd";
 import Input, { PasswordInput, TextArea } from "@/components/ui/Input";
 import {
@@ -24,6 +25,7 @@ import {
   PhoneOutlined,
   TeamOutlined,
   CheckCircleOutlined,
+  SearchOutlined,
 } from "@ant-design/icons";
 import Link from "next/link";
 import { useAuth } from "@/providers/AuthProvider";
@@ -45,6 +47,20 @@ interface GroupSuggestion {
   } | null;
   matchReasons: string[];
   score: number;
+}
+
+interface LeaderSearchResult {
+  type: "cell" | "group";
+  id: string;
+  name: string;
+  description: string;
+  memberCount: number;
+  meetingFrequency: string;
+  parentGroupName: string | null;
+  leader: {
+    id: string;
+    name: string;
+  };
 }
 
 interface RegisterFormValues {
@@ -101,6 +117,18 @@ export default function RegisterForm() {
     string | null
   >(null);
   const [inviteGroupName, setInviteGroupName] = useState<string | null>(null);
+
+  // Cell leader search
+  const [leaderSearchQuery, setLeaderSearchQuery] = useState("");
+  const [leaderSearchResults, setLeaderSearchResults] = useState<
+    LeaderSearchResult[]
+  >([]);
+  const [searchingLeader, setSearchingLeader] = useState(false);
+  const [selectedLeaderResult, setSelectedLeaderResult] =
+    useState<LeaderSearchResult | null>(null);
+  const leaderSearchTimeout = useRef<ReturnType<typeof setTimeout> | null>(
+    null
+  );
 
   // Check if invitation is valid
   useEffect(() => {
@@ -160,6 +188,60 @@ export default function RegisterForm() {
       console.error("Failed to fetch group suggestions:", err);
     } finally {
       setLoadingSuggestions(false);
+    }
+  };
+
+  // Debounced leader search
+  const searchByLeader = useCallback(async (query: string) => {
+    if (query.trim().length < 2) {
+      setLeaderSearchResults([]);
+      return;
+    }
+
+    setSearchingLeader(true);
+    try {
+      const res = await fetch(
+        `/api/cells/search-by-leader?query=${encodeURIComponent(query.trim())}`
+      );
+      const result = await res.json();
+      if (result.success) {
+        setLeaderSearchResults(result.data.results || []);
+      }
+    } catch (err) {
+      console.error("Leader search failed:", err);
+    } finally {
+      setSearchingLeader(false);
+    }
+  }, []);
+
+  const handleLeaderSearchChange = (value: string) => {
+    setLeaderSearchQuery(value);
+    // Clear previous timeout
+    if (leaderSearchTimeout.current) {
+      clearTimeout(leaderSearchTimeout.current);
+    }
+    // Debounce the search
+    leaderSearchTimeout.current = setTimeout(() => {
+      searchByLeader(value);
+    }, 400);
+  };
+
+  const handleSelectLeaderResult = (result: LeaderSearchResult) => {
+    setSelectedLeaderResult(result);
+    // Also set as the selected group for the membership request
+    setSelectedGroupForRequest(result.id);
+  };
+
+  const clearLeaderSelection = () => {
+    setSelectedLeaderResult(null);
+    setLeaderSearchQuery("");
+    setLeaderSearchResults([]);
+    // Only clear group selection if it came from leader search
+    if (
+      selectedLeaderResult &&
+      selectedGroupForRequest === selectedLeaderResult.id
+    ) {
+      setSelectedGroupForRequest(null);
     }
   };
 
@@ -292,16 +374,24 @@ export default function RegisterForm() {
 
       await register(registrationData);
 
-      // If user selected a group (without invite), create membership request
+      // If user selected a group or cell (without invite), create membership request
       if (!hasInvite && selectedGroupForRequest) {
         try {
+          const requestBody: Record<string, string> = {
+            type: "JOIN",
+          };
+
+          // If selected from leader search and it's a cell, send cellId
+          if (selectedLeaderResult?.type === "cell") {
+            requestBody.cellId = selectedGroupForRequest;
+          } else {
+            requestBody.groupId = selectedGroupForRequest;
+          }
+
           await fetch("/api/membership-requests", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              groupId: selectedGroupForRequest,
-              type: "JOIN",
-            }),
+            body: JSON.stringify(requestBody),
           });
         } catch (err) {
           console.error("Failed to create membership request:", err);
@@ -619,76 +709,227 @@ export default function RegisterForm() {
           <>
             <div className="text-center mb-6">
               <TeamOutlined className="text-5xl text-ds-brand-accent mb-2" />
-              <Title level={4}>Join a Small Group</Title>
+              <Title level={4}>Join a Group</Title>
               <Text type="secondary">
-                Select a group that matches your interests and location
-                (optional)
+                Search for your cell leader by name or choose from suggested
+                groups (optional)
               </Text>
             </div>
 
-            {loadingSuggestions ? (
-              <div className="text-center py-8">
-                <Spin size="large" tip="Finding groups for you..." />
-              </div>
-            ) : groupSuggestions.length > 0 ? (
-              <div className="space-y-4">
-                {groupSuggestions.map((suggestion) => (
-                  <Card
-                    key={suggestion.id}
-                    hoverable
-                    className={`cursor-pointer transition-all ${
-                      selectedGroupForRequest === suggestion.id
-                        ? "border-ds-brand-accent border-2 bg-ds-brand-accent-subtle"
-                        : "border-ds-border-base"
-                    }`}
-                    onClick={() => setSelectedGroupForRequest(suggestion.id)}
-                  >
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-2">
-                          <Text strong className="text-lg">
-                            {suggestion.name}
-                          </Text>
-                          {selectedGroupForRequest === suggestion.id && (
-                            <CheckCircleOutlined className="text-ds-brand-accent text-xl" />
-                          )}
-                        </div>
-                        <Text type="secondary" className="block mb-2">
-                          {suggestion.description}
-                        </Text>
-                        <div className="flex flex-wrap gap-2 mb-2">
-                          {suggestion.matchReasons.map((reason, idx) => (
-                            <Tag key={idx} color="blue">
-                              {reason}
-                            </Tag>
-                          ))}
-                        </div>
-                        <div className="flex items-center gap-4 text-sm text-ds-text-secondary">
-                          <span>
-                            <TeamOutlined /> {suggestion.memberCount} members
-                          </span>
-                          <span>{suggestion.meetingFrequency}</span>
-                          {suggestion.leader && (
-                            <span>Led by {suggestion.leader.name}</span>
-                          )}
-                        </div>
+            {/* Leader search section */}
+            <div className="mb-6">
+              <Text strong className="block mb-2">
+                <SearchOutlined className="mr-1" />
+                Search by Leader Name
+              </Text>
+              <Input
+                placeholder="Type your cell leader's name..."
+                value={leaderSearchQuery}
+                onChange={(e) => handleLeaderSearchChange(e.target.value)}
+                prefix={<SearchOutlined className="text-ds-text-subtle" />}
+                allowClear
+                onClear={() => {
+                  setLeaderSearchQuery("");
+                  setLeaderSearchResults([]);
+                }}
+              />
+
+              {searchingLeader && (
+                <div className="text-center py-4">
+                  <Spin size="small" />
+                  <Text type="secondary" className="ml-2">
+                    Searching...
+                  </Text>
+                </div>
+              )}
+
+              {/* Selected leader result */}
+              {selectedLeaderResult && (
+                <Card
+                  size="small"
+                  className="mt-3 border-ds-brand-accent border-2 bg-ds-brand-accent-subtle"
+                >
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <CheckCircleOutlined className="text-ds-brand-accent text-lg" />
+                        <Text strong>{selectedLeaderResult.name}</Text>
+                        <Tag
+                          color={
+                            selectedLeaderResult.type === "cell"
+                              ? "green"
+                              : "blue"
+                          }
+                        >
+                          {selectedLeaderResult.type === "cell"
+                            ? "Cell"
+                            : "Group"}
+                        </Tag>
                       </div>
+                      <Text type="secondary" className="text-sm block mt-1">
+                        Led by {selectedLeaderResult.leader.name}
+                        {selectedLeaderResult.parentGroupName &&
+                          ` · ${selectedLeaderResult.parentGroupName}`}
+                      </Text>
                     </div>
-                  </Card>
-                ))}
+                    <Button
+                      type="link"
+                      size="small"
+                      danger
+                      onClick={clearLeaderSelection}
+                    >
+                      Change
+                    </Button>
+                  </div>
+                </Card>
+              )}
+
+              {/* Search results */}
+              {!selectedLeaderResult &&
+                leaderSearchResults.length > 0 &&
+                leaderSearchQuery.length >= 2 && (
+                  <div className="mt-3 space-y-2">
+                    {leaderSearchResults.map((result) => (
+                      <Card
+                        key={`${result.type}-${result.id}`}
+                        size="small"
+                        hoverable
+                        className="cursor-pointer transition-all border-ds-border-base hover:border-ds-brand-accent"
+                        onClick={() => handleSelectLeaderResult(result)}
+                      >
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-1">
+                              <Text strong>{result.name}</Text>
+                              <Tag
+                                color={
+                                  result.type === "cell" ? "green" : "blue"
+                                }
+                              >
+                                {result.type === "cell" ? "Cell" : "Group"}
+                              </Tag>
+                            </div>
+                            <Text
+                              type="secondary"
+                              className="text-sm block mb-1"
+                            >
+                              {result.description}
+                            </Text>
+                            <div className="flex items-center gap-3 text-xs text-ds-text-secondary">
+                              <span>
+                                Led by <strong>{result.leader.name}</strong>
+                              </span>
+                              <span>
+                                <TeamOutlined /> {result.memberCount} members
+                              </span>
+                              {result.parentGroupName && (
+                                <span>Part of {result.parentGroupName}</span>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      </Card>
+                    ))}
+                  </div>
+                )}
+
+              {/* No results message */}
+              {!selectedLeaderResult &&
+                !searchingLeader &&
+                leaderSearchQuery.length >= 2 &&
+                leaderSearchResults.length === 0 && (
+                  <Text
+                    type="secondary"
+                    className="block mt-2 text-sm text-center"
+                  >
+                    No leaders found matching &ldquo;{leaderSearchQuery}&rdquo;
+                  </Text>
+                )}
+            </div>
+
+            {/* Divider between search and suggestions */}
+            {!selectedLeaderResult && (
+              <>
+                <Divider plain>
+                  <Text type="secondary" className="text-xs">
+                    OR choose from suggested groups
+                  </Text>
+                </Divider>
+
+                {/* Existing group suggestions */}
+                {loadingSuggestions ? (
+                  <div className="text-center py-8">
+                    <Spin size="large" tip="Finding groups for you..." />
+                  </div>
+                ) : groupSuggestions.length > 0 ? (
+                  <div className="space-y-4">
+                    {groupSuggestions.map((suggestion) => (
+                      <Card
+                        key={suggestion.id}
+                        hoverable
+                        className={`cursor-pointer transition-all ${
+                          selectedGroupForRequest === suggestion.id
+                            ? "border-ds-brand-accent border-2 bg-ds-brand-accent-subtle"
+                            : "border-ds-border-base"
+                        }`}
+                        onClick={() => {
+                          setSelectedGroupForRequest(suggestion.id);
+                          setSelectedLeaderResult(null);
+                        }}
+                      >
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-2">
+                              <Text strong className="text-lg">
+                                {suggestion.name}
+                              </Text>
+                              {selectedGroupForRequest === suggestion.id && (
+                                <CheckCircleOutlined className="text-ds-brand-accent text-xl" />
+                              )}
+                            </div>
+                            <Text type="secondary" className="block mb-2">
+                              {suggestion.description}
+                            </Text>
+                            <div className="flex flex-wrap gap-2 mb-2">
+                              {suggestion.matchReasons.map((reason, idx) => (
+                                <Tag key={idx} color="blue">
+                                  {reason}
+                                </Tag>
+                              ))}
+                            </div>
+                            <div className="flex items-center gap-4 text-sm text-ds-text-secondary">
+                              <span>
+                                <TeamOutlined /> {suggestion.memberCount}{" "}
+                                members
+                              </span>
+                              <span>{suggestion.meetingFrequency}</span>
+                              {suggestion.leader && (
+                                <span>Led by {suggestion.leader.name}</span>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      </Card>
+                    ))}
+                  </div>
+                ) : (
+                  <Empty
+                    description="No group suggestions available. You can browse and join groups after registration."
+                    className="py-8"
+                  />
+                )}
+
                 <Button
                   type="link"
-                  onClick={() => setSelectedGroupForRequest(null)}
-                  className="w-full"
+                  onClick={() => {
+                    setSelectedGroupForRequest(null);
+                    setSelectedLeaderResult(null);
+                  }}
+                  className="w-full mt-4"
                 >
                   Skip - I&apos;ll choose a group later
                 </Button>
-              </div>
-            ) : (
-              <Empty
-                description="No group suggestions available. You can browse and join groups after registration."
-                className="py-8"
-              />
+              </>
             )}
           </>
         );

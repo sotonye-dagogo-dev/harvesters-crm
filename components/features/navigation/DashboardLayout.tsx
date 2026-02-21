@@ -28,10 +28,12 @@ import {
   PullRequestOutlined,
   MessageOutlined,
   HistoryOutlined,
+  ScheduleOutlined,
+  PlusCircleOutlined,
 } from "@ant-design/icons";
 import { useAuth } from "@/providers/AuthProvider";
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
-import { useTheme } from "next-themes";
+// import { useTheme } from "next-themes";
 import type { MenuProps } from "antd";
 import { getRoleConfig } from "@/lib/constants/roles";
 
@@ -50,15 +52,15 @@ export default function DashboardLayout({
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const { user, logout } = useAuth();
-  const { theme } = useTheme();
+  // const { theme } = useTheme();
   const pathname = usePathname();
   const router = useRouter();
 
   // Determine logo to use dynamically based on theme
-  const logoSrc =
-    theme === "dark"
+  const logoSrc = "/logo/white-bg-harvesters-Logo.svg";
+  /* theme === "dark"
       ? "/logo/dark-bg-harvesters-Logo.jpg"
-      : "/logo/white-bg-harvesters-Logo.jpg";
+      : "/logo/white-bg-harvesters-Logo.jpg"; */
 
   // Use prop role if provided, otherwise use user role from auth context
   const role = propRole || user?.role;
@@ -115,6 +117,8 @@ export default function DashboardLayout({
       PullRequestOutlined: <PullRequestOutlined />,
       MessageOutlined: <MessageOutlined />,
       HistoryOutlined: <HistoryOutlined />,
+      ScheduleOutlined: <ScheduleOutlined />,
+      PlusCircleOutlined: <PlusCircleOutlined />,
     }),
     []
   );
@@ -214,18 +218,7 @@ export default function DashboardLayout({
   const sidebarContent = (
     <>
       <div className="h-20 flex items-center justify-center border-b border-ds-border-subtle backdrop-blur-sm px-4">
-        {!collapsed || isMobile ? (
-          <div className="flex items-center justify-center w-full">
-            <Image
-              src={logoSrc}
-              alt="Harvesters International Christian Centre"
-              width={180}
-              height={60}
-              className="object-contain rounded-lg"
-              priority
-            />
-          </div>
-        ) : (
+        {!isMobile && (
           <div className="w-12 h-12 rounded-xl flex items-center justify-center bg-ds-brand-accent-subtle backdrop-blur-sm">
             <Image
               src={logoSrc}
@@ -272,7 +265,7 @@ export default function DashboardLayout({
             <Image
               src={logoSrc}
               alt="Harvesters International Christian Centre"
-              width={140}
+              width={50}
               height={50}
               className="object-contain"
             />

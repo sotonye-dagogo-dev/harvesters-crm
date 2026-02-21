@@ -12,7 +12,7 @@ import {
 export const metadata: Metadata = {
   title: "Contact Us | Harvesters International Christian Centre",
   description:
-    "Get in touch with Harvesters International Christian Centre. Find our locations across Nigeria, UK, and USA, and connect with our Small Groups CRM support team.",
+    "Get in touch with Harvesters International Christian Centre. Find our locations across Nigeria, UK, and USA, and connect with our Church CRM support team.",
   keywords:
     "Harvesters contact, HICC locations, Harvesters church address, contact Pastor Bolaji Idowu",
 };
@@ -116,7 +116,7 @@ export default function ContactPage() {
       icon: <MailOutlined className="text-3xl" />,
       title: "Email Support",
       details: "support@harvestersng.org",
-      description: "For Small Groups CRM technical support and inquiries",
+      description: "For Church CRM technical support and inquiries",
       color: "bg-ds-chart-1/5 dark:bg-blue-900/20 text-ds-chart-1",
     },
     {
@@ -133,16 +133,14 @@ export default function ContactPage() {
       details: "harvestersng.org",
       description:
         "Visit our main website for church information and resources",
-      color:
-        "bg-purple-50 dark:bg-purple-900/20 text-ds-chart-3",
+      color: "bg-purple-50 dark:bg-purple-900/20 text-ds-chart-3",
     },
     {
       icon: <ClockCircleOutlined className="text-3xl" />,
       title: "Service Times",
       details: "Sundays & Midweek",
       description: "Service times vary by campus - check website for details",
-      color:
-        "bg-ds-chart-4/5 dark:bg-orange-900/20 text-ds-chart-4",
+      color: "bg-ds-chart-4/5 dark:bg-orange-900/20 text-ds-chart-4",
     },
   ];
 
@@ -194,8 +192,8 @@ export default function ContactPage() {
             </span>
           </h1>
           <p className="text-xl text-ds-text-secondary max-w-3xl mx-auto leading-relaxed">
-            Whether you have questions about our Small Groups CRM, need support,
-            or want to visit one of our campuses, we&apos;re here to help.
+            Whether you have questions about our Church CRM, need support, or
+            want to visit one of our campuses, we&apos;re here to help.
           </p>
         </div>
       </section>
@@ -291,12 +289,10 @@ export default function ContactPage() {
       <section className="py-16 px-4">
         <div className="max-w-6xl mx-auto">
           <div className="bg-gradient-to-r from-green-600 to-blue-600 rounded-3xl shadow-ds-xl p-8 md:p-12 text-white">
-            <h2 className="text-4xl font-bold mb-6">
-              Small Groups CRM Support
-            </h2>
+            <h2 className="text-4xl font-bold mb-6">Church CRM Support</h2>
             <p className="text-lg leading-relaxed mb-6 opacity-95">
-              Need help with the Small Groups CRM platform? Our support team is
-              ready to assist you with technical issues, feature questions, or
+              Need help with the Church CRM platform? Our support team is ready
+              to assist you with technical issues, feature questions, or
               training resources.
             </p>
             <div className="space-y-4">

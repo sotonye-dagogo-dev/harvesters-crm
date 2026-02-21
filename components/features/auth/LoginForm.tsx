@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Form, Typography, Alert, Checkbox, Collapse, Tag } from "antd";
 import Button from "@/components/ui/Button";
 import Card from "@/components/ui/Card";
@@ -40,6 +40,13 @@ export default function LoginForm({ showDevCredentials = false }: LoginFormProps
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { login } = useAuth();
+
+  useEffect(() => {
+    console.log("LoginForm mounted, showDevCredentials:", showDevCredentials);
+    return () => {
+      console.log("LoginForm unmounted");
+    };
+  }, [showDevCredentials]);
 
   const onFinish = async (values: LoginFormValues) => {
     setLoading(true);

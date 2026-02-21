@@ -1,6 +1,5 @@
 "use client";
 
-import { UserRole } from "@/lib/types";
 import DashboardLayout from "@/components/features/navigation/DashboardLayout";
 import { StatCard } from "@/components/ui/Card";
 import {
@@ -10,6 +9,7 @@ import {
   TeamOutlined,
   BarChartOutlined,
   ClockCircleOutlined,
+  ApartmentOutlined,
 } from "@ant-design/icons";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -55,41 +55,124 @@ interface GroupAnalytics {
   highlyEngagedMembers: Member[];
 }
 
+interface ScopeOverview {
+  totalUsers: number;
+  totalCampuses: number;
+  totalGroups: number;
+  totalCells: number;
+  totalMeetings: number;
+  totalDepartments: number;
+  scopeName: string;
+}
+
+/** Roles that see a scoped overview rather than a single-group dashboard. */
+const SCOPED_LEADER_ROLES: string[] = [
+  "GROUP_PASTOR",
+  "GROUP_ADMIN",
+  "CAMPUS_PASTOR",
+  "CAMPUS_ADMIN",
+  "ZONAL_LEADER",
+  "HOD",
+];
+
 export default function LeaderDashboard() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [analytics, setAnalytics] = useState<GroupAnalytics | null>(null);
+  const [scopeOverview, setScopeOverview] = useState<ScopeOverview | null>(
+    null
+  );
   const { user } = useAuth();
 
+  const isScopedLeader = user?.role && SCOPED_LEADER_ROLES.includes(user.role);
+
   useEffect(() => {
-    const fetchAnalytics = async () => {
-      if (!user?.groupId) {
+    const fetchData = async () => {
+      if (!user) {
         setLoading(false);
         return;
       }
 
       try {
         setLoading(true);
-        const response = await fetch(`/api/analytics/groups/${user.groupId}`);
 
-        if (!response.ok) {
-          const errorData = await response.json().catch(() => ({}));
-          const errorMessage =
-            errorData.error || `HTTP error! status: ${response.status}`;
-          console.error("Analytics API error:", errorMessage);
-          throw new Error(errorMessage);
-        }
+        if (isScopedLeader) {
+          // Fetch scoped overview data for higher-level leaders
+          const params = new URLSearchParams();
+          if (user.campusId) params.set("campusId", user.campusId);
+          if (user.zoneId) params.set("zoneId", user.zoneId);
+          if (user.departmentId) params.set("departmentId", user.departmentId);
 
-        const result = await response.json();
-        // API returns data in result.data
-        if (result.data) {
-          setAnalytics(result.data);
-        } else {
-          console.error("No data in analytics response:", result);
-          throw new Error("Invalid response format from analytics API");
+          const [usersRes, meetingsRes, groupsRes, cellsRes] =
+            await Promise.all([
+              fetch(`/api/users?pageSize=999`),
+              fetch(`/api/meetings?pageSize=999`),
+              fetch(`/api/groups?pageSize=999`),
+              fetch(`/api/cells?pageSize=999`),
+            ]);
+
+          const usersData = usersRes.ok ? await usersRes.json() : { data: [] };
+          const meetingsData = meetingsRes.ok
+            ? await meetingsRes.json()
+            : { data: [] };
+          const groupsData = groupsRes.ok
+            ? await groupsRes.json()
+            : { data: [] };
+          const cellsData = cellsRes.ok ? await cellsRes.json() : { data: [] };
+
+          const allUsers = Array.isArray(usersData.data) ? usersData.data : [];
+          const allMeetings = Array.isArray(meetingsData.data)
+            ? meetingsData.data
+            : [];
+          const allGroups = Array.isArray(groupsData.data)
+            ? groupsData.data
+            : [];
+          const allCells = Array.isArray(cellsData.data) ? cellsData.data : [];
+
+          // Determine scope name
+          let scopeName = "Your Scope";
+          if (user.role === "GROUP_PASTOR" || user.role === "GROUP_ADMIN") {
+            scopeName = user.zoneId ? "Your Organization Group" : "All Groups";
+          } else if (
+            user.role === "CAMPUS_PASTOR" ||
+            user.role === "CAMPUS_ADMIN"
+          ) {
+            scopeName = "Your Campus";
+          } else if (user.role === "ZONAL_LEADER") {
+            scopeName = "Your Zone";
+          } else if (user.role === "HOD") {
+            scopeName = "Your Department";
+          }
+
+          setScopeOverview({
+            totalUsers: allUsers.length,
+            totalCampuses: 0, // Not directly available from these APIs
+            totalGroups: allGroups.length,
+            totalCells: allCells.length,
+            totalMeetings: allMeetings.length,
+            totalDepartments: 0,
+            scopeName,
+          });
+        } else if (user.groupId) {
+          // Fetch single-group analytics for SGL/Cell Leader
+          const response = await fetch(`/api/analytics/groups/${user.groupId}`);
+
+          if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            throw new Error(
+              errorData.error || `HTTP error! status: ${response.status}`
+            );
+          }
+
+          const result = await response.json();
+          if (result.data) {
+            setAnalytics(result.data);
+          } else {
+            throw new Error("Invalid response format from analytics API");
+          }
         }
       } catch (error) {
-        console.error("Failed to fetch analytics:", error);
+        console.error("Failed to fetch dashboard data:", error);
         const errorMessage =
           error instanceof Error ? error.message : "Unknown error";
         message.error(
@@ -100,11 +183,63 @@ export default function LeaderDashboard() {
       }
     };
 
-    fetchAnalytics();
-  }, [user?.groupId]);
+    fetchData();
+  }, [user, isScopedLeader]);
 
-  // Dynamic stats configuration
-  const stats = [
+  // Quick actions configuration — adapted per role
+  const getQuickActions = () => {
+    if (isScopedLeader) {
+      return [
+        {
+          label: "View Groups",
+          icon: <TeamOutlined />,
+          path: "/leader/groups",
+        },
+        {
+          label: "View Meetings",
+          icon: <CalendarOutlined />,
+          path: "/leader/meetings",
+        },
+        {
+          label: "View Members",
+          icon: <UserOutlined />,
+          path: "/leader/members",
+        },
+        {
+          label: "View Reports",
+          icon: <BarChartOutlined />,
+          path: "/leader/reports",
+        },
+      ];
+    }
+    return [
+      {
+        label: "View My Group",
+        icon: <TeamOutlined />,
+        path: "/leader/my-group",
+      },
+      {
+        label: "Create Meeting",
+        icon: <CalendarOutlined />,
+        path: "/leader/meetings/new",
+      },
+      {
+        label: "Log Interaction",
+        icon: <PhoneOutlined />,
+        path: "/leader/interactions/new",
+      },
+      {
+        label: "Manage Follow-ups",
+        icon: <ClockCircleOutlined />,
+        path: "/leader/follow-ups",
+      },
+    ];
+  };
+
+  const quickActions = getQuickActions();
+
+  // Stats for single-group view
+  const groupStats = [
     {
       title: "Group Members",
       value: analytics?.summary.totalMembers || 0,
@@ -131,33 +266,37 @@ export default function LeaderDashboard() {
     },
   ];
 
-  // Quick actions configuration
-  const quickActions = [
+  // Stats for scoped view
+  const scopeStats = [
     {
-      label: "View My Group",
+      title: "Users in Scope",
+      value: scopeOverview?.totalUsers || 0,
+      icon: <UserOutlined />,
+      color: "text-ds-chart-1",
+    },
+    {
+      title: "Groups",
+      value: scopeOverview?.totalGroups || 0,
       icon: <TeamOutlined />,
-      path: "/leader/my-group",
+      color: "text-ds-brand-accent",
     },
     {
-      label: "Create Meeting",
+      title: "Cells",
+      value: scopeOverview?.totalCells || 0,
+      icon: <ApartmentOutlined />,
+      color: "text-ds-chart-3",
+    },
+    {
+      title: "Meetings",
+      value: scopeOverview?.totalMeetings || 0,
       icon: <CalendarOutlined />,
-      path: "/leader/meetings/new",
-    },
-    {
-      label: "Log Interaction",
-      icon: <PhoneOutlined />,
-      path: "/leader/interactions/new",
-    },
-    {
-      label: "Manage Follow-ups",
-      icon: <ClockCircleOutlined />,
-      path: "/leader/follow-ups",
+      color: "text-ds-chart-4",
     },
   ];
 
   if (loading) {
     return (
-      <DashboardLayout role={UserRole.SMALL_GROUP_LEADER}>
+      <DashboardLayout role={user?.role}>
         <div className="flex items-center justify-center h-96">
           <Spin size="large" />
         </div>
@@ -165,19 +304,41 @@ export default function LeaderDashboard() {
     );
   }
 
+  // Determine role label for heading
+  const getRoleLabel = () => {
+    switch (user?.role) {
+      case "GROUP_PASTOR":
+        return "Group Pastor";
+      case "GROUP_ADMIN":
+        return "Group Admin";
+      case "CAMPUS_PASTOR":
+        return "Campus Pastor";
+      case "CAMPUS_ADMIN":
+        return "Campus Admin";
+      case "ZONAL_LEADER":
+        return "Zonal Leader";
+      case "HOD":
+        return "Head of Department";
+      default:
+        return "Leader";
+    }
+  };
+
   return (
-    <DashboardLayout role={UserRole.SMALL_GROUP_LEADER}>
+    <DashboardLayout role={user?.role}>
       <div className="space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
             <h2 className="text-2xl font-bold text-ds-text-primary mb-2">
-              Leader Dashboard
+              {getRoleLabel()} Dashboard
             </h2>
             <p className="text-ds-text-secondary">
-              Manage your group and track engagement
+              {isScopedLeader
+                ? `Overview of ${scopeOverview?.scopeName || "your scope"}`
+                : "Manage your group and track engagement"}
             </p>
           </div>
-          {user?.groupId && (
+          {!isScopedLeader && user?.groupId && (
             <div className="flex flex-wrap gap-2">
               <Button
                 variant="secondary"
@@ -196,10 +357,48 @@ export default function LeaderDashboard() {
           )}
         </div>
 
-        {user?.groupId ? (
+        {isScopedLeader ? (
+          <>
+            {/* Scoped Overview Dashboard */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mx-2 sm:mx-0">
+              {scopeStats.map((stat, index) => (
+                <StatCard
+                  key={index}
+                  title={stat.title}
+                  value={stat.value}
+                  icon={stat.icon}
+                  color={stat.color}
+                />
+              ))}
+            </div>
+
+            {/* Report Overview Widget */}
+            <ReportOverviewWidget />
+
+            <Card
+              title="Quick Actions"
+              className="bg-ds-surface-elevated border-ds-border-base"
+            >
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mx-2 sm:mx-0">
+                {quickActions.map((action, index) => (
+                  <Button
+                    key={index}
+                    variant="secondary"
+                    size="large"
+                    block
+                    icon={action.icon}
+                    onClick={() => router.push(action.path)}
+                  >
+                    {action.label}
+                  </Button>
+                ))}
+              </div>
+            </Card>
+          </>
+        ) : user?.groupId ? (
           <>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mx-2 sm:mx-0">
-              {stats.map((stat, index) => (
+              {groupStats.map((stat, index) => (
                 <StatCard
                   key={index}
                   title={stat.title}

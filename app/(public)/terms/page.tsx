@@ -11,9 +11,9 @@ import {
 } from "@ant-design/icons";
 
 export const metadata: Metadata = {
-  title: "Terms of Service | Harvesters Small Groups CRM",
+  title: "Terms of Service | Harvesters Church CRM",
   description:
-    "Terms of Service for Harvesters International Christian Centre Small Groups CRM platform. Read about user responsibilities, acceptable use, and service guidelines.",
+    "Terms of Service for Harvesters International Christian Centre Church CRM platform. Read about user responsibilities, acceptable use, and service guidelines.",
   keywords: "Harvesters terms, CRM terms of service, user agreement, HICC CRM",
 };
 
@@ -34,7 +34,7 @@ export default function TermsPage() {
       icon: <CheckCircleOutlined className="text-3xl" />,
       title: "Acceptable Use",
       items: [
-        "Platform must be used for church small group management only",
+        "Platform must be used for church group management only",
         "Users must respect privacy of all member information",
         "No harassment, abuse, or inappropriate content allowed",
         "Accurate reporting of attendance and interaction data required",
@@ -113,7 +113,7 @@ export default function TermsPage() {
             Terms of Service
           </h1>
           <p className="text-xl text-ds-text-secondary max-w-3xl mx-auto leading-relaxed">
-            Harvesters International Christian Centre Small Groups CRM Platform
+            Harvesters International Christian Centre Church CRM Platform
           </p>
           <p className="text-sm text-ds-text-subtle mt-4">
             Last Updated: January 13, 2026
@@ -126,17 +126,17 @@ export default function TermsPage() {
         <div className="max-w-5xl mx-auto">
           <div className="bg-ds-surface-elevated rounded-2xl shadow-ds-xl p-8 md:p-12">
             <h2 className="text-3xl font-bold text-ds-text-primary mb-6">
-              Welcome to Harvesters Small Groups CRM
+              Welcome to Harvesters Church CRM
             </h2>
             <div className="space-y-4 text-lg text-ds-text-secondary leading-relaxed">
               <p>
-                By accessing and using the Harvesters Small Groups CRM platform
+                By accessing and using the Harvesters Church CRM platform
                 (&quot;Platform&quot;), you agree to be bound by these Terms of
                 Service (&quot;Terms&quot;). This Platform is provided by
                 Harvesters International Christian Centre
                 (&quot;Harvesters,&quot; &quot;we,&quot; &quot;us,&quot; or
-                &quot;our&quot;) to support the management of small group
-                fellowships within our church community.
+                &quot;our&quot;) to support the management of group fellowships
+                within our church community.
               </p>
               <p>
                 These Terms govern your access to and use of the Platform,
@@ -159,9 +159,7 @@ export default function TermsPage() {
             >
               <div className="flex items-center gap-4 mb-6">
                 <div className="w-14 h-14 bg-ds-status-success/5 dark:bg-green-900/20 rounded-xl flex items-center justify-center flex-shrink-0">
-                  <span className="text-ds-status-success">
-                    {section.icon}
-                  </span>
+                  <span className="text-ds-status-success">{section.icon}</span>
                 </div>
                 <h2 className="text-2xl font-bold text-ds-text-primary">
                   {section.title}
@@ -232,9 +230,7 @@ export default function TermsPage() {
                 <li>
                   View and interact with content within their role permissions
                 </li>
-                <li>
-                  Export data for legitimate small group management activities
-                </li>
+                <li>Export data for legitimate group management activities</li>
               </ul>
               <p>
                 Users may not copy, modify, distribute, sell, or create
@@ -347,7 +343,7 @@ export default function TermsPage() {
                 <p className="font-semibold text-ds-text-primary">
                   Harvesters International Christian Centre
                 </p>
-                <p>Small Groups CRM Support Team</p>
+                <p>Church CRM Support Team</p>
                 <p>Email: support@harvestersng.org</p>
                 <p>Website: harvestersng.org</p>
               </div>

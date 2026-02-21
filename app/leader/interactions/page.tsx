@@ -169,7 +169,7 @@ export default function InteractionsPage() {
 
   if (loading) {
     return (
-      <DashboardLayout role={UserRole.SMALL_GROUP_LEADER}>
+      <DashboardLayout role={user?.role || UserRole.SMALL_GROUP_LEADER}>
         <div className="space-y-6">
           <div>
             <h2 className="text-2xl font-bold text-ds-text-primary">
@@ -188,7 +188,7 @@ export default function InteractionsPage() {
   }
 
   return (
-    <DashboardLayout role={UserRole.SMALL_GROUP_LEADER}>
+    <DashboardLayout role={user?.role || UserRole.SMALL_GROUP_LEADER}>
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>

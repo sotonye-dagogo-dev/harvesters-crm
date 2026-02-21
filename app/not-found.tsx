@@ -15,21 +15,22 @@ export default function NotFoundPage() {
       <Result
         status="404"
         title="404"
-        subTitle="This page doesn't exist. Let's get you back to your small group community."
+        subTitle="This page doesn't exist. Let's get you back to your community."
         extra={
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             {user?.role ? (
               <>
                 <Link href={user?.role ? getDashboardRoute(user.role) : "/"}>
-                  <Button
-                    size="large"
-                    icon={<DashboardOutlined />}
-                  >
+                  <Button size="large" icon={<DashboardOutlined />}>
                     Go to Dashboard
                   </Button>
                 </Link>
                 <Link href="/">
-                  <Button variant="secondary" size="large" icon={<HomeOutlined />}>
+                  <Button
+                    variant="secondary"
+                    size="large"
+                    icon={<HomeOutlined />}
+                  >
                     Home
                   </Button>
                 </Link>

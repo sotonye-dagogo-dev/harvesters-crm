@@ -32,6 +32,7 @@ export const ROLE_CONFIG: Record<UserRole, RoleConfig> = {
             { key: "groups", label: "Groups", icon: "ApartmentOutlined", path: "/superadmin/groups" },
             { key: "members", label: "Members", icon: "UserOutlined", path: "/superadmin/members" },
             { key: "meetings", label: "Meetings", icon: "CalendarOutlined", path: "/superadmin/meetings/broadcast" },
+            { key: "schedule", label: "Schedule", icon: "ScheduleOutlined", path: "/superadmin/schedule" },
             {
                 key: "reports",
                 label: "Reports",
@@ -39,6 +40,8 @@ export const ROLE_CONFIG: Record<UserRole, RoleConfig> = {
                 path: "/superadmin/reports",
                 children: [
                     { key: "reports-all", label: "All Reports", icon: "FileTextOutlined", path: "/superadmin/reports" },
+                    { key: "reports-new", label: "New Report", icon: "PlusCircleOutlined", path: "/superadmin/reports/new" },
+                    { key: "reports-data-entry", label: "Data Entry", icon: "HistoryOutlined", path: "/superadmin/reports/data-entry" },
                     { key: "reports-templates", label: "Templates", icon: "FormOutlined", path: "/superadmin/reports/templates" },
                     { key: "reports-update-requests", label: "Update Requests", icon: "PullRequestOutlined", path: "/superadmin/reports/update-requests" },
                     { key: "reports-analytics", label: "Report Analytics", icon: "BarChartOutlined", path: "/superadmin/reports/analytics" },
