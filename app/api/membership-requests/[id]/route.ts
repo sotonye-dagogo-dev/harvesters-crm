@@ -7,14 +7,15 @@ import {
   forbiddenResponse,
   handleApiError,
 } from "@/lib/utils/api";
+import { USER_ROLES } from "@/lib/constants";
 
 // GET /api/membership-requests/[id] - Get membership request by ID
 export async function GET(
-  request: NextRequest,
+  _request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { user, error } = await getAuthenticatedUser(request);
+    const { user, error } = await getAuthenticatedUser();
     if (error) return error;
 
     const { id } = await params;
@@ -25,9 +26,11 @@ export async function GET(
     }
 
     // Check permissions
-    const group = groupDb.findById(membershipRequest.toGroupId);
+    const group = membershipRequest.toGroupId
+      ? groupDb.findById(membershipRequest.toGroupId)
+      : undefined;
     const canView =
-      user?.role === UserRole.SUPERADMIN ||
+      user?.role === USER_ROLES.SUPERADMIN ||
       group?.leaderId === user?.id ||
       membershipRequest.memberId === user?.id;
 
@@ -76,11 +79,11 @@ export async function GET(
 
 // DELETE /api/membership-requests/[id] - Cancel membership request
 export async function DELETE(
-  request: NextRequest,
+  _request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { user, error } = await getAuthenticatedUser(request);
+    const { user, error } = await getAuthenticatedUser();
     if (error) return error;
 
     const { id } = await params;
@@ -93,7 +96,7 @@ export async function DELETE(
     // Only the requester or superadmin can cancel
     if (
       user?.id !== membershipRequest.memberId &&
-      user?.role !== UserRole.SUPERADMIN
+      user?.role !== USER_ROLES.SUPERADMIN
     ) {
       return forbiddenResponse(
         "You don't have permission to cancel this request"

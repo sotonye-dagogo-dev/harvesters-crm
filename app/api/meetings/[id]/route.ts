@@ -1,5 +1,5 @@
 import { NextRequest } from "next/server";
-import { meetingDb, groupDb } from "@/lib/data/database";
+import { meetingDb, groupDb, userDb } from "@/lib/data/database";
 import { getAuthenticatedUser } from "@/lib/utils/middleware";
 import { updateMeetingSchema } from "@/lib/utils/validation";
 import {
@@ -9,14 +9,15 @@ import {
   badRequestResponse,
   handleApiError,
 } from "@/lib/utils/api";
+import { USER_ROLES } from "@/lib/constants";
 
 // GET /api/meetings/[id] - Get meeting by ID
 export async function GET(
-  request: NextRequest,
+  _request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { user, error } = await getAuthenticatedUser(request);
+    const { user, error } = await getAuthenticatedUser();
     if (error) return error;
 
     const { id } = await params;
@@ -27,9 +28,9 @@ export async function GET(
     }
 
     // Check permissions
-    const group = groupDb.findById(meeting.groupId);
+    const group = meeting.groupId ? groupDb.findById(meeting.groupId) : undefined;
     const canView =
-      user?.role === UserRole.SUPERADMIN ||
+      user?.role === USER_ROLES.SUPERADMIN ||
       group?.leaderId === user?.id ||
       user?.groupId === meeting.groupId;
 
@@ -39,7 +40,38 @@ export async function GET(
       );
     }
 
-    return successResponse(meeting);
+    // Build MeetingWithDetails response
+    const leader = group?.leaderId ? userDb.findById(group.leaderId) : null;
+    const creator = meeting.createdById
+      ? userDb.findById(meeting.createdById)
+      : null;
+
+    const meetingWithDetails = {
+      ...meeting,
+      group: group
+        ? {
+            id: group.id,
+            name: group.name,
+            leaderId: group.leaderId,
+            leader: leader
+              ? {
+                  id: leader.id,
+                  name: leader.firstName + " " + leader.lastName,
+                }
+              : undefined,
+          }
+        : undefined,
+      createdBy: creator
+        ? {
+            id: creator.id,
+            firstName: creator.firstName,
+            lastName: creator.lastName,
+            email: creator.email,
+          }
+        : undefined,
+    };
+
+    return successResponse(meetingWithDetails);
   } catch (error) {
     return handleApiError(error);
   }
@@ -51,7 +83,7 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { user, error } = await getAuthenticatedUser(request);
+    const { user, error } = await getAuthenticatedUser();
     if (error) return error;
 
     const { id } = await params;
@@ -69,9 +101,9 @@ export async function PUT(
     }
 
     // Check permissions
-    const group = groupDb.findById(meeting.groupId);
+    const group = meeting.groupId ? groupDb.findById(meeting.groupId) : undefined;
     const canUpdate =
-      user?.role === UserRole.SUPERADMIN ||
+      user?.role === USER_ROLES.SUPERADMIN ||
       group?.leaderId === user?.id ||
       meeting.createdById === user?.id;
 
@@ -82,7 +114,7 @@ export async function PUT(
     }
 
     // Update meeting
-    const updatedMeeting = meetingDb.update(id, validation.data);
+    const updatedMeeting = meetingDb.update(id, validation.data as Meeting);
     if (!updatedMeeting) {
       return notFoundResponse("Meeting not found");
     }
@@ -95,11 +127,11 @@ export async function PUT(
 
 // DELETE /api/meetings/[id] - Delete meeting
 export async function DELETE(
-  request: NextRequest,
+  _request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { user, error } = await getAuthenticatedUser(request);
+    const { user, error } = await getAuthenticatedUser();
     if (error) return error;
 
     const { id } = await params;
@@ -110,9 +142,9 @@ export async function DELETE(
     }
 
     // Check permissions
-    const group = groupDb.findById(meeting.groupId);
+    const group = meeting.groupId ? groupDb.findById(meeting.groupId) : undefined;
     const canDelete =
-      user?.role === UserRole.SUPERADMIN ||
+      user?.role === USER_ROLES.SUPERADMIN ||
       group?.leaderId === user?.id ||
       meeting.createdById === user?.id;
 

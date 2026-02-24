@@ -17,7 +17,7 @@ interface ConfirmOptions {
 
 /**
  * Show confirmation dialog for destructive actions
- * 
+ *
  * @example
  * showConfirm({
  *   title: 'Delete User',
@@ -45,8 +45,27 @@ export function showConfirm({
     okText,
     cancelText,
     okType,
-    onOk,
-    onCancel,
+    onOk: async () => {
+      try {
+        await onOk();
+      } catch (error) {
+        Modal.error({
+          title: "Operation Failed",
+          content:
+            error instanceof Error
+              ? error.message
+              : "An error occurred while performing this action. Please try again.",
+          centered: true,
+        });
+      }
+    },
+    onCancel: () => {
+      try {
+        onCancel?.();
+      } catch (error) {
+        console.error("Error in cancel callback:", error);
+      }
+    },
     centered: true,
     maskClosable: true,
   });
@@ -54,7 +73,7 @@ export function showConfirm({
 
 /**
  * Show delete confirmation dialog
- * 
+ *
  * @example
  * showDeleteConfirm({
  *   title: 'Delete Meeting',
@@ -80,8 +99,27 @@ export function showDeleteConfirm({
     okText: "Delete",
     okType: "danger",
     cancelText: "Cancel",
-    onOk,
-    onCancel,
+    onOk: async () => {
+      try {
+        await onOk();
+      } catch (error) {
+        Modal.error({
+          title: `Failed to Delete ${itemName}`,
+          content:
+            error instanceof Error
+              ? error.message
+              : `Unable to delete this ${itemName}. Please try again or contact support if the problem persists.`,
+          centered: true,
+        });
+      }
+    },
+    onCancel: () => {
+      try {
+        onCancel?.();
+      } catch (error) {
+        console.error("Error in cancel callback:", error);
+      }
+    },
     centered: true,
     maskClosable: true,
   });
@@ -89,7 +127,7 @@ export function showDeleteConfirm({
 
 /**
  * Show warning confirmation dialog
- * 
+ *
  * @example
  * showWarningConfirm({
  *   title: 'Remove Member',

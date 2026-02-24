@@ -1,8 +1,11 @@
 "use client";
 
-import { Layout, Menu } from "antd";
-import { ReactNode, useState } from "react";
+import { Layout, Menu, Drawer, Dropdown } from "antd";
+import { ReactNode, useState, useEffect, useMemo } from "react";
 import Link from "next/link";
+import Image from "next/image";
+import { usePathname, useRouter } from "next/navigation";
+import { UserRole } from "@/lib/types";
 import {
   DashboardOutlined,
   TeamOutlined,
@@ -12,227 +15,341 @@ import {
   FileTextOutlined,
   SettingOutlined,
   LogoutOutlined,
-  ScheduleOutlined,
-  ClockCircleOutlined,
   BellOutlined,
+  MenuOutlined,
+  CloseOutlined,
+  GlobalOutlined,
+  BankOutlined,
+  ApartmentOutlined,
+  UsergroupAddOutlined,
+  ShareAltOutlined,
+  BarChartOutlined,
+  FormOutlined,
+  PullRequestOutlined,
+  MessageOutlined,
+  HistoryOutlined,
+  ScheduleOutlined,
+  PlusCircleOutlined,
+  InboxOutlined,
+  LinkOutlined,
 } from "@ant-design/icons";
 import { useAuth } from "@/providers/AuthProvider";
-import { AppHeader, AppFooter } from "@/components/ui/Layout";
+import { ThemeToggle } from "@/components/ui/ThemeToggle";
+import NotificationBell from "@/components/features/notifications/NotificationBell";
+// import { useTheme } from "next-themes";
+import type { MenuProps } from "antd";
+import { getRoleConfig } from "@/lib/constants/roles";
 
-const { Sider, Content } = Layout;
+const { Sider, Content, Header } = Layout;
 
 interface DashboardLayoutProps {
   children: ReactNode;
-  role: "SUPERADMIN" | "LEADER" | "MEMBER";
+  role?: UserRole;
 }
 
 export default function DashboardLayout({
   children,
-  role,
+  role: propRole,
 }: DashboardLayoutProps) {
   const [collapsed, setCollapsed] = useState(false);
+  const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
   const { user, logout } = useAuth();
+  // const { theme } = useTheme();
+  const pathname = usePathname();
+  const router = useRouter();
 
-  // Menu items based on role
-  const getMenuItems = () => {
-    const commonItems = [
-      {
-        key: "dashboard",
-        icon: <DashboardOutlined />,
-        label: <Link href={`/${role.toLowerCase()}/dashboard`}>Dashboard</Link>,
-      },
-    ];
+  // Determine logo to use dynamically based on theme
+  const logoSrc = "/logo/white-bg-harvesters-Logo.svg";
+  /* theme === "dark"
+      ? "/logo/dark-bg-harvesters-Logo.jpg"
+      : "/logo/white-bg-harvesters-Logo.jpg"; */
 
-    if (role === "SUPERADMIN") {
-      return [
-        ...commonItems,
-        {
-          key: "groups",
-          icon: <TeamOutlined />,
-          label: <Link href="/superadmin/groups">Groups</Link>,
-        },
-        {
-          key: "members",
-          icon: <UserOutlined />,
-          label: <Link href="/superadmin/members">Members</Link>,
-        },
-        {
-          key: "analytics",
-          icon: <FileTextOutlined />,
-          label: <Link href="/superadmin/analytics">Analytics</Link>,
-        },
-        {
-          key: "settings",
-          icon: <SettingOutlined />,
-          label: "Settings",
-          children: [
-            {
-              key: "notifications",
-              icon: <BellOutlined />,
-              label: (
-                <Link href="/superadmin/settings/system-notifications">
-                  Notifications
-                </Link>
-              ),
-            },
-          ],
-        },
-      ];
+  // Use prop role if provided, otherwise use user role from auth context
+  const role = propRole || user?.role;
+
+  // Detect mobile screen
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
+
+  // Get active key from pathname
+  const getSelectedKeys = () => {
+    if (!pathname) return ["dashboard"];
+
+    // Extract the key from pathname
+    const pathParts = pathname.split("/").filter(Boolean);
+    if (pathParts.length >= 2) {
+      // For nested routes like /leader/my-group, return ["my-group"]
+      return [pathParts[1]];
     }
-
-    if (role === "LEADER") {
-      return [
-        ...commonItems,
-        {
-          key: "my-group",
-          icon: <TeamOutlined />,
-          label: <Link href="/leader/my-group">My Group</Link>,
-        },
-        {
-          key: "meetings",
-          icon: <CalendarOutlined />,
-          label: <Link href="/leader/meetings">Meetings</Link>,
-        },
-        {
-          key: "schedule",
-          icon: <ScheduleOutlined />,
-          label: <Link href="/leader/schedule">Schedule</Link>,
-        },
-        {
-          key: "follow-ups",
-          icon: <ClockCircleOutlined />,
-          label: <Link href="/leader/follow-ups">Follow-ups</Link>,
-        },
-        {
-          key: "members",
-          icon: <UserOutlined />,
-          label: <Link href="/leader/members">Members</Link>,
-        },
-        {
-          key: "interactions",
-          icon: <PhoneOutlined />,
-          label: <Link href="/leader/interactions">Interactions</Link>,
-        },
-        {
-          key: "settings",
-          icon: <SettingOutlined />,
-          label: "Settings",
-          children: [
-            {
-              key: "notifications",
-              icon: <BellOutlined />,
-              label: (
-                <Link href="/leader/settings/meeting-reminders">
-                  Notifications
-                </Link>
-              ),
-            },
-          ],
-        },
-      ];
-    }
-
-    // MEMBER
-    return [
-      ...commonItems,
-      {
-        key: "my-group",
-        icon: <TeamOutlined />,
-        label: <Link href="/member/my-group">My Group</Link>,
-      },
-      {
-        key: "history",
-        icon: <FileTextOutlined />,
-        label: <Link href="/member/history">My History</Link>,
-      },
-      {
-        key: "settings",
-        icon: <SettingOutlined />,
-        label: "Settings",
-        children: [
-          {
-            key: "notifications",
-            icon: <BellOutlined />,
-            label: (
-              <Link href="/member/settings/preferences">Notifications</Link>
-            ),
-          },
-        ],
-      },
-    ];
+    return ["dashboard"];
   };
 
+  const handleMenuClick = () => {
+    if (isMobile) {
+      setMobileDrawerOpen(false);
+    }
+  };
+
+  // Icon mapping — converts string icon names from ROLE_CONFIG to React elements
+  const iconMap: Record<string, React.ReactNode> = useMemo(
+    () => ({
+      DashboardOutlined: <DashboardOutlined />,
+      TeamOutlined: <TeamOutlined />,
+      UserOutlined: <UserOutlined />,
+      CalendarOutlined: <CalendarOutlined />,
+      PhoneOutlined: <PhoneOutlined />,
+      FileTextOutlined: <FileTextOutlined />,
+      SettingOutlined: <SettingOutlined />,
+      LogoutOutlined: <LogoutOutlined />,
+      BellOutlined: <BellOutlined />,
+      GlobalOutlined: <GlobalOutlined />,
+      BankOutlined: <BankOutlined />,
+      ApartmentOutlined: <ApartmentOutlined />,
+      UsergroupAddOutlined: <UsergroupAddOutlined />,
+      ShareAltOutlined: <ShareAltOutlined />,
+      BarChartOutlined: <BarChartOutlined />,
+      FormOutlined: <FormOutlined />,
+      PullRequestOutlined: <PullRequestOutlined />,
+      MessageOutlined: <MessageOutlined />,
+      HistoryOutlined: <HistoryOutlined />,
+      ScheduleOutlined: <ScheduleOutlined />,
+      PlusCircleOutlined: <PlusCircleOutlined />,
+      InboxOutlined: <InboxOutlined />,
+      LinkOutlined: <LinkOutlined />,
+    }),
+    []
+  );
+
+  // Convert a ROLE_CONFIG navItem to an Ant Design menu item
+  const toMenuItem = (
+    item: RoleNavItem
+  ): NonNullable<MenuProps["items"]>[number] => {
+    if (item.children && item.children.length > 0) {
+      return {
+        key: item.key,
+        icon: iconMap[item.icon] || <FileTextOutlined />,
+        label: item.label,
+        children: item.children.map(toMenuItem),
+      };
+    }
+
+    return {
+      key: item.key,
+      icon: iconMap[item.icon] || <FileTextOutlined />,
+      label: <Link href={item.path}>{item.label}</Link>,
+      onClick: handleMenuClick,
+    };
+  };
+
+  // Menu items based on role — driven entirely by ROLE_CONFIG
+  const getMenuItems = (): MenuProps["items"] => {
+    if (!role) return [];
+
+    const roleConfig = getRoleConfig(role);
+    const navItems = roleConfig.navItems;
+
+    // Build menu from ROLE_CONFIG nav items
+    const items: NonNullable<MenuProps["items"]> = navItems.map(toMenuItem);
+
+    // Append Settings submenu with notifications, profile, and logout
+    // Map each role prefix to its actual (unique) settings page
+    const settingsNotificationsPathMap: Record<string, string> = {
+      "/superadmin": "/superadmin/settings/system-notifications",
+      "/leader": "/leader/settings/meeting-reminders",
+      "/member": "/member/settings/preferences",
+    };
+    const settingsNotificationsHref =
+      settingsNotificationsPathMap[roleConfig.routePrefix] ||
+      `${roleConfig.routePrefix}/settings`;
+    items.push({
+      key: "settings",
+      icon: <SettingOutlined />,
+      label: "Settings",
+      children: [
+        {
+          key: "notifications",
+          icon: <BellOutlined />,
+          label: <Link href={settingsNotificationsHref}>Settings</Link>,
+          onClick: handleMenuClick,
+        },
+        {
+          key: "profile-settings",
+          icon: <UserOutlined />,
+          label: <Link href="/profile">Profile</Link>,
+          onClick: handleMenuClick,
+        },
+        {
+          key: "logout",
+          icon: <LogoutOutlined />,
+          label: "Logout",
+          onClick: logout,
+          danger: true,
+        },
+      ],
+    });
+
+    return items;
+  };
+
+  // Profile dropdown menu items
+  const profileMenuItems: MenuProps["items"] = [
+    {
+      key: "profile",
+      icon: <UserOutlined />,
+      label: "My Profile",
+      onClick: () => router.push("/profile"),
+    },
+    {
+      type: "divider",
+    },
+    {
+      key: "logout",
+      icon: <LogoutOutlined />,
+      label: "Logout",
+      onClick: logout,
+      danger: true,
+    },
+  ];
+
+  // Sidebar content (shared between desktop and mobile)
+  const sidebarContent = (
+    <>
+      <div className="h-20 flex items-center justify-center border-b border-ds-border-subtle backdrop-blur-sm px-4">
+        {!isMobile && (
+          <div className="w-12 h-12 rounded-xl flex items-center justify-center bg-ds-brand-accent-subtle backdrop-blur-sm">
+            <Image
+              src={logoSrc}
+              alt="HICC"
+              width={40}
+              height={40}
+              className="object-contain rounded-lg"
+              priority
+            />
+          </div>
+        )}
+      </div>
+
+      <Menu
+        mode="inline"
+        selectedKeys={getSelectedKeys()}
+        items={getMenuItems()}
+        className="!bg-transparent !border-r-0 mt-4 px-2 [&_.ant-menu-item]:rounded-xl [&_.ant-menu-item]:mb-2 [&_.ant-menu-item:hover]:!bg-ds-brand-accent-subtle [&_.ant-menu-item-selected]:!bg-ds-brand-accent [&_.ant-menu-item-selected]:!text-white [&_.ant-menu-item-selected]:shadow-ds-md [&_.ant-menu-submenu-title]:rounded-xl [&_.ant-menu-submenu-title:hover]:!bg-ds-brand-accent-subtle [&_.ant-menu-item]:!text-ds-text-secondary [&_.ant-menu-item-selected]:!text-ds-text-inverse"
+        aria-label="Dashboard navigation menu"
+      />
+    </>
+  );
+
   return (
-    <Layout className="min-h-screen">
-      <Sider
-        collapsible
-        collapsed={collapsed}
-        onCollapse={setCollapsed}
-        className="!bg-church-primary"
-        theme="dark"
-        width={250}
-        aria-label="Main navigation"
+    <Layout style={{ minHeight: "100vh" }} className="!bg-ds-surface-base">
+      {/* Desktop Sidebar */}
+      {!isMobile && (
+        <Sider
+          collapsible
+          collapsed={collapsed}
+          onCollapse={setCollapsed}
+          width={260}
+          className="!bg-ds-surface-sidebar border-r border-ds-border-base shadow-ds-lg !fixed !left-0 !top-0 !bottom-0 !h-screen overflow-auto z-10 transition-all duration-300"
+          trigger={null}
+        >
+          {sidebarContent}
+        </Sider>
+      )}
+
+      {/* Mobile Drawer */}
+      <Drawer
+        title={
+          <div className="flex items-center justify-between">
+            <Image
+              src={logoSrc}
+              alt="Harvesters International Christian Centre"
+              width={50}
+              height={50}
+              className="object-contain"
+            />
+            <button
+              onClick={() => setMobileDrawerOpen(false)}
+              className="text-ds-text-primary hover:text-ds-text-secondary"
+              aria-label="Close menu"
+            >
+              <CloseOutlined />
+            </button>
+          </div>
+        }
+        placement="left"
+        closable={false}
+        onClose={() => setMobileDrawerOpen(false)}
+        open={isMobile && mobileDrawerOpen}
+        className="[&_.ant-drawer-header]:!bg-ds-surface-sidebar [&_.ant-drawer-header]:border-b [&_.ant-drawer-header]:border-ds-border-base [&_.ant-drawer-body]:!bg-ds-surface-sidebar [&_.ant-drawer-body]:!p-0"
+        width={280}
       >
-        <div className="h-16 flex items-center justify-center border-b border-white/10">
-          {!collapsed ? (
-            <h1 className="text-white text-lg font-bold m-0">Fellowship CRM</h1>
-          ) : (
-            <h1 className="text-white text-lg font-bold m-0">FC</h1>
-          )}
-        </div>
+        {sidebarContent}
+      </Drawer>
 
-        <Menu
-          theme="dark"
-          mode="inline"
-          defaultSelectedKeys={["dashboard"]}
-          items={getMenuItems()}
-          className="!bg-church-primary !border-r-0"
-          aria-label="Dashboard navigation menu"
-        />
-
-        <div className="absolute bottom-4 w-full px-4">
-          <Menu
-            theme="dark"
-            mode="inline"
-            className="!bg-church-primary !border-r-0"
-            items={[
-              {
-                key: "logout",
-                icon: <LogoutOutlined />,
-                label: "Logout",
-                onClick: logout,
-              },
-            ]}
-            aria-label="User account actions"
-          />
-        </div>
-      </Sider>
-
-      <Layout>
-        <AppHeader
-          title={`Welcome, ${user?.firstName || "User"}`}
-          actions={
+      <Layout
+        className="transition-all duration-300"
+        style={{
+          marginLeft: isMobile ? 0 : collapsed ? 80 : 260,
+        }}
+      >
+        <Header className="!bg-ds-surface-header !p-0 shadow-ds-sm sticky top-0 z-10 backdrop-blur-sm border-b border-ds-border-subtle">
+          <div className="flex items-center justify-between h-16 px-6">
             <div className="flex items-center gap-4">
-              <span className="text-sm text-gray-600">
-                {role === "SUPERADMIN"
-                  ? "Super Admin"
-                  : role.charAt(0) + role.slice(1).toLowerCase()}
-              </span>
-              <div className="w-10 h-10 rounded-full bg-church-primary text-white flex items-center justify-center font-semibold">
-                {user?.firstName?.[0]}
-                {user?.lastName?.[0]}
-              </div>
+              {isMobile && (
+                <button
+                  onClick={() => setMobileDrawerOpen(true)}
+                  className="text-2xl text-ds-text-primary hover:text-ds-brand-accent transition-colors"
+                  aria-label="Open menu"
+                >
+                  <MenuOutlined />
+                </button>
+              )}
+              {!isMobile && (
+                <button
+                  onClick={() => setCollapsed(!collapsed)}
+                  className="text-2xl text-ds-text-primary hover:text-ds-brand-accent transition-colors"
+                  aria-label={collapsed ? "Expand menu" : "Collapse menu"}
+                >
+                  <MenuOutlined />
+                </button>
+              )}
             </div>
-          }
-        />
 
-        <Content className="p-6 bg-gray-50">
-          <main id="main-content" tabIndex={-1} aria-label="Main content">
-            <div className="max-w-7xl mx-auto">{children}</div>
-          </main>
-        </Content>
+            <div className="flex items-center gap-4">
+              <ThemeToggle />
+              {user && <NotificationBell />}
+              {user && (
+                <Dropdown
+                  menu={{ items: profileMenuItems }}
+                  trigger={["click"]}
+                  placement="bottomRight"
+                >
+                  <button
+                    className="flex items-center gap-2 px-3 py-1 rounded-lg hover:bg-ds-brand-accent-subtle transition-colors"
+                    aria-label="User profile menu"
+                  >
+                    <div className="w-8 h-8 rounded-full bg-ds-brand-accent flex items-center justify-center text-white font-medium">
+                      {user.firstName?.[0]}
+                      {user.lastName?.[0]}
+                    </div>
+                    <span className="hidden sm:inline text-ds-text-primary font-medium">
+                      {user.firstName} {user.lastName}
+                    </span>
+                  </button>
+                </Dropdown>
+              )}
+            </div>
+          </div>
+        </Header>
 
-        <AppFooter />
+        <Content className="p-6 min-h-[calc(100vh-64px)]">{children}</Content>
       </Layout>
     </Layout>
   );

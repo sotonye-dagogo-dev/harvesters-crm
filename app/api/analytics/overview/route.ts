@@ -1,6 +1,7 @@
 import { NextRequest } from "next/server";
 import { userDb, groupDb, meetingDb, interactionDb } from "@/lib/data/database";
 import { getAuthenticatedUser } from "@/lib/utils/middleware";
+import { USER_ROLES } from "@/lib/constants";
 import {
   successResponse,
   forbiddenResponse,
@@ -10,11 +11,11 @@ import {
 // GET /api/analytics/overview - Get overview analytics
 export async function GET(request: NextRequest) {
   try {
-    const { user, error } = await getAuthenticatedUser(request);
+    const { user, error } = await getAuthenticatedUser();
     if (error) return error;
 
     // Only superadmin can access overview analytics
-    if (user?.role !== UserRole.SUPERADMIN) {
+    if (user?.role !== USER_ROLES.SUPERADMIN) {
       return forbiddenResponse("You don't have permission to access analytics");
     }
 
@@ -51,6 +52,10 @@ export async function GET(request: NextRequest) {
 
     // Calculate statistics
     const activeUsers = allUsers.filter((u) => u.isActive).length;
+    const memberRoleUsers = allUsers.filter(
+      (u) => u.role === "MEMBER" || u.role === "SMALL_GROUP_LEADER" || u.role === "CELL_LEADER"
+    );
+    const totalMembers = memberRoleUsers.length;
     const activeGroups = allGroups.length; // All groups are active
     const totalMeetings = meetings.length;
     const totalInteractions = interactions.length;
@@ -77,7 +82,9 @@ export async function GET(request: NextRequest) {
     // Meeting frequency by group
     const meetingsByGroup = meetings.reduce(
       (acc, m) => {
-        acc[m.groupId] = (acc[m.groupId] || 0) + 1;
+        if (m.groupId) {
+          acc[m.groupId] = (acc[m.groupId] || 0) + 1;
+        }
         return acc;
       },
       {} as Record<string, number>
@@ -104,6 +111,7 @@ export async function GET(request: NextRequest) {
     return successResponse({
       overview: {
         totalUsers: allUsers.length,
+        totalMembers,
         activeUsers,
         totalGroups: allGroups.length,
         activeGroups,

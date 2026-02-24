@@ -6,7 +6,6 @@ import DashboardLayout from "@/components/features/navigation/DashboardLayout";
 import {
   Card,
   Progress,
-  Table,
   Tag,
   Empty,
   Button,
@@ -16,6 +15,7 @@ import {
   Col,
   Tooltip,
 } from "antd";
+import Table from "@/components/ui/Table";
 import {
   PieChartOutlined,
   TeamOutlined,
@@ -26,6 +26,7 @@ import {
 } from "@ant-design/icons";
 import { CardSkeleton } from "@/components/ui/LoadingSkeleton";
 import { StatCard } from "@/components/ui/Card";
+import { UserRole } from "@/lib/types";
 
 interface InterestDistribution {
   interest: string;
@@ -128,9 +129,9 @@ export default function InterestInsightsPage() {
 
   if (loading) {
     return (
-      <DashboardLayout role={user?.role || "SUPERADMIN"}>
+      <DashboardLayout role={user?.role || UserRole.SUPERADMIN}>
         <div className="p-6">
-          <h2 className="text-2xl font-bold text-gray-900 mb-6">
+          <h2 className="text-2xl font-bold text-ds-text-primary mb-6">
             Interest-Based Insights
           </h2>
           <CardSkeleton count={4} />
@@ -141,7 +142,7 @@ export default function InterestInsightsPage() {
 
   if (!analytics) {
     return (
-      <DashboardLayout role={user?.role || "SUPERADMIN"}>
+      <DashboardLayout role={user?.role || UserRole.SUPERADMIN}>
         <div className="p-6">
           <Empty description="No analytics data available" />
         </div>
@@ -206,7 +207,7 @@ export default function InterestInsightsPage() {
             }
           />
           <Tooltip title="Higher scores indicate more shared interests among group members">
-            <InfoCircleOutlined className="text-gray-400" />
+            <InfoCircleOutlined className="text-ds-text-subtle" />
           </Tooltip>
         </div>
       ),
@@ -243,7 +244,7 @@ export default function InterestInsightsPage() {
       render: (group: string, record: MemberSuggestion) => (
         <div>
           <div>{group}</div>
-          <div className="text-xs text-gray-500">
+          <div className="text-xs text-ds-text-subtle">
             Match: {record.currentGroupMatch}%
           </div>
         </div>
@@ -255,10 +256,10 @@ export default function InterestInsightsPage() {
       key: "suggestedGroup",
       render: (_: string, record: MemberSuggestion) => (
         <div>
-          <div className="font-medium text-green-600">
+          <div className="font-medium text-ds-status-success">
             {record.suggestedGroup}
           </div>
-          <div className="text-xs text-gray-500">
+          <div className="text-xs text-ds-text-subtle">
             Match: {record.suggestedGroupMatch}%
           </div>
         </div>
@@ -282,14 +283,14 @@ export default function InterestInsightsPage() {
   ];
 
   return (
-    <DashboardLayout role={user?.role || "SUPERADMIN"}>
+    <DashboardLayout role={user?.role || UserRole.SUPERADMIN}>
       <div className="p-6">
         <div className="flex justify-between items-center mb-6">
           <div>
-            <h2 className="text-2xl font-bold text-gray-900">
+            <h2 className="text-2xl font-bold text-ds-text-primary">
               Interest-Based Insights
             </h2>
-            <p className="text-gray-600 mt-1">
+            <p className="text-ds-text-secondary mt-1">
               Analyze member interests and optimize group compositions
             </p>
           </div>
@@ -340,7 +341,7 @@ export default function InterestInsightsPage() {
                 prefix={<PieChartOutlined />}
                 valueStyle={{ color: "#1890ff" }}
               />
-              <div className="text-xs text-gray-500 mt-2">
+              <div className="text-xs text-ds-text-subtle mt-2">
                 Per member average
               </div>
             </Card>
@@ -364,6 +365,7 @@ export default function InterestInsightsPage() {
                     dataSource={analytics.interestDistribution}
                     columns={distributionColumns}
                     rowKey="interest"
+                    scroll={{ x: 800 }}
                     pagination={{ pageSize: 15 }}
                   />
                 </Card>
@@ -378,7 +380,7 @@ export default function InterestInsightsPage() {
               ),
               children: (
                 <Card>
-                  <p className="text-gray-600 mb-4">
+                  <p className="text-ds-text-secondary mb-4">
                     Groups with higher affinity scores have members who share
                     more common interests, leading to better engagement.
                   </p>
@@ -386,6 +388,7 @@ export default function InterestInsightsPage() {
                     dataSource={analytics.groupAffinityScores}
                     columns={affinityColumns}
                     rowKey="groupId"
+                    scroll={{ x: 1000 }}
                     pagination={{ pageSize: 10 }}
                   />
                 </Card>
@@ -405,7 +408,7 @@ export default function InterestInsightsPage() {
               ),
               children: (
                 <Card>
-                  <p className="text-gray-600 mb-4">
+                  <p className="text-ds-text-secondary mb-4">
                     Members who might benefit from joining different groups
                     based on interest alignment (20%+ improvement).
                   </p>
@@ -419,6 +422,7 @@ export default function InterestInsightsPage() {
                       dataSource={analytics.memberSuggestions}
                       columns={suggestionColumns}
                       rowKey="memberId"
+                      scroll={{ x: 1200 }}
                       pagination={{ pageSize: 10 }}
                     />
                   )}

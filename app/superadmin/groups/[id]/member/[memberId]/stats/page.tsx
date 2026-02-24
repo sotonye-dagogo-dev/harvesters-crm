@@ -1,19 +1,21 @@
 "use client";
 
+import { UserRole } from "@/lib/types";
 import { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { useAuth } from "@/providers/AuthProvider";
+import DashboardLayout from "@/components/features/navigation/DashboardLayout";
 import {
   Card,
   Descriptions,
   Progress,
-  Tag,
   Spin,
   message,
-  Table,
   Empty,
   Button as AntButton,
 } from "antd";
+import Table from "@/components/ui/Table";
+import StatusBadge, { BooleanBadge } from "@/components/ui/StatusBadge";
 import {
   ArrowLeftOutlined,
   CheckCircleOutlined,
@@ -49,6 +51,7 @@ export default function MemberStatsPage() {
 
   useEffect(() => {
     fetchData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [groupId, memberId]);
 
   const fetchData = async () => {
@@ -104,7 +107,7 @@ export default function MemberStatsPage() {
       title: "Date",
       key: "date",
       render: (_, record) =>
-        format(new Date(record.meeting.date), "MMM d, yyyy"),
+        format(new Date(record.meeting.date), "d MMM yyyy"),
       sorter: (a, b) =>
         new Date(b.meeting.date).getTime() - new Date(a.meeting.date).getTime(),
     },
@@ -131,16 +134,9 @@ export default function MemberStatsPage() {
     {
       title: "Status",
       key: "status",
-      render: (_, record) =>
-        record.attended ? (
-          <Tag icon={<CheckCircleOutlined />} color="success">
-            Attended
-          </Tag>
-        ) : (
-          <Tag icon={<CloseCircleOutlined />} color="error">
-            Absent
-          </Tag>
-        ),
+      render: (_, record) => (
+        <BooleanBadge value={record.attended} trueLabel="Attended" falseLabel="Absent" />
+      ),
       filters: [
         { text: "Attended", value: true },
         { text: "Absent", value: false },
@@ -151,159 +147,161 @@ export default function MemberStatsPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <Spin size="large" />
-      </div>
+      <DashboardLayout role={UserRole.SUPERADMIN}>
+        <div className="flex items-center justify-center min-h-[60vh]">
+          <Spin size="large" />
+        </div>
+      </DashboardLayout>
     );
   }
 
   if (!member || !group) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <Card>
-          <Empty description="Member or group not found" />
-        </Card>
-      </div>
+      <DashboardLayout role={UserRole.SUPERADMIN}>
+        <div className="flex items-center justify-center min-h-[60vh]">
+          <Card>
+            <Empty description="Member or group not found" />
+          </Card>
+        </div>
+      </DashboardLayout>
     );
   }
 
   // Check if user can view these stats
   const canView =
-    user?.role === "SUPERADMIN" ||
-    (user?.role === "LEADER" && group.leaderId === user.id) ||
+    user?.role === UserRole.SUPERADMIN ||
+    (user?.role === UserRole.SMALL_GROUP_LEADER &&
+      group.leaderId === user.id) ||
     user?.id === memberId;
 
   if (!canView) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <Card>
-          <p className="text-gray-500">
-            You don't have permission to view these statistics
-          </p>
-        </Card>
-      </div>
+      <DashboardLayout role={UserRole.SUPERADMIN}>
+        <div className="flex items-center justify-center min-h-[60vh]">
+          <Card>
+            <p className="text-ds-text-subtle">
+              You don&apos;t have permission to view these statistics
+            </p>
+          </Card>
+        </div>
+      </DashboardLayout>
     );
   }
 
   return (
-    <div className="p-6 max-w-6xl mx-auto">
-      <div className="mb-6">
-        <button
-          onClick={() => router.push(`/groups/${groupId}`)}
-          className="flex items-center gap-2 text-primary-600 hover:text-primary-700 mb-4"
-        >
-          <ArrowLeftOutlined />
-          Back to Group
-        </button>
-        <h1 className="text-2xl font-bold text-gray-900">
-          Member Participation Statistics
-        </h1>
-        <p className="text-gray-500 mt-1">
-          {member.firstName} {member.lastName} • {group.name}
-        </p>
-      </div>
-
-      <div className="space-y-6">
-        {/* Member Information */}
-        <Card title="Member Information">
-          <Descriptions column={2} bordered>
-            <Descriptions.Item label="Name" span={2}>
-              {member.firstName} {member.lastName}
-            </Descriptions.Item>
-            <Descriptions.Item label="Email">{member.email}</Descriptions.Item>
-            <Descriptions.Item label="Phone">{member.phone}</Descriptions.Item>
-            <Descriptions.Item label="Role">
-              <Tag
-                color={
-                  member.role === "SUPERADMIN"
-                    ? "red"
-                    : member.role === "LEADER"
-                      ? "blue"
-                      : "green"
-                }
-              >
-                {member.role}
-              </Tag>
-            </Descriptions.Item>
-            <Descriptions.Item label="Status">
-              <Tag color={member.isActive ? "success" : "default"}>
-                {member.isActive ? "Active" : "Inactive"}
-              </Tag>
-            </Descriptions.Item>
-          </Descriptions>
-        </Card>
-
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-          <StatCard
-            title="Total Meetings"
-            value={stats.totalMeetings}
-            icon={<CalendarOutlined />}
-            color="text-blue-600"
-          />
-          <StatCard
-            title="Attended"
-            value={stats.attended}
-            icon={<CheckCircleOutlined />}
-            color="text-green-600"
-          />
-          <StatCard
-            title="Missed"
-            value={stats.missed}
-            icon={<CloseCircleOutlined />}
-            color="text-red-600"
-          />
-          <Card className="text-center">
-            <div className="text-sm text-gray-600 mb-2">Attendance Rate</div>
-            <Progress
-              type="circle"
-              percent={Math.round(stats.attendanceRate)}
-              size={80}
-              strokeColor={
-                stats.attendanceRate >= 80
-                  ? "#52c41a"
-                  : stats.attendanceRate >= 60
-                    ? "#faad14"
-                    : "#ff4d4f"
-              }
-            />
-          </Card>
+    <DashboardLayout role={UserRole.SUPERADMIN}>
+      <div className="max-w-6xl mx-auto space-y-6">
+        <div>
+          <button
+            onClick={() => router.push(`/superadmin/groups/${groupId}`)}
+            className="flex items-center gap-2 text-primary-600 hover:text-primary-700 mb-4"
+          >
+            <ArrowLeftOutlined />
+            Back to Group
+          </button>
+          <h1 className="text-2xl font-bold text-ds-text-primary">
+            Member Participation Statistics
+          </h1>
+          <p className="text-ds-text-subtle mt-1">
+            {member.firstName} {member.lastName} • {group.name}
+          </p>
         </div>
 
-        {/* Attendance History */}
-        <Card
-          title="Attendance History"
-          extra={
-            attendanceData.length > 0 && (
-              <AntButton
-                type="link"
-                icon={<HistoryOutlined />}
-                onClick={() =>
-                  router.push(
-                    `/groups/${groupId}/member/${memberId}/attendance-history`
-                  )
+        <div className="space-y-6">
+          {/* Member Information */}
+          <Card title="Member Information">
+            <Descriptions column={2} bordered>
+              <Descriptions.Item label="Name" span={2}>
+                {member.firstName} {member.lastName}
+              </Descriptions.Item>
+              <Descriptions.Item label="Email">
+                {member.email}
+              </Descriptions.Item>
+              <Descriptions.Item label="Phone">
+                {member.phone}
+              </Descriptions.Item>
+              <Descriptions.Item label="Role">
+                <StatusBadge status={member.role} category="role" />
+              </Descriptions.Item>
+              <Descriptions.Item label="Status">
+                <BooleanBadge value={member.isActive} trueLabel="Active" falseLabel="Inactive" />
+              </Descriptions.Item>
+            </Descriptions>
+          </Card>
+
+          {/* Stats Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+            <StatCard
+              title="Total Meetings"
+              value={stats.totalMeetings}
+              icon={<CalendarOutlined />}
+              color="text-ds-chart-1"
+            />
+            <StatCard
+              title="Attended"
+              value={stats.attended}
+              icon={<CheckCircleOutlined />}
+              color="text-ds-status-success"
+            />
+            <StatCard
+              title="Missed"
+              value={stats.missed}
+              icon={<CloseCircleOutlined />}
+              color="text-ds-status-error"
+            />
+            <Card className="text-center">
+              <div className="text-sm text-ds-text-secondary mb-2">Attendance Rate</div>
+              <Progress
+                type="circle"
+                percent={Math.round(stats.attendanceRate)}
+                size={80}
+                strokeColor={
+                  stats.attendanceRate >= 80
+                    ? "#52c41a"
+                    : stats.attendanceRate >= 60
+                      ? "#faad14"
+                      : "#ff4d4f"
                 }
-              >
-                View Full History
-              </AntButton>
-            )
-          }
-        >
-          {attendanceData.length === 0 ? (
-            <Empty
-              description="No meetings found for this group"
-              image={Empty.PRESENTED_IMAGE_SIMPLE}
-            />
-          ) : (
-            <Table
-              dataSource={attendanceData}
-              columns={columns}
-              rowKey={(record) => record.meeting.id}
-              pagination={{ pageSize: 10 }}
-            />
-          )}
-        </Card>
+              />
+            </Card>
+          </div>
+
+          {/* Attendance History */}
+          <Card
+            title="Attendance History"
+            extra={
+              attendanceData.length > 0 && (
+                <AntButton
+                  type="link"
+                  icon={<HistoryOutlined />}
+                  onClick={() =>
+                    router.push(
+                      `/groups/${groupId}/member/${memberId}/attendance-history`
+                    )
+                  }
+                >
+                  View Full History
+                </AntButton>
+              )
+            }
+          >
+            {attendanceData.length === 0 ? (
+              <Empty
+                description="No meetings found for this group"
+                image={Empty.PRESENTED_IMAGE_SIMPLE}
+              />
+            ) : (
+              <Table
+                dataSource={attendanceData}
+                columns={columns}
+                rowKey={(record) => record.meeting.id}
+                scroll={{ x: 1000 }}
+                pagination={{ pageSize: 10 }}
+              />
+            )}
+          </Card>
+        </div>
       </div>
-    </div>
+    </DashboardLayout>
   );
 }

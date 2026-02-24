@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Button, message } from "antd";
+import { message } from "antd";
+import Button from "@/components/ui/Button";
 import { DownloadOutlined, CloseOutlined } from "@ant-design/icons";
 
 interface BeforeInstallPromptEvent extends Event {
@@ -78,37 +79,36 @@ export function InstallPrompt() {
 
   return (
     <div className="fixed bottom-4 left-4 right-4 md:left-auto md:right-4 md:max-w-md z-50 animate-slide-up">
-      <div className="bg-white rounded-lg shadow-lg border border-gray-200 p-4">
+      <div className="bg-white rounded-lg shadow-lg border border-ds-border-base p-4">
         <div className="flex items-start gap-3">
           <div className="flex-shrink-0">
-            <div className="w-10 h-10 bg-church-primary rounded-lg flex items-center justify-center">
+            <div className="w-10 h-10 bg-ds-brand-accent rounded-lg flex items-center justify-center">
               <DownloadOutlined className="text-white text-lg" />
             </div>
           </div>
           <div className="flex-1 min-w-0">
-            <h3 className="text-sm font-semibold text-gray-900 mb-1">
+            <h3 className="text-sm font-semibold text-ds-text-primary mb-1">
               Install Fellowship CRM
             </h3>
-            <p className="text-xs text-gray-600 mb-3">
+            <p className="text-xs text-ds-text-secondary mb-3">
               Install our app for quick access and offline support.
             </p>
             <div className="flex gap-2">
               <Button
-                type="primary"
                 size="small"
                 icon={<DownloadOutlined />}
                 onClick={handleInstall}
               >
                 Install
               </Button>
-              <Button size="small" onClick={handleDismiss}>
+              <Button variant="secondary" size="small" onClick={handleDismiss}>
                 Not now
               </Button>
             </div>
           </div>
           <button
             onClick={handleDismiss}
-            className="flex-shrink-0 text-gray-400 hover:text-gray-600 transition-colors"
+            className="flex-shrink-0 text-ds-text-subtle hover:text-ds-text-secondary transition-colors"
             aria-label="Close"
           >
             <CloseOutlined />

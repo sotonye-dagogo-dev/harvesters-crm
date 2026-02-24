@@ -9,6 +9,8 @@ import {
   handleApiError,
 } from "@/lib/utils/api";
 import { sendNewMembershipRequestNotification } from "@/lib/utils/notificationHelpers";
+import { USER_ROLES } from "@/lib/constants";
+import { MembershipRequestStatus, MembershipRequestType } from "@/lib/types";
 
 const createRequestSchema = z.object({
   groupId: z.string().min(1, "Group ID is required"),
@@ -18,7 +20,7 @@ const createRequestSchema = z.object({
 // GET /api/membership-requests - List membership requests
 export async function GET(request: NextRequest) {
   try {
-    const { user, error } = await getAuthenticatedUser(request);
+    const { user, error } = await getAuthenticatedUser();
     if (error) return error;
 
     const { searchParams } = new URL(request.url);
@@ -32,13 +34,13 @@ export async function GET(request: NextRequest) {
     const limit = parseInt(searchParams.get("limit") || "20");
 
     // Build filter based on user role
-    let filter: Record<string, unknown> = {};
+    const filter: Record<string, unknown> = {};
 
-    if (user?.role === UserRole.SUPERADMIN) {
+    if (user?.role === USER_ROLES.SUPERADMIN) {
       // Superadmin sees all requests
       if (status) filter.status = status;
       if (groupId) filter.groupId = groupId;
-    } else if (user?.role === UserRole.LEADER) {
+    } else if (user?.role === USER_ROLES.SMALL_GROUP_LEADER) {
       // Leaders see requests for their group
       filter.groupId = user.groupId;
       if (status) filter.status = status;
@@ -58,7 +60,9 @@ export async function GET(request: NextRequest) {
     // Enrich with user and group details
     const enrichedRequests = requests.map((request) => {
       const requestedBy = userDb.findById(request.memberId);
-      const group = groupDb.findById(request.toGroupId);
+      const group = request.toGroupId
+        ? groupDb.findById(request.toGroupId)
+        : undefined;
       const processedBy = request.respondedById
         ? userDb.findById(request.respondedById)
         : null;
@@ -108,7 +112,7 @@ export async function GET(request: NextRequest) {
 // POST /api/membership-requests - Create membership request
 export async function POST(request: NextRequest) {
   try {
-    const { user, error } = await getAuthenticatedUser(request);
+    const { user, error } = await getAuthenticatedUser();
     if (error) return error;
 
     const body = await request.json();
@@ -120,7 +124,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Only members can create membership requests
-    if (user?.role !== UserRole.MEMBER) {
+    if (user?.role !== USER_ROLES.MEMBER) {
       return forbiddenResponse("Only members can create membership requests");
     }
 
@@ -146,16 +150,15 @@ export async function POST(request: NextRequest) {
     }
 
     // Create membership request
-    const membershipRequest = membershipRequestDb.create(
-      {
-        type: user.groupId
-          ? ("TRANSFER" as MembershipRequestType)
-          : ("JOIN" as MembershipRequestType),
-        toGroupId: validation.data.groupId,
-        message: validation.data.reason,
-      },
-      user.id
-    );
+    const membershipRequest = membershipRequestDb.create({
+      memberId: user.id,
+      type: user.groupId
+        ? ("TRANSFER" as MembershipRequestType)
+        : ("JOIN" as MembershipRequestType),
+      status: "PENDING" as MembershipRequestStatus,
+      toGroupId: validation.data.groupId,
+      message: validation.data.reason,
+    });
 
     // Send notification to group leader
     await sendNewMembershipRequestNotification(membershipRequest.id);

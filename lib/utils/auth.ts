@@ -1,13 +1,15 @@
 import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
 import { cookies } from "next/headers";
+import { USER_ROLES } from "@/lib/constants";
+import { UserRole } from "../types";
 
 // JWT Configuration
 const ACCESS_TOKEN_SECRET =
   process.env.JWT_ACCESS_SECRET || "dev-access-secret-key";
 const REFRESH_TOKEN_SECRET =
   process.env.JWT_REFRESH_SECRET || "dev-refresh-secret-key";
-const ACCESS_TOKEN_EXPIRY = "15m";
+const ACCESS_TOKEN_EXPIRY = "8h";
 const REFRESH_TOKEN_EXPIRY = "7d";
 
 // ============================================================================
@@ -69,7 +71,10 @@ export function verifyAccessToken(
       role: UserRole;
     };
     return decoded;
-  } catch (error) {
+  } catch (error: any) {
+    console.error(
+      `Invalid or expired access token: ${error?.message || "Unknown error"}`
+    );
     return null;
   }
 }
@@ -80,7 +85,10 @@ export function verifyRefreshToken(token: string): { userId: string } | null {
       userId: string;
     };
     return decoded;
-  } catch (error) {
+  } catch (error: any) {
+    console.error(
+      `Invalid or expired refresh token: ${error?.message || "Unknown error"}`
+    );
     return null;
   }
 }
@@ -136,10 +144,14 @@ export async function getRefreshToken(): Promise<string | undefined> {
 
 export async function getCurrentUser(): Promise<AuthUser | null> {
   const token = await getAccessToken();
-  if (!token) return null;
+  if (!token) {
+    return null;
+  }
 
   const decoded = verifyAccessToken(token);
-  if (!decoded) return null;
+  if (!decoded) {
+    return null;
+  }
 
   // In a real app, you'd fetch the user from the database
   // For now, we'll return a minimal user object
@@ -164,15 +176,17 @@ export function hasRole(user: AuthUser | null, roles: UserRole[]): boolean {
 }
 
 export function isSuperadmin(user: AuthUser | null): boolean {
-  return hasRole(user, [UserRole.SUPERADMIN]);
+  return hasRole(user, [USER_ROLES.SUPERADMIN as UserRole]);
 }
 
 export function isLeader(user: AuthUser | null): boolean {
-  return hasRole(user, [UserRole.LEADER, UserRole.SUPERADMIN]);
+  if (!user) return false;
+  return user.role !== USER_ROLES.MEMBER;
 }
 
 export function isMember(user: AuthUser | null): boolean {
-  return hasRole(user, [UserRole.MEMBER, UserRole.LEADER, UserRole.SUPERADMIN]);
+  // All authenticated users are considered members (they can access member-level resources)
+  return !!user;
 }
 
 export function canAccessGroup(
@@ -187,5 +201,6 @@ export function canAccessGroup(
 export function canManageGroup(user: AuthUser | null, group: Group): boolean {
   if (!user) return false;
   if (isSuperadmin(user)) return true;
-  return user.role === UserRole.LEADER && group.leaderId === user.id;
+  // Check if user is the group leader (any leadership role)
+  return isLeader(user) && group.leaderId === user.id;
 }

@@ -3,9 +3,9 @@ import { getAuthenticatedUser } from "@/lib/utils/middleware";
 import { successResponse, handleApiError } from "@/lib/utils/api";
 
 // GET /api/auth/me - Get current authenticated user
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
-    const { user, error } = await getAuthenticatedUser(request);
+    const { user, error } = await getAuthenticatedUser();
     if (error) return error;
 
     // Return user without sensitive data

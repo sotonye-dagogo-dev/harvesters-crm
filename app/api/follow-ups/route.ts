@@ -1,3 +1,4 @@
+﻿import { UserRole } from "@/lib/types";
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/data/database";
 import { getAuthenticatedUser } from "@/lib/utils/middleware";
@@ -8,7 +9,7 @@ import {
 } from "@/lib/utils/api";
 
 // In-memory storage for follow-ups (replace with database in production)
-export const followUps: Array<{
+interface FollowUp {
   id: string;
   leaderId: string;
   memberId: string;
@@ -19,17 +20,19 @@ export const followUps: Array<{
   outcome?: string;
   createdAt: Date;
   completedAt: Date | null;
-}> = [];
+}
+
+export const followUps: FollowUp[] = [];
 
 let followUpIdCounter = 1;
 
 // GET /api/follow-ups - List all follow-ups for the leader
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
-    const { user, error } = await getAuthenticatedUser(request);
+    const { user, error } = await getAuthenticatedUser();
     if (error) return error;
 
-    if (user?.role !== "LEADER" && user?.role !== "SUPERADMIN") {
+    if (user?.role !== UserRole.SMALL_GROUP_LEADER && user?.role !== "SUPERADMIN") {
       return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
     }
 
@@ -68,10 +71,10 @@ export async function GET(request: NextRequest) {
 // POST /api/follow-ups - Create a new follow-up
 export async function POST(request: NextRequest) {
   try {
-    const { user, error } = await getAuthenticatedUser(request);
+    const { user, error } = await getAuthenticatedUser();
     if (error) return error;
 
-    if (user?.role !== "LEADER" && user?.role !== "SUPERADMIN") {
+    if (user?.role !== UserRole.SMALL_GROUP_LEADER && user?.role !== "SUPERADMIN") {
       return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
     }
 
@@ -88,7 +91,7 @@ export async function POST(request: NextRequest) {
       return badRequestResponse("Member not found");
     }
 
-    if (user.role === "LEADER" && member.groupId !== user.groupId) {
+    if (user.role === UserRole.SMALL_GROUP_LEADER && member.groupId !== user.groupId) {
       return NextResponse.json(
         { error: "Can only create follow-ups for your group members" },
         { status: 403 }

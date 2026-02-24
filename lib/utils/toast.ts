@@ -77,9 +77,16 @@ export const toast = {
       hide();
       toast.success(success);
       return result;
-    } catch (err) {
+    } catch (err: unknown) {
       hide();
-      toast.error(error);
+      // Provide detailed error message if available
+      let errorMessage = error;
+      if (err instanceof Error && err.message) {
+        errorMessage = `${error}: ${err.message}`;
+      } else if (typeof err === "string") {
+        errorMessage = `${error}: ${err}`;
+      }
+      toast.error(errorMessage);
       throw err;
     }
   },
@@ -90,41 +97,66 @@ export const toast = {
  */
 export const operationToasts = {
   // Create operations
-  created: (itemName: string) =>
-    toast.success(`${itemName} created successfully`),
-  createFailed: (itemName: string) =>
-    toast.error(`Failed to create ${itemName}`),
+  created: (itemName: string, reason?: string) =>
+    toast.success(
+      `${itemName} created successfully${reason ? `: ${reason}` : ""}`
+    ),
+  createFailed: (itemName: string, reason?: string) =>
+    toast.error(
+      `Failed to create ${itemName}${reason ? `: ${reason}` : ""}`,
+      5
+    ),
 
   // Update operations
-  updated: (itemName: string) =>
-    toast.success(`${itemName} updated successfully`),
-  updateFailed: (itemName: string) =>
-    toast.error(`Failed to update ${itemName}`),
+  updated: (itemName: string, reason?: string) =>
+    toast.success(
+      `${itemName} updated successfully${reason ? `: ${reason}` : ""}`
+    ),
+  updateFailed: (itemName: string, reason?: string) =>
+    toast.error(
+      `Failed to update ${itemName}${reason ? `: ${reason}` : ""}`,
+      5
+    ),
 
   // Delete operations
-  deleted: (itemName: string) =>
-    toast.success(`${itemName} deleted successfully`),
-  deleteFailed: (itemName: string) =>
-    toast.error(`Failed to delete ${itemName}`),
+  deleted: (itemName: string, reason?: string) =>
+    toast.success(
+      `${itemName} deleted successfully${reason ? `: ${reason}` : ""}`
+    ),
+  deleteFailed: (itemName: string, reason?: string) =>
+    toast.error(
+      `Failed to delete ${itemName}${reason ? `: ${reason}` : ""}`,
+      5
+    ),
 
   // Save operations
   saved: () => toast.success("Changes saved successfully"),
-  saveFailed: () => toast.error("Failed to save changes"),
+  saveFailed: (reason?: string) =>
+    toast.error(`Failed to save changes${reason ? `: ${reason}` : ""}`, 5),
 
   // Load operations
-  loadFailed: (itemName: string) => toast.error(`Failed to load ${itemName}`),
+  loadFailed: (itemName: string, reason?: string) =>
+    toast.error(`Failed to load ${itemName}${reason ? `: ${reason}` : ""}`, 5),
 
   // Copy operations
   copied: () => toast.success("Copied to clipboard"),
-  copyFailed: () => toast.error("Failed to copy to clipboard"),
+  copyFailed: () =>
+    toast.error(
+      "Failed to copy to clipboard. Please try manually selecting and copying."
+    ),
 
   // Upload operations
   uploaded: () => toast.success("File uploaded successfully"),
-  uploadFailed: () => toast.error("Failed to upload file"),
+  uploadFailed: (reason?: string) =>
+    toast.error(
+      `Failed to upload file${reason ? `: ${reason}` : ". Please check file size and format."}`,
+      5
+    ),
 
   // Generic operations
   success: (action: string) => toast.success(`${action} successful`),
-  failed: (action: string) => toast.error(`${action} failed`),
+  failed: (action: string, reason?: string) =>
+    toast.error(`${action} failed${reason ? `: ${reason}` : ""}`, 5),
 };
 
 /**

@@ -3,22 +3,15 @@
 import { useEffect, useState } from "react";
 import DashboardLayout from "@/components/features/navigation/DashboardLayout";
 import { useAuth } from "@/providers/AuthProvider";
-import {
-  Card,
-  Table,
-  Tag,
-  Input,
-  Select,
-  DatePicker,
-  Button as AntButton,
-  Space,
-  Avatar,
-  Tooltip,
-  message,
-} from "antd";
+import { Card, Avatar, Tooltip, message } from "antd";
+import Table from "@/components/ui/Table";
+import Button from "@/components/ui/Button";
+import StatusBadge from "@/components/ui/StatusBadge";
+import FilterToolbar, {
+  type FilterConfig,
+} from "@/components/ui/FilterToolbar";
 import {
   UserOutlined,
-  SearchOutlined,
   FilterOutlined,
   DownloadOutlined,
   ReloadOutlined,
@@ -33,11 +26,52 @@ import { CardSkeleton } from "@/components/ui/LoadingSkeleton";
 import Pagination from "@/components/ui/Pagination";
 import dayjs, { Dayjs } from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
+import { UserRole } from "@/lib/types";
 
 dayjs.extend(relativeTime);
 
-const { RangePicker } = DatePicker;
-const { Search } = Input;
+const activityFilters: FilterConfig[] = [
+  {
+    key: "search",
+    type: "search",
+    label: "Search",
+    placeholder: "Search users, actions, or resources",
+    width: 280,
+  },
+  {
+    key: "action",
+    type: "select",
+    label: "Action",
+    placeholder: "Filter by action",
+    options: [
+      { label: "All Actions", value: "ALL" },
+      { label: "Create", value: "CREATE" },
+      { label: "Update", value: "UPDATE" },
+      { label: "Delete", value: "DELETE" },
+      { label: "Login", value: "LOGIN" },
+      { label: "Logout", value: "LOGOUT" },
+      { label: "Approve", value: "APPROVE" },
+      { label: "Reject", value: "REJECT" },
+    ],
+  },
+  {
+    key: "role",
+    type: "select",
+    label: "Role",
+    placeholder: "Filter by role",
+    options: [
+      { label: "All Roles", value: "ALL" },
+      { label: "Superadmin", value: "SUPERADMIN" },
+      { label: "Leader", value: "LEADER" },
+      { label: "Member", value: "MEMBER" },
+    ],
+  },
+  {
+    key: "dateRange",
+    type: "dateRange",
+    label: "Date Range",
+  },
+];
 
 interface ActivityLog {
   id: string;
@@ -78,10 +112,12 @@ export default function UserActivityLogsPage() {
 
   useEffect(() => {
     fetchActivityLogs();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
     filterActivities();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchTerm, actionFilter, roleFilter, dateRange, activities]);
 
   const fetchActivityLogs = async () => {
@@ -90,7 +126,7 @@ export default function UserActivityLogsPage() {
       // Mock activity logs - in production, this would come from API
       const mockLogs: ActivityLog[] = generateMockActivityLogs();
       setActivities(mockLogs);
-    } catch (error) {
+    } catch {
       message.error("Failed to load activity logs");
     } finally {
       setLoading(false);
@@ -197,55 +233,21 @@ export default function UserActivityLogsPage() {
   const getActionIcon = (actionType: ActivityLog["actionType"]) => {
     switch (actionType) {
       case "CREATE":
-        return <PlusOutlined className="text-green-600" />;
+        return <PlusOutlined className="text-ds-status-success" />;
       case "UPDATE":
-        return <EditOutlined className="text-blue-600" />;
+        return <EditOutlined className="text-ds-chart-1" />;
       case "DELETE":
-        return <DeleteOutlined className="text-red-600" />;
+        return <DeleteOutlined className="text-ds-status-error" />;
       case "LOGIN":
-        return <CheckCircleOutlined className="text-green-600" />;
+        return <CheckCircleOutlined className="text-ds-status-success" />;
       case "LOGOUT":
-        return <CloseCircleOutlined className="text-gray-600" />;
+        return <CloseCircleOutlined className="text-ds-text-secondary" />;
       case "APPROVE":
-        return <CheckCircleOutlined className="text-green-600" />;
+        return <CheckCircleOutlined className="text-ds-status-success" />;
       case "REJECT":
-        return <CloseCircleOutlined className="text-red-600" />;
+        return <CloseCircleOutlined className="text-ds-status-error" />;
       default:
-        return <SwapOutlined className="text-gray-600" />;
-    }
-  };
-
-  const getActionColor = (actionType: ActivityLog["actionType"]) => {
-    switch (actionType) {
-      case "CREATE":
-        return "green";
-      case "UPDATE":
-        return "blue";
-      case "DELETE":
-        return "red";
-      case "LOGIN":
-        return "cyan";
-      case "LOGOUT":
-        return "default";
-      case "APPROVE":
-        return "green";
-      case "REJECT":
-        return "red";
-      default:
-        return "default";
-    }
-  };
-
-  const getRoleColor = (role: string) => {
-    switch (role) {
-      case "SUPERADMIN":
-        return "red";
-      case "LEADER":
-        return "blue";
-      case "MEMBER":
-        return "green";
-      default:
-        return "default";
+        return <SwapOutlined className="text-ds-text-secondary" />;
     }
   };
 
@@ -261,7 +263,7 @@ export default function UserActivityLogsPage() {
         "IP Address",
       ],
       ...filteredActivities.map((log) => [
-        dayjs(log.timestamp).format("YYYY-MM-DD HH:mm:ss"),
+        dayjs(log.timestamp).format("D MMM YYYY HH:mm:ss"),
         log.userName,
         log.userRole,
         log.action,
@@ -293,7 +295,7 @@ export default function UserActivityLogsPage() {
           <Avatar size="small" icon={<UserOutlined />} />
           <div>
             <div className="font-medium">{name}</div>
-            <Tag color={getRoleColor(record.userRole)}>{record.userRole}</Tag>
+            <StatusBadge status={record.userRole} category="role" />
           </div>
         </div>
       ),
@@ -313,11 +315,7 @@ export default function UserActivityLogsPage() {
       title: "Type",
       dataIndex: "actionType",
       key: "actionType",
-      render: (type: string) => (
-        <Tag color={getActionColor(type as ActivityLog["actionType"])}>
-          {type}
-        </Tag>
-      ),
+      render: (type: string) => <StatusBadge status={type} category="action" />,
     },
     {
       title: "Resource",
@@ -339,7 +337,7 @@ export default function UserActivityLogsPage() {
       dataIndex: "ipAddress",
       key: "ipAddress",
       render: (ip: string) => (
-        <span className="text-gray-500 text-xs">{ip}</span>
+        <span className="text-ds-text-subtle text-xs">{ip}</span>
       ),
     },
     {
@@ -347,7 +345,7 @@ export default function UserActivityLogsPage() {
       dataIndex: "timestamp",
       key: "timestamp",
       render: (timestamp: string) => (
-        <Tooltip title={dayjs(timestamp).format("YYYY-MM-DD HH:mm:ss")}>
+        <Tooltip title={dayjs(timestamp).format("D MMM YYYY HH:mm:ss")}>
           <span className="text-sm">{dayjs(timestamp).fromNow()}</span>
         </Tooltip>
       ),
@@ -363,105 +361,66 @@ export default function UserActivityLogsPage() {
 
   if (loading) {
     return (
-      <DashboardLayout role="SUPERADMIN">
+      <DashboardLayout role={UserRole.SUPERADMIN}>
         <CardSkeleton count={3} />
       </DashboardLayout>
     );
   }
 
   return (
-    <DashboardLayout role={user?.role || "SUPERADMIN"}>
+    <DashboardLayout role={user?.role || UserRole.SUPERADMIN}>
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-2xl font-bold text-gray-900">
+            <h2 className="text-2xl font-bold text-ds-text-primary">
               User Activity Logs
             </h2>
-            <p className="text-gray-600 mt-1">
+            <p className="text-ds-text-secondary mt-1">
               Track and monitor all user actions across the system
             </p>
           </div>
-          <Space>
-            <AntButton icon={<ReloadOutlined />} onClick={fetchActivityLogs}>
+          <div className="flex gap-2">
+            <Button icon={<ReloadOutlined />} onClick={fetchActivityLogs}>
               Refresh
-            </AntButton>
-            <AntButton
-              type="primary"
-              icon={<DownloadOutlined />}
-              onClick={handleExport}
-            >
+            </Button>
+            <Button icon={<DownloadOutlined />} onClick={handleExport}>
               Export CSV
-            </AntButton>
-          </Space>
+            </Button>
+          </div>
         </div>
 
         {/* Filters */}
         <Card>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <Search
-              placeholder="Search users, actions, or resources"
-              allowClear
-              prefix={<SearchOutlined />}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              size="large"
-            />
-            <Select
-              placeholder="Filter by action"
-              size="large"
-              value={actionFilter}
-              onChange={setActionFilter}
-              options={[
-                { label: "All Actions", value: "ALL" },
-                { label: "Create", value: "CREATE" },
-                { label: "Update", value: "UPDATE" },
-                { label: "Delete", value: "DELETE" },
-                { label: "Login", value: "LOGIN" },
-                { label: "Logout", value: "LOGOUT" },
-                { label: "Approve", value: "APPROVE" },
-                { label: "Reject", value: "REJECT" },
-              ]}
-            />
-            <Select
-              placeholder="Filter by role"
-              size="large"
-              value={roleFilter}
-              onChange={setRoleFilter}
-              options={[
-                { label: "All Roles", value: "ALL" },
-                { label: "Superadmin", value: "SUPERADMIN" },
-                { label: "Leader", value: "LEADER" },
-                { label: "Member", value: "MEMBER" },
-              ]}
-            />
-            <RangePicker
-              size="large"
-              onChange={(dates) =>
-                setDateRange(dates as [Dayjs | null, Dayjs | null])
-              }
-              format="YYYY-MM-DD"
-            />
-          </div>
+          <FilterToolbar
+            filters={activityFilters}
+            values={{
+              search: searchTerm,
+              action: actionFilter,
+              role: roleFilter,
+              dateRange,
+            }}
+            onChange={(key, value) => {
+              if (key === "search") setSearchTerm(value as string);
+              else if (key === "action")
+                setActionFilter((value as string) || "ALL");
+              else if (key === "role")
+                setRoleFilter((value as string) || "ALL");
+              else if (key === "dateRange")
+                setDateRange(value as [Dayjs | null, Dayjs | null] | null);
+            }}
+            onReset={() => {
+              setSearchTerm("");
+              setActionFilter("ALL");
+              setRoleFilter("ALL");
+              setDateRange(null);
+            }}
+            className="!mb-0"
+          />
           <div className="mt-4 flex items-center justify-between">
-            <span className="text-sm text-gray-600">
+            <span className="text-sm text-ds-text-secondary">
               <FilterOutlined /> Showing {filteredActivities.length} of{" "}
               {activities.length} activities
             </span>
-            {(searchTerm ||
-              actionFilter !== "ALL" ||
-              roleFilter !== "ALL" ||
-              dateRange) && (
-              <AntButton
-                size="small"
-                onClick={() => {
-                  setSearchTerm("");
-                  setActionFilter("ALL");
-                  setRoleFilter("ALL");
-                  setDateRange(null);
-                }}
-              >
-                Clear Filters
-              </AntButton>
-            )}
           </div>
         </Card>
 
@@ -472,7 +431,7 @@ export default function UserActivityLogsPage() {
             columns={columns}
             rowKey="id"
             pagination={false}
-            scroll={{ x: true }}
+            scroll={{ x: 1200 }}
           />
           <Pagination
             total={filteredActivities.length}

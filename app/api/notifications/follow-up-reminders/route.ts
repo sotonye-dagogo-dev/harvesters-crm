@@ -1,19 +1,14 @@
+﻿import { NotificationType, UserRole } from "@/lib/types";
 import { NextRequest, NextResponse } from "next/server";
-import { cookies } from "next/headers";
-import { verifyToken } from "@/lib/utils/auth";
 import { db } from "@/lib/data/database";
+import { getAuthenticatedUser } from "@/lib/utils/middleware";
 
 export async function POST(request: NextRequest) {
   try {
-    const cookieStore = await cookies();
-    const token = cookieStore.get("accessToken");
+    const { user, error } = await getAuthenticatedUser();
+    if (error) return error;
 
-    if (!token) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const decoded = verifyToken(token.value);
-    if (!decoded || decoded.role !== "LEADER") {
+    if (user?.role !== UserRole.SMALL_GROUP_LEADER) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
@@ -27,8 +22,9 @@ export async function POST(request: NextRequest) {
     }
 
     // Create notifications for overdue follow-ups
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const notifications = followUps.map((followUp: any) => ({
-      userId: decoded.userId,
+      userId: user!.id,
       type: NotificationType.FOLLOW_UP_REMINDER,
       title: "Overdue Follow-up Reminder",
       message: `Follow-up with ${followUp.memberName} is ${followUp.daysOverdue} day${followUp.daysOverdue !== 1 ? "s" : ""} overdue`,
@@ -36,14 +32,15 @@ export async function POST(request: NextRequest) {
     }));
 
     // Save notifications to database
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     notifications.forEach((notification: any) => {
-      db.notifications.create(
-        notification.userId,
-        notification.type,
-        notification.title,
-        notification.message,
-        notification.resourceId
-      );
+      db.notifications.create({
+        userId: notification.userId,
+        type: notification.type,
+        title: notification.title,
+        message: notification.message,
+        relatedId: notification.resourceId,
+      });
     });
 
     return NextResponse.json({

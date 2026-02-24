@@ -30,7 +30,10 @@ export async function POST(request: NextRequest) {
     }
 
     // Verify current password
-    const isValid = db.users.comparePassword(currentPassword, user.password);
+    const isValid = await db.users.comparePassword(
+      currentPassword,
+      user.password
+    );
     if (!isValid) {
       return NextResponse.json(
         { error: "Current password is incorrect" },

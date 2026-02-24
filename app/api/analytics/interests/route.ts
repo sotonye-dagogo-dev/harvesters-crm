@@ -1,25 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/data/database";
-import { verifyToken } from "@/lib/utils/auth";
-import { cookies } from "next/headers";
+import { getAuthenticatedUser } from "@/lib/utils/middleware";
 
 // GET /api/analytics/interests - Get interest-based insights
 export async function GET(_request: NextRequest) {
   try {
     // Verify authentication
-    const cookieStore = await cookies();
-    const token = cookieStore.get("accessToken")?.value;
+    const { user, error } = await getAuthenticatedUser();
+    if (error) return error;
 
-    if (!token) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const decoded = verifyToken(token);
-    if (!decoded) {
-      return NextResponse.json({ error: "Invalid token" }, { status: 401 });
-    }
-
-    const user = db.users.findById(decoded.userId);
     if (!user) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }

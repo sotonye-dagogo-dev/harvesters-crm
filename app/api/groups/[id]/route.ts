@@ -9,14 +9,16 @@ import {
   badRequestResponse,
   handleApiError,
 } from "@/lib/utils/api";
+import { USER_ROLES } from "@/lib/constants";
+import { MeetingFrequency, UserRole } from "@/lib/types";
 
 // GET /api/groups/[id] - Get group by ID
 export async function GET(
-  request: NextRequest,
+  _request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { user, error } = await getAuthenticatedUser(request);
+    const { user, error } = await getAuthenticatedUser();
     if (error) return error;
 
     const { id } = await params;
@@ -28,7 +30,7 @@ export async function GET(
 
     // Check permissions
     const canView =
-      user?.role === UserRole.SUPERADMIN ||
+      user?.role === USER_ROLES.SUPERADMIN ||
       group.leaderId === user?.id ||
       user?.groupId === id;
 
@@ -48,7 +50,7 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { user, error } = await getAuthenticatedUser(request);
+    const { user, error } = await getAuthenticatedUser();
     if (error) return error;
 
     const { id } = await params;
@@ -67,7 +69,7 @@ export async function PUT(
 
     // Check permissions
     const canUpdate =
-      user?.role === UserRole.SUPERADMIN || group.leaderId === user?.id;
+      user?.role === USER_ROLES.SUPERADMIN || group.leaderId === user?.id;
 
     if (!canUpdate) {
       return forbiddenResponse(
@@ -94,11 +96,11 @@ export async function PUT(
 
 // DELETE /api/groups/[id] - Delete group (Superadmin only)
 export async function DELETE(
-  request: NextRequest,
+  _request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { error } = await requireRole([UserRole.SUPERADMIN], request);
+    const { error } = await requireRole([USER_ROLES.SUPERADMIN as UserRole]);
     if (error) return error;
 
     const { id } = await params;

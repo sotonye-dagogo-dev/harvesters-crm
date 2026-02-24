@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/providers/AuthProvider";
+import DashboardLayout from "@/components/features/navigation/DashboardLayout";
 import {
   Card,
   Button as AntButton,
@@ -25,6 +26,7 @@ import {
 } from "@ant-design/icons";
 import { format } from "date-fns";
 import EmptyState from "@/components/ui/EmptyState";
+import { UserRole } from "@/lib/types";
 
 const { TabPane } = Tabs;
 
@@ -36,12 +38,13 @@ export default function LeaderRequestsPage() {
   const [processingId, setProcessingId] = useState<string | null>(null);
 
   useEffect(() => {
-    if (user?.role === "LEADER" && !user.groupId) {
+    if (user?.role === UserRole.SMALL_GROUP_LEADER && !user.groupId) {
       message.warning("You are not assigned to a group");
-      router.push("/dashboard");
+      router.push("/leader/dashboard");
       return;
     }
     fetchRequests();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
 
   const fetchRequests = async () => {
@@ -144,9 +147,11 @@ export default function LeaderRequestsPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <Spin size="large" />
-      </div>
+      <DashboardLayout role={user?.role}>
+        <div className="flex items-center justify-center min-h-[60vh]">
+          <Spin size="large" />
+        </div>
+      </DashboardLayout>
     );
   }
 
@@ -161,7 +166,7 @@ export default function LeaderRequestsPage() {
     return (
       <Card
         key={request.id}
-        className={`hover:shadow-md transition-shadow ${!isPending ? (request.status === "APPROVED" ? "border-green-200 bg-green-50" : "border-red-200 bg-red-50") : ""}`}
+        className={`hover:shadow-md transition-shadow ${!isPending ? (request.status === "APPROVED" ? "border-green-200 bg-ds-status-success/5" : "border-red-200 bg-ds-status-error/5") : ""}`}
       >
         <div className="flex gap-6">
           {/* Member Profile */}
@@ -170,7 +175,7 @@ export default function LeaderRequestsPage() {
               size={80}
               icon={<UserOutlined />}
               src={member?.avatar}
-              className="bg-blue-500"
+              className="bg-ds-chart-1/50"
             />
           </div>
 
@@ -178,7 +183,7 @@ export default function LeaderRequestsPage() {
           <div className="flex-1">
             <div className="flex items-start justify-between mb-3">
               <div>
-                <h3 className="text-lg font-semibold text-gray-900">
+                <h3 className="text-lg font-semibold text-ds-text-primary">
                   {member?.firstName} {member?.lastName}
                 </h3>
                 <div className="flex items-center gap-2 mt-1">
@@ -246,18 +251,20 @@ export default function LeaderRequestsPage() {
             {/* Member Info */}
             <Descriptions size="small" column={2} className="mb-3">
               <Descriptions.Item
-                label={<MailOutlined className="text-gray-400" />}
+                label={<MailOutlined className="text-ds-text-subtle" />}
               >
                 {member?.email}
               </Descriptions.Item>
               <Descriptions.Item
-                label={<PhoneOutlined className="text-gray-400" />}
+                label={<PhoneOutlined className="text-ds-text-subtle" />}
               >
                 {member?.phone}
               </Descriptions.Item>
               {member?.location && (
                 <Descriptions.Item
-                  label={<EnvironmentOutlined className="text-gray-400" />}
+                  label={
+                    <EnvironmentOutlined className="text-ds-text-subtle" />
+                  }
                   span={2}
                 >
                   {member.location}
@@ -267,9 +274,9 @@ export default function LeaderRequestsPage() {
 
             {/* Request Message */}
             {request.message && (
-              <div className="bg-gray-50 p-3 rounded-md mb-3">
-                <p className="text-sm text-gray-700 italic">
-                  "{request.message}"
+              <div className="bg-ds-surface-sunken p-3 rounded-md mb-3">
+                <p className="text-sm text-ds-text-secondary italic">
+                  &ldquo;{request.message}&rdquo;
                 </p>
               </div>
             )}
@@ -277,7 +284,7 @@ export default function LeaderRequestsPage() {
             {/* Transfer Info */}
             {request.type === "TRANSFER" && request.fromGroup && (
               <div className="mb-3">
-                <span className="text-sm text-gray-600">
+                <span className="text-sm text-ds-text-secondary">
                   Transferring from:{" "}
                   <span className="font-medium">{request.fromGroup.name}</span>
                 </span>
@@ -285,12 +292,12 @@ export default function LeaderRequestsPage() {
             )}
 
             {/* Timestamps */}
-            <div className="flex flex-col gap-1 text-sm text-gray-500">
+            <div className="flex flex-col gap-1 text-sm text-ds-text-subtle">
               <span>
                 Requested:{" "}
                 {format(
                   new Date(request.requestedAt),
-                  "MMM d, yyyy 'at' h:mm a"
+                  "d MMM yyyy 'at' h:mm a"
                 )}
               </span>
               {request.respondedAt && (
@@ -298,7 +305,7 @@ export default function LeaderRequestsPage() {
                   {request.status === "APPROVED" ? "Approved" : "Rejected"}:{" "}
                   {format(
                     new Date(request.respondedAt),
-                    "MMM d, yyyy 'at' h:mm a"
+                    "d MMM yyyy 'at' h:mm a"
                   )}
                 </span>
               )}
@@ -310,61 +317,63 @@ export default function LeaderRequestsPage() {
   };
 
   return (
-    <div className="p-4 md:p-8 max-w-6xl mx-auto">
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900 mb-2">
-          Membership Requests
-        </h1>
-        <p className="text-gray-600">
-          Review and manage membership requests for your group
-        </p>
+    <DashboardLayout role={user?.role}>
+      <div className="max-w-6xl mx-auto space-y-6">
+        <div>
+          <h1 className="text-2xl font-bold text-ds-text-primary mb-2">
+            Membership Requests
+          </h1>
+          <p className="text-ds-text-secondary">
+            Review and manage membership requests for your group
+          </p>
+        </div>
+
+        <Tabs defaultActiveKey="pending">
+          <TabPane
+            tab={
+              <span>
+                <ClockCircleOutlined />
+                Pending ({pendingRequests.length})
+              </span>
+            }
+            key="pending"
+          >
+            {pendingRequests.length === 0 ? (
+              <EmptyState
+                icon={<ClockCircleOutlined />}
+                title="No Pending Requests"
+                description="There are no pending membership requests for your group at this time."
+              />
+            ) : (
+              <div className="space-y-4">
+                {pendingRequests.map(renderRequestCard)}
+              </div>
+            )}
+          </TabPane>
+
+          <TabPane
+            tab={
+              <span>
+                <CheckCircleOutlined />
+                History ({processedRequests.length})
+              </span>
+            }
+            key="history"
+          >
+            {processedRequests.length === 0 ? (
+              <EmptyState
+                icon={<CheckCircleOutlined />}
+                title="No Request History"
+                description="No requests have been processed yet."
+              />
+            ) : (
+              <div className="space-y-4">
+                {processedRequests.map(renderRequestCard)}
+              </div>
+            )}
+          </TabPane>
+        </Tabs>
       </div>
-
-      <Tabs defaultActiveKey="pending">
-        <TabPane
-          tab={
-            <span>
-              <ClockCircleOutlined />
-              Pending ({pendingRequests.length})
-            </span>
-          }
-          key="pending"
-        >
-          {pendingRequests.length === 0 ? (
-            <EmptyState
-              icon={<ClockCircleOutlined />}
-              title="No Pending Requests"
-              description="There are no pending membership requests for your group at this time."
-            />
-          ) : (
-            <div className="space-y-4">
-              {pendingRequests.map(renderRequestCard)}
-            </div>
-          )}
-        </TabPane>
-
-        <TabPane
-          tab={
-            <span>
-              <CheckCircleOutlined />
-              History ({processedRequests.length})
-            </span>
-          }
-          key="history"
-        >
-          {processedRequests.length === 0 ? (
-            <EmptyState
-              icon={<CheckCircleOutlined />}
-              title="No Request History"
-              description="No requests have been processed yet."
-            />
-          ) : (
-            <div className="space-y-4">
-              {processedRequests.map(renderRequestCard)}
-            </div>
-          )}
-        </TabPane>
-      </Tabs>
-    </div>
+    </DashboardLayout>
   );
 }

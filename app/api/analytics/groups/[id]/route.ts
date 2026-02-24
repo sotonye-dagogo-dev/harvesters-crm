@@ -7,6 +7,7 @@ import {
   forbiddenResponse,
   handleApiError,
 } from "@/lib/utils/api";
+import { USER_ROLES } from "@/lib/constants";
 
 // GET /api/analytics/groups/[id] - Get group analytics
 export async function GET(
@@ -14,7 +15,7 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { user, error } = await getAuthenticatedUser(request);
+    const { user, error } = await getAuthenticatedUser();
     if (error) return error;
 
     const { id } = await params;
@@ -29,7 +30,7 @@ export async function GET(
 
     // Check permissions
     const canView =
-      user?.role === UserRole.SUPERADMIN || group.leaderId === user?.id;
+      user?.role === USER_ROLES.SUPERADMIN || group.leaderId === user?.id;
 
     if (!canView) {
       return forbiddenResponse(

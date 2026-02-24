@@ -8,7 +8,9 @@ import {
   ReactNode,
 } from "react";
 import { useRouter } from "next/navigation";
-import { USER_ROLES } from "@/lib/constants";
+import { App } from "antd";
+import { getDashboardRoute } from "@/lib/constants/roles";
+import { UserRole, Gender, EmploymentStatus, MaritalStatus } from "@/lib/types";
 
 interface AuthContextType {
   user: User | null;
@@ -41,6 +43,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
+  const { message } = App.useApp();
 
   // Check authentication status on mount
   useEffect(() => {
@@ -79,13 +82,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       });
 
       const data = await response.json();
-      console.log("AuthProvider: Login response:", data);
+      // console.log("AuthProvider: Login response:", data);
 
       if (!response.ok) {
-        throw new Error(data.error || "Login failed");
+        throw new Error(
+          data.error || data.message || data.error?.message || "Login failed"
+        );
       }
 
       setUser(data.data.user);
+      message.success("Welcome back!");
 
       // Redirect based on role
       const redirectPath = getRoleBasedRedirect(data.data.user.role);
@@ -104,11 +110,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       });
 
       setUser(null);
+      message.success("Logged out successfully!");
       router.push("/login");
     } catch (error) {
       console.error("Logout error:", error);
       // Still clear user and redirect even if API call fails
       setUser(null);
+      message.success("Logged out successfully!");
       router.push("/login");
     }
   };
@@ -130,6 +138,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       // Auto-login after registration
       setUser(result.data.user);
+      message.success("Account created successfully! Redirecting...");
 
       // Redirect based on role (typically MEMBER for new registrations)
       const redirectPath = getRoleBasedRedirect(result.data.user.role);
@@ -155,16 +164,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const getRoleBasedRedirect = (role: UserRole): string => {
-    switch (role) {
-      case USER_ROLES.SUPERADMIN:
-        return "/superadmin/dashboard";
-      case USER_ROLES.LEADER:
-        return "/leader/dashboard";
-      case USER_ROLES.MEMBER:
-        return "/member/dashboard";
-      default:
-        return "/";
-    }
+    return getDashboardRoute(role);
   };
 
   const value: AuthContextType = {

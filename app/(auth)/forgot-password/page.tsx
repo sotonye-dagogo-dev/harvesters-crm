@@ -1,7 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { Form, Input, Button, Card, message } from "antd";
+import { Form, message } from "antd";
+import Button from "@/components/ui/Button";
+import Card from "@/components/ui/Card";
+import Input from "@/components/ui/Input";
 import { MailOutlined, ArrowLeftOutlined } from "@ant-design/icons";
 import Link from "next/link";
 
@@ -35,26 +38,25 @@ export default function ForgotPasswordPage() {
 
   if (emailSent) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-church-primary to-church-secondary p-4">
-        <Card className="w-full max-w-md shadow-xl">
+      <div className="min-h-screen flex items-center justify-center bg-ds-surface-base p-4">
+        <Card className="w-full max-w-md shadow-ds-lg">
           <div className="text-center">
-            <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <MailOutlined className="text-3xl text-green-600" />
+            <div className="w-16 h-16 bg-ds-brand-accent-subtle rounded-full flex items-center justify-center mx-auto mb-4">
+              <MailOutlined className="text-3xl text-ds-brand-accent" />
             </div>
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">
+            <h2 className="text-2xl font-bold text-ds-text-primary mb-2">
               Check Your Email
             </h2>
-            <p className="text-gray-600 mb-6">
+            <p className="text-ds-text-secondary mb-6">
               We&apos;ve sent a password reset link to your email address. Click
               the link in the email to reset your password.
             </p>
-            <p className="text-sm text-gray-500 mb-6">
+            <p className="text-sm text-ds-text-subtle mb-6">
               Didn&apos;t receive the email? Check your spam folder or try
               again.
             </p>
             <Link href="/login">
               <Button
-                type="primary"
                 size="large"
                 block
                 icon={<ArrowLeftOutlined />}
@@ -69,13 +71,13 @@ export default function ForgotPasswordPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-church-primary to-church-secondary p-4">
-      <Card className="w-full max-w-md shadow-xl">
+    <div className="min-h-screen flex items-center justify-center bg-ds-surface-base p-4">
+      <Card className="w-full max-w-md shadow-ds-lg">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">
+          <h1 className="text-3xl font-bold text-ds-text-primary mb-2">
             Forgot Password?
           </h1>
-          <p className="text-gray-600">
+          <p className="text-ds-text-secondary">
             Enter your email address and we&apos;ll send you a link to reset
             your password.
           </p>
@@ -104,7 +106,6 @@ export default function ForgotPasswordPage() {
 
           <Form.Item>
             <Button
-              type="primary"
               htmlType="submit"
               block
               loading={loading}
@@ -117,19 +118,19 @@ export default function ForgotPasswordPage() {
           <div className="text-center">
             <Link
               href="/login"
-              className="text-church-primary hover:text-church-primary/80 text-sm"
+              className="text-ds-brand-accent hover:text-ds-brand-accent-hover text-sm"
             >
               <ArrowLeftOutlined /> Back to Login
             </Link>
           </div>
         </Form>
 
-        <div className="mt-6 pt-6 border-t border-gray-200 text-center">
-          <p className="text-sm text-gray-600">
+        <div className="mt-6 pt-6 border-t border-ds-border-base text-center">
+          <p className="text-sm text-ds-text-secondary">
             Don&apos;t have an account?{" "}
             <Link
               href="/register"
-              className="text-church-primary hover:text-church-primary/80 font-medium"
+              className="text-ds-brand-accent hover:text-ds-brand-accent-hover font-medium"
             >
               Register here
             </Link>

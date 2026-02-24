@@ -1,4 +1,5 @@
-import { Card, Tag } from "antd";
+import Card from "@/components/ui/Card";
+import StatusBadge from "@/components/ui/StatusBadge";
 import {
   CalendarOutlined,
   TeamOutlined,
@@ -36,12 +37,6 @@ export default function MeetingCard({
     ? ((meeting.attendeeCount || 0) / meeting.totalMembers) * 100
     : 0;
 
-  const getAttendanceColor = (rate: number) => {
-    if (rate >= 80) return "success";
-    if (rate >= 60) return "warning";
-    return "error";
-  };
-
   return (
     <Card
       hoverable
@@ -53,7 +48,7 @@ export default function MeetingCard({
                 <button
                   key="view"
                   onClick={() => onViewScreenshot?.(meeting.screenshotUrl!)}
-                  className="text-blue-600 hover:text-blue-800"
+                  className="text-ds-chart-1 hover:text-ds-chart-1"
                 >
                   View Screenshot
                 </button>
@@ -61,14 +56,14 @@ export default function MeetingCard({
               <button
                 key="edit"
                 onClick={() => onEdit?.(meeting.id)}
-                className="text-blue-600 hover:text-blue-800"
+                className="text-ds-chart-1 hover:text-ds-chart-1"
               >
                 Edit
               </button>,
               <button
                 key="delete"
                 onClick={() => onDelete?.(meeting.id)}
-                className="text-red-600 hover:text-red-800"
+                className="text-ds-status-error hover:text-ds-status-error"
               >
                 Delete
               </button>,
@@ -80,26 +75,28 @@ export default function MeetingCard({
         <div className="flex items-start justify-between">
           <div>
             <Link
-              href={`/meetings/${meeting.id}`}
-              className="text-lg font-semibold text-gray-900 hover:text-church-primary"
+              href={`/leader/meetings/${meeting.id}`}
+              className="text-lg font-semibold text-ds-text-primary hover:text-ds-brand-accent"
             >
               {meeting.groupName || "Group Meeting"}
             </Link>
-            <div className="mt-1 flex items-center gap-2 text-sm text-gray-600">
+            <div className="mt-1 flex items-center gap-2 text-sm text-ds-text-secondary">
               <CalendarOutlined />
-              <span>{format(new Date(meeting.date), "MMM dd, yyyy")}</span>
+              <span>{format(new Date(meeting.date), "d MMM yyyy")}</span>
             </div>
           </div>
           {meeting.totalMembers && (
-            <Tag color={getAttendanceColor(attendanceRate)}>
-              {attendanceRate.toFixed(0)}%
-            </Tag>
+            <StatusBadge
+              status={attendanceRate >= 80 ? "present" : attendanceRate >= 60 ? "late" : "absent"}
+              category="attendance"
+              label={`${attendanceRate.toFixed(0)}%`}
+            />
           )}
         </div>
 
-        <div className="space-y-2 text-sm text-gray-600">
+        <div className="space-y-2 text-sm text-ds-text-secondary">
           <div className="flex items-center gap-2">
-            <TeamOutlined className="text-church-primary" />
+            <TeamOutlined className="text-ds-brand-accent" />
             <span>
               {meeting.attendeeCount || 0}
               {meeting.totalMembers && ` / ${meeting.totalMembers}`} attended
@@ -107,20 +104,20 @@ export default function MeetingCard({
           </div>
 
           {meeting.location && (
-            <div className="text-gray-600">
+            <div className="text-ds-text-secondary">
               <span className="font-medium">Location:</span> {meeting.location}
             </div>
           )}
 
           {meeting.screenshotUrl && (
-            <div className="flex items-center gap-2 text-blue-600">
+            <div className="flex items-center gap-2 text-ds-chart-1">
               <FileImageOutlined />
               <span>Screenshot available</span>
             </div>
           )}
 
           {meeting.notes && (
-            <p className="text-gray-600 text-xs line-clamp-2 mt-2">
+            <p className="text-ds-text-secondary text-xs line-clamp-2 mt-2">
               {meeting.notes}
             </p>
           )}

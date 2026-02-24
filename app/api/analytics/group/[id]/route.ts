@@ -1,32 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
-import { cookies } from "next/headers";
-import { verifyToken } from "@/lib/utils/auth";
 import { db } from "@/lib/data/database";
+import { getAuthenticatedUser } from "@/lib/utils/middleware";
 import { differenceInDays } from "date-fns";
+import { isLeadershipRole, USER_ROLES } from "@/lib/constants";
 
 export async function GET(
   _request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const cookieStore = await cookies();
-    const token = cookieStore.get("accessToken");
-
-    if (!token) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const decoded = await verifyToken(token.value);
-    if (!decoded) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    const { user, error } = await getAuthenticatedUser();
+    if (error) return error;
 
     const { id } = await params;
-
-    const user = db.users.findById(decoded.userId);
-    if (!user) {
-      return NextResponse.json({ error: "User not found" }, { status: 404 });
-    }
 
     const group = db.groups.findById(id);
 
@@ -36,8 +22,8 @@ export async function GET(
 
     // Permission check: Only leaders of the group or superadmins
     if (
-      user.role !== "SUPERADMIN" &&
-      (user.role !== "LEADER" || user.groupId !== id)
+      user.role !== USER_ROLES.SUPERADMIN &&
+      (!isLeadershipRole(user.role) || user.groupId !== id)
     ) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }

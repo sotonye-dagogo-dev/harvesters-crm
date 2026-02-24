@@ -3,6 +3,8 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/providers/AuthProvider";
+import { formatDateTime } from "@/lib/utils/format";
+import DashboardLayout from "@/components/features/navigation/DashboardLayout";
 import {
   Card,
   Progress,
@@ -11,10 +13,10 @@ import {
   message,
   Row,
   Col,
-  Table,
   Empty,
   Button,
 } from "antd";
+import Table from "@/components/ui/Table";
 import {
   TeamOutlined,
   UsergroupAddOutlined,
@@ -27,6 +29,7 @@ import {
 } from "@ant-design/icons";
 import { StatCard } from "@/components/ui/Card";
 import type { ColumnsType } from "antd/es/table";
+import { UserRole } from "@/lib/types";
 
 interface GroupPerformance {
   group: Group;
@@ -58,8 +61,9 @@ export default function ChurchAnalyticsPage() {
     if (user?.role === "SUPERADMIN") {
       fetchAnalytics();
     } else {
-      router.push("/dashboard");
+      router.push("/superadmin/dashboard");
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
 
   const fetchAnalytics = async () => {
@@ -83,8 +87,8 @@ export default function ChurchAnalyticsPage() {
     if (!analytics) return;
 
     const csvContent = [
-      ["Church Fellowship CRM - Analytics Report"],
-      ["Generated:", new Date().toLocaleString()],
+      ["Harvesters Church CRM - Analytics Report"],
+      ["Generated:", formatDateTime(new Date())],
       [],
       ["Overall Statistics"],
       ["Total Members", analytics.totalMembers],
@@ -136,19 +140,23 @@ export default function ChurchAnalyticsPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <Spin size="large" />
-      </div>
+      <DashboardLayout role={UserRole.SUPERADMIN}>
+        <div className="flex items-center justify-center h-96">
+          <Spin size="large" />
+        </div>
+      </DashboardLayout>
     );
   }
 
   if (!analytics) {
     return (
-      <div className="p-8">
-        <Card>
-          <Empty description="Analytics data not available" />
-        </Card>
-      </div>
+      <DashboardLayout role={UserRole.SUPERADMIN}>
+        <div className="text-center py-12">
+          <Card className="bg-ds-surface-elevated">
+            <Empty description="Analytics data not available" />
+          </Card>
+        </div>
+      </DashboardLayout>
     );
   }
 
@@ -159,7 +167,7 @@ export default function ChurchAnalyticsPage() {
       render: (_, record) => (
         <div>
           <div className="font-medium">{record.group.name}</div>
-          <div className="text-sm text-gray-500">
+          <div className="text-sm text-ds-text-subtle">
             {record.group.meetingFrequency}
           </div>
         </div>
@@ -278,170 +286,187 @@ export default function ChurchAnalyticsPage() {
   ];
 
   return (
-    <div className="p-4 md:p-8 max-w-7xl mx-auto">
-      <div className="mb-6 flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">
-            Church-Wide Analytics
-          </h1>
-          <p className="text-gray-600">
-            Comprehensive overview of all groups and members
-          </p>
+    <DashboardLayout role={UserRole.SUPERADMIN}>
+      <div className="space-y-6">
+        <div className="flex items-center justify-between flex-wrap gap-4">
+          <div>
+            <h1 className="text-2xl font-bold text-ds-text-primary mb-2">
+              Church-Wide Analytics
+            </h1>
+            <p className="text-ds-text-secondary">
+              Comprehensive overview of all groups and members
+            </p>
+          </div>
+          <Button
+            type="primary"
+            icon={<DownloadOutlined />}
+            onClick={exportReport}
+          >
+            Export Report
+          </Button>
         </div>
-        <Button
-          type="primary"
-          icon={<DownloadOutlined />}
-          onClick={exportReport}
-        >
-          Export Report
-        </Button>
-      </div>
 
-      {/* Key Metrics */}
-      <Row gutter={[16, 16]} className="mb-6">
-        <Col xs={24} sm={12} lg={6}>
-          <StatCard
-            title="Total Members"
-            value={analytics.totalMembers}
-            icon={<TeamOutlined />}
-            color="text-blue-600"
-            description="Across all groups"
-          />
-        </Col>
-        <Col xs={24} sm={12} lg={6}>
-          <StatCard
-            title="Active Members"
-            value={analytics.activeMembers}
-            icon={<TrophyOutlined />}
-            color="text-green-600"
-            description={`${((analytics.activeMembers / analytics.totalMembers) * 100).toFixed(0)}% of total`}
-          />
-        </Col>
-        <Col xs={24} sm={12} lg={6}>
-          <StatCard
-            title="At Risk Members"
-            value={analytics.atRiskMembers}
-            icon={<WarningOutlined />}
-            color="text-red-600"
-            description="Need attention"
-          />
-        </Col>
-        <Col xs={24} sm={12} lg={6}>
-          <StatCard
-            title="Total Groups"
-            value={analytics.totalGroups}
-            icon={<UsergroupAddOutlined />}
-            color="text-purple-600"
-            description={`${analytics.totalMeetings} meetings`}
-          />
-        </Col>
-      </Row>
-
-      {/* Overall Engagement Card */}
-      <Card title="Overall Church Engagement" className="mb-6">
-        <div className="flex flex-col md:flex-row items-center justify-around gap-8">
-          <div className="text-center">
-            <div className="text-sm text-gray-600 mb-4">
-              Average Engagement Score
-            </div>
-            <Progress
-              type="circle"
-              percent={Math.round(analytics.overallEngagement)}
-              size={180}
-              strokeColor={
-                analytics.overallEngagement >= 70
-                  ? "#52c41a"
-                  : analytics.overallEngagement >= 50
-                    ? "#1890ff"
-                    : "#ff4d4f"
-              }
+        {/* Key Metrics */}
+        <Row gutter={[16, 16]}>
+          <Col xs={24} sm={12} lg={6}>
+            <StatCard
+              title="Total Members"
+              value={analytics.totalMembers}
+              icon={<TeamOutlined />}
+              color="text-ds-chart-1"
+              description="Across all groups"
             />
-            <div className="mt-4">
-              <Tag
-                color={
+          </Col>
+          <Col xs={24} sm={12} lg={6}>
+            <StatCard
+              title="Active Members"
+              value={analytics.activeMembers}
+              icon={<TrophyOutlined />}
+              color="text-ds-status-success"
+              description={`${((analytics.activeMembers / analytics.totalMembers) * 100).toFixed(0)}% of total`}
+            />
+          </Col>
+          <Col xs={24} sm={12} lg={6}>
+            <StatCard
+              title="At Risk Members"
+              value={analytics.atRiskMembers}
+              icon={<WarningOutlined />}
+              color="text-ds-status-error"
+              description="Need attention"
+            />
+          </Col>
+          <Col xs={24} sm={12} lg={6}>
+            <StatCard
+              title="Total Groups"
+              value={analytics.totalGroups}
+              icon={<UsergroupAddOutlined />}
+              color="text-ds-chart-3"
+              description={`${analytics.totalMeetings} meetings`}
+            />
+          </Col>
+        </Row>
+
+        {/* Overall Engagement Card */}
+        <Card title="Overall Church Engagement" className="mb-6">
+          <div className="flex flex-col md:flex-row items-center justify-around gap-8">
+            <div className="text-center">
+              <div className="text-sm text-ds-text-secondary mb-4">
+                Average Engagement Score
+              </div>
+              <Progress
+                type="circle"
+                percent={Math.round(analytics.overallEngagement)}
+                size={180}
+                strokeColor={
                   analytics.overallEngagement >= 70
-                    ? "success"
+                    ? "#52c41a"
                     : analytics.overallEngagement >= 50
-                      ? "processing"
-                      : "error"
+                      ? "#1890ff"
+                      : "#ff4d4f"
                 }
-                className="text-sm"
-              >
-                {analytics.overallEngagement >= 70
-                  ? "Excellent"
-                  : analytics.overallEngagement >= 50
-                    ? "Good"
-                    : "Needs Improvement"}
-              </Tag>
+              />
+              <div className="mt-4">
+                <Tag
+                  color={
+                    analytics.overallEngagement >= 70
+                      ? "success"
+                      : analytics.overallEngagement >= 50
+                        ? "processing"
+                        : "error"
+                  }
+                  className="text-sm"
+                >
+                  {analytics.overallEngagement >= 70
+                    ? "Excellent"
+                    : analytics.overallEngagement >= 50
+                      ? "Good"
+                      : "Needs Improvement"}
+                </Tag>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-8">
+              <div className="text-center">
+                <div className="text-3xl font-bold text-ds-status-success">
+                  {analytics.activeMembers}
+                </div>
+                <div className="text-sm text-ds-text-secondary mt-1">
+                  Active Members
+                </div>
+                <div className="text-xs text-ds-text-subtle mt-1">
+                  {(
+                    (analytics.activeMembers / analytics.totalMembers) *
+                    100
+                  ).toFixed(1)}
+                  % of total
+                </div>
+              </div>
+              <div className="text-center">
+                <div className="text-3xl font-bold text-ds-text-subtle">
+                  {analytics.inactiveMembers}
+                </div>
+                <div className="text-sm text-ds-text-secondary mt-1">
+                  Inactive Members
+                </div>
+                <div className="text-xs text-ds-text-subtle mt-1">
+                  {(
+                    (analytics.inactiveMembers / analytics.totalMembers) *
+                    100
+                  ).toFixed(1)}
+                  % of total
+                </div>
+              </div>
+              <div className="text-center">
+                <div className="text-3xl font-bold text-ds-status-error">
+                  {analytics.atRiskMembers}
+                </div>
+                <div className="text-sm text-ds-text-secondary mt-1">
+                  At Risk
+                </div>
+                <div className="text-xs text-ds-text-subtle mt-1">
+                  {(
+                    (analytics.atRiskMembers / analytics.totalMembers) *
+                    100
+                  ).toFixed(1)}
+                  % of total
+                </div>
+              </div>
+              <div className="text-center">
+                <div className="text-3xl font-bold text-ds-chart-1">
+                  {analytics.totalMeetings}
+                </div>
+                <div className="text-sm text-ds-text-secondary mt-1">
+                  Total Meetings
+                </div>
+                <div className="text-xs text-ds-text-subtle mt-1">
+                  All groups
+                </div>
+              </div>
             </div>
           </div>
+        </Card>
 
-          <div className="grid grid-cols-2 gap-8">
-            <div className="text-center">
-              <div className="text-3xl font-bold text-green-600">
-                {analytics.activeMembers}
-              </div>
-              <div className="text-sm text-gray-600 mt-1">Active Members</div>
-              <div className="text-xs text-gray-500 mt-1">
-                {(
-                  (analytics.activeMembers / analytics.totalMembers) *
-                  100
-                ).toFixed(1)}
-                % of total
-              </div>
-            </div>
-            <div className="text-center">
-              <div className="text-3xl font-bold text-gray-400">
-                {analytics.inactiveMembers}
-              </div>
-              <div className="text-sm text-gray-600 mt-1">Inactive Members</div>
-              <div className="text-xs text-gray-500 mt-1">
-                {(
-                  (analytics.inactiveMembers / analytics.totalMembers) *
-                  100
-                ).toFixed(1)}
-                % of total
-              </div>
-            </div>
-            <div className="text-center">
-              <div className="text-3xl font-bold text-red-600">
-                {analytics.atRiskMembers}
-              </div>
-              <div className="text-sm text-gray-600 mt-1">At Risk</div>
-              <div className="text-xs text-gray-500 mt-1">
-                {(
-                  (analytics.atRiskMembers / analytics.totalMembers) *
-                  100
-                ).toFixed(1)}
-                % of total
-              </div>
-            </div>
-            <div className="text-center">
-              <div className="text-3xl font-bold text-blue-600">
-                {analytics.totalMeetings}
-              </div>
-              <div className="text-sm text-gray-600 mt-1">Total Meetings</div>
-              <div className="text-xs text-gray-500 mt-1">All groups</div>
-            </div>
-          </div>
-        </div>
-      </Card>
-
-      {/* Group Comparative Performance */}
-      <Card title="Group Comparative Performance">
-        <Table
-          columns={columns}
-          dataSource={analytics.groupPerformance}
-          rowKey={(record) => record.group.id}
-          pagination={{
-            pageSize: 20,
-            showTotal: (total) => `${total} group${total !== 1 ? "s" : ""}`,
-          }}
-          locale={{
-            emptyText: <Empty description="No group data available" />,
-          }}
-        />
-      </Card>
-    </div>
+        {/* Group Comparative Performance */}
+        <Card
+          title="Group Comparative Performance"
+          className="bg-ds-surface-elevated"
+        >
+          <Table
+            columns={columns}
+            dataSource={analytics.groupPerformance}
+            rowKey={(record) => record.group.id}
+            scroll={{ x: 1200 }}
+            pagination={{
+              pageSize: 20,
+              showTotal: (total) => `${total} group${total !== 1 ? "s" : ""}`,
+            }}
+            locale={{
+              emptyText: <Empty description="No group data available" />,
+            }}
+            className="[&_.ant-table]:bg-ds-surface-elevated [&_.ant-table-thead>tr>th]:bg-ds-surface-sunken [&_.ant-table-thead>tr>th]:text-ds-text-primary [&_.ant-table-tbody>tr>td]:bg-ds-surface-elevated [&_.ant-table-tbody>tr>td]:text-ds-text-primary [&_.ant-table-tbody>tr:hover>td]:bg-ds-surface-sunken"
+          />
+        </Card>
+      </div>
+    </DashboardLayout>
   );
 }

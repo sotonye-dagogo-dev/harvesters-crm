@@ -9,14 +9,16 @@ import {
   badRequestResponse,
   handleApiError,
 } from "@/lib/utils/api";
+import { USER_ROLES } from "@/lib/constants";
+import { InteractionType } from "@/lib/types";
 
 // GET /api/interactions/[id] - Get interaction by ID
 export async function GET(
-  request: NextRequest,
+  _request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { user, error } = await getAuthenticatedUser(request);
+    const { user, error } = await getAuthenticatedUser();
     if (error) return error;
 
     const { id } = await params;
@@ -28,7 +30,7 @@ export async function GET(
 
     // Check permissions
     const canView =
-      user?.role === UserRole.SUPERADMIN ||
+      user?.role === USER_ROLES.SUPERADMIN ||
       interaction.leaderId === user?.id ||
       interaction.memberId === user?.id;
 
@@ -71,7 +73,7 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { user, error } = await getAuthenticatedUser(request);
+    const { user, error } = await getAuthenticatedUser();
     if (error) return error;
 
     const { id } = await params;
@@ -90,7 +92,7 @@ export async function PUT(
 
     // Check permissions - only the leader who created it or superadmin can update
     const canUpdate =
-      user?.role === UserRole.SUPERADMIN || interaction.leaderId === user?.id;
+      user?.role === USER_ROLES.SUPERADMIN || interaction.leaderId === user?.id;
 
     if (!canUpdate) {
       return forbiddenResponse(
@@ -118,11 +120,11 @@ export async function PUT(
 
 // DELETE /api/interactions/[id] - Delete interaction
 export async function DELETE(
-  request: NextRequest,
+  _request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { user, error } = await getAuthenticatedUser(request);
+    const { user, error } = await getAuthenticatedUser();
     if (error) return error;
 
     const { id } = await params;
@@ -134,7 +136,7 @@ export async function DELETE(
 
     // Check permissions - only the leader who created it or superadmin can delete
     const canDelete =
-      user?.role === UserRole.SUPERADMIN || interaction.leaderId === user?.id;
+      user?.role === USER_ROLES.SUPERADMIN || interaction.leaderId === user?.id;
 
     if (!canDelete) {
       return forbiddenResponse(

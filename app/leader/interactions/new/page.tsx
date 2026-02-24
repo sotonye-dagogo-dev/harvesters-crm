@@ -1,12 +1,12 @@
 "use client";
 
+import { UserRole } from "@/lib/types";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/providers/AuthProvider";
 import {
   Form,
   Select,
-  Input,
   DatePicker,
   TimePicker,
   Button,
@@ -15,9 +15,16 @@ import {
   Alert,
 } from "antd";
 import { SaveOutlined, PhoneOutlined } from "@ant-design/icons";
-import dayjs from "dayjs";
+import dayjs, { Dayjs } from "dayjs";
+import { TextArea } from "@/components/ui/Input";
 
-const { TextArea } = Input;
+interface InteractionFormValues {
+  date: Dayjs;
+  time: Dayjs;
+  type: string;
+  memberId: string;
+  notes?: string;
+}
 
 export default function LogInteractionPage() {
   const router = useRouter();
@@ -47,12 +54,12 @@ export default function LogInteractionPage() {
 
   // Fetch members when component mounts
   useState(() => {
-    if (user?.role === "LEADER" && user.groupId) {
+    if (user?.role === UserRole.SMALL_GROUP_LEADER && user.groupId) {
       fetchGroupMembers();
     }
   });
 
-  const handleSubmit = async (values: any) => {
+  const handleSubmit = async (values: InteractionFormValues) => {
     if (!user?.groupId) {
       message.error("You must be assigned to a group to log interactions");
       return;
@@ -86,9 +93,9 @@ export default function LogInteractionPage() {
       }
 
       message.success("Interaction logged successfully");
-      router.push("/interactions");
-    } catch (error: any) {
-      message.error(error.message || "Failed to log interaction");
+      router.push("/leader/interactions");
+    } catch (error: unknown) {
+      message.error(error instanceof Error ? error.message : "Failed to log interaction");
       console.error(error);
     } finally {
       setLoading(false);
@@ -96,14 +103,17 @@ export default function LogInteractionPage() {
   };
 
   // Check if user is a leader
-  if (user?.role !== "LEADER" && user?.role !== "SUPERADMIN") {
+  if (user?.role !== UserRole.SMALL_GROUP_LEADER && user?.role !== "SUPERADMIN") {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <Card>
-          <p className="text-gray-500">
+          <p className="text-ds-text-subtle">
             Only group leaders can log interactions
           </p>
-          <Button type="primary" onClick={() => router.push("/dashboard")}>
+          <Button
+            type="primary"
+            onClick={() => router.push("/leader/dashboard")}
+          >
             Back to Dashboard
           </Button>
         </Card>
@@ -123,7 +133,7 @@ export default function LogInteractionPage() {
         <Button
           type="primary"
           className="mt-4"
-          onClick={() => router.push("/dashboard")}
+          onClick={() => router.push("/leader/dashboard")}
         >
           Back to Dashboard
         </Button>
@@ -134,8 +144,8 @@ export default function LogInteractionPage() {
   return (
     <div className="p-6 max-w-2xl mx-auto">
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">Log Interaction</h1>
-        <p className="text-gray-500 mt-1">
+        <h1 className="text-2xl font-bold text-ds-text-primary">Log Interaction</h1>
+        <p className="text-ds-text-subtle mt-1">
           Record calls, follow-ups, and check-ins with members
         </p>
       </div>
@@ -202,7 +212,7 @@ export default function LogInteractionPage() {
             >
               <DatePicker
                 className="w-full"
-                format="MMMM D, YYYY"
+                format="D MMM YYYY"
                 placeholder="Select date"
                 size="large"
               />
@@ -239,7 +249,9 @@ export default function LogInteractionPage() {
           </Form.Item>
 
           <div className="flex gap-3 justify-end">
-            <Button onClick={() => router.push("/interactions")}>Cancel</Button>
+            <Button onClick={() => router.push("/leader/interactions")}>
+              Cancel
+            </Button>
             <Button
               type="primary"
               htmlType="submit"

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import DashboardLayout from "@/components/features/navigation/DashboardLayout";
 import { useAuth } from "@/providers/AuthProvider";
@@ -8,15 +8,14 @@ import {
   Card,
   Descriptions,
   Button as AntButton,
-  Spin,
   message,
-  Table,
   Tag,
-  Empty,
   Row,
   Col,
   Progress,
 } from "antd";
+import Table from "@/components/ui/Table";
+import StatusBadge from "@/components/ui/StatusBadge";
 import {
   CalendarOutlined,
   UserOutlined,
@@ -29,6 +28,12 @@ import {
   CloseCircleOutlined,
 } from "@ant-design/icons";
 import { StatCard } from "@/components/ui/Card";
+import {
+  PageHeader,
+  PageLoading,
+  PageEmpty,
+  PageContainer,
+} from "@/components/ui/PageLayout";
 import type { ColumnsType } from "antd/es/table";
 import dayjs from "dayjs";
 
@@ -78,15 +83,7 @@ export default function MyGroupPage() {
   const [recentMeetings, setRecentMeetings] = useState<RecentMeeting[]>([]);
   const [memberSummary, setMemberSummary] = useState<MemberSummary[]>([]);
 
-  useEffect(() => {
-    if (user?.groupId) {
-      fetchGroupData();
-    } else {
-      setLoading(false);
-    }
-  }, [user?.groupId]);
-
-  const fetchGroupData = async () => {
+  const fetchGroupData = useCallback(async () => {
     try {
       // Fetch group details
       const groupResponse = await fetch(`/api/groups/${user?.groupId}`);
@@ -101,17 +98,21 @@ export default function MyGroupPage() {
       );
       if (meetingsResponse.ok) {
         const meetingsData = await meetingsResponse.json();
-        const meetings = meetingsData.meetings || meetingsData;
+        const meetings = Array.isArray(meetingsData.data)
+          ? meetingsData.data
+          : Array.isArray(meetingsData)
+            ? meetingsData
+            : [];
 
         // Calculate attendance for each meeting
-        const meetingsWithStats = meetings.map((meeting: any) => {
-          const attendanceCount = meeting.attendees?.length || 0;
+        const meetingsWithStats = meetings.map((meeting: Meeting) => {
+          const attendanceCount =
+            meeting.attendeeIds?.length || meeting.attendeeCount || 0;
           const totalMembers = group?.memberCount || 0;
           return {
             id: meeting.id,
             date: meeting.date,
-            topic: meeting.topic,
-            summary: meeting.summary,
+            notes: meeting.notes,
             attendees: attendanceCount,
             totalMembers: totalMembers,
             attendanceRate:
@@ -127,16 +128,24 @@ export default function MyGroupPage() {
       );
       if (membersResponse.ok) {
         const membersData = await membersResponse.json();
-        const members = membersData.members || membersData;
+        const members = Array.isArray(membersData.data)
+          ? membersData.data
+          : Array.isArray(membersData)
+            ? membersData
+            : [];
 
         // Calculate attendance for each member
         const memberStats = await Promise.all(
-          members.map(async (member: any) => {
+          members.map(async (member: User) => {
             const attendanceResponse = await fetch(
               `/api/meetings?memberId=${member.id}`
             );
             const attendanceData = await attendanceResponse.json();
-            const meetings = attendanceData.meetings || [];
+            const meetings = Array.isArray(attendanceData.data)
+              ? attendanceData.data
+              : Array.isArray(attendanceData)
+                ? attendanceData
+                : [];
 
             const totalMeetings = recentMeetings.length || 0;
             const meetingsAttended = meetings.length;
@@ -172,45 +181,89 @@ export default function MyGroupPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user?.groupId, group?.memberCount, recentMeetings.length]);
 
-  if (!user?.groupId) {
+  useEffect(() => {
+    if (user?.groupId) {
+      fetchGroupData();
+    } else {
+      setLoading(false);
+    }
+  }, [user?.groupId, fetchGroupData]);
+
+  const SCOPED_ROLES = [
+    "GROUP_PASTOR",
+    "GROUP_ADMIN",
+    "CAMPUS_PASTOR",
+    "CAMPUS_ADMIN",
+    "ZONAL_LEADER",
+    "HOD",
+  ];
+  const isScopedLeader = user?.role && SCOPED_ROLES.includes(user.role);
+
+  if (!user?.groupId && !isScopedLeader) {
     return (
-      <DashboardLayout role="LEADER">
-        <Card>
-          <div className="text-center py-12">
-            <TeamOutlined className="text-6xl text-gray-300 mb-4" />
-            <h3 className="text-lg font-semibold text-gray-700 mb-2">
-              No Group Assigned
-            </h3>
-            <p className="text-gray-500">
-              You haven't been assigned to lead a group yet.
-            </p>
-            <p className="text-gray-500 text-sm mt-2">
-              Contact your administrator for group assignment.
-            </p>
-          </div>
-        </Card>
+      <DashboardLayout role={user?.role}>
+        <PageEmpty
+          icon={<TeamOutlined />}
+          title="No Group Assigned"
+          description="You haven't been assigned to lead a group yet. Contact your administrator for group assignment."
+        />
+      </DashboardLayout>
+    );
+  }
+
+  if (isScopedLeader && !user?.groupId) {
+    return (
+      <DashboardLayout role={user?.role}>
+        <PageContainer>
+          <PageHeader
+            title="My Scope Overview"
+            subtitle="As a senior leader, use the Groups, Members, and Meetings pages to manage your scope."
+          />
+          <Card>
+            <div className="text-center py-12">
+              <TeamOutlined className="text-6xl text-ds-text-subtle mb-4" />
+              <h3 className="text-lg font-semibold text-ds-text-secondary mb-2">
+                Senior Leader View
+              </h3>
+              <p className="text-ds-text-subtle">
+                As a {user?.role?.replace(/_/g, " ").toLowerCase()}, you oversee
+                multiple groups. Visit the{" "}
+                <a
+                  href="/leader/groups"
+                  className="text-ds-brand-accent hover:underline"
+                >
+                  Groups
+                </a>{" "}
+                or{" "}
+                <a
+                  href="/leader/members"
+                  className="text-ds-brand-accent hover:underline"
+                >
+                  Members
+                </a>{" "}
+                page to manage your scope.
+              </p>
+            </div>
+          </Card>
+        </PageContainer>
       </DashboardLayout>
     );
   }
 
   if (loading) {
     return (
-      <DashboardLayout role="LEADER">
-        <div className="flex items-center justify-center h-96">
-          <Spin size="large" />
-        </div>
+      <DashboardLayout role={user?.role}>
+        <PageLoading message="Loading group data..." />
       </DashboardLayout>
     );
   }
 
   if (!group) {
     return (
-      <DashboardLayout role="LEADER">
-        <Card>
-          <Empty description="Group not found" />
-        </Card>
+      <DashboardLayout role={user?.role}>
+        <PageEmpty title="Group not found" />
       </DashboardLayout>
     );
   }
@@ -220,7 +273,7 @@ export default function MyGroupPage() {
       title: "Date",
       dataIndex: "date",
       key: "date",
-      render: (date: string) => dayjs(date).format("MMM D, YYYY"),
+      render: (date: string) => dayjs(date).format("D MMM YYYY"),
       sorter: (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime(),
     },
     {
@@ -252,18 +305,6 @@ export default function MyGroupPage() {
       ),
       sorter: (a, b) => a.attendanceRate - b.attendanceRate,
     },
-    {
-      title: "Actions",
-      key: "actions",
-      render: (_, record) => (
-        <AntButton
-          size="small"
-          onClick={() => router.push(`/meetings/${record.id}`)}
-        >
-          View Details
-        </AntButton>
-      ),
-    },
   ];
 
   const memberColumns: ColumnsType<MemberSummary> = [
@@ -275,7 +316,7 @@ export default function MyGroupPage() {
           <div className="font-medium">
             {record.firstName} {record.lastName}
           </div>
-          <div className="text-xs text-gray-500">{record.email}</div>
+          <div className="text-xs text-ds-text-subtle">{record.email}</div>
         </div>
       ),
       sorter: (a, b) => a.firstName.localeCompare(b.firstName),
@@ -308,19 +349,9 @@ export default function MyGroupPage() {
       title: "Status",
       dataIndex: "status",
       key: "status",
-      render: (status: string) => {
-        const config = {
-          active: { color: "green", icon: <CheckCircleOutlined /> },
-          "at-risk": { color: "orange", icon: <ClockCircleOutlined /> },
-          inactive: { color: "red", icon: <CloseCircleOutlined /> },
-        };
-        const { color, icon } = config[status as keyof typeof config];
-        return (
-          <Tag color={color} icon={icon}>
-            {status.toUpperCase().replace("-", " ")}
-          </Tag>
-        );
-      },
+      render: (status: string) => (
+        <StatusBadge status={status} category="engagement" />
+      ),
       filters: [
         { text: "Active", value: "active" },
         { text: "At Risk", value: "at-risk" },
@@ -333,7 +364,7 @@ export default function MyGroupPage() {
       dataIndex: "lastSeen",
       key: "lastSeen",
       render: (date: string) =>
-        date === "Never" ? date : dayjs(date).format("MMM D, YYYY"),
+        date === "Never" ? date : dayjs(date).format("D MMM YYYY"),
     },
   ];
 
@@ -348,29 +379,28 @@ export default function MyGroupPage() {
   ).length;
 
   return (
-    <DashboardLayout role="LEADER">
-      <div className="space-y-6">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h2 className="text-2xl font-bold text-gray-900">{group.name}</h2>
-            <p className="text-gray-600 mt-1">{group.description}</p>
-          </div>
-          <div className="flex gap-2">
-            <AntButton
-              icon={<ClockCircleOutlined />}
-              onClick={() => router.push("/follow-ups")}
-            >
-              Follow-ups
-            </AntButton>
-            <AntButton
-              icon={<BarChartOutlined />}
-              onClick={() => router.push("/analytics")}
-            >
-              Analytics
-            </AntButton>
-          </div>
-        </div>
+    <DashboardLayout role={user?.role}>
+      <PageContainer>
+        <PageHeader
+          title={group.name}
+          subtitle={group.description}
+          actions={
+            <>
+              <AntButton
+                icon={<ClockCircleOutlined />}
+                onClick={() => router.push("/leader/follow-ups")}
+              >
+                Follow-ups
+              </AntButton>
+              <AntButton
+                icon={<BarChartOutlined />}
+                onClick={() => router.push("/leader/analytics")}
+              >
+                Analytics
+              </AntButton>
+            </>
+          }
+        />
 
         {/* Overview Stats */}
         <Row gutter={[16, 16]}>
@@ -379,7 +409,7 @@ export default function MyGroupPage() {
               title="Total Members"
               value={group.memberCount}
               icon={<UserOutlined />}
-              color="text-blue-600"
+              color="text-ds-chart-1"
             />
           </Col>
           <Col xs={24} sm={12} md={6}>
@@ -387,7 +417,7 @@ export default function MyGroupPage() {
               title="Active Members"
               value={activeMembersCount}
               icon={<CheckCircleOutlined />}
-              color="text-green-600"
+              color="text-ds-status-success"
             />
           </Col>
           <Col xs={24} sm={12} md={6}>
@@ -395,7 +425,7 @@ export default function MyGroupPage() {
               title="At Risk"
               value={atRiskCount}
               icon={<ClockCircleOutlined />}
-              color="text-orange-600"
+              color="text-ds-chart-4"
             />
           </Col>
           <Col xs={24} sm={12} md={6}>
@@ -403,7 +433,7 @@ export default function MyGroupPage() {
               title="Attendance Rate"
               value={`${group.attendanceRate?.toFixed(0) || 0}%`}
               icon={<CalendarOutlined />}
-              color="text-purple-600"
+              color="text-ds-chart-3"
             />
           </Col>
         </Row>
@@ -423,7 +453,7 @@ export default function MyGroupPage() {
               {group.memberCount}
             </Descriptions.Item>
             <Descriptions.Item label="Created">
-              {dayjs(group.createdAt).format("MMM D, YYYY")}
+              {dayjs(group.createdAt).format("D MMM YYYY")}
             </Descriptions.Item>
           </Descriptions>
         </Card>
@@ -437,7 +467,7 @@ export default function MyGroupPage() {
                 block
                 size="large"
                 icon={<PlusOutlined />}
-                onClick={() => router.push("/meetings/new")}
+                onClick={() => router.push("/leader/meetings/new")}
               >
                 Create Meeting
               </AntButton>
@@ -447,7 +477,7 @@ export default function MyGroupPage() {
                 block
                 size="large"
                 icon={<PhoneOutlined />}
-                onClick={() => router.push("/interactions/new")}
+                onClick={() => router.push("/leader/interactions/new")}
               >
                 Log Interaction
               </AntButton>
@@ -457,7 +487,7 @@ export default function MyGroupPage() {
                 block
                 size="large"
                 icon={<TeamOutlined />}
-                onClick={() => router.push("/members")}
+                onClick={() => router.push("/leader/members")}
               >
                 Manage Members
               </AntButton>
@@ -467,7 +497,7 @@ export default function MyGroupPage() {
                 block
                 size="large"
                 icon={<BarChartOutlined />}
-                onClick={() => router.push("/analytics")}
+                onClick={() => router.push("/leader/analytics")}
               >
                 View Analytics
               </AntButton>
@@ -479,7 +509,10 @@ export default function MyGroupPage() {
         <Card
           title="Recent Meetings"
           extra={
-            <AntButton type="link" onClick={() => router.push("/meetings")}>
+            <AntButton
+              type="link"
+              onClick={() => router.push("/leader/meetings")}
+            >
               View All
             </AntButton>
           }
@@ -488,22 +521,18 @@ export default function MyGroupPage() {
             dataSource={recentMeetings}
             columns={meetingColumns}
             rowKey="id"
+            actions={[
+              {
+                key: "viewDetails",
+                label: "View Details",
+                onClick: (record) =>
+                  router.push(`/leader/meetings/${record.id}`),
+              },
+            ]}
             pagination={false}
+            scroll={{ x: 800 }}
             locale={{
-              emptyText: (
-                <Empty
-                  description="No meetings recorded yet"
-                  image={Empty.PRESENTED_IMAGE_SIMPLE}
-                >
-                  <AntButton
-                    type="primary"
-                    icon={<PlusOutlined />}
-                    onClick={() => router.push("/meetings/new")}
-                  >
-                    Create First Meeting
-                  </AntButton>
-                </Empty>
-              ),
+              emptyText: "No meetings recorded yet",
             }}
           />
         </Card>
@@ -512,7 +541,10 @@ export default function MyGroupPage() {
         <Card
           title="Member Attendance Summary"
           extra={
-            <AntButton type="link" onClick={() => router.push("/members")}>
+            <AntButton
+              type="link"
+              onClick={() => router.push("/leader/members")}
+            >
               View All Members
             </AntButton>
           }
@@ -530,17 +562,13 @@ export default function MyGroupPage() {
             columns={memberColumns}
             rowKey="id"
             pagination={{ pageSize: 10 }}
+            scroll={{ x: 800 }}
             locale={{
-              emptyText: (
-                <Empty
-                  description="No members in group"
-                  image={Empty.PRESENTED_IMAGE_SIMPLE}
-                />
-              ),
+              emptyText: "No members in group",
             }}
           />
         </Card>
-      </div>
+      </PageContainer>
     </DashboardLayout>
   );
 }

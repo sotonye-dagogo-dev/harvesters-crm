@@ -82,6 +82,30 @@ export function serverErrorResponse(
 }
 
 // ============================================================================
+// ERROR HANDLING UTILITIES
+// ============================================================================
+
+/**
+ * Handle API errors with detailed feedback
+ */
+export function handleApiError(error: unknown): NextResponse<ApiResponse> {
+  console.error("API Error:", error);
+
+  if (error instanceof Error) {
+    // Known error with message
+    return serverErrorResponse(error.message || "An unexpected error occurred");
+  }
+
+  if (typeof error === "string") {
+    return serverErrorResponse(error);
+  }
+
+  return serverErrorResponse(
+    "An unexpected error occurred. Please try again or contact support if the problem persists."
+  );
+}
+
+// ============================================================================
 // VALIDATION ERROR RESPONSE
 // ============================================================================
 
@@ -116,18 +140,4 @@ export function paginatedResponse<T>(
     pageSize,
     hasMore: page * pageSize < total,
   });
-}
-
-// ============================================================================
-// ERROR HANDLER
-// ============================================================================
-
-export function handleApiError(error: unknown): NextResponse<ApiResponse> {
-  console.error("API Error:", error);
-
-  if (error instanceof Error) {
-    return serverErrorResponse(error.message);
-  }
-
-  return serverErrorResponse();
 }

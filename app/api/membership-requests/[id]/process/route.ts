@@ -13,6 +13,8 @@ import {
   sendMembershipRequestNotification,
   sendNewMemberNotification,
 } from "@/lib/utils/notificationHelpers";
+import { USER_ROLES } from "@/lib/constants";
+import { MembershipRequestStatus } from "@/lib/types";
 
 const processRequestSchema = z.object({
   action: z.enum(["approve", "reject"]),
@@ -25,7 +27,7 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { user, error } = await getAuthenticatedUser(request);
+    const { user, error } = await getAuthenticatedUser();
     if (error) return error;
 
     const { id } = await params;
@@ -43,9 +45,11 @@ export async function POST(
     }
 
     // Check permissions - only group leader or superadmin can process
-    const group = groupDb.findById(membershipRequest.toGroupId);
+    const group = membershipRequest.toGroupId
+      ? groupDb.findById(membershipRequest.toGroupId)
+      : undefined;
     const canProcess =
-      user?.role === UserRole.SUPERADMIN || group?.leaderId === user?.id;
+      user?.role === USER_ROLES.SUPERADMIN || group?.leaderId === user?.id;
 
     if (!canProcess) {
       return forbiddenResponse(
@@ -67,11 +71,9 @@ export async function POST(
     // Update membership request using respond method
     const updatedRequest = membershipRequestDb.respond(
       id,
-      {
-        status: newStatus,
-        responseMessage: notes,
-      },
-      user?.id!
+      newStatus,
+      user?.id ?? "",
+      notes
     );
 
     if (!updatedRequest) {
@@ -87,7 +89,12 @@ export async function POST(
         });
 
         // Send welcome notification to the new member
-        await sendNewMemberNotification(member.id, membershipRequest.toGroupId);
+        if (membershipRequest.toGroupId) {
+          await sendNewMemberNotification(
+            member.id,
+            membershipRequest.toGroupId
+          );
+        }
       }
     }
 

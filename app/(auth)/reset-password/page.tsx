@@ -1,7 +1,10 @@
 "use client";
 
 import { useState, useEffect, Suspense } from "react";
-import { Form, Input, Button, Card, message, Progress } from "antd";
+import { Form, message, Progress } from "antd";
+import Button from "@/components/ui/Button";
+import Card from "@/components/ui/Card";
+import { PasswordInput } from "@/components/ui/Input";
 import { LockOutlined, CheckCircleOutlined } from "@ant-design/icons";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -112,11 +115,11 @@ function ResetPasswordForm() {
 
   if (tokenValid === null) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-church-primary to-church-secondary p-4">
-        <Card className="w-full max-w-md shadow-xl">
+      <div className="min-h-screen flex items-center justify-center bg-ds-surface-base p-4">
+        <Card className="w-full max-w-md shadow-ds-lg">
           <div className="text-center py-8">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-church-primary mx-auto"></div>
-            <p className="mt-4 text-gray-600">Verifying reset link...</p>
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-ds-brand-accent mx-auto"></div>
+            <p className="mt-4 text-ds-text-secondary">Verifying reset link...</p>
           </div>
         </Card>
       </div>
@@ -125,21 +128,21 @@ function ResetPasswordForm() {
 
   if (tokenValid === false) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-church-primary to-church-secondary p-4">
-        <Card className="w-full max-w-md shadow-xl">
+      <div className="min-h-screen flex items-center justify-center bg-ds-surface-base p-4">
+        <Card className="w-full max-w-md shadow-ds-lg">
           <div className="text-center">
-            <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <span className="text-3xl text-red-600">✕</span>
+            <div className="w-16 h-16 bg-ds-status-error/10 rounded-full flex items-center justify-center mx-auto mb-4">
+              <span className="text-3xl text-ds-status-error">✕</span>
             </div>
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">
+            <h2 className="text-2xl font-bold text-ds-text-primary mb-2">
               Invalid Reset Link
             </h2>
-            <p className="text-gray-600 mb-6">
+            <p className="text-ds-text-secondary mb-6">
               This password reset link is invalid or has expired. Please request
               a new one.
             </p>
             <Link href="/forgot-password">
-              <Button type="primary" size="large" block>
+              <Button size="large" block>
                 Request New Link
               </Button>
             </Link>
@@ -151,20 +154,20 @@ function ResetPasswordForm() {
 
   if (resetSuccess) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-church-primary to-church-secondary p-4">
-        <Card className="w-full max-w-md shadow-xl">
+      <div className="min-h-screen flex items-center justify-center bg-ds-surface-base p-4">
+        <Card className="w-full max-w-md shadow-ds-lg">
           <div className="text-center">
-            <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <CheckCircleOutlined className="text-3xl text-green-600" />
+            <div className="w-16 h-16 bg-ds-brand-accent-subtle rounded-full flex items-center justify-center mx-auto mb-4">
+              <CheckCircleOutlined className="text-3xl text-ds-brand-accent" />
             </div>
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">
+            <h2 className="text-2xl font-bold text-ds-text-primary mb-2">
               Password Reset Successful!
             </h2>
-            <p className="text-gray-600 mb-6">
+            <p className="text-ds-text-secondary mb-6">
               Your password has been reset successfully. You can now log in with
               your new password.
             </p>
-            <p className="text-sm text-gray-500">
+            <p className="text-sm text-ds-text-subtle">
               Redirecting to login page...
             </p>
           </div>
@@ -174,13 +177,13 @@ function ResetPasswordForm() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-church-primary to-church-secondary p-4">
-      <Card className="w-full max-w-md shadow-xl">
+    <div className="min-h-screen flex items-center justify-center bg-ds-surface-base p-4">
+      <Card className="w-full max-w-md shadow-ds-lg">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">
+          <h1 className="text-3xl font-bold text-ds-text-primary mb-2">
             Reset Password
           </h1>
-          <p className="text-gray-600">Enter your new password below</p>
+          <p className="text-ds-text-secondary">Enter your new password below</p>
         </div>
 
         <Form
@@ -202,7 +205,7 @@ function ResetPasswordForm() {
               },
             ]}
           >
-            <Input.Password
+            <PasswordInput
               prefix={<LockOutlined />}
               placeholder="Enter new password"
               onChange={handlePasswordChange}
@@ -221,10 +224,10 @@ function ResetPasswordForm() {
                 <span
                   className={
                     passwordStrength < 40
-                      ? "text-red-500"
+                      ? "text-ds-status-error"
                       : passwordStrength < 70
-                        ? "text-yellow-500"
-                        : "text-green-500"
+                        ? "text-ds-status-warning"
+                        : "text-ds-status-success"
                   }
                 >
                   Password Strength: {getStrengthText(passwordStrength)}
@@ -249,7 +252,7 @@ function ResetPasswordForm() {
               }),
             ]}
           >
-            <Input.Password
+            <PasswordInput
               prefix={<LockOutlined />}
               placeholder="Confirm new password"
             />
@@ -257,7 +260,6 @@ function ResetPasswordForm() {
 
           <Form.Item>
             <Button
-              type="primary"
               htmlType="submit"
               block
               loading={loading}
@@ -270,7 +272,7 @@ function ResetPasswordForm() {
           <div className="text-center">
             <Link
               href="/login"
-              className="text-church-primary hover:text-church-primary/80 text-sm"
+              className="text-ds-brand-accent hover:text-ds-brand-accent-hover text-sm"
             >
               Back to Login
             </Link>
@@ -285,11 +287,11 @@ export default function ResetPasswordPage() {
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-church-primary to-church-secondary p-4">
-          <Card className="w-full max-w-md shadow-xl">
+        <div className="min-h-screen flex items-center justify-center bg-ds-surface-base p-4">
+          <Card className="w-full max-w-md shadow-ds-lg">
             <div className="text-center py-8">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-church-primary mx-auto"></div>
-              <p className="mt-4 text-gray-600">Loading...</p>
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-ds-brand-accent mx-auto"></div>
+              <p className="mt-4 text-ds-text-secondary">Loading...</p>
             </div>
           </Card>
         </div>

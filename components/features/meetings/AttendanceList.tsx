@@ -1,4 +1,5 @@
 import { List, Tag } from "antd";
+import { BooleanBadge } from "@/components/ui/StatusBadge";
 
 interface AttendanceListProps {
   members: Array<{
@@ -44,13 +45,13 @@ export default function AttendanceList({
           <List.Item
             className={`${
               !member.isPresent ? "opacity-50" : ""
-            } hover:bg-gray-50 px-4 rounded-lg transition-colors`}
+            } hover:bg-ds-surface-sunken px-4 rounded-lg transition-colors`}
           >
             <List.Item.Meta
               avatar={
                 <div
                   className={`w-10 h-10 rounded-full flex items-center justify-center text-white font-semibold ${
-                    member.isPresent ? "bg-church-primary" : "bg-gray-400"
+                    member.isPresent ? "bg-ds-brand-accent" : "bg-ds-text-subtle"
                   }`}
                 >
                   {member.firstName[0]}
@@ -58,14 +59,12 @@ export default function AttendanceList({
                 </div>
               }
               title={
-                <span className="text-gray-900">
+                <span className="text-ds-text-primary">
                   {member.firstName} {member.lastName}
                 </span>
               }
             />
-            <Tag color={member.isPresent ? "success" : "error"}>
-              {member.isPresent ? "Present" : "Absent"}
-            </Tag>
+            <BooleanBadge value={member.isPresent} trueLabel="Present" falseLabel="Absent" />
           </List.Item>
         )}
       />

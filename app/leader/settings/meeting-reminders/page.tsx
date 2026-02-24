@@ -1,5 +1,6 @@
 "use client";
 
+import { UserRole } from "@/lib/types";
 import { useState } from "react";
 import { useAuth } from "@/providers/AuthProvider";
 import DashboardLayout from "@/components/features/navigation/DashboardLayout";
@@ -68,7 +69,7 @@ export default function MeetingRemindersPage() {
       // Mock API call - in production, would save to backend
       await new Promise((resolve) => setTimeout(resolve, 1000));
       message.success("Notification preferences saved successfully");
-    } catch (error) {
+    } catch {
       message.error("Failed to save preferences");
     } finally {
       setSaving(false);
@@ -76,14 +77,14 @@ export default function MeetingRemindersPage() {
   };
 
   return (
-    <DashboardLayout role={user?.role || "LEADER"}>
+    <DashboardLayout role={user?.role || UserRole.SMALL_GROUP_LEADER}>
       <div className="space-y-6">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+          <h2 className="text-2xl font-bold text-ds-text-primary flex items-center gap-2">
             <BellOutlined />
             Meeting Reminders
           </h2>
-          <p className="text-gray-600 mt-1">
+          <p className="text-ds-text-secondary mt-1">
             Manage your meeting reminder preferences and notification settings
           </p>
         </div>
@@ -100,10 +101,10 @@ export default function MeetingRemindersPage() {
           <div className="space-y-4">
             <div className="flex items-center justify-between py-2">
               <div>
-                <div className="font-medium text-gray-900">
+                <div className="font-medium text-ds-text-primary">
                   Meeting Reminders
                 </div>
-                <div className="text-sm text-gray-500">
+                <div className="text-sm text-ds-text-subtle">
                   Get notified about upcoming meetings
                 </div>
               </div>
@@ -119,10 +120,10 @@ export default function MeetingRemindersPage() {
 
             <div className="flex items-center justify-between py-2">
               <div>
-                <div className="font-medium text-gray-900">
+                <div className="font-medium text-ds-text-primary">
                   Membership Requests
                 </div>
-                <div className="text-sm text-gray-500">
+                <div className="text-sm text-ds-text-subtle">
                   Notifications for new membership requests
                 </div>
               </div>
@@ -138,8 +139,10 @@ export default function MeetingRemindersPage() {
 
             <div className="flex items-center justify-between py-2">
               <div>
-                <div className="font-medium text-gray-900">Role Changes</div>
-                <div className="text-sm text-gray-500">
+                <div className="font-medium text-ds-text-primary">
+                  Role Changes
+                </div>
+                <div className="text-sm text-ds-text-subtle">
                   Notifications when your role is updated
                 </div>
               </div>
@@ -153,8 +156,10 @@ export default function MeetingRemindersPage() {
 
             <div className="flex items-center justify-between py-2">
               <div>
-                <div className="font-medium text-gray-900">New Members</div>
-                <div className="text-sm text-gray-500">
+                <div className="font-medium text-ds-text-primary">
+                  New Members
+                </div>
+                <div className="text-sm text-ds-text-subtle">
                   Notifications when new members join your group
                 </div>
               </div>
@@ -168,10 +173,10 @@ export default function MeetingRemindersPage() {
 
             <div className="flex items-center justify-between py-2">
               <div>
-                <div className="font-medium text-gray-900">
+                <div className="font-medium text-ds-text-primary">
                   Member Removal Alerts
                 </div>
-                <div className="text-sm text-gray-500">
+                <div className="text-sm text-ds-text-subtle">
                   Notifications when you are removed from a group
                 </div>
               </div>
@@ -185,10 +190,10 @@ export default function MeetingRemindersPage() {
 
             <div className="flex items-center justify-between py-2">
               <div>
-                <div className="font-medium text-gray-900">
+                <div className="font-medium text-ds-text-primary">
                   Follow-up Reminders
                 </div>
-                <div className="text-sm text-gray-500">
+                <div className="text-sm text-ds-text-subtle">
                   Reminders for scheduled member follow-ups
                 </div>
               </div>
@@ -204,10 +209,10 @@ export default function MeetingRemindersPage() {
 
             <div className="flex items-center justify-between py-2">
               <div>
-                <div className="font-medium text-gray-900">
+                <div className="font-medium text-ds-text-primary">
                   Inactive Member Alerts
                 </div>
-                <div className="text-sm text-gray-500">
+                <div className="text-sm text-ds-text-subtle">
                   Notifications about members with low attendance
                 </div>
               </div>
@@ -253,11 +258,11 @@ export default function MeetingRemindersPage() {
           <div className="space-y-4">
             <div className="flex items-center justify-between py-2">
               <div>
-                <div className="font-medium text-gray-900 flex items-center gap-2">
+                <div className="font-medium text-ds-text-primary flex items-center gap-2">
                   <MailOutlined />
                   Email Notifications
                 </div>
-                <div className="text-sm text-gray-500">
+                <div className="text-sm text-ds-text-subtle">
                   Receive notification emails at {user?.email}
                 </div>
               </div>
@@ -273,11 +278,11 @@ export default function MeetingRemindersPage() {
 
             <div className="flex items-center justify-between py-2">
               <div>
-                <div className="font-medium text-gray-900 flex items-center gap-2">
+                <div className="font-medium text-ds-text-primary flex items-center gap-2">
                   <PhoneOutlined />
                   SMS Notifications
                 </div>
-                <div className="text-sm text-gray-500">
+                <div className="text-sm text-ds-text-subtle">
                   Receive text messages for critical updates (coming soon)
                 </div>
               </div>
@@ -291,8 +296,8 @@ export default function MeetingRemindersPage() {
             </div>
           </div>
 
-          <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded">
-            <p className="text-sm text-blue-800">
+          <div className="mt-4 p-3 bg-ds-chart-1/5 border border-blue-200 rounded">
+            <p className="text-sm text-ds-chart-1">
               <strong>Note:</strong> Email and SMS notifications are currently
               in mock mode. In production, these will be delivered through
               proper email/SMS services.

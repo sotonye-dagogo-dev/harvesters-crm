@@ -11,14 +11,16 @@ import {
   handleApiError,
 } from "@/lib/utils/api";
 import { sendRoleAssignmentNotification } from "@/lib/utils/notificationHelpers";
+import { USER_ROLES } from "@/lib/constants";
+import { EmploymentStatus, MaritalStatus, UserRole } from "@/lib/types";
 
 // GET /api/users/[id] - Get user by ID
 export async function GET(
-  request: NextRequest,
+  _request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { user: currentUser, error } = await getAuthenticatedUser(request);
+    const { user: currentUser, error } = await getAuthenticatedUser();
     if (error) return error;
 
     const { id } = await params;
@@ -31,8 +33,8 @@ export async function GET(
     // Check permissions: users can view their own profile, leaders can view group members, superadmins can view all
     const canView =
       currentUser?.id === id ||
-      currentUser?.role === UserRole.SUPERADMIN ||
-      (currentUser?.role === UserRole.LEADER &&
+      currentUser?.role === USER_ROLES.SUPERADMIN ||
+      (currentUser?.role === USER_ROLES.SMALL_GROUP_LEADER &&
         currentUser?.groupId === user.groupId);
 
     if (!canView) {
@@ -51,7 +53,7 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { user: currentUser, error } = await getAuthenticatedUser(request);
+    const { user: currentUser, error } = await getAuthenticatedUser();
     if (error) return error;
 
     const { id } = await params;
@@ -70,7 +72,7 @@ export async function PUT(
 
     // Check permissions: users can update their own profile, superadmins can update any profile
     const canUpdate =
-      currentUser?.id === id || currentUser?.role === UserRole.SUPERADMIN;
+      currentUser?.id === id || currentUser?.role === USER_ROLES.SUPERADMIN;
 
     if (!canUpdate) {
       return forbiddenResponse("You don't have permission to update this user");
@@ -93,7 +95,7 @@ export async function PUT(
     }
 
     // Send notification if role was changed
-    if (isRoleChange && currentUser?.role === UserRole.SUPERADMIN) {
+    if (isRoleChange && currentUser?.role === USER_ROLES.SUPERADMIN) {
       await sendRoleAssignmentNotification(
         id,
         validation.data.role!,
@@ -112,11 +114,11 @@ export async function PUT(
 
 // DELETE /api/users/[id] - Deactivate user (Superadmin only)
 export async function DELETE(
-  request: NextRequest,
+  _request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { error } = await requireRole([UserRole.SUPERADMIN], request);
+    const { error } = await requireRole([USER_ROLES.SUPERADMIN as UserRole]);
     if (error) return error;
 
     const { id } = await params;

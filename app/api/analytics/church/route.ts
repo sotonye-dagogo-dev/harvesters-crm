@@ -1,24 +1,14 @@
+import { UserRole } from "@/lib/types";
 import { NextRequest, NextResponse } from "next/server";
-import { cookies } from "next/headers";
-import { verifyToken } from "@/lib/utils/auth";
 import { db } from "@/lib/data/database";
 import { differenceInDays } from "date-fns";
+import { getAuthenticatedUser } from "@/lib/utils/middleware";
 
 export async function GET(_request: NextRequest) {
   try {
-    const cookieStore = await cookies();
-    const token = cookieStore.get("accessToken");
+    const { user, error } = await getAuthenticatedUser();
+    if (error) return error;
 
-    if (!token) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const decoded = await verifyToken(token.value);
-    if (!decoded) {
-      return NextResponse.json({ error: "Invalid token" }, { status: 401 });
-    }
-
-    const user = db.users.findById(decoded.userId);
     if (!user) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
@@ -33,9 +23,9 @@ export async function GET(_request: NextRequest) {
     const allGroups = db.groups.findAll({});
     const allMeetings = db.meetings.findAll({});
 
-    // Calculate engagement scores for all members
+    // Calculate engagement scores for all members (including cell leaders)
     const memberEngagementScores = allUsers
-      .filter((u) => u.role === "MEMBER" || u.role === "LEADER")
+      .filter((u) => u.role === "MEMBER" || u.role === UserRole.SMALL_GROUP_LEADER || u.role === "CELL_LEADER")
       .map((member) => {
         const memberMeetings = allMeetings.filter(
           (m) =>
@@ -125,10 +115,10 @@ export async function GET(_request: NextRequest) {
       const avgEngagement =
         groupMemberScores.length > 0
           ? groupMemberScores.reduce(
-              (sum: number, m: { engagementScore: number }) =>
-                sum + m.engagementScore,
-              0
-            ) / groupMemberScores.length
+            (sum: number, m: { engagementScore: number }) =>
+              sum + m.engagementScore,
+            0
+          ) / groupMemberScores.length
           : 0;
 
       const performanceScore = Math.round(

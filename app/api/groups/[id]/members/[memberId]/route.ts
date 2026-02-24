@@ -8,14 +8,15 @@ import {
   handleApiError,
 } from "@/lib/utils/api";
 import { sendMemberRemovedNotification } from "@/lib/utils/notificationHelpers";
+import { USER_ROLES } from "@/lib/constants";
 
 // DELETE /api/groups/[id]/members/[memberId] - Remove member from group
 export async function DELETE(
-  request: NextRequest,
+  _request: NextRequest,
   { params }: { params: Promise<{ id: string; memberId: string }> }
 ) {
   try {
-    const { user, error } = await getAuthenticatedUser(request);
+    const { user, error } = await getAuthenticatedUser();
     if (error) return error;
 
     const { id, memberId } = await params;
@@ -27,7 +28,7 @@ export async function DELETE(
 
     // Check permissions
     const canRemove =
-      user?.role === UserRole.SUPERADMIN || group.leaderId === user?.id;
+      user?.role === USER_ROLES.SUPERADMIN || group.leaderId === user?.id;
 
     if (!canRemove) {
       return forbiddenResponse(

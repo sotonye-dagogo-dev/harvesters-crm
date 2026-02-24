@@ -31,7 +31,7 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { user, error } = await getAuthenticatedUser(request);
+    const { user, error } = await getAuthenticatedUser();
     if (error) return error;
 
     const { id } = await params;
@@ -51,7 +51,7 @@ export async function POST(
     // Check permissions
     const group = groupDb.findById(meeting.groupId);
     const canRecordAttendance =
-      user?.role === UserRole.SUPERADMIN || group?.leaderId === user?.id;
+      user?.role === USER_ROLES.SUPERADMIN || group?.leaderId === user?.id;
 
     if (!canRecordAttendance) {
       return forbiddenResponse(
@@ -96,7 +96,7 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { user, error } = await getAuthenticatedUser(request);
+    const { user, error } = await getAuthenticatedUser();
     if (error) return error;
 
     const { id } = await params;
@@ -109,7 +109,7 @@ export async function GET(
     // Check permissions
     const group = groupDb.findById(meeting.groupId);
     const canView =
-      user?.role === UserRole.SUPERADMIN ||
+      user?.role === USER_ROLES.SUPERADMIN ||
       group?.leaderId === user?.id ||
       user?.groupId === meeting.groupId;
 

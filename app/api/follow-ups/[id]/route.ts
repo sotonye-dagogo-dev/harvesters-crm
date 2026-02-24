@@ -6,6 +6,7 @@ import {
   notFoundResponse,
   badRequestResponse,
 } from "@/lib/utils/api";
+import { isLeadershipRole, USER_ROLES } from "@/lib/constants";
 
 // Import followUps from parent route (in production, this would be from database)
 // For now, we'll create a shared storage module
@@ -17,10 +18,10 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { user, error } = await getAuthenticatedUser(request);
+    const { user, error } = await getAuthenticatedUser();
     if (error) return error;
 
-    if (user?.role !== "LEADER" && user?.role !== "SUPERADMIN") {
+    if (!isLeadershipRole(user?.role ?? '')) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
     }
 
@@ -28,7 +29,7 @@ export async function PUT(
     const body = await request.json();
     const { status, outcome } = body;
 
-    const followUpIndex = followUps.findIndex((f: any) => f.id === id);
+    const followUpIndex = followUps.findIndex((f) => f.id === id);
 
     if (followUpIndex === -1) {
       return notFoundResponse("Follow-up not found");
@@ -37,7 +38,7 @@ export async function PUT(
     const followUp = followUps[followUpIndex];
 
     // Verify ownership
-    if (followUp.leaderId !== user.id && user.role !== "SUPERADMIN") {
+    if (followUp.leaderId !== user.id && user.role !== USER_ROLES.SUPERADMIN) {
       return NextResponse.json(
         { error: "Can only update your own follow-ups" },
         { status: 403 }
@@ -67,19 +68,19 @@ export async function PUT(
 
 // DELETE /api/follow-ups/[id] - Delete a follow-up
 export async function DELETE(
-  request: NextRequest,
+  _request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { user, error } = await getAuthenticatedUser(request);
+    const { user, error } = await getAuthenticatedUser();
     if (error) return error;
 
-    if (user?.role !== "LEADER" && user?.role !== "SUPERADMIN") {
+    if (!isLeadershipRole(user?.role ?? '')) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
     }
 
     const { id } = await params;
-    const followUpIndex = followUps.findIndex((f: any) => f.id === id);
+    const followUpIndex = followUps.findIndex((f) => f.id === id);
 
     if (followUpIndex === -1) {
       return notFoundResponse("Follow-up not found");
@@ -88,7 +89,7 @@ export async function DELETE(
     const followUp = followUps[followUpIndex];
 
     // Verify ownership
-    if (followUp.leaderId !== user.id && user.role !== "SUPERADMIN") {
+    if (followUp.leaderId !== user.id && user.role !== USER_ROLES.SUPERADMIN) {
       return NextResponse.json(
         { error: "Can only delete your own follow-ups" },
         { status: 403 }

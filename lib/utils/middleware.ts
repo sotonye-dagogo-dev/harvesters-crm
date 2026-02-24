@@ -1,36 +1,86 @@
-import { NextRequest } from "next/server";
+import { UserRole } from "@/lib/types";
 import { getAccessToken, verifyAccessToken } from "@/lib/utils/auth";
 import { userDb } from "@/lib/data/database";
 import { unauthorizedResponse } from "@/lib/utils/api";
 
-export async function getAuthenticatedUser(_request?: NextRequest) {
+export async function getAuthenticatedUser() {
   const token = await getAccessToken();
   if (!token) {
-    return { error: unauthorizedResponse("No access token provided") };
+    return {
+      error: unauthorizedResponse(
+        "No access token provided. Please log in to continue."
+      ),
+    };
   }
 
   const decoded = verifyAccessToken(token);
-  if (!decoded) {
-    return { error: unauthorizedResponse("Invalid or expired access token") };
+
+  // Check if decoded is an error response
+  if (
+    !decoded ||
+    (typeof decoded === "object" &&
+      "success" in decoded &&
+      decoded.success === false)
+  ) {
+    const errorMessage =
+      decoded && typeof decoded === "object" && "message" in decoded
+        ? String(decoded.message)
+        : "Invalid or expired access token. Please log in again.";
+    return {
+      error: unauthorizedResponse(errorMessage),
+    };
   }
 
-  const user = userDb.findById(decoded.userId);
-  if (!user || !user.isActive) {
-    return { error: unauthorizedResponse("User not found or inactive") };
+  // At this point, decoded should be the valid token payload
+  const tokenPayload = decoded as {
+    userId: string;
+    email: string;
+    role: UserRole;
+  };
+
+  const user = userDb.findById(tokenPayload.userId);
+  if (!user) {
+    return {
+      error: unauthorizedResponse(
+        "User account not found. Please contact support."
+      ),
+    };
+  }
+
+  if (!user.isActive) {
+    return {
+      error: unauthorizedResponse(
+        "Your account has been deactivated. Please contact church leadership for assistance."
+      ),
+    };
   }
 
   return { user };
 }
 
-export async function requireRole(roles: UserRole[], request?: NextRequest) {
-  const { user, error } = await getAuthenticatedUser(request);
+export async function requireRole(roles: UserRole[]) {
+  const { user, error } = await getAuthenticatedUser();
   if (error) return { error };
-  if (!user) return { error: unauthorizedResponse("User not found") };
-
-  if (!roles.includes(user.role)) {
+  if (!user) {
     return {
       error: unauthorizedResponse(
-        "You do not have permission to perform this action"
+        "Authentication required. Please log in to continue."
+      ),
+    };
+  }
+
+  if (!roles.includes(user.role)) {
+    const requiredRoles = roles.join(" or ");
+    const userRoleName =
+      user.role === UserRole.SUPERADMIN
+        ? "Super Administrator"
+        : user.role === UserRole.MEMBER
+          ? "Member"
+          : "Leader";
+
+    return {
+      error: unauthorizedResponse(
+        `Access denied. This action requires ${requiredRoles} privileges. Your current role is ${userRoleName}.`
       ),
     };
   }

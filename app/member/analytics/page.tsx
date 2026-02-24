@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useAuth } from "@/providers/AuthProvider";
+import DashboardLayout from "@/components/features/navigation/DashboardLayout";
 import {
   Card,
   Progress,
@@ -25,32 +26,20 @@ import {
 } from "@ant-design/icons";
 import { format, differenceInDays } from "date-fns";
 import { StatCard } from "@/components/ui/Card";
+import { UserRole } from "@/lib/types";
 
 export default function MemberAnalyticsPage() {
   const { user } = useAuth();
   const [loading, setLoading] = useState(true);
-  const [analytics, setAnalytics] = useState<{
-    attendancePercentage: number;
-    totalMeetings: number;
-    attendedMeetings: number;
-    missedMeetings: number;
-    interactionCount: number;
-    lastInteractionDate: string | null;
-    engagementScore: number;
-    memberSince: string;
-    recentActivity: Array<{
-      id: string;
-      type: string;
-      title: string;
-      date: string;
-      status?: string;
-    }>;
-  } | null>(null);
+  const [analytics, setAnalytics] = useState<MemberAnalyticsResponse | null>(
+    null
+  );
 
   useEffect(() => {
     if (user) {
       fetchAnalytics();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
 
   const fetchAnalytics = async () => {
@@ -72,19 +61,23 @@ export default function MemberAnalyticsPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <Spin size="large" />
-      </div>
+      <DashboardLayout role={UserRole.MEMBER}>
+        <div className="flex items-center justify-center h-96">
+          <Spin size="large" />
+        </div>
+      </DashboardLayout>
     );
   }
 
   if (!analytics) {
     return (
-      <div className="p-8">
-        <Card>
-          <Empty description="Analytics data not available" />
-        </Card>
-      </div>
+      <DashboardLayout role={UserRole.MEMBER}>
+        <div className="text-center py-12">
+          <Card className="bg-ds-surface-elevated">
+            <Empty description="Analytics data not available" />
+          </Card>
+        </div>
+      </DashboardLayout>
     );
   }
 
@@ -102,195 +95,203 @@ export default function MemberAnalyticsPage() {
   );
 
   return (
-    <div className="p-4 md:p-8 max-w-7xl mx-auto">
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900 mb-2">
-          My Analytics Dashboard
-        </h1>
-        <p className="text-gray-600">
-          Track your engagement and participation over time
-        </p>
-      </div>
+    <DashboardLayout role={UserRole.MEMBER}>
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-2xl font-bold text-ds-text-primary mb-2">
+            My Analytics Dashboard
+          </h1>
+          <p className="text-ds-text-secondary">
+            Track your engagement and participation over time
+          </p>
+        </div>
 
-      {/* Engagement Score Card */}
-      <Card className="mb-6">
-        <div className="text-center">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center justify-center gap-2">
-            <TrophyOutlined className="text-yellow-500" />
-            Overall Engagement Score
-          </h2>
-          <Row gutter={24} align="middle" justify="center">
-            <Col>
-              <Progress
-                type="circle"
-                percent={Math.round(analytics.engagementScore)}
-                size={180}
-                strokeColor={
-                  analytics.engagementScore >= 80
-                    ? "#52c41a"
-                    : analytics.engagementScore >= 60
-                      ? "#1890ff"
-                      : analytics.engagementScore >= 40
-                        ? "#faad14"
-                        : "#ff4d4f"
-                }
-                format={(percent) => (
-                  <div className="flex flex-col items-center">
-                    <div className="text-3xl font-bold">{percent}</div>
-                    <div className="text-sm text-gray-500">Score</div>
-                  </div>
-                )}
+        {/* Engagement Score Card */}
+        <Card className="bg-ds-surface-elevated">
+          <div className="text-center">
+            <h2 className="text-lg font-semibold text-ds-text-primary mb-4 flex items-center justify-center gap-2">
+              <TrophyOutlined className="text-yellow-500" />
+              Overall Engagement Score
+            </h2>
+            <Row gutter={24} align="middle" justify="center">
+              <Col>
+                <Progress
+                  type="circle"
+                  percent={Math.round(analytics.engagementScore)}
+                  size={180}
+                  strokeColor={
+                    analytics.engagementScore >= 80
+                      ? "#52c41a"
+                      : analytics.engagementScore >= 60
+                        ? "#1890ff"
+                        : analytics.engagementScore >= 40
+                          ? "#faad14"
+                          : "#ff4d4f"
+                  }
+                  format={(percent) => (
+                    <div className="flex flex-col items-center">
+                      <div className="text-3xl font-bold">{percent}</div>
+                      <div className="text-sm text-ds-text-subtle">Score</div>
+                    </div>
+                  )}
+                />
+              </Col>
+              <Col>
+                <div className="text-left">
+                  <Tag
+                    color={engagementLevel.color}
+                    className="text-lg px-4 py-2"
+                  >
+                    {engagementLevel.level}
+                  </Tag>
+                  <p className="text-ds-text-secondary mt-4">
+                    Your engagement score is calculated based on:
+                  </p>
+                  <ul className="text-sm text-ds-text-secondary mt-2 space-y-1">
+                    <li>• Meeting attendance (50%)</li>
+                    <li>• Leader interactions (30%)</li>
+                    <li>• Membership duration (20%)</li>
+                  </ul>
+                </div>
+              </Col>
+            </Row>
+          </div>
+        </Card>
+
+        {/* Key Metrics */}
+        <Row gutter={[16, 16]} className="mb-6">
+          <Col xs={24} sm={12} lg={6}>
+            <StatCard
+              title="Attendance Rate"
+              value={`${analytics.attendancePercentage.toFixed(1)}%`}
+              icon={<CheckCircleOutlined />}
+              color="text-ds-status-success"
+              description={`${analytics.attendedMeetings} of ${analytics.totalMeetings} meetings`}
+            />
+          </Col>
+          <Col xs={24} sm={12} lg={6}>
+            <StatCard
+              title="Meetings Attended"
+              value={analytics.attendedMeetings}
+              icon={<CalendarOutlined />}
+              color="text-ds-chart-1"
+              description={`${analytics.missedMeetings} missed`}
+            />
+          </Col>
+          <Col xs={24} sm={12} lg={6}>
+            <StatCard
+              title="Leader Interactions"
+              value={analytics.interactionCount}
+              icon={<PhoneOutlined />}
+              color="text-ds-chart-3"
+              description={
+                analytics.lastInteractionDate
+                  ? `Last: ${format(new Date(analytics.lastInteractionDate), "d MMM")}`
+                  : "No interactions yet"
+              }
+            />
+          </Col>
+          <Col xs={24} sm={12} lg={6}>
+            <StatCard
+              title="Member Since"
+              value={`${Math.round(daysSinceMembership / 30)} mo`}
+              icon={<UserOutlined />}
+              color="text-ds-chart-4"
+              description={format(new Date(analytics.memberSince), "MMM yyyy")}
+            />
+          </Col>
+        </Row>
+
+        {/* Attendance Breakdown */}
+        <Card title="Attendance Breakdown" className="mb-6">
+          <Row gutter={24}>
+            <Col xs={24} md={12}>
+              <Statistic
+                title="Total Meetings"
+                value={analytics.totalMeetings}
+                prefix={<CalendarOutlined />}
+                valueStyle={{ color: "#1B4B3E" }}
               />
             </Col>
-            <Col>
-              <div className="text-left">
-                <Tag
-                  color={engagementLevel.color}
-                  className="text-lg px-4 py-2"
-                >
-                  {engagementLevel.level}
-                </Tag>
-                <p className="text-gray-600 mt-4">
-                  Your engagement score is calculated based on:
-                </p>
-                <ul className="text-sm text-gray-600 mt-2 space-y-1">
-                  <li>• Meeting attendance (50%)</li>
-                  <li>• Leader interactions (30%)</li>
-                  <li>• Membership duration (20%)</li>
-                </ul>
+            <Col xs={24} md={12}>
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <span className="text-ds-text-secondary">Attended</span>
+                  <div className="flex items-center gap-2">
+                    <Progress
+                      percent={analytics.attendancePercentage}
+                      steps={10}
+                      strokeColor="#52c41a"
+                      style={{ width: 200 }}
+                    />
+                    <span className="font-semibold text-ds-status-success">
+                      {analytics.attendedMeetings}
+                    </span>
+                  </div>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-ds-text-secondary">Missed</span>
+                  <div className="flex items-center gap-2">
+                    <Progress
+                      percent={
+                        analytics.totalMeetings > 0
+                          ? (analytics.missedMeetings /
+                              analytics.totalMeetings) *
+                            100
+                          : 0
+                      }
+                      steps={10}
+                      strokeColor="#ff4d4f"
+                      style={{ width: 200 }}
+                    />
+                    <span className="font-semibold text-ds-status-error">
+                      {analytics.missedMeetings}
+                    </span>
+                  </div>
+                </div>
               </div>
             </Col>
           </Row>
-        </div>
-      </Card>
+        </Card>
 
-      {/* Key Metrics */}
-      <Row gutter={[16, 16]} className="mb-6">
-        <Col xs={24} sm={12} lg={6}>
-          <StatCard
-            title="Attendance Rate"
-            value={`${analytics.attendancePercentage.toFixed(1)}%`}
-            icon={<CheckCircleOutlined />}
-            color="text-green-600"
-            description={`${analytics.attendedMeetings} of ${analytics.totalMeetings} meetings`}
-          />
-        </Col>
-        <Col xs={24} sm={12} lg={6}>
-          <StatCard
-            title="Meetings Attended"
-            value={analytics.attendedMeetings}
-            icon={<CalendarOutlined />}
-            color="text-blue-600"
-            description={`${analytics.missedMeetings} missed`}
-          />
-        </Col>
-        <Col xs={24} sm={12} lg={6}>
-          <StatCard
-            title="Leader Interactions"
-            value={analytics.interactionCount}
-            icon={<PhoneOutlined />}
-            color="text-purple-600"
-            description={
-              analytics.lastInteractionDate
-                ? `Last: ${format(new Date(analytics.lastInteractionDate), "MMM d")}`
-                : "No interactions yet"
-            }
-          />
-        </Col>
-        <Col xs={24} sm={12} lg={6}>
-          <StatCard
-            title="Member Since"
-            value={`${Math.round(daysSinceMembership / 30)} mo`}
-            icon={<UserOutlined />}
-            color="text-orange-600"
-            description={format(new Date(analytics.memberSince), "MMM yyyy")}
-          />
-        </Col>
-      </Row>
-
-      {/* Attendance Breakdown */}
-      <Card title="Attendance Breakdown" className="mb-6">
-        <Row gutter={24}>
-          <Col xs={24} md={12}>
-            <Statistic
-              title="Total Meetings"
-              value={analytics.totalMeetings}
-              prefix={<CalendarOutlined />}
-              valueStyle={{ color: "#1B4B3E" }}
-            />
-          </Col>
-          <Col xs={24} md={12}>
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <span className="text-gray-600">Attended</span>
-                <div className="flex items-center gap-2">
-                  <Progress
-                    percent={analytics.attendancePercentage}
-                    steps={10}
-                    strokeColor="#52c41a"
-                    style={{ width: 200 }}
-                  />
-                  <span className="font-semibold text-green-600">
-                    {analytics.attendedMeetings}
-                  </span>
-                </div>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-gray-600">Missed</span>
-                <div className="flex items-center gap-2">
-                  <Progress
-                    percent={
-                      analytics.totalMeetings > 0
-                        ? (analytics.missedMeetings / analytics.totalMeetings) *
-                          100
-                        : 0
-                    }
-                    steps={10}
-                    strokeColor="#ff4d4f"
-                    style={{ width: 200 }}
-                  />
-                  <span className="font-semibold text-red-600">
-                    {analytics.missedMeetings}
-                  </span>
-                </div>
-              </div>
-            </div>
-          </Col>
-        </Row>
-      </Card>
-
-      {/* Recent Activity Timeline */}
-      <Card title="Recent Activity" extra={<RiseOutlined />}>
-        {analytics.recentActivity && analytics.recentActivity.length > 0 ? (
-          <Timeline
-            items={analytics.recentActivity.map((activity) => ({
-              dot:
-                activity.type === "meeting" ? (
-                  activity.status === "attended" ? (
-                    <CheckCircleOutlined style={{ color: "#52c41a" }} />
+        {/* Recent Activity Timeline */}
+        <Card title="Recent Activity" extra={<RiseOutlined />}>
+          {analytics.recentActivity && analytics.recentActivity.length > 0 ? (
+            <Timeline
+              items={analytics.recentActivity.map((activity) => ({
+                dot:
+                  activity.type === "meeting" ? (
+                    activity.status === "attended" ? (
+                      <CheckCircleOutlined style={{ color: "#52c41a" }} />
+                    ) : (
+                      <CloseCircleOutlined style={{ color: "#ff4d4f" }} />
+                    )
                   ) : (
-                    <CloseCircleOutlined style={{ color: "#ff4d4f" }} />
-                  )
-                ) : (
-                  <PhoneOutlined style={{ color: "#1890ff" }} />
-                ),
-              children: (
-                <div>
-                  <div className="font-medium">{activity.title}</div>
-                  <div className="text-sm text-gray-500">
-                    {format(new Date(activity.date), "MMM d, yyyy 'at' h:mm a")}
+                    <PhoneOutlined style={{ color: "#1890ff" }} />
+                  ),
+                children: (
+                  <div>
+                    <div className="font-medium text-ds-text-primary">
+                      {activity.title}
+                    </div>
+                    <div className="text-sm text-ds-text-subtle">
+                      {format(
+                        new Date(activity.date),
+                        "d MMM yyyy 'at' h:mm a"
+                      )}
+                    </div>
                   </div>
-                </div>
-              ),
-            }))}
-          />
-        ) : (
-          <Empty
-            description="No recent activity"
-            image={Empty.PRESENTED_IMAGE_SIMPLE}
-          />
-        )}
-      </Card>
-    </div>
+                ),
+              }))}
+            />
+          ) : (
+            <Empty
+              description="No recent activity"
+              image={Empty.PRESENTED_IMAGE_SIMPLE}
+            />
+          )}
+        </Card>
+      </div>
+    </DashboardLayout>
   );
 }

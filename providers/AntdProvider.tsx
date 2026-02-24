@@ -1,39 +1,33 @@
 "use client";
 
-import { ConfigProvider, theme } from "antd";
-import { ReactNode } from "react";
+import { App, ConfigProvider, theme } from "antd";
+import { useTheme } from "next-themes";
+import { ReactNode, useEffect, useState } from "react";
+import { getAntdTheme } from "@/lib/design-system/antd-theme";
 
 interface AntdProviderProps {
   children: ReactNode;
 }
 
 export function AntdProvider({ children }: AntdProviderProps) {
+  const { theme: currentTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const isDark = mounted && currentTheme === "dark";
+  const dsTheme = getAntdTheme(isDark);
+
   return (
     <ConfigProvider
       theme={{
-        token: {
-          colorPrimary: "#1B4B3E",
-          colorSuccess: "#52c41a",
-          colorWarning: "#faad14",
-          colorError: "#ff4d4f",
-          colorInfo: "#1B4B3E",
-          borderRadius: 6,
-          fontFamily:
-            '"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", sans-serif',
-        },
-        algorithm: theme.defaultAlgorithm,
-        components: {
-          Button: {
-            primaryShadow: "0 2px 0 rgba(27, 75, 62, 0.1)",
-          },
-          Card: {
-            boxShadowTertiary:
-              "0 1px 2px 0 rgba(0, 0, 0, 0.03), 0 1px 6px -1px rgba(0, 0, 0, 0.02), 0 2px 4px 0 rgba(0, 0, 0, 0.02)",
-          },
-        },
+        ...dsTheme,
+        algorithm: isDark ? theme.darkAlgorithm : theme.defaultAlgorithm,
       }}
     >
-      {children}
+      <App>{children}</App>
     </ConfigProvider>
   );
 }

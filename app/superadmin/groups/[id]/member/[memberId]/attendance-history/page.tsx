@@ -1,39 +1,52 @@
 "use client";
 
+import { UserRole } from "@/lib/types";
 import { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { useAuth } from "@/providers/AuthProvider";
-import {
-  Card,
-  Table,
-  Tag,
-  Spin,
-  message,
-  DatePicker,
-  Select,
-  Space,
-  Button as AntButton,
-  Empty,
-  Statistic,
-} from "antd";
+import DashboardLayout from "@/components/features/navigation/DashboardLayout";
+import { Card, Tag, Spin, message, Empty, Statistic } from "antd";
+import Table from "@/components/ui/Table";
+import Button from "@/components/ui/Button";
+import FilterToolbar, {
+  type FilterConfig,
+} from "@/components/ui/FilterToolbar";
 import {
   ArrowLeftOutlined,
   CheckCircleOutlined,
   CloseCircleOutlined,
   CalendarOutlined,
   DownloadOutlined,
-  FilterOutlined,
 } from "@ant-design/icons";
 import { format } from "date-fns";
 import type { ColumnsType } from "antd/es/table";
-import { Dayjs } from "dayjs";
-
-const { RangePicker } = DatePicker;
+import type { Dayjs } from "dayjs";
 
 interface MeetingAttendance {
   meeting: MeetingWithDetails;
   attended: boolean;
 }
+
+const attendanceFilters: FilterConfig[] = [
+  {
+    key: "status",
+    type: "select",
+    label: "Status",
+    placeholder: "All Status",
+    allowClear: false,
+    options: [
+      { label: "All Status", value: "ALL" },
+      { label: "Attended", value: "ATTENDED" },
+      { label: "Absent", value: "ABSENT" },
+    ],
+    width: 150,
+  },
+  {
+    key: "dateRange",
+    type: "dateRange",
+    label: "Date Range",
+  },
+];
 
 export default function AttendanceHistoryPage() {
   const router = useRouter();
@@ -54,10 +67,12 @@ export default function AttendanceHistoryPage() {
 
   useEffect(() => {
     fetchData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [groupId, memberId]);
 
   useEffect(() => {
     applyFilters();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [attendanceData, statusFilter, dateRange]);
 
   const fetchData = async () => {
@@ -133,7 +148,7 @@ export default function AttendanceHistoryPage() {
     // Prepare CSV content
     const headers = ["Date", "Time", "Duration", "Total Attendees", "Status"];
     const rows = filteredData.map((item) => [
-      format(new Date(item.meeting.date), "MMM d, yyyy"),
+      format(new Date(item.meeting.date), "d MMM yyyy"),
       item.meeting.startTime,
       `${item.meeting.startTime} - ${item.meeting.endTime}`,
       item.meeting.attendeeCount.toString(),
@@ -169,40 +184,49 @@ export default function AttendanceHistoryPage() {
 
   // Check permissions
   const canView =
-    user?.role === "SUPERADMIN" ||
-    (user?.role === "LEADER" && user?.groupId === groupId) ||
+    user?.role === UserRole.SUPERADMIN ||
+    (user?.role === UserRole.SMALL_GROUP_LEADER && user?.groupId === groupId) ||
     user?.id === memberId;
 
   if (!canView) {
     return (
-      <div className="p-8">
-        <Card>
-          <Empty description="You don't have permission to view this page" />
-          <div className="text-center mt-4">
-            <AntButton onClick={() => router.push("/dashboard")}>
-              Go to Dashboard
-            </AntButton>
-          </div>
-        </Card>
-      </div>
+      <DashboardLayout role={UserRole.SUPERADMIN}>
+        <div className="max-w-7xl mx-auto">
+          <Card>
+            <Empty description="You don't have permission to view this page" />
+            <div className="text-center mt-4">
+              <Button
+                variant="secondary"
+                onClick={() => router.push("/superadmin/dashboard")}
+              >
+                Go to Dashboard
+              </Button>
+            </div>
+          </Card>
+        </div>
+      </DashboardLayout>
     );
   }
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <Spin size="large" />
-      </div>
+      <DashboardLayout role={UserRole.SUPERADMIN}>
+        <div className="flex items-center justify-center min-h-[60vh]">
+          <Spin size="large" />
+        </div>
+      </DashboardLayout>
     );
   }
 
   if (!member || !group) {
     return (
-      <div className="p-8">
-        <Card>
-          <Empty description="Member or group not found" />
-        </Card>
-      </div>
+      <DashboardLayout role={UserRole.SUPERADMIN}>
+        <div className="max-w-7xl mx-auto">
+          <Card>
+            <Empty description="Member or group not found" />
+          </Card>
+        </div>
+      </DashboardLayout>
     );
   }
 
@@ -220,8 +244,8 @@ export default function AttendanceHistoryPage() {
       key: "date",
       render: (date: string) => (
         <div className="flex items-center gap-2">
-          <CalendarOutlined className="text-gray-400" />
-          <span>{format(new Date(date), "MMM d, yyyy")}</span>
+          <CalendarOutlined className="text-ds-text-subtle" />
+          <span>{format(new Date(date), "d MMM yyyy")}</span>
         </div>
       ),
       sorter: (a, b) =>
@@ -231,7 +255,7 @@ export default function AttendanceHistoryPage() {
       title: "Time",
       key: "time",
       render: (_, record) => (
-        <span className="text-gray-600">
+        <span className="text-ds-text-secondary">
           {record.meeting.startTime} - {record.meeting.endTime}
         </span>
       ),
@@ -275,126 +299,116 @@ export default function AttendanceHistoryPage() {
       ellipsis: true,
       render: (notes: string) =>
         notes ? (
-          <span className="text-gray-600">{notes}</span>
+          <span className="text-ds-text-secondary">{notes}</span>
         ) : (
-          <span className="text-gray-400 italic">No notes</span>
+          <span className="text-ds-text-subtle italic">No notes</span>
         ),
     },
   ];
 
   return (
-    <div className="p-4 md:p-8 max-w-7xl mx-auto">
-      <div className="mb-6">
-        <AntButton
+    <DashboardLayout role={UserRole.SUPERADMIN}>
+      <div className="max-w-7xl mx-auto space-y-6">
+        <Button
+          variant="secondary"
           icon={<ArrowLeftOutlined />}
           onClick={() =>
-            router.push(`/groups/${groupId}/member/${memberId}/stats`)
+            router.push(
+              `/superadmin/groups/${groupId}/member/${memberId}/stats`
+            )
           }
           className="mb-4"
         >
           Back to Stats
-        </AntButton>
+        </Button>
 
         <div className="flex items-center justify-between mb-4">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">
+            <h1 className="text-2xl font-bold text-ds-text-primary">
               Attendance History
             </h1>
-            <p className="text-gray-600">
+            <p className="text-ds-text-secondary">
               {member.firstName} {member.lastName} • {group.name}
             </p>
           </div>
         </div>
-      </div>
 
-      {/* Summary Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-        <Card>
-          <Statistic
-            title="Total Meetings"
-            value={filteredStats.total}
-            prefix={<CalendarOutlined />}
-            valueStyle={{ color: "#1B4B3E" }}
-          />
-        </Card>
-        <Card>
-          <Statistic
-            title="Attended"
-            value={filteredStats.attended}
-            prefix={<CheckCircleOutlined />}
-            valueStyle={{ color: "#52c41a" }}
-          />
-        </Card>
-        <Card>
-          <Statistic
-            title="Absent"
-            value={filteredStats.absent}
-            prefix={<CloseCircleOutlined />}
-            valueStyle={{ color: "#ff4d4f" }}
-          />
-        </Card>
-      </div>
-
-      {/* Filters */}
-      <Card className="mb-6">
-        <div className="flex flex-col md:flex-row gap-4 items-start md:items-center justify-between">
-          <Space wrap>
-            <Select
-              value={statusFilter}
-              onChange={setStatusFilter}
-              style={{ width: 150 }}
-              options={[
-                { label: "All Status", value: "ALL" },
-                { label: "Attended", value: "ATTENDED" },
-                { label: "Absent", value: "ABSENT" },
-              ]}
-              prefix={<FilterOutlined />}
+        {/* Summary Stats */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+          <Card>
+            <Statistic
+              title="Total Meetings"
+              value={filteredStats.total}
+              prefix={<CalendarOutlined />}
+              valueStyle={{ color: "#1B4B3E" }}
             />
-            <RangePicker
-              value={dateRange}
-              onChange={(dates) =>
-                setDateRange(dates as [Dayjs | null, Dayjs | null])
-              }
-              format="MMM D, YYYY"
+          </Card>
+          <Card>
+            <Statistic
+              title="Attended"
+              value={filteredStats.attended}
+              prefix={<CheckCircleOutlined />}
+              valueStyle={{ color: "#52c41a" }}
             />
-            <AntButton onClick={clearFilters}>Clear Filters</AntButton>
-          </Space>
-          <AntButton
-            type="primary"
-            icon={<DownloadOutlined />}
-            onClick={handleExportCSV}
-            disabled={filteredData.length === 0}
-          >
-            Export CSV
-          </AntButton>
+          </Card>
+          <Card>
+            <Statistic
+              title="Absent"
+              value={filteredStats.absent}
+              prefix={<CloseCircleOutlined />}
+              valueStyle={{ color: "#ff4d4f" }}
+            />
+          </Card>
         </div>
-      </Card>
 
-      {/* Attendance Table */}
-      <Card>
-        <Table
-          columns={columns}
-          dataSource={filteredData}
-          rowKey={(record) => record.meeting.id}
-          pagination={{
-            pageSize: 20,
-            showTotal: (total) => `${total} meeting${total !== 1 ? "s" : ""}`,
-            showSizeChanger: true,
-            pageSizeOptions: ["10", "20", "50", "100"],
+        {/* Filters */}
+        <FilterToolbar
+          filters={attendanceFilters}
+          values={{ status: statusFilter, dateRange }}
+          onChange={(key, value) => {
+            if (key === "status") setStatusFilter(value as string);
+            if (key === "dateRange")
+              setDateRange(value as [Dayjs | null, Dayjs | null]);
           }}
-          locale={{
-            emptyText: (
-              <Empty
-                description={
-                  statusFilter !== "ALL" || dateRange[0] || dateRange[1]
-                    ? "No meetings match your filters"
-                    : "No meeting history available"
-                }
-              />
-            ),
-          }}
+          onReset={clearFilters}
+          actions={
+            <Button
+              icon={<DownloadOutlined />}
+              onClick={handleExportCSV}
+              disabled={filteredData.length === 0}
+            >
+              Export CSV
+            </Button>
+          }
         />
-      </Card>
-    </div>
+
+        {/* Attendance Table */}
+        <Card>
+          <Table
+            columns={columns}
+            dataSource={filteredData}
+            rowKey={(record) => record.meeting.id}
+            scroll={{ x: 1200 }}
+            pagination={{
+              pageSize: 20,
+              showTotal: (total) => `${total} meeting${total !== 1 ? "s" : ""}`,
+              showSizeChanger: true,
+              pageSizeOptions: ["10", "20", "50", "100"],
+            }}
+            locale={{
+              emptyText: (
+                <Empty
+                  description={
+                    statusFilter !== "ALL" || dateRange[0] || dateRange[1]
+                      ? "No meetings match your filters"
+                      : "No meeting history available"
+                  }
+                />
+              ),
+            }}
+          />
+        </Card>
+      </div>
+    </DashboardLayout>
   );
 }

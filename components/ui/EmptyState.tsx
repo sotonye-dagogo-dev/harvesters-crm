@@ -16,13 +16,15 @@ export default function EmptyState({
 }: EmptyStateProps) {
   return (
     <div className="flex flex-col items-center justify-center py-12">
-      {icon && <div className="text-6xl text-gray-300 mb-4">{icon}</div>}
+      {icon && <div className="text-6xl text-ds-text-subtle mb-4">{icon}</div>}
       <AntEmpty
         image={AntEmpty.PRESENTED_IMAGE_SIMPLE}
         description={
           <div>
-            <p className="text-lg font-medium text-gray-700 mb-1">{title}</p>
-            <p className="text-sm text-gray-500">{description}</p>
+            <p className="text-lg font-medium text-ds-text-primary mb-1">
+              {title}
+            </p>
+            <p className="text-sm text-ds-text-secondary">{description}</p>
           </div>
         }
       >

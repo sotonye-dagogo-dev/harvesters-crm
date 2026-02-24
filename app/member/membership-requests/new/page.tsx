@@ -7,7 +7,6 @@ import {
   Card,
   Form,
   Select,
-  Input,
   Button as AntButton,
   message,
   Alert,
@@ -22,8 +21,7 @@ import {
   TeamOutlined,
   InfoCircleOutlined,
 } from "@ant-design/icons";
-
-const { TextArea } = Input;
+import { TextArea } from "@/components/ui/Input";
 
 export default function NewMembershipRequestPage() {
   const router = useRouter();
@@ -44,6 +42,7 @@ export default function NewMembershipRequestPage() {
     if (user?.groupId) {
       fetchCurrentGroup();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
 
   const fetchGroups = async () => {
@@ -53,7 +52,7 @@ export default function NewMembershipRequestPage() {
         const data = await response.json();
         setGroups(data);
       }
-    } catch (error) {
+    } catch {
       console.error("Failed to load groups");
     }
   };
@@ -66,7 +65,7 @@ export default function NewMembershipRequestPage() {
         const data = await response.json();
         setCurrentGroup(data);
       }
-    } catch (error) {
+    } catch {
       console.error("Failed to load current group");
     }
   };
@@ -101,7 +100,7 @@ export default function NewMembershipRequestPage() {
 
       if (response.ok) {
         message.success("Membership request submitted successfully");
-        router.push("/membership-requests");
+        router.push("/member/membership-requests");
       } else {
         const error = await response.json();
         message.error(error.error || "Failed to submit request");
@@ -121,7 +120,7 @@ export default function NewMembershipRequestPage() {
         <Card>
           <Empty description="Only members can submit membership requests" />
           <div className="text-center mt-4">
-            <AntButton onClick={() => router.push("/dashboard")}>
+            <AntButton onClick={() => router.push("/member/dashboard")}>
               Go to Dashboard
             </AntButton>
           </div>
@@ -141,7 +140,7 @@ export default function NewMembershipRequestPage() {
     <div className="p-4 md:p-8 max-w-3xl mx-auto">
       <AntButton
         icon={<ArrowLeftOutlined />}
-        onClick={() => router.push("/membership-requests")}
+        onClick={() => router.push("/member/membership-requests")}
         className="mb-4"
       >
         Back
@@ -149,10 +148,10 @@ export default function NewMembershipRequestPage() {
 
       <Card>
         <div className="mb-6">
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">
+          <h1 className="text-2xl font-bold text-ds-text-primary mb-2">
             Request Group Membership
           </h1>
-          <p className="text-gray-600">
+          <p className="text-ds-text-secondary">
             {hasGroup
               ? "Request to transfer to a different group or stay in your current group"
               : "Submit a request to join a fellowship group"}
@@ -165,7 +164,7 @@ export default function NewMembershipRequestPage() {
             description={
               <div>
                 <p className="font-medium">{currentGroup.name}</p>
-                <p className="text-sm text-gray-600">
+                <p className="text-sm text-ds-text-secondary">
                   {currentGroup.description}
                 </p>
               </div>
@@ -227,7 +226,7 @@ export default function NewMembershipRequestPage() {
           </Form.Item>
 
           {selectedGroup && (
-            <Card className="mb-4 bg-gray-50" size="small">
+            <Card className="mb-4 bg-ds-surface-sunken" size="small">
               <Descriptions column={1} size="small">
                 <Descriptions.Item label="Group Name">
                   {selectedGroup.name}
@@ -245,7 +244,7 @@ export default function NewMembershipRequestPage() {
                       {selectedGroup.leader.lastName}
                     </span>
                   ) : (
-                    <span className="text-gray-400">No leader assigned</span>
+                    <span className="text-ds-text-subtle">No leader assigned</span>
                   )}
                 </Descriptions.Item>
                 <Descriptions.Item label="Members">
@@ -293,7 +292,7 @@ export default function NewMembershipRequestPage() {
               </AntButton>
               <AntButton
                 size="large"
-                onClick={() => router.push("/membership-requests")}
+                onClick={() => router.push("/member/membership-requests")}
               >
                 Cancel
               </AntButton>

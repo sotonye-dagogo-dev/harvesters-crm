@@ -1,8 +1,11 @@
 "use client";
 
-import { useState } from "react";
-import { Form, Input, Button, Card, Typography, Alert, Checkbox } from "antd";
-import { MailOutlined, LockOutlined, UserOutlined } from "@ant-design/icons";
+import { useEffect, useState } from "react";
+import { Form, Typography, Alert, Checkbox, Collapse, Tag } from "antd";
+import Button from "@/components/ui/Button";
+import Card from "@/components/ui/Card";
+import Input, { PasswordInput } from "@/components/ui/Input";
+import { MailOutlined, LockOutlined, UserOutlined, BugOutlined } from "@ant-design/icons";
 import Link from "next/link";
 import { useAuth } from "@/providers/AuthProvider";
 
@@ -14,11 +17,36 @@ interface LoginFormValues {
   remember: boolean;
 }
 
-export default function LoginForm() {
+interface LoginFormProps {
+  showDevCredentials?: boolean;
+}
+
+const DEV_CREDENTIALS = [
+  { role: "Superadmin", email: "admin@harvestersng.org", password: "Admin@123", color: "red" },
+  { role: "Group Pastor", email: "group.pastor@harvestersng.org", password: "Pastor@123", color: "volcano" },
+  { role: "Group Admin", email: "group.admin@harvestersng.org", password: "GroupAdmin@123", color: "orange" },
+  { role: "Campus Pastor", email: "lekki.pastor@harvestersng.org", password: "Pastor@123", color: "gold" },
+  { role: "Campus Admin", email: "lekki.admin@harvestersng.org", password: "Campus@123", color: "lime" },
+  /* { role: "Zonal Leader", email: "zone.lagos@harvestersng.org", password: "Zonal@123", color: "green" },
+  { role: "HOD", email: "hod.youth@harvestersng.org", password: "Hod@1234", color: "cyan" },
+  { role: "SG Leader", email: "sgl.youthfire@harvestersng.org", password: "Leader@123", color: "blue" },
+  { role: "Cell Leader", email: "cell.spark@harvestersng.org", password: "CellLd@123", color: "geekblue" }, */
+  { role: "Data Entry", email: "dataentry1@harvestersng.org", password: "DataEntry@123", color: "purple" },
+  { role: "Member", email: "samuel.ojo@email.com", password: "Member@123", color: "magenta" },
+] as const;
+
+export default function LoginForm({ showDevCredentials = false }: LoginFormProps) {
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { login } = useAuth();
+
+  useEffect(() => {
+    console.log("LoginForm mounted, showDevCredentials:", showDevCredentials);
+    return () => {
+      console.log("LoginForm unmounted");
+    };
+  }, [showDevCredentials]);
 
   const onFinish = async (values: LoginFormValues) => {
     setLoading(true);
@@ -36,10 +64,14 @@ export default function LoginForm() {
     }
   };
 
+  const fillCredentials = (email: string, password: string) => {
+    form.setFieldsValue({ email, password });
+  };
+
   return (
-    <Card className="shadow-xl">
+    <Card className="shadow-ds-xl">
       <div className="text-center mb-8">
-        <div className="inline-flex items-center justify-center w-16 h-16 bg-church-primary rounded-full mb-4">
+        <div className="inline-flex items-center justify-center w-16 h-16 bg-ds-brand-accent rounded-full mb-4">
           <UserOutlined className="text-3xl text-white" />
         </div>
         <Title level={2} className="!mb-2">
@@ -76,7 +108,7 @@ export default function LoginForm() {
           ]}
         >
           <Input
-            prefix={<MailOutlined className="text-gray-400" />}
+            prefix={<MailOutlined className="text-ds-text-subtle" />}
             placeholder="your.email@example.com"
             autoComplete="email"
           />
@@ -87,8 +119,8 @@ export default function LoginForm() {
           name="password"
           rules={[{ required: true, message: "Please enter your password" }]}
         >
-          <Input.Password
-            prefix={<LockOutlined className="text-gray-400" />}
+          <PasswordInput
+            prefix={<LockOutlined className="text-ds-text-subtle" />}
             placeholder="Enter your password"
             autoComplete="current-password"
           />
@@ -101,7 +133,7 @@ export default function LoginForm() {
             </Form.Item>
             <Link
               href="/forgot-password"
-              className="text-church-primary hover:text-church-primary/80"
+              className="text-ds-brand-accent hover:text-ds-brand-accent-hover"
             >
               Forgot password?
             </Link>
@@ -110,7 +142,6 @@ export default function LoginForm() {
 
         <Form.Item>
           <Button
-            type="primary"
             htmlType="submit"
             loading={loading}
             block
@@ -124,18 +155,58 @@ export default function LoginForm() {
           <Text type="secondary">Don&apos;t have an account? </Text>
           <Link
             href="/register"
-            className="text-church-primary hover:text-church-primary/80 font-semibold"
+            className="text-ds-brand-accent hover:text-ds-brand-accent-hover font-semibold"
           >
             Sign Up
           </Link>
         </div>
       </Form>
 
-      <div className="mt-8 pt-6 border-t border-gray-200">
+      <div className="mt-8 pt-6 border-t border-ds-border-base">
         <Text type="secondary" className="text-xs text-center block">
-          By signing in, you agree to our Terms of Service and Privacy Policy
+          By signing in, you agree to our <Link href="/terms" className="text-ds-brand-accent hover:text-ds-brand-accent-hover">Terms of Service</Link> and <Link href="/privacy" className="text-ds-brand-accent hover:text-ds-brand-accent-hover">Privacy Policy</Link>.
         </Text>
       </div>
+
+      {showDevCredentials && (
+        <div className="mt-6">
+          <Collapse
+            ghost
+            size="small"
+            items={[
+              {
+                key: "dev-creds",
+                label: (
+                  <span className="text-xs font-medium text-ds-chart-4 flex items-center gap-1">
+                    <BugOutlined /> Dev Credentials
+                  </span>
+                ),
+                children: (
+                  <div className="space-y-1.5 max-h-64 overflow-y-auto">
+                    {DEV_CREDENTIALS.map((cred) => (
+                      <button
+                        key={cred.email}
+                        type="button"
+                        onClick={() => fillCredentials(cred.email, cred.password)}
+                        className="w-full text-left px-2.5 py-1.5 rounded-md border border-ds-border-subtle hover:bg-ds-brand-accent-subtle transition-colors cursor-pointer"
+                      >
+                        <div className="flex items-center justify-between gap-2">
+                          <Tag color={cred.color} className="!m-0 !text-[10px] !leading-tight !px-1.5">
+                            {cred.role}
+                          </Tag>
+                          <Text className="!text-[11px] text-ds-text-subtle truncate flex-1 text-right">
+                            {cred.email}
+                          </Text>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                ),
+              },
+            ]}
+          />
+        </div>
+      )}
     </Card>
   );
 }

@@ -1,27 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/data/database";
-import { verifyToken } from "@/lib/utils/auth";
+import { getAuthenticatedUser } from "@/lib/utils/middleware";
 
 export async function PUT(
-  request: NextRequest,
+  _request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const token = request.cookies.get("accessToken")?.value;
-    if (!token) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const decoded = verifyToken(token);
-    if (!decoded) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    const { user, error } = await getAuthenticatedUser();
+    if (error) return error;
 
     const { id } = await params;
 
     const notificationId = id;
-    const body = await request.json();
-    const { read: _read } = body;
 
     // Get notification
     const notification = db.notifications.findById(notificationId);
@@ -33,7 +24,7 @@ export async function PUT(
     }
 
     // Check ownership
-    if (notification.userId !== decoded.userId) {
+    if (notification.userId !== user!.id) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
@@ -58,19 +49,12 @@ export async function PUT(
 }
 
 export async function DELETE(
-  request: NextRequest,
+  _request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const token = request.cookies.get("accessToken")?.value;
-    if (!token) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const decoded = verifyToken(token);
-    if (!decoded) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    const { user, error } = await getAuthenticatedUser();
+    if (error) return error;
 
     const { id } = await params;
 
@@ -86,7 +70,7 @@ export async function DELETE(
     }
 
     // Check ownership
-    if (notification.userId !== decoded.userId) {
+    if (notification.userId !== user!.id) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
