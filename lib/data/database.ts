@@ -34,6 +34,16 @@ import {
   mockReportEdits,
   mockReportUpdateRequests,
 } from "./mockData";
+import {
+  mockReportTypes,
+  mockReportSubmissions,
+  mockMetricEntries,
+  mockReportComments,
+  mockReferralLinks,
+  mockReportNotifications,
+  mockStrategicIndicators,
+  mockKeyMetrics,
+} from "./reportingMockData";
 
 // ============================================================================
 // IN-MEMORY DATABASE (SINGLETON PATTERN)

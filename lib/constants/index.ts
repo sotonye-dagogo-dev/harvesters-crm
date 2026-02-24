@@ -149,21 +149,55 @@ export const MEETING_LEVEL_PERMISSIONS: Record<string, string[]> = {
     MEETING_LEVELS.SMALL_GROUP,
     MEETING_LEVELS.CELL,
   ],
-  [USER_ROLES.CAMPUS_ADMIN]: [
+  [USER_ROLES.CHURCH_MINISTRY]: [
+    MEETING_LEVELS.ALL,
+    MEETING_LEVELS.ZONE,
     MEETING_LEVELS.CAMPUS,
     MEETING_LEVELS.DEPARTMENT,
     MEETING_LEVELS.SMALL_GROUP,
     MEETING_LEVELS.CELL,
   ],
-  [USER_ROLES.HOD]: [
+  [USER_ROLES.GROUP_ADMIN]: [
+    MEETING_LEVELS.ALL,
+    MEETING_LEVELS.ZONE,
+    MEETING_LEVELS.CAMPUS,
     MEETING_LEVELS.DEPARTMENT,
     MEETING_LEVELS.SMALL_GROUP,
     MEETING_LEVELS.CELL,
   ],
-  [USER_ROLES.SMALL_GROUP_LEADER]: [
+  [USER_ROLES.GROUP_LEADER]: [
+    MEETING_LEVELS.ZONE,
+    MEETING_LEVELS.CAMPUS,
+    MEETING_LEVELS.DEPARTMENT,
     MEETING_LEVELS.SMALL_GROUP,
     MEETING_LEVELS.CELL,
   ],
+  [USER_ROLES.CAMPUS_PASTOR]: [
+    MEETING_LEVELS.CAMPUS,
+    MEETING_LEVELS.DEPARTMENT,
+    MEETING_LEVELS.SMALL_GROUP,
+    MEETING_LEVELS.CELL,
+  ],
+  [USER_ROLES.CAMPUS_LEADER]: [
+    MEETING_LEVELS.CAMPUS,
+    MEETING_LEVELS.DEPARTMENT,
+    MEETING_LEVELS.SMALL_GROUP,
+    MEETING_LEVELS.CELL,
+  ],
+  [USER_ROLES.DISTRICT_LEADER]: [
+    MEETING_LEVELS.DEPARTMENT,
+    MEETING_LEVELS.SMALL_GROUP,
+    MEETING_LEVELS.CELL,
+  ],
+  [USER_ROLES.COMMUNITY_LEADER]: [
+    MEETING_LEVELS.SMALL_GROUP,
+    MEETING_LEVELS.CELL,
+  ],
+  [USER_ROLES.AREA_LEADER]: [
+    MEETING_LEVELS.SMALL_GROUP,
+    MEETING_LEVELS.CELL,
+  ],
+  [USER_ROLES.ZONE_LEADER]: [MEETING_LEVELS.CELL],
   [USER_ROLES.CELL_LEADER]: [MEETING_LEVELS.CELL],
   [USER_ROLES.DATA_ENTRY]: [],
   [USER_ROLES.MEMBER]: [],
@@ -568,30 +602,7 @@ export const APP_ROUTES = {
   SUPERADMIN_REPORT_UPDATE_REQUESTS: "/superadmin/reports/update-requests",
   SUPERADMIN_REPORT_ANALYTICS: "/superadmin/reports/analytics",
 
-  // Zonal Leader
-  ZONAL_LEADER_DASHBOARD: "/zonal-leader/dashboard",
-  ZONAL_LEADER_CAMPUSES: "/zonal-leader/campuses",
-  ZONAL_LEADER_GROUPS: "/zonal-leader/groups",
-  ZONAL_LEADER_MEMBERS: "/zonal-leader/members",
-  ZONAL_LEADER_MEETINGS: "/zonal-leader/meetings",
-  ZONAL_LEADER_ANALYTICS: "/zonal-leader/analytics",
-
-  // Campus Admin
-  CAMPUS_ADMIN_DASHBOARD: "/campus-admin/dashboard",
-  CAMPUS_ADMIN_DEPARTMENTS: "/campus-admin/departments",
-  CAMPUS_ADMIN_GROUPS: "/campus-admin/groups",
-  CAMPUS_ADMIN_MEMBERS: "/campus-admin/members",
-  CAMPUS_ADMIN_MEETINGS: "/campus-admin/meetings",
-  CAMPUS_ADMIN_ANALYTICS: "/campus-admin/analytics",
-
-  // HOD
-  HOD_DASHBOARD: "/hod/dashboard",
-  HOD_GROUPS: "/hod/groups",
-  HOD_MEMBERS: "/hod/members",
-  HOD_MEETINGS: "/hod/meetings",
-  HOD_ANALYTICS: "/hod/analytics",
-
-  // Leader (Small Group Leader)
+  // Leader (all leadership roles)
   LEADER_DASHBOARD: "/leader/dashboard",
   LEADER_MY_GROUP: "/leader/my-group",
   LEADER_MEETINGS: "/leader/meetings",
@@ -713,6 +724,114 @@ export const CHART_COLORS = {
     "#ea580c",
     "#4f46e5",
   ],
+};
+
+// ============================================================================
+// REPORTING SYSTEM
+// ============================================================================
+
+export const REPORT_STATUS_LABELS: Record<string, string> = {
+  DRAFT: "Draft",
+  SUBMITTED: "Submitted",
+  REQUIRES_EDITS: "Requires Edits",
+  APPROVED: "Approved",
+  REVIEWED: "Reviewed",
+  FINALIZED: "Finalized",
+};
+
+export const REPORT_STATUS_COLORS: Record<string, string> = {
+  DRAFT: "default",
+  SUBMITTED: "processing",
+  REQUIRES_EDITS: "warning",
+  APPROVED: "success",
+  REVIEWED: "cyan",
+  FINALIZED: "green",
+};
+
+export const REPORT_CATEGORY_LABELS: Record<string, string> = {
+  CAMPUS: "Campus",
+  GROUP: "Group",
+  MINISTRY: "Ministry",
+  SPECIAL: "Special",
+};
+
+export const REPORT_FREQUENCY_LABELS: Record<string, string> = {
+  WEEKLY: "Weekly",
+  MONTHLY: "Monthly",
+  QUARTERLY: "Quarterly",
+  YEARLY: "Yearly",
+  AD_HOC: "Ad Hoc",
+};
+
+export const ORGANIZATIONAL_LEVEL_LABELS: Record<string, string> = {
+  CELL: "Cell",
+  ZONE: "Zone",
+  AREA: "Area",
+  COMMUNITY: "Community",
+  DISTRICT: "District",
+  CAMPUS: "Campus",
+  GROUP: "Group",
+};
+
+export const FIELD_TYPE_LABELS: Record<string, string> = {
+  TEXT: "Text",
+  NUMBER: "Number",
+  DATE: "Date",
+  SELECT: "Select",
+  TEXTAREA: "Text Area",
+  CHECKBOX: "Checkbox",
+  STRATEGIC_INDICATOR: "Strategic Indicator",
+  FILE_UPLOAD: "File Upload",
+  MULTI_FILE_UPLOAD: "Multi File Upload",
+};
+
+export const AUTO_SAVE_INTERVAL_MS = 30000;
+export const MAX_REPORT_WEEK = 53;
+export const MIN_REPORT_WEEK = 1;
+export const REFERRAL_CODE_LENGTH = 12;
+
+/** Roles allowed to submit reports */
+export const REPORT_SUBMITTER_ROLES = [
+  USER_ROLES.CELL_LEADER,
+  USER_ROLES.ZONE_LEADER,
+  USER_ROLES.AREA_LEADER,
+  USER_ROLES.COMMUNITY_LEADER,
+  USER_ROLES.DISTRICT_LEADER,
+  USER_ROLES.CAMPUS_LEADER,
+  USER_ROLES.CAMPUS_PASTOR,
+  USER_ROLES.GROUP_LEADER,
+  USER_ROLES.GROUP_ADMIN,
+  USER_ROLES.SUPERADMIN,
+];
+
+/** Roles allowed to review/approve reports */
+export const REPORT_REVIEWER_ROLES = [
+  USER_ROLES.CAMPUS_PASTOR,
+  USER_ROLES.CAMPUS_LEADER,
+  USER_ROLES.GROUP_LEADER,
+  USER_ROLES.GROUP_ADMIN,
+  USER_ROLES.SPO,
+  USER_ROLES.CHURCH_MINISTRY,
+  USER_ROLES.SUPERADMIN,
+];
+
+/** Performance thresholds for metric status */
+export const PERFORMANCE_THRESHOLDS = {
+  EXCEEDING: 100,
+  ON_TRACK: 80,
+  BELOW_TARGET: 0,
+};
+
+export const PERFORMANCE_STATUS_LABELS: Record<string, string> = {
+  EXCEEDING: "Exceeding Target",
+  ON_TRACK: "On Track",
+  BELOW_TARGET: "Below Target",
+};
+
+export const PERFORMANCE_STATUS_COLORS: Record<string, string> = {
+  EXCEEDING: "#16a34a",
+  ON_TRACK: "#d97706",
+  BELOW_TARGET: "#dc2626",
 };
 
 // ============================================================================

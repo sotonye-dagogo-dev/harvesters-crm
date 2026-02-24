@@ -180,26 +180,13 @@ export function isSuperadmin(user: AuthUser | null): boolean {
 }
 
 export function isLeader(user: AuthUser | null): boolean {
-  return hasRole(user, [
-    USER_ROLES.SUPERADMIN as UserRole,
-    USER_ROLES.ZONAL_LEADER as UserRole,
-    USER_ROLES.CAMPUS_ADMIN as UserRole,
-    USER_ROLES.HOD as UserRole,
-    USER_ROLES.SMALL_GROUP_LEADER as UserRole,
-    USER_ROLES.CELL_LEADER as UserRole,
-  ]);
+  if (!user) return false;
+  return user.role !== USER_ROLES.MEMBER;
 }
 
 export function isMember(user: AuthUser | null): boolean {
-  return hasRole(user, [
-    USER_ROLES.MEMBER as UserRole,
-    USER_ROLES.SUPERADMIN as UserRole,
-    USER_ROLES.ZONAL_LEADER as UserRole,
-    USER_ROLES.CAMPUS_ADMIN as UserRole,
-    USER_ROLES.HOD as UserRole,
-    USER_ROLES.SMALL_GROUP_LEADER as UserRole,
-    USER_ROLES.CELL_LEADER as UserRole,
-  ]);
+  // All authenticated users are considered members (they can access member-level resources)
+  return !!user;
 }
 
 export function canAccessGroup(

@@ -12,6 +12,7 @@
 // ============================================================================
 
 export enum UserRole {
+  // Top-level admin
   SUPERADMIN = "SUPERADMIN",
   GROUP_PASTOR = "GROUP_PASTOR",
   GROUP_ADMIN = "GROUP_ADMIN",
@@ -2351,6 +2352,326 @@ declare global {
     sections?: CreateReportSectionInput[];
   }
 
+  interface FormField {
+    id: string;
+    name: string;
+    label: string;
+    type: FormFieldType;
+    placeholder?: string;
+    helpText?: string;
+    isRequired: boolean;
+    strategicIndicatorId?: string;
+    options?: FormFieldOption[];
+    acceptedFileTypes?: string[];
+    maxFileSize?: number;
+    maxFiles?: number;
+    uploadFolder?: string;
+    minValue?: number;
+    maxValue?: number;
+    minLength?: number;
+    maxLength?: number;
+    pattern?: string;
+    lockAfterSubmission?: boolean;
+    lockAfterDate?: boolean;
+    lockingConfig?: FormFieldLockingConfig;
+    displayOrder: number;
+  }
+
+  interface FormSection {
+    id: string;
+    title: string;
+    description?: string;
+    displayOrder: number;
+    fields: FormField[];
+  }
+
+  interface ValidationRule {
+    fieldId: string;
+    ruleType: ValidationRuleType;
+    value?: string | number | boolean;
+    errorMessage: string;
+  }
+
+  interface FormDefinition {
+    sections: FormSection[];
+    validationRules: ValidationRule[];
+  }
+
+  // --- Report Type ---
+
+  interface ReportType {
+    id: string;
+    name: string;
+    description?: string;
+    code: string;
+    category: ReportCategory;
+    formDefinition: FormDefinition;
+    allowedSubmitterRoles: string[];
+    allowedReviewerRoles: string[];
+    frequency: ReportFrequency;
+    organizationalLevel?: OrganizationalLevel;
+    isActive: boolean;
+    createdAt: string;
+    updatedAt: string;
+  }
+
+  // --- Strategic Indicator ---
+
+  interface StrategicIndicator {
+    id: string;
+    name: string;
+    description?: string;
+    category: StrategicIndicatorCategory;
+    isActive: boolean;
+    displayOrder: number;
+    applicableRoles?: string[];
+    campusLevel: boolean;
+    groupLevel: boolean;
+    keyMetrics?: KeyMetric[];
+    createdAt: string;
+    updatedAt: string;
+  }
+
+  // --- Key Metric ---
+
+  interface KeyMetric {
+    id: string;
+    strategicIndicatorId: string;
+    name: string;
+    description?: string;
+    dataType: MetricDataType;
+    unit?: string;
+    isRequired: boolean;
+    minValue?: number;
+    maxValue?: number;
+    allowNegative: boolean;
+    autoCalculate: boolean;
+    calculationFormula?: string;
+    displayOrder: number;
+    isActive: boolean;
+    strategicIndicator?: StrategicIndicator;
+    createdAt: string;
+    updatedAt: string;
+  }
+
+  // --- Report Submission ---
+
+  interface ReportSubmission {
+    id: string;
+    reportTypeId: string;
+    reportYear: number;
+    reportMonth: number;
+    reportWeek?: number;
+    periodStartDate: string;
+    periodEndDate: string;
+    submittedById: string;
+    submitterRole: string;
+    organizationalLevelType: OrganizationalLevel;
+    organizationalUnitId: string;
+    formData: Record<string, unknown>;
+    status: ReportStatus;
+    reviewedById?: string;
+    reviewedAt?: string;
+    reviewerNotes?: string;
+    approvedById?: string;
+    approvedAt?: string;
+    approverNotes?: string;
+    finalReviewedById?: string;
+    finalReviewedAt?: string;
+    finalReviewerRole?: string;
+    submittedAt?: string;
+    lastEditedAt?: string;
+    isLocked: boolean;
+    reportType?: ReportType;
+    metricEntries?: MetricEntry[];
+    comments?: ReportComment[];
+    submittedBy?: User;
+    createdAt: string;
+    updatedAt: string;
+  }
+
+  // --- Metric Entry ---
+
+  interface MetricEntry {
+    id: string;
+    reportSubmissionId: string;
+    keyMetricId: string;
+    strategicIndicatorId: string;
+    monthlyGoal?: number;
+    monthlyAchieved?: number;
+    yearOnYearGoal?: number;
+    performancePercentage?: number;
+    variance?: number;
+    monthlyGoalLocked: boolean;
+    monthlyAchievedLocked: boolean;
+    yearOnYearGoalLocked: boolean;
+    lastSavedAt: string;
+    keyMetric?: KeyMetric;
+    strategicIndicator?: StrategicIndicator;
+    reportSubmission?: ReportSubmission;
+    createdAt: string;
+    updatedAt: string;
+  }
+
+  // --- Report Comment ---
+
+  interface ReportComment {
+    id: string;
+    reportSubmissionId: string;
+    userId: string;
+    userRole: string;
+    commentType: ReportCommentType;
+    content: string;
+    metricEntryId?: string;
+    isInternal: boolean;
+    user?: User;
+    reportSubmission?: ReportSubmission;
+    createdAt: string;
+    updatedAt: string;
+  }
+
+  // --- Referral Link ---
+
+  interface ReferralLink {
+    id: string;
+    code: string;
+    createdById: string;
+    createdByRole: string;
+    assignedRole: string;
+    organizationalLevelType?: OrganizationalLevel;
+    organizationalUnitId?: string;
+    isUsed: boolean;
+    usedById?: string;
+    usedAt?: string;
+    expiresAt?: string;
+    isActive: boolean;
+    createdBy?: User;
+    usedBy?: User;
+    createdAt: string;
+    updatedAt: string;
+  }
+
+  // --- Report Notification ---
+
+  interface ReportNotification {
+    id: string;
+    userId: string;
+    reportSubmissionId: string;
+    notificationType: ReportNotificationKind;
+    title: string;
+    message: string;
+    isRead: boolean;
+    readAt?: string;
+    emailSent: boolean;
+    emailSentAt?: string;
+    user?: User;
+    reportSubmission?: ReportSubmission;
+    createdAt: string;
+  }
+
+  // --- Create/Update Inputs ---
+
+  interface CreateReportSubmissionInput {
+    reportTypeId: string;
+    reportYear: number;
+    reportMonth: number;
+    reportWeek?: number;
+    periodStartDate: string;
+    periodEndDate: string;
+    organizationalLevelType: OrganizationalLevel;
+    organizationalUnitId: string;
+    formData: Record<string, unknown>;
+  }
+
+  interface UpdateReportSubmissionInput {
+    formData?: Record<string, unknown>;
+    status?: ReportStatus;
+    reviewerNotes?: string;
+    approverNotes?: string;
+  }
+
+  interface CreateReportCommentInput {
+    commentType: ReportCommentType;
+    content: string;
+    metricEntryId?: string;
+    isInternal?: boolean;
+  }
+
+  interface CreateReferralLinkInput {
+    assignedRole: string;
+    organizationalLevelType?: OrganizationalLevel;
+    organizationalUnitId?: string;
+    expiresInDays?: number;
+  }
+
+  interface CreateMetricEntryInput {
+    keyMetricId: string;
+    strategicIndicatorId: string;
+    monthlyGoal?: number;
+    monthlyAchieved?: number;
+    yearOnYearGoal?: number;
+  }
+
+  // --- Reporting Filters ---
+
+  interface ReportSubmissionFilters {
+    reportTypeId?: string;
+    reportTypeCode?: string;
+    status?: ReportStatus;
+    submittedById?: string;
+    organizationalLevelType?: OrganizationalLevel;
+    organizationalUnitId?: string;
+    reportYear?: number;
+    reportMonth?: number;
+    reportWeek?: number;
+    search?: string;
+  }
+
+  interface ReportTypeFilters {
+    category?: ReportCategory;
+    frequency?: ReportFrequency;
+    organizationalLevel?: OrganizationalLevel;
+    isActive?: boolean;
+    search?: string;
+  }
+
+  // --- Reporting Analytics ---
+
+  interface ReportComplianceMetrics {
+    totalExpected: number;
+    totalSubmitted: number;
+    onTime: number;
+    late: number;
+    pending: number;
+    missing: number;
+    complianceRate: number;
+  }
+
+  interface ReportPerformanceMetrics {
+    organizationalUnitId: string;
+    organizationalUnitName: string;
+    levelType: OrganizationalLevel;
+    totalSubmissions: number;
+    averagePerformance: number;
+    metricBreakdown: Array<{
+      metricName: string;
+      goal: number;
+      achieved: number;
+      performancePercentage: number;
+    }>;
+  }
+
+  interface ReportAnalyticsOverview {
+    compliance: ReportComplianceMetrics;
+    topPerformers: ReportPerformanceMetrics[];
+    areasNeedingSupport: ReportPerformanceMetrics[];
+    submissionsByStatus: Record<string, number>;
+    trendData: Array<{
+      period: string;
+      submissions: number;
+      complianceRate: number;
+    }>;
+  }
 } // End of declare global
 
 // ============================================================================
