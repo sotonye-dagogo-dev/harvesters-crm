@@ -1,12 +1,69 @@
 // ============================================================================
-// DATA-DRIVEN ROLE CONFIGURATION
-// ============================================================================
-// Single source of truth for all role-based permissions, navigation, and
-// report capabilities. Replace scattered if/else role checks with
-// getRoleConfig(role).canX calls.
+// SHARED NAVIGATION ITEMS
 // ============================================================================
 
 import { UserRole } from "../types";
+
+/** Master list — comment out any line to temporarily disable it from ALL leader navbars */
+const SHARED_LEADER_BASE_NAV: RoleNavItem[] = [
+    { key: "dashboard", label: "Dashboard", icon: "DashboardOutlined", path: "/leader/dashboard" },
+    { key: "members", label: "Members", icon: "TeamOutlined", path: "/leader/members" },
+    { key: "meetings", label: "Meetings", icon: "CalendarOutlined", path: "/leader/meetings" },
+    { key: "reports", label: "Reports", icon: "FileTextOutlined", path: "/leader/reports" },
+    { key: "analytics", label: "Analytics", icon: "BarChartOutlined", path: "/leader/analytics" },
+    { key: "referrals", label: "Referrals", icon: "LinkOutlined", path: "/leader/referrals" },
+    { key: "inbox", label: "Inbox", icon: "InboxOutlined", path: "/leader/inbox" },
+];
+
+/** Safely get a nav item from the base list by key — returns [] if commented out or missing */
+function getBaseNavItem(key: string): RoleNavItem[] {
+    const item = SHARED_LEADER_BASE_NAV.find((n) => n.key === key);
+    return item ? [item] : [];
+}
+
+/** Optional add-on items — comment out individually to disable per-role extras */
+const ADDON_NAV_ITEMS = {
+    interactions: { key: "interactions", label: "Interactions", icon: "MessageOutlined", path: "/leader/interactions" } as RoleNavItem,
+    followUps: { key: "follow-ups", label: "Follow-ups", icon: "PhoneOutlined", path: "/leader/follow-ups" } as RoleNavItem,
+};
+
+/** Group-level nav items — comment out to disable */
+const GROUP_NAV_ITEMS = {
+    groups: { key: "groups", label: "Groups", icon: "ApartmentOutlined", path: "/leader/groups" } as RoleNavItem,
+    myGroup: { key: "my-group", label: "My Group", icon: "ApartmentOutlined", path: "/leader/my-group" } as RoleNavItem,
+    myDepartment: { key: "my-group", label: "My Department", icon: "ApartmentOutlined", path: "/leader/my-group" } as RoleNavItem,
+    myCell: { key: "my-group", label: "My Cell", icon: "ApartmentOutlined", path: "/leader/my-group" } as RoleNavItem,
+};
+
+/**
+ * Build a leader navbar from the shared base.
+ * - `groupItem`  — optional group/cell/department link inserted after dashboard
+ * - `extras`     — optional items keyed to insertion points within the base order
+ *
+ * Insertion order:
+ *   dashboard → [groupItem] → members → meetings → [afterMeetings]
+ *   → reports → [afterReports] → analytics → referrals → inbox
+ */
+function buildLeaderNav(
+    groupItem?: RoleNavItem,
+    extras: {
+        afterMeetings?: RoleNavItem[];
+        afterReports?: RoleNavItem[];
+    } = {}
+): RoleNavItem[] {
+    return [
+        ...getBaseNavItem("dashboard"),
+        ...(groupItem ? [groupItem] : []),
+        ...getBaseNavItem("members"),
+        ...getBaseNavItem("meetings"),
+        ...(extras.afterMeetings ?? []),
+        ...getBaseNavItem("reports"),
+        ...(extras.afterReports ?? []),
+        ...getBaseNavItem("analytics"),
+        ...getBaseNavItem("referrals"),
+        ...getBaseNavItem("inbox"),
+    ];
+}
 
 // ============================================================================
 // ROLE CONFIG MAP
@@ -48,6 +105,8 @@ export const ROLE_CONFIG: Record<UserRole, RoleConfig> = {
                 ],
             },
             { key: "analytics", label: "Analytics", icon: "BarChartOutlined", path: "/superadmin/analytics" },
+            { key: "referrals", label: "Referrals", icon: "LinkOutlined", path: "/superadmin/referrals" },
+            { key: "inbox", label: "Inbox", icon: "InboxOutlined", path: "/superadmin/inbox" },
         ],
     },
 
@@ -64,15 +123,7 @@ export const ROLE_CONFIG: Record<UserRole, RoleConfig> = {
         reportVisibilityScope: "group",
         isLeadership: true,
         routePrefix: "/leader",
-        navItems: [
-            { key: "dashboard", label: "Dashboard", icon: "DashboardOutlined", path: "/leader/dashboard" },
-            { key: "groups", label: "Groups", icon: "ApartmentOutlined", path: "/leader/groups" },
-            { key: "members", label: "Members", icon: "TeamOutlined", path: "/leader/members" },
-            { key: "meetings", label: "Meetings", icon: "CalendarOutlined", path: "/leader/meetings" },
-            { key: "reports", label: "Reports", icon: "FileTextOutlined", path: "/leader/reports" },
-            { key: "analytics", label: "Analytics", icon: "BarChartOutlined", path: "/leader/analytics" },
-            { key: "profile", label: "Profile", icon: "UserOutlined", path: "/leader/profile" },
-        ],
+        navItems: buildLeaderNav(GROUP_NAV_ITEMS.groups),
     },
 
     [UserRole.GROUP_ADMIN]: {
@@ -88,15 +139,7 @@ export const ROLE_CONFIG: Record<UserRole, RoleConfig> = {
         reportVisibilityScope: "group",
         isLeadership: true,
         routePrefix: "/leader",
-        navItems: [
-            { key: "dashboard", label: "Dashboard", icon: "DashboardOutlined", path: "/leader/dashboard" },
-            { key: "groups", label: "Groups", icon: "ApartmentOutlined", path: "/leader/groups" },
-            { key: "members", label: "Members", icon: "TeamOutlined", path: "/leader/members" },
-            { key: "meetings", label: "Meetings", icon: "CalendarOutlined", path: "/leader/meetings" },
-            { key: "reports", label: "Reports", icon: "FileTextOutlined", path: "/leader/reports" },
-            { key: "analytics", label: "Analytics", icon: "BarChartOutlined", path: "/leader/analytics" },
-            { key: "profile", label: "Profile", icon: "UserOutlined", path: "/leader/profile" },
-        ],
+        navItems: buildLeaderNav(GROUP_NAV_ITEMS.groups),
     },
 
     [UserRole.CAMPUS_PASTOR]: {
@@ -112,15 +155,7 @@ export const ROLE_CONFIG: Record<UserRole, RoleConfig> = {
         reportVisibilityScope: "campus",
         isLeadership: true,
         routePrefix: "/leader",
-        navItems: [
-            { key: "dashboard", label: "Dashboard", icon: "DashboardOutlined", path: "/leader/dashboard" },
-            { key: "groups", label: "Groups", icon: "ApartmentOutlined", path: "/leader/groups" },
-            { key: "members", label: "Members", icon: "TeamOutlined", path: "/leader/members" },
-            { key: "meetings", label: "Meetings", icon: "CalendarOutlined", path: "/leader/meetings" },
-            { key: "reports", label: "Reports", icon: "FileTextOutlined", path: "/leader/reports" },
-            { key: "analytics", label: "Analytics", icon: "BarChartOutlined", path: "/leader/analytics" },
-            { key: "profile", label: "Profile", icon: "UserOutlined", path: "/leader/profile" },
-        ],
+        navItems: buildLeaderNav(GROUP_NAV_ITEMS.groups),
     },
 
     [UserRole.CAMPUS_ADMIN]: {
@@ -136,16 +171,9 @@ export const ROLE_CONFIG: Record<UserRole, RoleConfig> = {
         reportVisibilityScope: "campus",
         isLeadership: true,
         routePrefix: "/leader",
-        navItems: [
-            { key: "dashboard", label: "Dashboard", icon: "DashboardOutlined", path: "/leader/dashboard" },
-            { key: "groups", label: "Groups", icon: "ApartmentOutlined", path: "/leader/groups" },
-            { key: "members", label: "Members", icon: "TeamOutlined", path: "/leader/members" },
-            { key: "meetings", label: "Meetings", icon: "CalendarOutlined", path: "/leader/meetings" },
-            { key: "reports", label: "Reports", icon: "FileTextOutlined", path: "/leader/reports" },
-            { key: "interactions", label: "Interactions", icon: "MessageOutlined", path: "/leader/interactions" },
-            { key: "analytics", label: "Analytics", icon: "BarChartOutlined", path: "/leader/analytics" },
-            { key: "profile", label: "Profile", icon: "UserOutlined", path: "/leader/profile" },
-        ],
+        navItems: buildLeaderNav(GROUP_NAV_ITEMS.groups, {
+            afterReports: [ADDON_NAV_ITEMS.interactions],
+        }),
     },
 
     [UserRole.ZONAL_LEADER]: {
@@ -161,16 +189,9 @@ export const ROLE_CONFIG: Record<UserRole, RoleConfig> = {
         reportVisibilityScope: "campus",
         isLeadership: true,
         routePrefix: "/leader",
-        navItems: [
-            { key: "dashboard", label: "Dashboard", icon: "DashboardOutlined", path: "/leader/dashboard" },
-            { key: "my-group", label: "My Group", icon: "ApartmentOutlined", path: "/leader/my-group" },
-            { key: "members", label: "Members", icon: "TeamOutlined", path: "/leader/members" },
-            { key: "meetings", label: "Meetings", icon: "CalendarOutlined", path: "/leader/meetings" },
-            { key: "reports", label: "Reports", icon: "FileTextOutlined", path: "/leader/reports" },
-            { key: "interactions", label: "Interactions", icon: "MessageOutlined", path: "/leader/interactions" },
-            { key: "analytics", label: "Analytics", icon: "BarChartOutlined", path: "/leader/analytics" },
-            { key: "profile", label: "Profile", icon: "UserOutlined", path: "/leader/profile" },
-        ],
+        navItems: buildLeaderNav(GROUP_NAV_ITEMS.myGroup, {
+            afterReports: [ADDON_NAV_ITEMS.interactions],
+        }),
     },
 
     [UserRole.HOD]: {
@@ -186,16 +207,9 @@ export const ROLE_CONFIG: Record<UserRole, RoleConfig> = {
         reportVisibilityScope: "own",
         isLeadership: true,
         routePrefix: "/leader",
-        navItems: [
-            { key: "dashboard", label: "Dashboard", icon: "DashboardOutlined", path: "/leader/dashboard" },
-            { key: "my-group", label: "My Department", icon: "ApartmentOutlined", path: "/leader/my-group" },
-            { key: "members", label: "Members", icon: "TeamOutlined", path: "/leader/members" },
-            { key: "meetings", label: "Meetings", icon: "CalendarOutlined", path: "/leader/meetings" },
-            { key: "reports", label: "Reports", icon: "FileTextOutlined", path: "/leader/reports" },
-            { key: "interactions", label: "Interactions", icon: "MessageOutlined", path: "/leader/interactions" },
-            { key: "analytics", label: "Analytics", icon: "BarChartOutlined", path: "/leader/analytics" },
-            { key: "profile", label: "Profile", icon: "UserOutlined", path: "/leader/profile" },
-        ],
+        navItems: buildLeaderNav(GROUP_NAV_ITEMS.myDepartment, {
+            afterReports: [ADDON_NAV_ITEMS.interactions],
+        }),
     },
 
     [UserRole.SMALL_GROUP_LEADER]: {
@@ -211,17 +225,9 @@ export const ROLE_CONFIG: Record<UserRole, RoleConfig> = {
         reportVisibilityScope: "own",
         isLeadership: true,
         routePrefix: "/leader",
-        navItems: [
-            { key: "dashboard", label: "Dashboard", icon: "DashboardOutlined", path: "/leader/dashboard" },
-            { key: "my-group", label: "My Group", icon: "ApartmentOutlined", path: "/leader/my-group" },
-            { key: "members", label: "Members", icon: "TeamOutlined", path: "/leader/members" },
-            { key: "meetings", label: "Meetings", icon: "CalendarOutlined", path: "/leader/meetings" },
-            { key: "reports", label: "Reports", icon: "FileTextOutlined", path: "/leader/reports" },
-            { key: "interactions", label: "Interactions", icon: "MessageOutlined", path: "/leader/interactions" },
-            { key: "follow-ups", label: "Follow-ups", icon: "PhoneOutlined", path: "/leader/follow-ups" },
-            { key: "analytics", label: "Analytics", icon: "BarChartOutlined", path: "/leader/analytics" },
-            { key: "profile", label: "Profile", icon: "UserOutlined", path: "/leader/profile" },
-        ],
+        navItems: buildLeaderNav(GROUP_NAV_ITEMS.myGroup, {
+            afterReports: [ADDON_NAV_ITEMS.interactions, ADDON_NAV_ITEMS.followUps],
+        }),
     },
 
     [UserRole.CELL_LEADER]: {
@@ -237,16 +243,10 @@ export const ROLE_CONFIG: Record<UserRole, RoleConfig> = {
         reportVisibilityScope: "own",
         isLeadership: true,
         routePrefix: "/leader",
-        navItems: [
-            { key: "dashboard", label: "Dashboard", icon: "DashboardOutlined", path: "/leader/dashboard" },
-            { key: "my-group", label: "My Cell", icon: "ApartmentOutlined", path: "/leader/my-group" },
-            { key: "members", label: "Members", icon: "TeamOutlined", path: "/leader/members" },
-            { key: "meetings", label: "Meetings", icon: "CalendarOutlined", path: "/leader/meetings" },
-            { key: "reports", label: "Reports", icon: "FileTextOutlined", path: "/leader/reports" },
-            { key: "interactions", label: "Interactions", icon: "MessageOutlined", path: "/leader/interactions" },
-            { key: "follow-ups", label: "Follow-ups", icon: "PhoneOutlined", path: "/leader/follow-ups" },
-            { key: "profile", label: "Profile", icon: "UserOutlined", path: "/leader/profile" },
-        ],
+        // Cell leaders have no analytics — override by passing a custom exclusion
+        navItems: buildLeaderNav(GROUP_NAV_ITEMS.myCell, {
+            afterReports: [ADDON_NAV_ITEMS.interactions, ADDON_NAV_ITEMS.followUps],
+        }).filter((item) => item.key !== "analytics"),
     },
 
     [UserRole.DATA_ENTRY]: {
@@ -262,11 +262,12 @@ export const ROLE_CONFIG: Record<UserRole, RoleConfig> = {
         reportVisibilityScope: "all",
         isLeadership: false,
         routePrefix: "/leader",
+        // Intentionally narrow nav — not using buildLeaderNav
         navItems: [
-            { key: "dashboard", label: "Dashboard", icon: "DashboardOutlined", path: "/leader/dashboard" },
-            { key: "reports", label: "Reports", icon: "FileTextOutlined", path: "/leader/reports" },
+            ...getBaseNavItem("dashboard"),
+            ...getBaseNavItem("reports"),
             { key: "data-entry", label: "Data Entry", icon: "FormOutlined", path: "/leader/reports/data-entry" },
-            { key: "profile", label: "Profile", icon: "UserOutlined", path: "/leader/profile" },
+            ...getBaseNavItem("inbox"),
         ],
     },
 
@@ -287,7 +288,7 @@ export const ROLE_CONFIG: Record<UserRole, RoleConfig> = {
             { key: "dashboard", label: "Dashboard", icon: "DashboardOutlined", path: "/member/dashboard" },
             { key: "my-group", label: "My Group", icon: "ApartmentOutlined", path: "/member/my-group" },
             { key: "history", label: "History", icon: "HistoryOutlined", path: "/member/history" },
-            { key: "profile", label: "Profile", icon: "UserOutlined", path: "/member/profile" },
+            { key: "inbox", label: "Inbox", icon: "InboxOutlined", path: "/member/inbox" },
         ],
     },
 };
@@ -362,11 +363,11 @@ export const ORG_HIERARCHY_CONFIG: OrgLevelConfig[] = [
         leaderRole: UserRole.CELL_LEADER,
         hasAdmin: false,
         hasPastor: false,
-        hasLocation: true,
+        hasLocation: false,
         hasMeetingFrequency: true,
         hasInviteCode: true,
         hasMemberCount: true,
-        hasDepartment: true,
+        hasDepartment: false,
         hasCountry: false,
         hasRegion: false,
     },
@@ -376,17 +377,17 @@ export const ORG_HIERARCHY_CONFIG: OrgLevelConfig[] = [
         pluralLabel: "Zones",
         parentLevel: "AREA",
         childLevel: "CELL",
-        membersPerUnit: 4, // 4 cells make a zone
+        membersPerUnit: 4,
         leaderRole: UserRole.ZONAL_LEADER,
         hasAdmin: false,
         hasPastor: false,
         hasLocation: false,
         hasMeetingFrequency: false,
         hasInviteCode: false,
-        hasMemberCount: false,
+        hasMemberCount: true,
         hasDepartment: false,
         hasCountry: false,
-        hasRegion: true,
+        hasRegion: false,
     },
     {
         level: "AREA",
@@ -394,14 +395,14 @@ export const ORG_HIERARCHY_CONFIG: OrgLevelConfig[] = [
         pluralLabel: "Areas",
         parentLevel: "COMMUNITY",
         childLevel: "ZONE",
-        membersPerUnit: 4, // 4 zones make an area
-        leaderRole: null, // Area leaders are generic leadership
+        membersPerUnit: 4,
+        leaderRole: null,
         hasAdmin: false,
         hasPastor: false,
         hasLocation: false,
         hasMeetingFrequency: false,
         hasInviteCode: false,
-        hasMemberCount: false,
+        hasMemberCount: true,
         hasDepartment: false,
         hasCountry: false,
         hasRegion: false,
@@ -419,7 +420,7 @@ export const ORG_HIERARCHY_CONFIG: OrgLevelConfig[] = [
         hasLocation: false,
         hasMeetingFrequency: false,
         hasInviteCode: false,
-        hasMemberCount: false,
+        hasMemberCount: true,
         hasDepartment: false,
         hasCountry: false,
         hasRegion: false,
@@ -437,7 +438,7 @@ export const ORG_HIERARCHY_CONFIG: OrgLevelConfig[] = [
         hasLocation: false,
         hasMeetingFrequency: false,
         hasInviteCode: false,
-        hasMemberCount: false,
+        hasMemberCount: true,
         hasDepartment: false,
         hasCountry: false,
         hasRegion: false,
@@ -448,17 +449,17 @@ export const ORG_HIERARCHY_CONFIG: OrgLevelConfig[] = [
         pluralLabel: "Campuses",
         parentLevel: "GROUP",
         childLevel: "DISTRICT",
-        membersPerUnit: 0, // varies
+        membersPerUnit: 0,
         leaderRole: UserRole.CAMPUS_ADMIN,
         hasAdmin: true,
         hasPastor: true,
         hasLocation: true,
         hasMeetingFrequency: false,
         hasInviteCode: false,
-        hasMemberCount: false,
-        hasDepartment: false,
+        hasMemberCount: true,
+        hasDepartment: true,
         hasCountry: true,
-        hasRegion: false,
+        hasRegion: true,
     },
     {
         level: "GROUP",
@@ -466,98 +467,17 @@ export const ORG_HIERARCHY_CONFIG: OrgLevelConfig[] = [
         pluralLabel: "Groups",
         parentLevel: null,
         childLevel: "CAMPUS",
-        membersPerUnit: 0, // varies
+        membersPerUnit: 0,
         leaderRole: UserRole.GROUP_ADMIN,
         hasAdmin: true,
         hasPastor: true,
         hasLocation: false,
         hasMeetingFrequency: false,
         hasInviteCode: false,
-        hasMemberCount: false,
+        hasMemberCount: true,
         hasDepartment: false,
-        hasCountry: true,
-        hasRegion: true,
-    },
-];
-
-// ============================================================================
-// DEPARTMENT CONFIGURATION
-// ============================================================================
-// Single registry of all department types used across the ministry.
-// mockData.ts and UI components reference these keys instead of hardcoding.
-// To add a new department: add one entry here. The rest propagates.
-// ============================================================================
-
-export const DEPARTMENT_CONFIG: DepartmentConfig[] = [
-    {
-        key: "worship",
-        name: "Worship & Arts",
-        description: "Music, worship leading, choir, and creative arts ministry.",
-        icon: "SoundOutlined",
-        isGlobal: true,
-    },
-    {
-        key: "ushering",
-        name: "Ushering & Protocol",
-        description: "Ushering, crowd management, and protocol services during services and events.",
-        icon: "TeamOutlined",
-        isGlobal: true,
-    },
-    {
-        key: "media",
-        name: "Media & Communications",
-        description: "Audio-visual production, social media, graphic design, and church communications.",
-        icon: "VideoCameraOutlined",
-        isGlobal: true,
-    },
-    {
-        key: "pastoral",
-        name: "Pastoral Care & Counselling",
-        description: "Member welfare, counselling, hospital visitation, and pastoral support.",
-        icon: "HeartOutlined",
-        isGlobal: true,
-    },
-    {
-        key: "children",
-        name: "Kidz Zone",
-        description: "Children's church, Sunday school, and kids-focused ministry programmes.",
-        icon: "SmileOutlined",
-        isGlobal: true,
-    },
-    {
-        key: "outreach",
-        name: "Missions & Outreach",
-        description: "Evangelism, community outreach, missions, and external engagement.",
-        icon: "GlobalOutlined",
-        isGlobal: true,
-    },
-    {
-        key: "prayer",
-        name: "Prayer Ministry",
-        description: "Intercessory prayer, prayer walks, and prayer chain coordination.",
-        icon: "FireOutlined",
-        isGlobal: false,
-    },
-    {
-        key: "hospitality",
-        name: "Hospitality",
-        description: "Guest relations, refreshments, facility management, and event hosting.",
-        icon: "CoffeeOutlined",
-        isGlobal: false,
-    },
-    {
-        key: "youth",
-        name: "Youth Ministry",
-        description: "Young adults ministry, campus fellowship, and youth-focused programmes.",
-        icon: "RocketOutlined",
-        isGlobal: false,
-    },
-    {
-        key: "tech",
-        name: "Technical & IT",
-        description: "Sound engineering, lighting, live streaming, and IT infrastructure.",
-        icon: "LaptopOutlined",
-        isGlobal: false,
+        hasCountry: false,
+        hasRegion: false,
     },
 ];
 
@@ -599,6 +519,73 @@ export function getLevelsBetween(low: string, high: string): string[] {
 export function getHierarchyChain(): string[] {
     return ORG_HIERARCHY_CONFIG.map((c) => c.level);
 }
+
+// ============================================================================
+// DEPARTMENT CONFIGURATION
+// ============================================================================
+// Single registry of all department types used across the ministry.
+// mockData.ts and UI components reference these keys instead of hardcoding.
+// To add a new department: add one entry here. The rest propagates.
+// ============================================================================
+
+export const DEPARTMENT_CONFIG: DepartmentConfig[] = [
+    {
+        key: "worship",
+        name: "Worship & Arts",
+        description: "Music, worship leading, choir, and creative arts ministry.",
+        icon: "SoundOutlined",
+        isGlobal: true,
+    },
+    {
+        key: "ushering",
+        name: "Ushering & Protocol",
+        description: "Ushering, crowd management, and protocol services during services and events.",
+        icon: "TeamOutlined",
+        isGlobal: true,
+    },
+    {
+        key: "media",
+        name: "Media & Communications",
+        description: "Audio-visual production, social media, graphic design, and church communications.",
+        icon: "VideoCameraOutlined",
+        isGlobal: true,
+    },
+    {
+        key: "children",
+        name: "Children's Ministry",
+        description: "Teaching, mentoring, and caring for children from toddlers to pre-teens.",
+        icon: "SmileOutlined",
+        isGlobal: true,
+    },
+    {
+        key: "hospitality",
+        name: "Hospitality",
+        description: "Welcoming guests, event hosting, and refreshments coordination.",
+        icon: "CoffeeOutlined",
+        isGlobal: true,
+    },
+    {
+        key: "prayer",
+        name: "Prayer Ministry",
+        description: "Intercessory prayer, prayer walks, and spiritual warfare coordination.",
+        icon: "HeartOutlined",
+        isGlobal: true,
+    },
+    {
+        key: "outreach",
+        name: "Outreach & Evangelism",
+        description: "Community outreach, evangelistic campaigns, and mission trips.",
+        icon: "GlobalOutlined",
+        isGlobal: true,
+    },
+    {
+        key: "welfare",
+        name: "Welfare & Benevolence",
+        description: "Caring for the needy, welfare programs, and community support.",
+        icon: "GiftOutlined",
+        isGlobal: true,
+    },
+];
 
 // ============================================================================
 // DEPARTMENT CONFIG HELPERS

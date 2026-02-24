@@ -288,7 +288,7 @@ Church Ministry → Senior Pastor (SPO) → CEO → End
 * **FR55:** Login via email/password
 * **FR56:** Role-based access control
 * **FR57:** Referral link valid until used
-* **FR58:** Link invalid after use
+* **FR58:** Link invalid after use or while that user exists/that role is filled
 
 ---
 

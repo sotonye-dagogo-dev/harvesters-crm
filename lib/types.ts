@@ -862,6 +862,9 @@ declare global {
   // NOTIFICATION TYPES
   // ============================================================================
 
+  /** Notification delivery channel */
+  type NotificationChannel = "in_app" | "email" | "both";
+
   interface appNotification {
     id: string;
     userId: string;
@@ -871,6 +874,17 @@ declare global {
     relatedId?: string;
     read: boolean;
     createdAt: string;
+    /** Delivery channel — defaults to "both" */
+    channel?: NotificationChannel;
+    /** Whether the email counterpart has been "sent" (simulated) */
+    emailSent?: boolean;
+    /** Simulated email metadata (populated for email/both channels) */
+    emailMeta?: {
+      to: string;
+      subject: string;
+      body: string;
+      sentAt?: string;
+    };
   }
 
   interface NotificationWithDetails extends appNotification {

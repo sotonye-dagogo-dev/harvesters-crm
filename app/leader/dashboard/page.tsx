@@ -10,6 +10,8 @@ import {
   BarChartOutlined,
   ClockCircleOutlined,
   ApartmentOutlined,
+  FileTextOutlined,
+  EditOutlined,
 } from "@ant-design/icons";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -84,6 +86,7 @@ export default function LeaderDashboard() {
   );
   const { user } = useAuth();
 
+  const isDataEntry = user?.role === "DATA_ENTRY";
   const isScopedLeader = user?.role && SCOPED_LEADER_ROLES.includes(user.role);
 
   useEffect(() => {
@@ -153,6 +156,20 @@ export default function LeaderDashboard() {
             totalDepartments: 0,
             scopeName,
           });
+        } else if (isDataEntry) {
+          // Fetch report stats for data-entry users
+          const reportsRes = await fetch(`/api/reports?pageSize=999`);
+          const reportsData = reportsRes.ok ? await reportsRes.json() : { data: [] };
+          const myReports = Array.isArray(reportsData.data) ? reportsData.data : [];
+          setScopeOverview({
+            totalUsers: 0,
+            totalCampuses: 0,
+            totalGroups: 0,
+            totalCells: 0,
+            totalMeetings: myReports.length,
+            totalDepartments: 0,
+            scopeName: "Data Entry",
+          });
         } else if (user.groupId) {
           // Fetch single-group analytics for SGL/Cell Leader
           const response = await fetch(`/api/analytics/groups/${user.groupId}`);
@@ -184,10 +201,24 @@ export default function LeaderDashboard() {
     };
 
     fetchData();
-  }, [user, isScopedLeader]);
+  }, [user, isScopedLeader, isDataEntry]);
 
   // Quick actions configuration — adapted per role
   const getQuickActions = () => {
+    if (isDataEntry) {
+      return [
+        {
+          label: "Data Entry",
+          icon: <EditOutlined />,
+          path: "/leader/reports/data-entry",
+        },
+        {
+          label: "View Reports",
+          icon: <FileTextOutlined />,
+          path: "/leader/reports",
+        },
+      ];
+    }
     if (isScopedLeader) {
       return [
         {
@@ -319,6 +350,8 @@ export default function LeaderDashboard() {
         return "Zonal Leader";
       case "HOD":
         return "Head of Department";
+      case "DATA_ENTRY":
+        return "Data Entry";
       default:
         return "Leader";
     }
@@ -333,7 +366,9 @@ export default function LeaderDashboard() {
               {getRoleLabel()} Dashboard
             </h2>
             <p className="text-ds-text-secondary">
-              {isScopedLeader
+              {isDataEntry
+                ? "Enter and manage historical report data"
+                : isScopedLeader
                 ? `Overview of ${scopeOverview?.scopeName || "your scope"}`
                 : "Manage your group and track engagement"}
             </p>
@@ -357,7 +392,48 @@ export default function LeaderDashboard() {
           )}
         </div>
 
-        {isScopedLeader ? (
+        {isDataEntry ? (
+          <>
+            {/* Data Entry Dashboard */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mx-2 sm:mx-0">
+              <StatCard
+                title="Reports Entered"
+                value={scopeOverview?.totalMeetings || 0}
+                icon={<FileTextOutlined />}
+                color="text-ds-chart-1"
+              />
+              <StatCard
+                title="Role"
+                value="Data Entry"
+                icon={<EditOutlined />}
+                color="text-ds-brand-accent"
+              />
+            </div>
+
+            {/* Report Overview Widget */}
+            <ReportOverviewWidget />
+
+            <Card
+              title="Quick Actions"
+              className="bg-ds-surface-elevated border-ds-border-base"
+            >
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mx-2 sm:mx-0">
+                {quickActions.map((action, index) => (
+                  <Button
+                    key={index}
+                    variant="secondary"
+                    size="large"
+                    block
+                    icon={action.icon}
+                    onClick={() => router.push(action.path)}
+                  >
+                    {action.label}
+                  </Button>
+                ))}
+              </div>
+            </Card>
+          </>
+        ) : isScopedLeader ? (
           <>
             {/* Scoped Overview Dashboard */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mx-2 sm:mx-0">

@@ -137,15 +137,13 @@ export default function EditReportPage() {
                 metricName:
                   report.sections
                     .flatMap((rs) => rs.metrics)
-                    .find(
-                      (rm) => rm.templateMetricId === m.templateMetricId
-                    )?.metricName ?? "",
+                    .find((rm) => rm.templateMetricId === m.templateMetricId)
+                    ?.metricName ?? "",
                 fieldType:
                   report.sections
                     .flatMap((rs) => rs.metrics)
-                    .find(
-                      (rm) => rm.templateMetricId === m.templateMetricId
-                    )?.fieldType ?? MetricFieldType.NUMBER,
+                    .find((rm) => rm.templateMetricId === m.templateMetricId)
+                    ?.fieldType ?? MetricFieldType.NUMBER,
                 monthlyGoal: m.monthlyGoal,
                 monthlyAchieved: m.monthlyAchieved,
                 yoyGoal: m.yoyGoal,
@@ -153,9 +151,8 @@ export default function EditReportPage() {
                 order:
                   report.sections
                     .flatMap((rs) => rs.metrics)
-                    .find(
-                      (rm) => rm.templateMetricId === m.templateMetricId
-                    )?.order ?? 0,
+                    .find((rm) => rm.templateMetricId === m.templateMetricId)
+                    ?.order ?? 0,
               })),
             })),
           }),
@@ -179,14 +176,22 @@ export default function EditReportPage() {
             notes: formData.notes,
             sections: formData.sections.map((s) => ({
               templateSectionId: s.templateSectionId,
-              sectionName: s.sectionName,
-              order: s.order,
+              sectionName: s.sectionName || "Unnamed Section",
+              order: s.order ?? 0,
               metrics: s.metrics.map((m) => ({
                 templateMetricId: m.templateMetricId,
-                monthlyGoal: m.monthlyGoal,
-                monthlyAchieved: m.monthlyAchieved,
-                yoyGoal: m.yoyGoal,
-                textValue: m.textValue,
+                metricName: m.metricName || "",
+                fieldType: m.fieldType || MetricFieldType.NUMBER,
+                order: m.order ?? 0,
+                ...(m.monthlyGoal !== undefined && {
+                  monthlyGoal: m.monthlyGoal,
+                }),
+                ...(m.monthlyAchieved !== undefined && {
+                  monthlyAchieved: m.monthlyAchieved,
+                }),
+                ...(m.yoyGoal !== undefined && { yoyGoal: m.yoyGoal }),
+                ...(m.textValue !== undefined &&
+                  m.textValue !== "" && { textValue: m.textValue }),
               })),
             })),
           }),
@@ -219,24 +224,31 @@ export default function EditReportPage() {
           notes: formData.notes,
           sections: formData.sections.map((s) => ({
             templateSectionId: s.templateSectionId,
-            sectionName: s.sectionName,
-            order: s.order,
+            sectionName: s.sectionName || "Unnamed Section",
+            order: s.order ?? 0,
             metrics: s.metrics.map((m) => ({
               templateMetricId: m.templateMetricId,
-              monthlyGoal: m.monthlyGoal,
-              monthlyAchieved: m.monthlyAchieved,
-              yoyGoal: m.yoyGoal,
-              textValue: m.textValue,
+              metricName: m.metricName || "",
+              fieldType: m.fieldType || MetricFieldType.NUMBER,
+              order: m.order ?? 0,
+              ...(m.monthlyGoal !== undefined && {
+                monthlyGoal: m.monthlyGoal,
+              }),
+              ...(m.monthlyAchieved !== undefined && {
+                monthlyAchieved: m.monthlyAchieved,
+              }),
+              ...(m.yoyGoal !== undefined && { yoyGoal: m.yoyGoal }),
+              ...(m.textValue !== undefined &&
+                m.textValue !== "" && { textValue: m.textValue }),
             })),
           })),
         }),
       });
 
       // Then submit
-      const submitResponse = await fetch(
-        `/api/reports/${reportId}/submit`,
-        { method: "POST" }
-      );
+      const submitResponse = await fetch(`/api/reports/${reportId}/submit`, {
+        method: "POST",
+      });
 
       if (!submitResponse.ok) {
         const error = await submitResponse.json();
@@ -347,9 +359,9 @@ export default function EditReportPage() {
         {isPostSubmitEdit && (
           <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700 rounded-lg p-4">
             <Text className="text-amber-800 dark:text-amber-300">
-              This report has already been submitted. Your changes will be
-              saved as an edit request and require approval before being
-              applied to the report.
+              This report has already been submitted. Your changes will be saved
+              as an edit request and require approval before being applied to
+              the report.
             </Text>
           </div>
         )}

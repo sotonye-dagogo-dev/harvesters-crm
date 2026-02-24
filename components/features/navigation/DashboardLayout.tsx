@@ -30,9 +30,12 @@ import {
   HistoryOutlined,
   ScheduleOutlined,
   PlusCircleOutlined,
+  InboxOutlined,
+  LinkOutlined,
 } from "@ant-design/icons";
 import { useAuth } from "@/providers/AuthProvider";
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
+import NotificationBell from "@/components/features/notifications/NotificationBell";
 // import { useTheme } from "next-themes";
 import type { MenuProps } from "antd";
 import { getRoleConfig } from "@/lib/constants/roles";
@@ -119,6 +122,8 @@ export default function DashboardLayout({
       HistoryOutlined: <HistoryOutlined />,
       ScheduleOutlined: <ScheduleOutlined />,
       PlusCircleOutlined: <PlusCircleOutlined />,
+      InboxOutlined: <InboxOutlined />,
+      LinkOutlined: <LinkOutlined />,
     }),
     []
   );
@@ -152,7 +157,7 @@ export default function DashboardLayout({
     const navItems = roleConfig.navItems;
 
     // Build menu from ROLE_CONFIG nav items
-    const items: MenuProps["items"] = navItems.map(toMenuItem);
+    const items: NonNullable<MenuProps["items"]> = navItems.map(toMenuItem);
 
     // Append Settings submenu with notifications, profile, and logout
     // Map each role prefix to its actual (unique) settings page
@@ -319,6 +324,7 @@ export default function DashboardLayout({
 
             <div className="flex items-center gap-4">
               <ThemeToggle />
+              {user && <NotificationBell />}
               {user && (
                 <Dropdown
                   menu={{ items: profileMenuItems }}

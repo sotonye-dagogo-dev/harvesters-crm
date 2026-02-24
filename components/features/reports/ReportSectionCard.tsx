@@ -87,16 +87,15 @@ export default function ReportSectionCard({
     );
   };
 
-  const renderMetrics = (metrics: SectionMetricData[]) => {
+  const renderMetrics = (metrics: SectionMetricData[], indexOffset = 0) => {
     if (!metrics.length) {
       return <Empty description="No metrics in this section" image={Empty.PRESENTED_IMAGE_SIMPLE} />;
     }
 
+    const sorted = [...metrics].sort((a, b) => a.order - b.order);
     return (
       <div className="flex flex-col gap-4">
-        {metrics
-          .sort((a, b) => a.order - b.order)
-          .map((metric) => {
+        {sorted.map((metric, idx) => {
             const val = getMetricValue(metric.templateMetricId);
             return (
               <ReportMetricField
@@ -122,12 +121,25 @@ export default function ReportSectionCard({
                 isRequired={metric.isRequired}
                 computedPercentage={val.computedPercentage}
                 yoyGrowth={val.yoyGrowth}
+                metricIndex={indexOffset + idx}
               />
             );
           })}
       </div>
     );
   };
+
+  // Compute running metric index offsets for keyboard navigation across sub-sections
+  const directMetricCount = section.metrics.length;
+  const sortedSubSections = section.subSections
+    ? [...section.subSections].sort((a, b) => a.order - b.order)
+    : [];
+  const subSectionOffsets: number[] = [];
+  let runningOffset = directMetricCount;
+  for (const sub of sortedSubSections) {
+    subSectionOffsets.push(runningOffset);
+    runningOffset += sub.metrics.length;
+  }
 
   const sectionContent = (
     <div className="flex flex-col gap-6">
@@ -138,13 +150,10 @@ export default function ReportSectionCard({
       )}
 
       {/* Direct metrics (no sub-section) */}
-      {section.metrics.length > 0 && renderMetrics(section.metrics)}
+      {section.metrics.length > 0 && renderMetrics(section.metrics, 0)}
 
       {/* Sub-sections */}
-      {section.subSections &&
-        section.subSections
-          .sort((a, b) => a.order - b.order)
-          .map((sub) => (
+      {sortedSubSections.map((sub, subIdx) => (
             <Card
               key={sub.name}
               size="small"
@@ -156,7 +165,7 @@ export default function ReportSectionCard({
                   {sub.description}
                 </p>
               )}
-              {renderMetrics(sub.metrics)}
+              {renderMetrics(sub.metrics, subSectionOffsets[subIdx])}
             </Card>
           ))}
     </div>

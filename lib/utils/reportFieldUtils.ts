@@ -289,6 +289,19 @@ export function validateReportForSubmission(
                 capturesAchieved: boolean;
                 capturesYoY: boolean;
             }>;
+            subSections?: Array<{
+                metrics: Array<{
+                    id: string;
+                    name: string;
+                    fieldType: MetricFieldType;
+                    isRequired: boolean;
+                    minValue?: number;
+                    maxValue?: number;
+                    capturesGoal: boolean;
+                    capturesAchieved: boolean;
+                    capturesYoY: boolean;
+                }>;
+            }>;
         }>;
     }
 ): ReportValidationResult {
@@ -310,7 +323,13 @@ export function validateReportForSubmission(
 
         if (!reportSection) continue;
 
-        for (const templateMetric of templateSection.metrics) {
+        // Flatten sub-section metrics into the main metrics array for validation
+        const allTemplateMetrics = [
+            ...templateSection.metrics,
+            ...(templateSection.subSections ?? []).flatMap((sub) => sub.metrics),
+        ];
+
+        for (const templateMetric of allTemplateMetrics) {
             const reportMetric = reportSection.metrics.find(
                 (m) => m.templateMetricId === templateMetric.id
             );
@@ -384,16 +403,16 @@ export function validateReportForSubmission(
                     label: string;
                     value?: number;
                 }> = [
-                    {
-                        label: "Monthly Goal",
-                        value: reportMetric.monthlyGoal,
-                    },
-                    {
-                        label: "Monthly Achieved",
-                        value: reportMetric.monthlyAchieved,
-                    },
-                    { label: "YoY Goal", value: reportMetric.yoyGoal },
-                ];
+                        {
+                            label: "Monthly Goal",
+                            value: reportMetric.monthlyGoal,
+                        },
+                        {
+                            label: "Monthly Achieved",
+                            value: reportMetric.monthlyAchieved,
+                        },
+                        { label: "YoY Goal", value: reportMetric.yoyGoal },
+                    ];
 
                 for (const { label, value } of valuesToCheck) {
                     if (value === undefined || value === null) continue;

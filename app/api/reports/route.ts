@@ -1,5 +1,5 @@
 import { NextRequest } from "next/server";
-import { reportDb, reportTemplateDb } from "@/lib/data/database";
+import { reportDb, reportTemplateDb, userDb, campusDb } from "@/lib/data/database";
 import { getAuthenticatedUser } from "@/lib/utils/middleware";
 import {
     successResponse,
@@ -38,6 +38,8 @@ export async function GET(request: NextRequest) {
         const campusId = sp.get("campusId") || undefined;
         const groupId = sp.get("groupId") || undefined;
         const status = (sp.get("status") as ReportStatus) || undefined;
+        const periodType = (sp.get("periodType") as import("@/lib/types").ReportPeriodType) || undefined;
+        const templateId = sp.get("templateId") || undefined;
         const periodYear = sp.get("periodYear")
             ? parseInt(sp.get("periodYear")!)
             : undefined;
@@ -49,16 +51,22 @@ export async function GET(request: NextRequest) {
             ? sp.get("isDataEntry") === "true"
             : undefined;
         const search = sp.get("search") || undefined;
+        const dateFrom = sp.get("dateFrom") || undefined;
+        const dateTo = sp.get("dateTo") || undefined;
 
         let results = reportDb.findAll({
             campusId,
             groupId,
             status,
+            periodType,
+            templateId,
             periodYear,
             periodMonth,
             submittedById,
             isDataEntry,
             search,
+            dateFrom,
+            dateTo,
         });
 
         // Auto-approve submitted reports past their deadline (FR29)
@@ -73,11 +81,15 @@ export async function GET(request: NextRequest) {
             campusId,
             groupId,
             status,
+            periodType,
+            templateId,
             periodYear,
             periodMonth,
             submittedById,
             isDataEntry,
             search,
+            dateFrom,
+            dateTo,
         });
 
         // Role-based scoping
@@ -119,7 +131,22 @@ export async function GET(request: NextRequest) {
         const start = (page - 1) * pageSize;
         const paginated = results.slice(start, start + pageSize);
 
-        return paginatedResponse(paginated, total, page, pageSize);
+        // Hydrate each report with template, campus, and submitter details
+        const hydrated = paginated.map((r) => {
+            const template = reportTemplateDb.findById(r.templateId);
+            const campus = campusDb.findById(r.campusId);
+            const submitter = userDb.findById(r.submittedById);
+            return {
+                ...r,
+                template: template ? { name: template.name } : undefined,
+                campus: campus ? { name: campus.name } : undefined,
+                submittedBy: submitter
+                    ? { firstName: submitter.firstName, lastName: submitter.lastName }
+                    : undefined,
+            };
+        });
+
+        return paginatedResponse(hydrated, total, page, pageSize);
     } catch (err) {
         return handleApiError(err);
     }
@@ -164,8 +191,8 @@ export async function POST(request: NextRequest) {
             ...data,
             templateVersionId,
             deadline,
-            submittedById: user!.id,
-            dataEntryById: data.isDataEntry ? user!.id : undefined,
+            submittedById: data.submittedById || user!.id,
+            dataEntryById: data.isDataEntry ? (data.dataEntryById || user!.id) : undefined,
         });
 
         return successResponse(report, "Report created successfully", 201);

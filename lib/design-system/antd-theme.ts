@@ -135,6 +135,14 @@ export function getAntdTheme(isDark: boolean): ThemeConfig {
       Tag: {
         borderRadiusSM: 6,
       },
+      Switch: {
+        trackMinWidth: 44,
+        trackHeight: 22,
+        handleSize: 18,
+        trackPadding: 2,
+        innerMinMargin: 4,
+        innerMaxMargin: 24,
+      },
       DatePicker: {
         borderRadius: 12,
       },

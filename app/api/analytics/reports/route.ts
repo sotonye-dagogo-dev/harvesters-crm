@@ -2,7 +2,7 @@ import { NextRequest } from "next/server";
 import { db } from "@/lib/data/database";
 import { requireRole } from "@/lib/utils/middleware";
 import {
-  successResponse,
+    successResponse,
     handleApiError,
 } from "@/lib/utils/api";
 import { USER_ROLES } from "@/lib/constants";
@@ -14,6 +14,11 @@ const ANALYTICS_ROLES: UserRole[] = [
     USER_ROLES.GROUP_PASTOR as UserRole,
     USER_ROLES.GROUP_ADMIN as UserRole,
     USER_ROLES.CAMPUS_PASTOR as UserRole,
+    USER_ROLES.CAMPUS_ADMIN as UserRole,
+    USER_ROLES.ZONAL_LEADER as UserRole,
+    USER_ROLES.HOD as UserRole,
+    USER_ROLES.SMALL_GROUP_LEADER as UserRole,
+    USER_ROLES.CELL_LEADER as UserRole,
 ];
 
 // GET /api/analytics/reports — Get report analytics dashboard data
@@ -30,9 +35,12 @@ export async function GET(request: NextRequest) {
 
         const role = user!.role as UserRole;
 
-        // Campus pastors can only see their own campus analytics
+        // Campus-scoped roles can only see their own campus analytics
         let effectiveCampusId = campusId;
-        if (role === (USER_ROLES.CAMPUS_PASTOR as UserRole)) {
+        if (
+            role === (USER_ROLES.CAMPUS_PASTOR as UserRole) ||
+            role === (USER_ROLES.CAMPUS_ADMIN as UserRole)
+        ) {
             effectiveCampusId = user!.campusId || campusId;
         }
 

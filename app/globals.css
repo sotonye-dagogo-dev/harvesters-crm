@@ -358,21 +358,20 @@ html {
    8. COMPONENT-SCOPE OVERRIDES
    ══════════════════════════════════════════════════════════════════════════════ */
 
-/* Ant Design Switch */
-.ant-switch {
+/* Ant Design Switch — ensure pill/oval shape via data-attribute selectors (antd v6 CSS-in-JS) */
+[class*="ant-switch"] {
   min-width: 44px !important;
   height: 22px !important;
-  line-height: 20px !important;
+  line-height: 22px !important;
   border-radius: 100px !important;
-  background-color: rgba(0, 0, 0, 0.25) !important;
   vertical-align: middle !important;
 }
 
-.ant-switch-checked {
+[class*="ant-switch"][class*="ant-switch-checked"] {
   background-color: var(--ds-brand-accent) !important;
 }
 
-.ant-switch-handle {
+[class*="ant-switch"] [class*="ant-switch-handle"] {
   width: 18px !important;
   height: 18px !important;
   border-radius: 50% !important;
@@ -380,26 +379,22 @@ html {
   inset-inline-start: 2px !important;
 }
 
-.ant-switch-checked .ant-switch-handle {
+[class*="ant-switch"][class*="ant-switch-checked"] [class*="ant-switch-handle"] {
   inset-inline-start: calc(100% - 20px) !important;
 }
 
-.ant-switch-handle::before {
+[class*="ant-switch"] [class*="ant-switch-handle"]::before {
   border-radius: 50% !important;
   box-shadow: 0 2px 4px 0 rgba(0, 35, 11, 0.2) !important;
   transition: all 0.2s ease-in-out !important;
 }
 
-.ant-switch-loading .ant-switch-handle::before {
-  box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.1) !important;
-}
-
-.ant-switch-disabled {
+[class*="ant-switch"][class*="ant-switch-disabled"] {
   opacity: 0.4 !important;
   cursor: not-allowed !important;
 }
 
-.ant-switch:focus-visible {
+[class*="ant-switch"]:focus-visible {
   outline: 2px solid var(--ds-brand-accent) !important;
   outline-offset: 2px !important;
   box-shadow: var(--ds-glow-accent-soft) !important;

@@ -10,6 +10,7 @@ import {
   ReportEditStatus,
   ReportUpdateRequestStatus,
 } from "@/lib/types";
+import { emitDbChange } from "@/lib/utils/dbEvents";
 import {
   mockUsers,
   mockGroups,
@@ -107,28 +108,33 @@ if (!globalForDb.dbStore) {
   };
 }
 
-const users = globalForDb.dbStore.users;
-const groups = globalForDb.dbStore.groups;
-const meetings = globalForDb.dbStore.meetings;
-const interactions = globalForDb.dbStore.interactions;
-const membershipRequests = globalForDb.dbStore.membershipRequests;
-let notifications = globalForDb.dbStore.notifications;
-const campuses = globalForDb.dbStore.campuses;
-const zones = globalForDb.dbStore.zones;
-const orgGroups = globalForDb.dbStore.orgGroups;
-const departments = globalForDb.dbStore.departments;
-const cells = globalForDb.dbStore.cells;
-const campaigns = globalForDb.dbStore.campaigns;
-const campaignInteractions = globalForDb.dbStore.campaignInteractions;
-const inviteLinks = globalForDb.dbStore.inviteLinks;
-const inviteLinkVisits = globalForDb.dbStore.inviteLinkVisits;
-const reportTemplates = globalForDb.dbStore.reportTemplates;
-const reportTemplateVersions = globalForDb.dbStore.reportTemplateVersions;
-const reports = globalForDb.dbStore.reports;
-const reportEvents = globalForDb.dbStore.reportEvents;
-const reportVersions = globalForDb.dbStore.reportVersions;
-const reportEdits = globalForDb.dbStore.reportEdits;
-const reportUpdateRequests = globalForDb.dbStore.reportUpdateRequests;
+// ── Direct references into the singleton store ──────────────────────────────
+// Using a getter-based approach ensures every read goes through GlobalForDb,
+// so even if a module is re-evaluated we always hit the same arrays.
+const store = () => globalForDb.dbStore!;
+
+const users = store().users;
+const groups = store().groups;
+const meetings = store().meetings;
+const interactions = store().interactions;
+const membershipRequests = store().membershipRequests;
+const notifications = store().notifications;
+const campuses = store().campuses;
+const zones = store().zones;
+const orgGroups = store().orgGroups;
+const departments = store().departments;
+const cells = store().cells;
+const campaigns = store().campaigns;
+const campaignInteractions = store().campaignInteractions;
+const inviteLinks = store().inviteLinks;
+const inviteLinkVisits = store().inviteLinkVisits;
+const reportTemplates = store().reportTemplates;
+const reportTemplateVersions = store().reportTemplateVersions;
+const reports = store().reports;
+const reportEvents = store().reportEvents;
+const reportVersions = store().reportVersions;
+const reportEdits = store().reportEdits;
+const reportUpdateRequests = store().reportUpdateRequests;
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 const generateId = () =>
@@ -215,6 +221,7 @@ export const userDb = {
       updatedAt: now(),
     };
     users.push(user);
+    emitDbChange("users", "create", user.id);
     return user;
   },
 
@@ -222,6 +229,7 @@ export const userDb = {
     const idx = users.findIndex((u) => u.id === id);
     if (idx === -1) return undefined;
     users[idx] = { ...users[idx], ...data, updatedAt: now() };
+    emitDbChange("users", "update", id);
     return users[idx];
   },
 
@@ -229,6 +237,7 @@ export const userDb = {
     const idx = users.findIndex((u) => u.id === id);
     if (idx === -1) return false;
     users.splice(idx, 1);
+    emitDbChange("users", "delete", id);
     return true;
   },
 
@@ -629,6 +638,7 @@ export const groupDb = {
       updatedAt: now(),
     };
     groups.push(group);
+    emitDbChange("groups", "create", group.id);
     return group;
   },
 
@@ -636,6 +646,7 @@ export const groupDb = {
     const idx = groups.findIndex((g) => g.id === id);
     if (idx === -1) return undefined;
     groups[idx] = { ...groups[idx], ...data, updatedAt: now() };
+    emitDbChange("groups", "update", id);
     return groups[idx];
   },
 
@@ -643,6 +654,7 @@ export const groupDb = {
     const idx = groups.findIndex((g) => g.id === id);
     if (idx === -1) return false;
     groups.splice(idx, 1);
+    emitDbChange("groups", "delete", id);
     return true;
   },
 
@@ -786,6 +798,7 @@ export const meetingDb = {
       updatedAt: now(),
     };
     meetings.push(meeting);
+    emitDbChange("meetings", "create", meeting.id);
     return meeting;
   },
 
@@ -793,6 +806,7 @@ export const meetingDb = {
     const idx = meetings.findIndex((m) => m.id === id);
     if (idx === -1) return undefined;
     meetings[idx] = { ...meetings[idx], ...data, updatedAt: now() };
+    emitDbChange("meetings", "update", id);
     return meetings[idx];
   },
 
@@ -800,6 +814,7 @@ export const meetingDb = {
     const idx = meetings.findIndex((m) => m.id === id);
     if (idx === -1) return false;
     meetings.splice(idx, 1);
+    emitDbChange("meetings", "delete", id);
     return true;
   },
 
@@ -841,6 +856,7 @@ export const interactionDb = {
       createdAt: now(),
     };
     interactions.push(interaction);
+    emitDbChange("interactions", "create", interaction.id);
     return interaction;
   },
 
@@ -848,6 +864,7 @@ export const interactionDb = {
     const idx = interactions.findIndex((i) => i.id === id);
     if (idx === -1) return undefined;
     interactions[idx] = { ...interactions[idx], ...data };
+    emitDbChange("interactions", "update", id);
     return interactions[idx];
   },
 
@@ -855,6 +872,7 @@ export const interactionDb = {
     const idx = interactions.findIndex((i) => i.id === id);
     if (idx === -1) return false;
     interactions.splice(idx, 1);
+    emitDbChange("interactions", "delete", id);
     return true;
   },
 
@@ -914,6 +932,7 @@ export const membershipRequestDb = {
       responseMessage: undefined,
     };
     membershipRequests.push(request);
+    emitDbChange("membershipRequests", "create", request.id);
     return request;
   },
 
@@ -924,6 +943,7 @@ export const membershipRequestDb = {
     const idx = membershipRequests.findIndex((r) => r.id === id);
     if (idx === -1) return undefined;
     membershipRequests[idx] = { ...membershipRequests[idx], ...data };
+    emitDbChange("membershipRequests", "update", id);
     return membershipRequests[idx];
   },
 
@@ -942,6 +962,7 @@ export const membershipRequestDb = {
       respondedById,
       responseMessage,
     };
+    emitDbChange("membershipRequests", "update", id);
     return membershipRequests[idx];
   },
 
@@ -975,13 +996,32 @@ export const notificationDb = {
   create: (
     data: Omit<appNotification, "id" | "createdAt" | "read">
   ): appNotification => {
+    // Look up the user's email for email simulation
+    const recipientUser = users.find((u) => u.id === data.userId);
+    const channel: NotificationChannel = data.channel || "both";
+    const timestamp = now();
+
+    const emailMeta: appNotification["emailMeta"] =
+      (channel === "email" || channel === "both") && recipientUser
+        ? {
+          to: recipientUser.email,
+          subject: data.title,
+          body: `Dear ${recipientUser.firstName},\n\n${data.message}\n\n— Harvesters Small Groups CRM`,
+          sentAt: timestamp,
+        }
+        : undefined;
+
     const notification: appNotification = {
       ...data,
       id: generateId(),
       read: false,
-      createdAt: now(),
+      createdAt: timestamp,
+      channel,
+      emailSent: !!emailMeta,
+      emailMeta,
     };
     notifications.push(notification);
+    emitDbChange("notifications", "create", notification.id);
     return notification;
   },
 
@@ -989,19 +1029,19 @@ export const notificationDb = {
     const idx = notifications.findIndex((n) => n.id === id);
     if (idx === -1) return undefined;
     notifications[idx] = { ...notifications[idx], read: true };
+    emitDbChange("notifications", "update", id);
     return notifications[idx];
   },
 
   markAllAsRead: (userId: string): number => {
     let count = 0;
-    notifications = notifications.map((n) => {
-      if (n.userId === userId && !n.read) {
+    for (let i = 0; i < notifications.length; i++) {
+      if (notifications[i].userId === userId && !notifications[i].read) {
+        notifications[i] = { ...notifications[i], read: true };
         count++;
-        return { ...n, read: true };
       }
-      return n;
-    });
-    if (globalForDb.dbStore) globalForDb.dbStore.notifications = notifications;
+    }
+    if (count > 0) emitDbChange("notifications", "update");
     return count;
   },
 
@@ -1009,6 +1049,7 @@ export const notificationDb = {
     const idx = notifications.findIndex((n) => n.id === id);
     if (idx === -1) return false;
     notifications.splice(idx, 1);
+    emitDbChange("notifications", "delete", id);
     return true;
   },
 
@@ -1811,11 +1852,36 @@ export const reportDb = {
       result = result.filter((r) => r.isDataEntry === filters.isDataEntry);
     if (filters?.search) {
       const q = filters.search.toLowerCase();
+      result = result.filter((r) => {
+        // Search in notes and ID
+        if (r.notes?.toLowerCase().includes(q)) return true;
+        if (r.id.toLowerCase().includes(q)) return true;
+        // Search in related template name
+        const tpl = reportTemplates.find((t) => t.id === r.templateId);
+        if (tpl?.name.toLowerCase().includes(q)) return true;
+        // Search in related campus name
+        const cmp = campuses.find((c) => c.id === r.campusId);
+        if (cmp?.name.toLowerCase().includes(q)) return true;
+        // Search in submitter name
+        const usr = users.find((u) => u.id === r.submittedById);
+        if (
+          usr &&
+          `${usr.firstName} ${usr.lastName}`.toLowerCase().includes(q)
+        )
+          return true;
+        return false;
+      });
+    }
+    if (filters?.dateFrom) {
+      const from = new Date(filters.dateFrom).getTime();
       result = result.filter(
-        (r) =>
-          r.notes?.toLowerCase().includes(q) ||
-          r.id.toLowerCase().includes(q) ||
-          r.campusId.toLowerCase().includes(q)
+        (r) => new Date(r.createdAt).getTime() >= from
+      );
+    }
+    if (filters?.dateTo) {
+      const to = new Date(filters.dateTo).getTime();
+      result = result.filter(
+        (r) => new Date(r.createdAt).getTime() <= to
       );
     }
 
@@ -1921,6 +1987,7 @@ export const reportDb = {
     };
 
     reports.push(report);
+    emitDbChange("reports", "create", id);
 
     // Create audit event
     reportEventDb.create({
@@ -1982,6 +2049,7 @@ export const reportDb = {
       updatedAt: now(),
     };
 
+    emitDbChange("reports", "update", id);
     return reports[idx];
   },
 
@@ -2010,6 +2078,7 @@ export const reportDb = {
     // Create version snapshot
     reportVersionDb.create(id, reports[idx], actorId, "Submitted for review");
 
+    emitDbChange("reports", "update", id);
     return reports[idx];
   },
 
@@ -2034,6 +2103,7 @@ export const reportDb = {
       newStatus: ReportStatus.APPROVED,
     });
 
+    emitDbChange("reports", "update", id);
     return reports[idx];
   },
 

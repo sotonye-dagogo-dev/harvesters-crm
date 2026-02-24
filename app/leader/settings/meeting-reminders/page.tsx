@@ -69,7 +69,7 @@ export default function MeetingRemindersPage() {
       // Mock API call - in production, would save to backend
       await new Promise((resolve) => setTimeout(resolve, 1000));
       message.success("Notification preferences saved successfully");
-    } catch (error) {
+    } catch {
       message.error("Failed to save preferences");
     } finally {
       setSaving(false);
@@ -139,7 +139,9 @@ export default function MeetingRemindersPage() {
 
             <div className="flex items-center justify-between py-2">
               <div>
-                <div className="font-medium text-ds-text-primary">Role Changes</div>
+                <div className="font-medium text-ds-text-primary">
+                  Role Changes
+                </div>
                 <div className="text-sm text-ds-text-subtle">
                   Notifications when your role is updated
                 </div>
@@ -154,7 +156,9 @@ export default function MeetingRemindersPage() {
 
             <div className="flex items-center justify-between py-2">
               <div>
-                <div className="font-medium text-ds-text-primary">New Members</div>
+                <div className="font-medium text-ds-text-primary">
+                  New Members
+                </div>
                 <div className="text-sm text-ds-text-subtle">
                   Notifications when new members join your group
                 </div>

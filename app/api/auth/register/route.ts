@@ -14,7 +14,12 @@ import {
   conflictResponse,
   handleApiError,
 } from "@/lib/utils/api";
-import { groupDb, cellDb } from "@/lib/data/database";
+import {
+  groupDb,
+  cellDb,
+  inviteLinkDb,
+  inviteLinkVisitDb,
+} from "@/lib/data/database";
 
 export async function POST(request: NextRequest) {
   try {
@@ -45,9 +50,88 @@ export async function POST(request: NextRequest) {
     let assignedDepartmentId = data.departmentId;
     let assignedRole: UserRole = UserRole.MEMBER;
     let inviteValid = false;
+    let resolvedInviteLinkId: string | undefined;
 
-    if (data.inviteCode) {
-      // Check if invite code is for a group
+    if (data.referralCode) {
+      // ── Referral link-based registration (FR49, FR50, FR57, FR58) ──────
+      const link = inviteLinkDb.findByCode(data.referralCode);
+
+      if (!link) {
+        return badRequestResponse("Invalid referral code");
+      }
+
+      // Check if link is active
+      if (!link.isActive) {
+        return badRequestResponse("This referral link is no longer active");
+      }
+
+      // Check expiry
+      if (link.expiresAt && new Date(link.expiresAt) < new Date()) {
+        return badRequestResponse("This referral link has expired");
+      }
+
+      // FR57/FR58: Check max uses (single-use by default if maxUses is 1)
+      if (link.maxUses && link.conversionCount >= link.maxUses) {
+        return badRequestResponse(
+          "This referral link has already been used the maximum number of times"
+        );
+      }
+
+      inviteValid = true;
+      resolvedInviteLinkId = link.id;
+
+      // FR50: Auto-assign role from the link
+      if (link.assignRole) {
+        assignedRole = link.assignRole;
+      }
+
+      // Resolve organizational context from the link's target
+      switch (link.type) {
+        case "CAMPUS": {
+          assignedCampusId = link.targetId;
+          break;
+        }
+        case "ZONE": {
+          assignedZoneId = link.targetId;
+          break;
+        }
+        case "DEPARTMENT": {
+          assignedDepartmentId = link.targetId;
+          break;
+        }
+        case "SMALL_GROUP": {
+          const group = groupDb.findById(link.targetId);
+          if (group) {
+            assignedGroupId = group.id;
+            assignedCampusId = group.campusId;
+            assignedZoneId = group.zoneId;
+            assignedDepartmentId = group.departmentId;
+          }
+          break;
+        }
+        case "CELL": {
+          const cell = cellDb.findById(link.targetId);
+          if (cell) {
+            assignedCellId = cell.id;
+            assignedGroupId = cell.groupId;
+            assignedCampusId = cell.campusId;
+            assignedZoneId = cell.zoneId;
+            assignedDepartmentId = cell.departmentId;
+          }
+          break;
+        }
+      }
+
+      // Inherit remaining context from inviter
+      const inviter = userDb.findById(link.createdById);
+      if (inviter) {
+        if (!assignedCampusId) assignedCampusId = inviter.campusId;
+        if (!assignedZoneId) assignedZoneId = inviter.zoneId;
+        if (!assignedDepartmentId)
+          assignedDepartmentId = inviter.departmentId;
+      }
+    } else if (data.inviteCode) {
+      // ── Legacy group/cell invite code registration ─────────────────────
       if (data.groupId) {
         const group = groupDb.findById(data.groupId);
 
@@ -58,7 +142,6 @@ export async function POST(request: NextRequest) {
           assignedZoneId = group.zoneId;
           assignedDepartmentId = group.departmentId;
 
-          // Check if this is a leader invite OR if the group has no leader
           if (
             data.inviteType === UserRole.SMALL_GROUP_LEADER ||
             !group.leaderId
@@ -68,9 +151,7 @@ export async function POST(request: NextRequest) {
         } else {
           return badRequestResponse("Invalid invite code for group");
         }
-      }
-      // Check if invite code is for a cell
-      else if (data.cellId) {
+      } else if (data.cellId) {
         const cell = cellDb.findById(data.cellId);
 
         if (cell && cell.inviteCode === data.inviteCode) {
@@ -81,7 +162,6 @@ export async function POST(request: NextRequest) {
           assignedZoneId = cell.zoneId;
           assignedDepartmentId = cell.departmentId;
 
-          // Check if this is a leader invite OR if the cell has no leader
           if (
             data.inviteType === UserRole.SMALL_GROUP_LEADER ||
             !cell.leaderId
@@ -91,13 +171,10 @@ export async function POST(request: NextRequest) {
         } else {
           return badRequestResponse("Invalid invite code for cell");
         }
-      }
-      // Check if it's a user invite code
-      else {
+      } else {
         const inviter = userDb.findByInviteCode(data.inviteCode);
         if (inviter) {
           inviteValid = true;
-          // Inherit organizational context from inviter
           assignedCampusId = inviter.campusId;
           assignedZoneId = inviter.zoneId;
           assignedDepartmentId = inviter.departmentId;
@@ -151,6 +228,37 @@ export async function POST(request: NextRequest) {
       const cell = cellDb.findById(assignedCellId);
       if (cell && !cell.leaderId) {
         cellDb.update(assignedCellId, { leaderId: newUser.id });
+      }
+    }
+
+    // ── Track referral conversion (FR57/FR58) ────────────────────────────
+    if (resolvedInviteLinkId) {
+      // Increment conversion count on the link
+      inviteLinkDb.incrementConversion(resolvedInviteLinkId);
+
+      // Find the most recent visit for this link and mark as converted
+      const visits = inviteLinkVisitDb.findAll({
+        inviteLinkId: resolvedInviteLinkId,
+      });
+      const latestUnconverted = visits
+        .filter((v) => !v.converted)
+        .sort(
+          (a, b) =>
+            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        )[0];
+
+      if (latestUnconverted) {
+        inviteLinkVisitDb.markConverted(latestUnconverted.id, newUser.id);
+      }
+
+      // FR58: If the link is single-use (maxUses === 1), deactivate it
+      const updatedLink = inviteLinkDb.findById(resolvedInviteLinkId);
+      if (
+        updatedLink &&
+        updatedLink.maxUses &&
+        updatedLink.conversionCount >= updatedLink.maxUses
+      ) {
+        inviteLinkDb.update(resolvedInviteLinkId, { isActive: false });
       }
     }
 

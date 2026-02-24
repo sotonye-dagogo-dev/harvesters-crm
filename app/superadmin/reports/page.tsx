@@ -81,6 +81,11 @@ function SuperadminReportsPageContent() {
       if (filters.campusId) params.set("campusId", filters.campusId);
       if (filters.templateId) params.set("templateId", filters.templateId);
       if (filters.groupId) params.set("groupId", filters.groupId);
+      if (filters.search) params.set("search", filters.search);
+      if (filters.dateRange) {
+        params.set("dateFrom", filters.dateRange[0]);
+        params.set("dateTo", filters.dateRange[1]);
+      }
 
       const response = await fetch(`/api/reports?${params.toString()}`);
       if (!response.ok) throw new Error("Failed to fetch reports");
@@ -205,7 +210,10 @@ function SuperadminReportsPageContent() {
     {
       title: "Data Entry",
       key: "dataEntry",
-      render: (_, r) => (r.isDataEntry ? <StatusBadge status="DATA_ENTRY" category="role" label="DE" /> : null),
+      render: (_, r) =>
+        r.isDataEntry ? (
+          <StatusBadge status="DATA_ENTRY" category="role" label="DE" />
+        ) : null,
       width: 80,
     },
   ];
@@ -257,7 +265,11 @@ function SuperadminReportsPageContent() {
             )}
           </div>
           <Space>
-            <Button variant="secondary" icon={<ReloadOutlined />} onClick={fetchReports}>
+            <Button
+              variant="secondary"
+              icon={<ReloadOutlined />}
+              onClick={fetchReports}
+            >
               Refresh
             </Button>
             <Button

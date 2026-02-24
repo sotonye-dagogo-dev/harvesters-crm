@@ -135,6 +135,7 @@ export const registerSchema = z
     invitedById: z.string().optional(),
     inviteCode: z.string().optional(),
     inviteType: z.string().optional(),
+    referralCode: z.string().optional(),
   })
   .refine(
     (data) => !data.confirmPassword || data.password === data.confirmPassword,
@@ -527,12 +528,13 @@ export const membershipRequestFiltersSchema = z.object({
 
 const reportMetricInputSchema = z.object({
   templateMetricId: z.string().min(1, "Template metric ID is required"),
-  metricName: z.string().min(1, "Metric name is required"),
-  fieldType: z.nativeEnum(MetricFieldType),
+  metricName: z.string().optional().default(""),
+  fieldType: z.nativeEnum(MetricFieldType).optional().default(MetricFieldType.NUMBER),
   monthlyGoal: z.number().optional(),
   monthlyAchieved: z.number().optional(),
   yoyGoal: z.number().optional(),
-  order: z.number().int().min(0),
+  textValue: z.string().optional(),
+  order: z.number().int().min(0).optional().default(0),
 });
 
 const reportSectionInputSchema = z.object({
@@ -549,10 +551,12 @@ export const createReportSchema = z.object({
   periodType: z.nativeEnum(ReportPeriodType),
   periodYear: z.number().int().min(2020).max(2100),
   periodMonth: z.number().int().min(1).max(12),
-  periodWeek: z.number().int().min(1).max(5).optional(),
+  periodWeek: z.number().int().min(1).max(53).optional(),
   deadline: z.string().optional(),
   isDataEntry: z.boolean().default(false),
   dataEntryDate: z.string().optional(),
+  dataEntryById: z.string().optional(),
+  submittedById: z.string().optional(),
   notes: z.string().max(2000).optional(),
   sections: z.array(reportSectionInputSchema).default([]),
 });
@@ -561,6 +565,9 @@ export const updateReportSchema = z.object({
   notes: z.string().max(2000).optional(),
   sections: z.array(reportSectionInputSchema).optional(),
 });
+
+// Re-export the metric schema for reuse by edit schemas
+export type ReportMetricInput = z.infer<typeof reportMetricInputSchema>;
 
 export const reportFiltersSchema = z.object({
   campusId: z.string().optional(),

@@ -12,11 +12,10 @@ export function ThemeToggle() {
   const toggleDarkClass = (isDark: boolean) => {
     if (isDark) {
       document.body.classList.add("dark");
-      // set @media (prefer-color-scheme) and style color scheme to dark
-      document.body.style.colorScheme = "dark";
+      // set @media (prefer-color-scheme) and style color scheme to dark  document.body.style.colorScheme = "dark";
     } else {
       document.body.classList.remove("dark");
-      document.body.style.colorScheme = "light";
+      // document.body.style.colorScheme = "light";
     }
   };
 

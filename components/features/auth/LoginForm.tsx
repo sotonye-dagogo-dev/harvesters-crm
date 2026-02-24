@@ -27,10 +27,10 @@ const DEV_CREDENTIALS = [
   { role: "Group Admin", email: "group.admin@harvestersng.org", password: "GroupAdmin@123", color: "orange" },
   { role: "Campus Pastor", email: "lekki.pastor@harvestersng.org", password: "Pastor@123", color: "gold" },
   { role: "Campus Admin", email: "lekki.admin@harvestersng.org", password: "Campus@123", color: "lime" },
-  { role: "Zonal Leader", email: "zone.lagos@harvestersng.org", password: "Zonal@123", color: "green" },
+  /* { role: "Zonal Leader", email: "zone.lagos@harvestersng.org", password: "Zonal@123", color: "green" },
   { role: "HOD", email: "hod.youth@harvestersng.org", password: "Hod@1234", color: "cyan" },
   { role: "SG Leader", email: "sgl.youthfire@harvestersng.org", password: "Leader@123", color: "blue" },
-  { role: "Cell Leader", email: "cell.spark@harvestersng.org", password: "CellLd@123", color: "geekblue" },
+  { role: "Cell Leader", email: "cell.spark@harvestersng.org", password: "CellLd@123", color: "geekblue" }, */
   { role: "Data Entry", email: "dataentry1@harvestersng.org", password: "DataEntry@123", color: "purple" },
   { role: "Member", email: "samuel.ojo@email.com", password: "Member@123", color: "magenta" },
 ] as const;

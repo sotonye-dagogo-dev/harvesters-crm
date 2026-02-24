@@ -26,6 +26,7 @@ import {
   TeamOutlined,
   CheckCircleOutlined,
   SearchOutlined,
+  LinkOutlined,
 } from "@ant-design/icons";
 import Link from "next/link";
 import { useAuth } from "@/providers/AuthProvider";
@@ -108,6 +109,11 @@ export default function RegisterForm() {
   const inviteCode = searchParams.get("inviteCode");
   const inviteType = searchParams.get("type"); // "leader" or "member"
 
+  // Referral link parameters from URL (from /join/[code] landing page)
+  const referralCode = searchParams.get("referralCode");
+  const assignedRole = searchParams.get("assignedRole");
+  const referralLinkType = searchParams.get("linkType");
+
   // Group suggestions
   const [groupSuggestions, setGroupSuggestions] = useState<GroupSuggestion[]>(
     []
@@ -148,8 +154,10 @@ export default function RegisterForm() {
 
   // Determine steps based on invite status
   const hasInvite = !!(inviteGroupId && inviteCode);
+  const hasReferral = !!referralCode;
+  const skipGroupStep = hasInvite || hasReferral;
 
-  const steps = hasInvite
+  const steps = skipGroupStep
     ? [
         { title: "Account", content: "Login credentials" },
         { title: "Personal", content: "Basic information" },
@@ -164,7 +172,7 @@ export default function RegisterForm() {
 
   // Fetch group suggestions when reaching the group step (only if no invite)
   const fetchGroupSuggestions = async () => {
-    if (hasInvite) return; // Skip if user has invite link
+    if (skipGroupStep) return; // Skip if user has invite link or referral
 
     const formValues = form.getFieldsValue();
     const location = formValues.address || "";
@@ -252,7 +260,7 @@ export default function RegisterForm() {
       await form.validateFields(fieldsToValidate);
 
       // Fetch suggestions when moving to group step
-      if (currentStep === 2 && !hasInvite) {
+      if (currentStep === 2 && !skipGroupStep) {
         await fetchGroupSuggestions();
       }
 
@@ -269,7 +277,7 @@ export default function RegisterForm() {
   };
 
   const getStepFields = (step: number): string[] => {
-    if (hasInvite) {
+    if (skipGroupStep) {
       // Without group selection step
       switch (step) {
         case 0:
@@ -370,12 +378,16 @@ export default function RegisterForm() {
             inviteCode,
             inviteType,
           }),
+        // Include referral code if present (from /join/[code])
+        ...(referralCode && {
+          referralCode,
+        }),
       };
 
       await register(registrationData);
 
-      // If user selected a group or cell (without invite), create membership request
-      if (!hasInvite && selectedGroupForRequest) {
+      // If user selected a group or cell (without invite/referral), create membership request
+      if (!skipGroupStep && selectedGroupForRequest) {
         try {
           const requestBody: Record<string, string> = {
             type: "JOIN",
@@ -967,6 +979,22 @@ export default function RegisterForm() {
         />
       )}
 
+      {/* Referral Banner */}
+      {hasReferral && !inviteGroupName && (
+        <Alert
+          message="You're registering via a referral link"
+          description={
+            assignedRole
+              ? `You will be assigned the role of ${assignedRole.replace(/_/g, " ").toLowerCase()} after registration.${referralLinkType ? ` Link type: ${referralLinkType.replace(/_/g, " ")}` : ""}`
+              : "Your role and group will be automatically assigned based on the referral link."
+          }
+          type="info"
+          showIcon
+          icon={<LinkOutlined />}
+          className="mb-6"
+        />
+      )}
+
       <Steps current={currentStep} items={steps} className="mb-8" />
 
       {error && (
@@ -997,7 +1025,7 @@ export default function RegisterForm() {
         <div className={currentStep === 2 ? "block" : "hidden"}>
           {renderStepContent(2)}
         </div>
-        {!hasInvite && (
+        {!skipGroupStep && (
           <div className={currentStep === 3 ? "block" : "hidden"}>
             {renderStepContent(3)}
           </div>

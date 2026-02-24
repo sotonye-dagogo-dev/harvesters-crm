@@ -180,14 +180,20 @@ export default function ReportDataEntryView({
       notes: [dataEntryNotes, formData.notes].filter(Boolean).join("\n\n"),
       sections: formData.sections.map((s) => ({
         templateSectionId: s.templateSectionId,
-        sectionName: s.sectionName,
-        order: s.order,
+        sectionName: s.sectionName || "Unnamed Section",
+        order: s.order ?? 0,
         metrics: s.metrics.map((m) => ({
           templateMetricId: m.templateMetricId,
-          monthlyGoal: m.monthlyGoal,
-          monthlyAchieved: m.monthlyAchieved,
-          yoyGoal: m.yoyGoal,
-          textValue: m.textValue,
+          metricName: m.metricName || "",
+          fieldType: m.fieldType || MetricFieldType.NUMBER,
+          order: m.order ?? 0,
+          ...(m.monthlyGoal !== undefined && { monthlyGoal: m.monthlyGoal }),
+          ...(m.monthlyAchieved !== undefined && {
+            monthlyAchieved: m.monthlyAchieved,
+          }),
+          ...(m.yoyGoal !== undefined && { yoyGoal: m.yoyGoal }),
+          ...(m.textValue !== undefined &&
+            m.textValue !== "" && { textValue: m.textValue }),
         })),
       })),
     };
@@ -201,15 +207,26 @@ export default function ReportDataEntryView({
 
     setSaving(true);
     try {
+      const payload = buildPayload(formData);
       const response = await fetch("/api/reports", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(buildPayload(formData)),
+        body: JSON.stringify(payload),
       });
 
       if (!response.ok) {
         const error = await response.json();
-        throw new Error(error.error || "Failed to create report");
+        const errorMsg = error.error || "Failed to create report";
+        if (errorMsg.includes(",")) {
+          message.error({
+            content: "Validation failed. Please check your report data.",
+            duration: 5,
+          });
+          console.error("API validation errors:", errorMsg);
+        } else {
+          message.error(errorMsg);
+        }
+        return;
       }
 
       const data = await response.json();
@@ -230,15 +247,27 @@ export default function ReportDataEntryView({
 
     setSaving(true);
     try {
+      const payload = buildPayload(formData);
       const createResponse = await fetch("/api/reports", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(buildPayload(formData)),
+        body: JSON.stringify(payload),
       });
 
       if (!createResponse.ok) {
         const error = await createResponse.json();
-        throw new Error(error.error || "Failed to create report");
+        const errorMsg = error.error || "Failed to create report";
+        if (errorMsg.includes(",")) {
+          message.error({
+            content:
+              "Validation failed. Please review the report and try again.",
+            duration: 5,
+          });
+          console.error("API validation errors:", errorMsg);
+        } else {
+          message.error(errorMsg);
+        }
+        return;
       }
 
       const createData = await createResponse.json();
@@ -425,6 +454,7 @@ export default function ReportDataEntryView({
       {/* Report Form */}
       {selectedTemplate ? (
         <ReportForm
+          key={selectedTemplateId}
           templateSections={selectedTemplate.sections}
           templateName={selectedTemplate.name}
           onSaveDraft={handleSaveDraft}

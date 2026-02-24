@@ -55,8 +55,12 @@ export default function LeaderReportsPage() {
   const [page, setPage] = useState(1);
   const [pageSize] = useState(20);
   const [filters, setFilters] = useState<ReportFilters>({});
-  const [campuses, setCampuses] = useState<Array<{ id: string; name: string }>>([]);
-  const [templates, setTemplates] = useState<Array<{ id: string; name: string }>>([]);
+  const [campuses, setCampuses] = useState<Array<{ id: string; name: string }>>(
+    []
+  );
+  const [templates, setTemplates] = useState<
+    Array<{ id: string; name: string }>
+  >([]);
 
   const roleConfig = role ? getRoleConfig(role) : null;
   const canCreate = roleConfig?.canCreateReports ?? false;
@@ -72,6 +76,11 @@ export default function LeaderReportsPage() {
       if (filters.periodType) params.set("periodType", filters.periodType);
       if (filters.campusId) params.set("campusId", filters.campusId);
       if (filters.templateId) params.set("templateId", filters.templateId);
+      if (filters.search) params.set("search", filters.search);
+      if (filters.dateRange) {
+        params.set("dateFrom", filters.dateRange[0]);
+        params.set("dateTo", filters.dateRange[1]);
+      }
 
       const response = await fetch(`/api/reports?${params.toString()}`);
       if (!response.ok) throw new Error("Failed to fetch reports");
@@ -108,10 +117,12 @@ export default function LeaderReportsPage() {
         if (templateRes.ok) {
           const templateData = await templateRes.json();
           setTemplates(
-            (templateData.data || []).map((t: { id: string; name: string }) => ({
-              id: t.id,
-              name: t.name,
-            }))
+            (templateData.data || []).map(
+              (t: { id: string; name: string }) => ({
+                id: t.id,
+                name: t.name,
+              })
+            )
           );
         }
       } catch {
@@ -143,7 +154,9 @@ export default function LeaderReportsPage() {
         </div>
       ),
       sorter: (a, b) =>
-        a.periodYear * 100 + a.periodMonth - (b.periodYear * 100 + b.periodMonth),
+        a.periodYear * 100 +
+        a.periodMonth -
+        (b.periodYear * 100 + b.periodMonth),
     },
     {
       title: "Template",
@@ -213,7 +226,11 @@ export default function LeaderReportsPage() {
           </div>
 
           <Space>
-            <Button variant="secondary" icon={<ReloadOutlined />} onClick={fetchReports}>
+            <Button
+              variant="secondary"
+              icon={<ReloadOutlined />}
+              onClick={fetchReports}
+            >
               Refresh
             </Button>
             {canCreate && (
