@@ -1,6 +1,7 @@
 "use client";
 
-import { Card, Empty, Tooltip } from "antd";
+import { Empty, Tooltip } from "antd";
+import Card from "@/components/ui/Card";
 
 interface HeatmapData {
   day: string;
@@ -49,14 +50,14 @@ export default function EngagementHeatmap({
 
   // Get color intensity based on value
   const getColorIntensity = (value: number) => {
-    if (value === 0) return "bg-gray-100 dark:bg-gray-800";
+    if (value === 0) return "bg-ds-surface-sunken";
     const intensity = (value / maxValue) * 100;
 
-    if (intensity < 20) return "bg-indigo-200 dark:bg-indigo-900/40";
-    if (intensity < 40) return "bg-indigo-300 dark:bg-indigo-800/60";
-    if (intensity < 60) return "bg-indigo-400 dark:bg-indigo-700/80";
-    if (intensity < 80) return "bg-indigo-500 dark:bg-indigo-600";
-    return "bg-indigo-600 dark:bg-indigo-500";
+    if (intensity < 20) return "bg-ds-brand-accent/40 dark:bg-ds-brand-accent/40";
+    if (intensity < 40) return "bg-ds-brand-accent/60 dark:bg-ds-brand-accent/60";
+    if (intensity < 60) return "bg-ds-brand-accent dark:bg-ds-brand-accent/80";
+    if (intensity < 80) return "bg-ds-brand-accent dark:bg-ds-brand-accent";
+    return "bg-ds-brand-accent dark:bg-ds-brand-accent";
   };
 
   // Get data point for specific day and hour
@@ -83,7 +84,7 @@ export default function EngagementHeatmap({
             {hours.map((hour) => (
               <div
                 key={hour}
-                className="flex-1 text-xs text-center text-gray-500 dark:text-gray-400"
+                className="flex-1 text-xs text-center text-ds-text-subtle"
               >
                 {hour % 4 === 0 && formatHour(hour)}
               </div>
@@ -94,7 +95,7 @@ export default function EngagementHeatmap({
           {days.map((day) => (
             <div key={day} className="flex items-center mb-1">
               {/* Day label */}
-              <div className="w-12 text-sm text-gray-600 dark:text-gray-400 font-medium">
+              <div className="w-12 text-sm text-ds-text-secondary font-medium">
                 {day}
               </div>
 
@@ -109,7 +110,7 @@ export default function EngagementHeatmap({
                     <div
                       className={`flex-1 aspect-square rounded ${getColorIntensity(
                         value
-                      )} hover:ring-2 hover:ring-indigo-500 transition-all cursor-pointer mx-0.5`}
+                      )} hover:ring-2 hover:ring-ds-brand-accent transition-all cursor-pointer mx-0.5`}
                     />
                   </Tooltip>
                 );
@@ -119,18 +120,18 @@ export default function EngagementHeatmap({
 
           {/* Legend */}
           <div className="flex items-center justify-center mt-6 gap-2">
-            <span className="text-xs text-gray-500 dark:text-gray-400">
+            <span className="text-xs text-ds-text-subtle">
               Less
             </span>
             <div className="flex gap-1">
-              <div className="w-4 h-4 rounded bg-gray-100 dark:bg-gray-800" />
-              <div className="w-4 h-4 rounded bg-indigo-200 dark:bg-indigo-900/40" />
-              <div className="w-4 h-4 rounded bg-indigo-300 dark:bg-indigo-800/60" />
-              <div className="w-4 h-4 rounded bg-indigo-400 dark:bg-indigo-700/80" />
-              <div className="w-4 h-4 rounded bg-indigo-500 dark:bg-indigo-600" />
-              <div className="w-4 h-4 rounded bg-indigo-600 dark:bg-indigo-500" />
+              <div className="w-4 h-4 rounded bg-ds-surface-sunken" />
+              <div className="w-4 h-4 rounded bg-ds-brand-accent/40 dark:bg-ds-brand-accent/40" />
+              <div className="w-4 h-4 rounded bg-ds-brand-accent/60 dark:bg-ds-brand-accent/60" />
+              <div className="w-4 h-4 rounded bg-ds-brand-accent dark:bg-ds-brand-accent/80" />
+              <div className="w-4 h-4 rounded bg-ds-brand-accent dark:bg-ds-brand-accent" />
+              <div className="w-4 h-4 rounded bg-ds-brand-accent dark:bg-ds-brand-accent" />
             </div>
-            <span className="text-xs text-gray-500 dark:text-gray-400">
+            <span className="text-xs text-ds-text-subtle">
               More
             </span>
           </div>

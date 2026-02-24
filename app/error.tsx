@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect } from "react";
-import { Button, Result } from "antd";
+import { Result } from "antd";
+import Button from "@/components/ui/Button";
 import { ReloadOutlined, HomeOutlined } from "@ant-design/icons";
 import Link from "next/link";
 
@@ -18,7 +19,7 @@ export default function Error({
   }, [error]);
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-church-primary/5 to-church-accent/5 p-4">
+    <div className="min-h-screen flex items-center justify-center bg-ds-surface-base p-4">
       <Result
         status="500"
         title="500"
@@ -26,7 +27,6 @@ export default function Error({
         extra={
           <div className="flex gap-4 justify-center">
             <Button
-              type="primary"
               size="large"
               icon={<ReloadOutlined />}
               onClick={reset}
@@ -34,7 +34,7 @@ export default function Error({
               Try Again
             </Button>
             <Link href="/">
-              <Button size="large" icon={<HomeOutlined />}>
+              <Button variant="secondary" size="large" icon={<HomeOutlined />}>
                 Go Home
               </Button>
             </Link>
@@ -42,16 +42,16 @@ export default function Error({
         }
       >
         {process.env.NODE_ENV === "development" && (
-          <div className="mt-8 p-4 bg-red-50 border border-red-200 rounded-lg text-left max-w-2xl mx-auto">
-            <p className="text-sm font-mono text-red-900 whitespace-pre-wrap break-words">
+          <div className="mt-8 p-4 bg-ds-surface-sunken border border-ds-status-error/30 rounded-[var(--ds-radius-lg)] text-left max-w-2xl mx-auto">
+            <p className="text-sm font-mono text-ds-status-error whitespace-pre-wrap break-words">
               {error.message}
             </p>
             {error.stack && (
               <details className="mt-4">
-                <summary className="cursor-pointer text-sm font-semibold text-red-800">
+                <summary className="cursor-pointer text-sm font-semibold text-ds-status-error">
                   Stack Trace
                 </summary>
-                <pre className="mt-2 text-xs text-red-700 overflow-auto">
+                <pre className="mt-2 text-xs text-ds-status-error/80 overflow-auto">
                   {error.stack}
                 </pre>
               </details>

@@ -52,6 +52,10 @@ export async function GET(request: NextRequest) {
 
     // Calculate statistics
     const activeUsers = allUsers.filter((u) => u.isActive).length;
+    const memberRoleUsers = allUsers.filter(
+      (u) => u.role === "MEMBER" || u.role === "SMALL_GROUP_LEADER" || u.role === "CELL_LEADER"
+    );
+    const totalMembers = memberRoleUsers.length;
     const activeGroups = allGroups.length; // All groups are active
     const totalMeetings = meetings.length;
     const totalInteractions = interactions.length;
@@ -107,6 +111,7 @@ export async function GET(request: NextRequest) {
     return successResponse({
       overview: {
         totalUsers: allUsers.length,
+        totalMembers,
         activeUsers,
         totalGroups: allGroups.length,
         activeGroups,

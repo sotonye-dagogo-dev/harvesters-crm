@@ -1,10 +1,9 @@
 "use client";
 
 import { UserRole, Gender, EmploymentStatus, MaritalStatus } from "@/lib/types";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import {
   Form,
-  Input,
   Button,
   Card,
   Typography,
@@ -16,7 +15,9 @@ import {
   Spin,
   Tag,
   Empty,
+  Divider,
 } from "antd";
+import Input, { PasswordInput, TextArea } from "@/components/ui/Input";
 import {
   UserOutlined,
   MailOutlined,
@@ -24,6 +25,8 @@ import {
   PhoneOutlined,
   TeamOutlined,
   CheckCircleOutlined,
+  SearchOutlined,
+  LinkOutlined,
 } from "@ant-design/icons";
 import Link from "next/link";
 import { useAuth } from "@/providers/AuthProvider";
@@ -45,6 +48,20 @@ interface GroupSuggestion {
   } | null;
   matchReasons: string[];
   score: number;
+}
+
+interface LeaderSearchResult {
+  type: "cell" | "group";
+  id: string;
+  name: string;
+  description: string;
+  memberCount: number;
+  meetingFrequency: string;
+  parentGroupName: string | null;
+  leader: {
+    id: string;
+    name: string;
+  };
 }
 
 interface RegisterFormValues {
@@ -92,6 +109,11 @@ export default function RegisterForm() {
   const inviteCode = searchParams.get("inviteCode");
   const inviteType = searchParams.get("type"); // "leader" or "member"
 
+  // Referral link parameters from URL (from /join/[code] landing page)
+  const referralCode = searchParams.get("referralCode");
+  const assignedRole = searchParams.get("assignedRole");
+  const referralLinkType = searchParams.get("linkType");
+
   // Group suggestions
   const [groupSuggestions, setGroupSuggestions] = useState<GroupSuggestion[]>(
     []
@@ -101,6 +123,18 @@ export default function RegisterForm() {
     string | null
   >(null);
   const [inviteGroupName, setInviteGroupName] = useState<string | null>(null);
+
+  // Cell leader search
+  const [leaderSearchQuery, setLeaderSearchQuery] = useState("");
+  const [leaderSearchResults, setLeaderSearchResults] = useState<
+    LeaderSearchResult[]
+  >([]);
+  const [searchingLeader, setSearchingLeader] = useState(false);
+  const [selectedLeaderResult, setSelectedLeaderResult] =
+    useState<LeaderSearchResult | null>(null);
+  const leaderSearchTimeout = useRef<ReturnType<typeof setTimeout> | null>(
+    null
+  );
 
   // Check if invitation is valid
   useEffect(() => {
@@ -120,8 +154,10 @@ export default function RegisterForm() {
 
   // Determine steps based on invite status
   const hasInvite = !!(inviteGroupId && inviteCode);
+  const hasReferral = !!referralCode;
+  const skipGroupStep = hasInvite || hasReferral;
 
-  const steps = hasInvite
+  const steps = skipGroupStep
     ? [
         { title: "Account", content: "Login credentials" },
         { title: "Personal", content: "Basic information" },
@@ -136,7 +172,7 @@ export default function RegisterForm() {
 
   // Fetch group suggestions when reaching the group step (only if no invite)
   const fetchGroupSuggestions = async () => {
-    if (hasInvite) return; // Skip if user has invite link
+    if (skipGroupStep) return; // Skip if user has invite link or referral
 
     const formValues = form.getFieldsValue();
     const location = formValues.address || "";
@@ -163,6 +199,60 @@ export default function RegisterForm() {
     }
   };
 
+  // Debounced leader search
+  const searchByLeader = useCallback(async (query: string) => {
+    if (query.trim().length < 2) {
+      setLeaderSearchResults([]);
+      return;
+    }
+
+    setSearchingLeader(true);
+    try {
+      const res = await fetch(
+        `/api/cells/search-by-leader?query=${encodeURIComponent(query.trim())}`
+      );
+      const result = await res.json();
+      if (result.success) {
+        setLeaderSearchResults(result.data.results || []);
+      }
+    } catch (err) {
+      console.error("Leader search failed:", err);
+    } finally {
+      setSearchingLeader(false);
+    }
+  }, []);
+
+  const handleLeaderSearchChange = (value: string) => {
+    setLeaderSearchQuery(value);
+    // Clear previous timeout
+    if (leaderSearchTimeout.current) {
+      clearTimeout(leaderSearchTimeout.current);
+    }
+    // Debounce the search
+    leaderSearchTimeout.current = setTimeout(() => {
+      searchByLeader(value);
+    }, 400);
+  };
+
+  const handleSelectLeaderResult = (result: LeaderSearchResult) => {
+    setSelectedLeaderResult(result);
+    // Also set as the selected group for the membership request
+    setSelectedGroupForRequest(result.id);
+  };
+
+  const clearLeaderSelection = () => {
+    setSelectedLeaderResult(null);
+    setLeaderSearchQuery("");
+    setLeaderSearchResults([]);
+    // Only clear group selection if it came from leader search
+    if (
+      selectedLeaderResult &&
+      selectedGroupForRequest === selectedLeaderResult.id
+    ) {
+      setSelectedGroupForRequest(null);
+    }
+  };
+
   const next = async () => {
     try {
       // Validate current step fields
@@ -170,7 +260,7 @@ export default function RegisterForm() {
       await form.validateFields(fieldsToValidate);
 
       // Fetch suggestions when moving to group step
-      if (currentStep === 2 && !hasInvite) {
+      if (currentStep === 2 && !skipGroupStep) {
         await fetchGroupSuggestions();
       }
 
@@ -187,7 +277,7 @@ export default function RegisterForm() {
   };
 
   const getStepFields = (step: number): string[] => {
-    if (hasInvite) {
+    if (skipGroupStep) {
       // Without group selection step
       switch (step) {
         case 0:
@@ -288,20 +378,32 @@ export default function RegisterForm() {
             inviteCode,
             inviteType,
           }),
+        // Include referral code if present (from /join/[code])
+        ...(referralCode && {
+          referralCode,
+        }),
       };
 
       await register(registrationData);
 
-      // If user selected a group (without invite), create membership request
-      if (!hasInvite && selectedGroupForRequest) {
+      // If user selected a group or cell (without invite/referral), create membership request
+      if (!skipGroupStep && selectedGroupForRequest) {
         try {
+          const requestBody: Record<string, string> = {
+            type: "JOIN",
+          };
+
+          // If selected from leader search and it's a cell, send cellId
+          if (selectedLeaderResult?.type === "cell") {
+            requestBody.cellId = selectedGroupForRequest;
+          } else {
+            requestBody.groupId = selectedGroupForRequest;
+          }
+
           await fetch("/api/membership-requests", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              groupId: selectedGroupForRequest,
-              type: "JOIN",
-            }),
+            body: JSON.stringify(requestBody),
           });
         } catch (err) {
           console.error("Failed to create membership request:", err);
@@ -337,7 +439,7 @@ export default function RegisterForm() {
               ]}
             >
               <Input
-                prefix={<MailOutlined className="text-gray-400" />}
+                prefix={<MailOutlined className="text-ds-text-subtle" />}
                 placeholder="your.email@example.com"
                 autoComplete="email"
               />
@@ -360,8 +462,8 @@ export default function RegisterForm() {
                 },
               ]}
             >
-              <Input.Password
-                prefix={<LockOutlined className="text-gray-400" />}
+              <PasswordInput
+                prefix={<LockOutlined className="text-ds-text-subtle" />}
                 placeholder="Create a strong password"
                 autoComplete="new-password"
               />
@@ -383,8 +485,8 @@ export default function RegisterForm() {
                 }),
               ]}
             >
-              <Input.Password
-                prefix={<LockOutlined className="text-gray-400" />}
+              <PasswordInput
+                prefix={<LockOutlined className="text-ds-text-subtle" />}
                 placeholder="Re-enter your password"
                 autoComplete="new-password"
               />
@@ -404,7 +506,7 @@ export default function RegisterForm() {
                 ]}
               >
                 <Input
-                  prefix={<UserOutlined className="text-gray-400" />}
+                  prefix={<UserOutlined className="text-ds-text-subtle" />}
                   placeholder="John"
                 />
               </Form.Item>
@@ -417,7 +519,7 @@ export default function RegisterForm() {
                 ]}
               >
                 <Input
-                  prefix={<UserOutlined className="text-gray-400" />}
+                  prefix={<UserOutlined className="text-ds-text-subtle" />}
                   placeholder="Doe"
                 />
               </Form.Item>
@@ -435,7 +537,7 @@ export default function RegisterForm() {
               ]}
             >
               <Input
-                prefix={<PhoneOutlined className="text-gray-400" />}
+                prefix={<PhoneOutlined className="text-ds-text-subtle" />}
                 placeholder="+2349015678900"
               />
             </Form.Item>
@@ -490,7 +592,7 @@ export default function RegisterForm() {
                   disabledDate={(current) =>
                     current && current > dayjs().subtract(13, "years")
                   }
-                  format="YYYY-MM-DD"
+                  format="D MMM YYYY"
                 />
               </Form.Item>
 
@@ -513,7 +615,7 @@ export default function RegisterForm() {
               name="address"
               rules={[{ required: true, message: "Please enter your address" }]}
             >
-              <Input.TextArea
+              <TextArea
                 placeholder="123 Main Street, City, State, ZIP"
                 rows={3}
               />
@@ -595,7 +697,7 @@ export default function RegisterForm() {
                 I agree to the{" "}
                 <Link
                   href="/terms"
-                  className="text-church-primary hover:text-church-primary/80"
+                  className="text-ds-brand-accent hover:text-ds-brand-accent-hover"
                   target="_blank"
                 >
                   Terms of Service
@@ -603,7 +705,7 @@ export default function RegisterForm() {
                 and{" "}
                 <Link
                   href="/privacy"
-                  className="text-church-primary hover:text-church-primary/80"
+                  className="text-ds-brand-accent hover:text-ds-brand-accent-hover"
                   target="_blank"
                 >
                   Privacy Policy
@@ -618,77 +720,228 @@ export default function RegisterForm() {
         return (
           <>
             <div className="text-center mb-6">
-              <TeamOutlined className="text-5xl text-church-primary mb-2" />
-              <Title level={4}>Join a Small Group</Title>
+              <TeamOutlined className="text-5xl text-ds-brand-accent mb-2" />
+              <Title level={4}>Join a Group</Title>
               <Text type="secondary">
-                Select a group that matches your interests and location
-                (optional)
+                Search for your cell leader by name or choose from suggested
+                groups (optional)
               </Text>
             </div>
 
-            {loadingSuggestions ? (
-              <div className="text-center py-8">
-                <Spin size="large" tip="Finding groups for you..." />
-              </div>
-            ) : groupSuggestions.length > 0 ? (
-              <div className="space-y-4">
-                {groupSuggestions.map((suggestion) => (
-                  <Card
-                    key={suggestion.id}
-                    hoverable
-                    className={`cursor-pointer transition-all ${
-                      selectedGroupForRequest === suggestion.id
-                        ? "border-church-primary border-2 bg-church-primary/5"
-                        : "border-gray-200"
-                    }`}
-                    onClick={() => setSelectedGroupForRequest(suggestion.id)}
-                  >
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-2">
-                          <Text strong className="text-lg">
-                            {suggestion.name}
-                          </Text>
-                          {selectedGroupForRequest === suggestion.id && (
-                            <CheckCircleOutlined className="text-church-primary text-xl" />
-                          )}
-                        </div>
-                        <Text type="secondary" className="block mb-2">
-                          {suggestion.description}
-                        </Text>
-                        <div className="flex flex-wrap gap-2 mb-2">
-                          {suggestion.matchReasons.map((reason, idx) => (
-                            <Tag key={idx} color="blue">
-                              {reason}
-                            </Tag>
-                          ))}
-                        </div>
-                        <div className="flex items-center gap-4 text-sm text-gray-600">
-                          <span>
-                            <TeamOutlined /> {suggestion.memberCount} members
-                          </span>
-                          <span>{suggestion.meetingFrequency}</span>
-                          {suggestion.leader && (
-                            <span>Led by {suggestion.leader.name}</span>
-                          )}
-                        </div>
+            {/* Leader search section */}
+            <div className="mb-6">
+              <Text strong className="block mb-2">
+                <SearchOutlined className="mr-1" />
+                Search by Leader Name
+              </Text>
+              <Input
+                placeholder="Type your cell leader's name..."
+                value={leaderSearchQuery}
+                onChange={(e) => handleLeaderSearchChange(e.target.value)}
+                prefix={<SearchOutlined className="text-ds-text-subtle" />}
+                allowClear
+                onClear={() => {
+                  setLeaderSearchQuery("");
+                  setLeaderSearchResults([]);
+                }}
+              />
+
+              {searchingLeader && (
+                <div className="text-center py-4">
+                  <Spin size="small" />
+                  <Text type="secondary" className="ml-2">
+                    Searching...
+                  </Text>
+                </div>
+              )}
+
+              {/* Selected leader result */}
+              {selectedLeaderResult && (
+                <Card
+                  size="small"
+                  className="mt-3 border-ds-brand-accent border-2 bg-ds-brand-accent-subtle"
+                >
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <CheckCircleOutlined className="text-ds-brand-accent text-lg" />
+                        <Text strong>{selectedLeaderResult.name}</Text>
+                        <Tag
+                          color={
+                            selectedLeaderResult.type === "cell"
+                              ? "green"
+                              : "blue"
+                          }
+                        >
+                          {selectedLeaderResult.type === "cell"
+                            ? "Cell"
+                            : "Group"}
+                        </Tag>
                       </div>
+                      <Text type="secondary" className="text-sm block mt-1">
+                        Led by {selectedLeaderResult.leader.name}
+                        {selectedLeaderResult.parentGroupName &&
+                          ` · ${selectedLeaderResult.parentGroupName}`}
+                      </Text>
                     </div>
-                  </Card>
-                ))}
+                    <Button
+                      type="link"
+                      size="small"
+                      danger
+                      onClick={clearLeaderSelection}
+                    >
+                      Change
+                    </Button>
+                  </div>
+                </Card>
+              )}
+
+              {/* Search results */}
+              {!selectedLeaderResult &&
+                leaderSearchResults.length > 0 &&
+                leaderSearchQuery.length >= 2 && (
+                  <div className="mt-3 space-y-2">
+                    {leaderSearchResults.map((result) => (
+                      <Card
+                        key={`${result.type}-${result.id}`}
+                        size="small"
+                        hoverable
+                        className="cursor-pointer transition-all border-ds-border-base hover:border-ds-brand-accent"
+                        onClick={() => handleSelectLeaderResult(result)}
+                      >
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-1">
+                              <Text strong>{result.name}</Text>
+                              <Tag
+                                color={
+                                  result.type === "cell" ? "green" : "blue"
+                                }
+                              >
+                                {result.type === "cell" ? "Cell" : "Group"}
+                              </Tag>
+                            </div>
+                            <Text
+                              type="secondary"
+                              className="text-sm block mb-1"
+                            >
+                              {result.description}
+                            </Text>
+                            <div className="flex items-center gap-3 text-xs text-ds-text-secondary">
+                              <span>
+                                Led by <strong>{result.leader.name}</strong>
+                              </span>
+                              <span>
+                                <TeamOutlined /> {result.memberCount} members
+                              </span>
+                              {result.parentGroupName && (
+                                <span>Part of {result.parentGroupName}</span>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      </Card>
+                    ))}
+                  </div>
+                )}
+
+              {/* No results message */}
+              {!selectedLeaderResult &&
+                !searchingLeader &&
+                leaderSearchQuery.length >= 2 &&
+                leaderSearchResults.length === 0 && (
+                  <Text
+                    type="secondary"
+                    className="block mt-2 text-sm text-center"
+                  >
+                    No leaders found matching &ldquo;{leaderSearchQuery}&rdquo;
+                  </Text>
+                )}
+            </div>
+
+            {/* Divider between search and suggestions */}
+            {!selectedLeaderResult && (
+              <>
+                <Divider plain>
+                  <Text type="secondary" className="text-xs">
+                    OR choose from suggested groups
+                  </Text>
+                </Divider>
+
+                {/* Existing group suggestions */}
+                {loadingSuggestions ? (
+                  <div className="text-center py-8">
+                    <Spin size="large" tip="Finding groups for you..." />
+                  </div>
+                ) : groupSuggestions.length > 0 ? (
+                  <div className="space-y-4">
+                    {groupSuggestions.map((suggestion) => (
+                      <Card
+                        key={suggestion.id}
+                        hoverable
+                        className={`cursor-pointer transition-all ${
+                          selectedGroupForRequest === suggestion.id
+                            ? "border-ds-brand-accent border-2 bg-ds-brand-accent-subtle"
+                            : "border-ds-border-base"
+                        }`}
+                        onClick={() => {
+                          setSelectedGroupForRequest(suggestion.id);
+                          setSelectedLeaderResult(null);
+                        }}
+                      >
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-2">
+                              <Text strong className="text-lg">
+                                {suggestion.name}
+                              </Text>
+                              {selectedGroupForRequest === suggestion.id && (
+                                <CheckCircleOutlined className="text-ds-brand-accent text-xl" />
+                              )}
+                            </div>
+                            <Text type="secondary" className="block mb-2">
+                              {suggestion.description}
+                            </Text>
+                            <div className="flex flex-wrap gap-2 mb-2">
+                              {suggestion.matchReasons.map((reason, idx) => (
+                                <Tag key={idx} color="blue">
+                                  {reason}
+                                </Tag>
+                              ))}
+                            </div>
+                            <div className="flex items-center gap-4 text-sm text-ds-text-secondary">
+                              <span>
+                                <TeamOutlined /> {suggestion.memberCount}{" "}
+                                members
+                              </span>
+                              <span>{suggestion.meetingFrequency}</span>
+                              {suggestion.leader && (
+                                <span>Led by {suggestion.leader.name}</span>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      </Card>
+                    ))}
+                  </div>
+                ) : (
+                  <Empty
+                    description="No group suggestions available. You can browse and join groups after registration."
+                    className="py-8"
+                  />
+                )}
+
                 <Button
                   type="link"
-                  onClick={() => setSelectedGroupForRequest(null)}
-                  className="w-full"
+                  onClick={() => {
+                    setSelectedGroupForRequest(null);
+                    setSelectedLeaderResult(null);
+                  }}
+                  className="w-full mt-4"
                 >
                   Skip - I&apos;ll choose a group later
                 </Button>
-              </div>
-            ) : (
-              <Empty
-                description="No group suggestions available. You can browse and join groups after registration."
-                className="py-8"
-              />
+              </>
             )}
           </>
         );
@@ -699,9 +952,9 @@ export default function RegisterForm() {
   };
 
   return (
-    <Card className="shadow-xl">
+    <Card className="shadow-ds-xl">
       <div className="text-center mb-8">
-        <div className="inline-flex items-center justify-center w-16 h-16 bg-church-primary rounded-full mb-4">
+        <div className="inline-flex items-center justify-center w-16 h-16 bg-ds-brand-accent rounded-full mb-4">
           <UserOutlined className="text-3xl text-white" />
         </div>
         <Title level={2} className="!mb-2">
@@ -722,6 +975,22 @@ export default function RegisterForm() {
           type="success"
           showIcon
           icon={<TeamOutlined />}
+          className="mb-6"
+        />
+      )}
+
+      {/* Referral Banner */}
+      {hasReferral && !inviteGroupName && (
+        <Alert
+          message="You're registering via a referral link"
+          description={
+            assignedRole
+              ? `You will be assigned the role of ${assignedRole.replace(/_/g, " ").toLowerCase()} after registration.${referralLinkType ? ` Link type: ${referralLinkType.replace(/_/g, " ")}` : ""}`
+              : "Your role and group will be automatically assigned based on the referral link."
+          }
+          type="info"
+          showIcon
+          icon={<LinkOutlined />}
           className="mb-6"
         />
       )}
@@ -756,7 +1025,7 @@ export default function RegisterForm() {
         <div className={currentStep === 2 ? "block" : "hidden"}>
           {renderStepContent(2)}
         </div>
-        {!hasInvite && (
+        {!skipGroupStep && (
           <div className={currentStep === 3 ? "block" : "hidden"}>
             {renderStepContent(3)}
           </div>
@@ -796,7 +1065,7 @@ export default function RegisterForm() {
         <Text type="secondary">Already have an account? </Text>
         <Link
           href="/login"
-          className="text-church-primary hover:text-church-primary/80 font-semibold"
+          className="text-ds-brand-accent hover:text-ds-brand-accent-hover font-semibold"
         >
           Sign In
         </Link>

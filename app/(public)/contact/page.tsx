@@ -12,7 +12,7 @@ import {
 export const metadata: Metadata = {
   title: "Contact Us | Harvesters International Christian Centre",
   description:
-    "Get in touch with Harvesters International Christian Centre. Find our locations across Nigeria, UK, and USA, and connect with our Small Groups CRM support team.",
+    "Get in touch with Harvesters International Christian Centre. Find our locations across Nigeria, UK, and USA, and connect with our Church CRM support team.",
   keywords:
     "Harvesters contact, HICC locations, Harvesters church address, contact Pastor Bolaji Idowu",
 };
@@ -116,8 +116,8 @@ export default function ContactPage() {
       icon: <MailOutlined className="text-3xl" />,
       title: "Email Support",
       details: "support@harvestersng.org",
-      description: "For Small Groups CRM technical support and inquiries",
-      color: "bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400",
+      description: "For Church CRM technical support and inquiries",
+      color: "bg-ds-chart-1/5 dark:bg-blue-900/20 text-ds-chart-1",
     },
     {
       icon: <PhoneOutlined className="text-3xl" />,
@@ -125,7 +125,7 @@ export default function ContactPage() {
       details: "Available during service hours",
       description: "Visit any of our campus locations for in-person assistance",
       color:
-        "bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400",
+        "bg-ds-status-success/5 dark:bg-green-900/20 text-ds-status-success",
     },
     {
       icon: <GlobalOutlined className="text-3xl" />,
@@ -133,23 +133,21 @@ export default function ContactPage() {
       details: "harvestersng.org",
       description:
         "Visit our main website for church information and resources",
-      color:
-        "bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400",
+      color: "bg-purple-50 dark:bg-purple-900/20 text-ds-chart-3",
     },
     {
       icon: <ClockCircleOutlined className="text-3xl" />,
       title: "Service Times",
       details: "Sundays & Midweek",
       description: "Service times vary by campus - check website for details",
-      color:
-        "bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400",
+      color: "bg-ds-chart-4/5 dark:bg-orange-900/20 text-ds-chart-4",
     },
   ];
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-white via-blue-50 to-green-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
       {/* Header */}
-      <header className="sticky top-0 z-50 bg-white/80 dark:bg-slate-900/80 backdrop-blur-lg border-b border-gray-200 dark:border-slate-700">
+      <header className="sticky top-0 z-50 bg-white/80 dark:bg-ds-surface-base/80 backdrop-blur-lg border-b border-ds-border-base">
         <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-3">
             <Image
@@ -164,13 +162,13 @@ export default function ContactPage() {
           <nav className="flex items-center gap-6">
             <Link
               href="/about"
-              className="text-gray-600 dark:text-gray-400 hover:text-green-600 dark:hover:text-green-400 transition-colors"
+              className="text-ds-text-secondary hover:text-ds-status-success dark:hover:text-green-400 transition-colors"
             >
               About
             </Link>
             <Link
               href="/contact"
-              className="text-green-600 dark:text-green-400 font-semibold"
+              className="text-ds-status-success font-semibold"
             >
               Contact
             </Link>
@@ -187,15 +185,15 @@ export default function ContactPage() {
       {/* Hero Section */}
       <section className="py-20 px-4">
         <div className="max-w-6xl mx-auto text-center">
-          <h1 className="text-5xl md:text-6xl font-bold text-gray-900 dark:text-white mb-6">
+          <h1 className="text-5xl md:text-6xl font-bold text-ds-text-primary mb-6">
             Get in Touch
-            <span className="block text-green-600 dark:text-green-400 mt-2">
+            <span className="block text-ds-status-success mt-2">
               We&apos;d Love to Hear From You
             </span>
           </h1>
-          <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto leading-relaxed">
-            Whether you have questions about our Small Groups CRM, need support,
-            or want to visit one of our campuses, we&apos;re here to help.
+          <p className="text-xl text-ds-text-secondary max-w-3xl mx-auto leading-relaxed">
+            Whether you have questions about our Church CRM, need support, or
+            want to visit one of our campuses, we&apos;re here to help.
           </p>
         </div>
       </section>
@@ -203,27 +201,27 @@ export default function ContactPage() {
       {/* Support Contacts */}
       <section className="py-16 px-4">
         <div className="max-w-6xl mx-auto">
-          <h2 className="text-4xl font-bold text-center text-gray-900 dark:text-white mb-12">
+          <h2 className="text-4xl font-bold text-center text-ds-text-primary mb-12">
             How to Reach Us
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {supportContacts.map((contact, index) => (
               <div
                 key={index}
-                className="bg-white dark:bg-slate-800 rounded-2xl shadow-xl p-6 hover:shadow-2xl transition-shadow"
+                className="bg-ds-surface-elevated rounded-2xl shadow-ds-xl p-6 hover:shadow-ds-xl transition-shadow"
               >
                 <div
                   className={`w-14 h-14 rounded-xl flex items-center justify-center mb-4 ${contact.color}`}
                 >
                   {contact.icon}
                 </div>
-                <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
+                <h3 className="text-xl font-bold text-ds-text-primary mb-2">
                   {contact.title}
                 </h3>
-                <p className="text-green-600 dark:text-green-400 font-semibold mb-2">
+                <p className="text-ds-status-success font-semibold mb-2">
                   {contact.details}
                 </p>
-                <p className="text-sm text-gray-600 dark:text-gray-300">
+                <p className="text-sm text-ds-text-secondary">
                   {contact.description}
                 </p>
               </div>
@@ -236,10 +234,10 @@ export default function ContactPage() {
       <section className="py-16 px-4">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-12">
-            <h2 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">
+            <h2 className="text-4xl font-bold text-ds-text-primary mb-4">
               Our Campus Locations
             </h2>
-            <p className="text-xl text-gray-600 dark:text-gray-300">
+            <p className="text-xl text-ds-text-secondary">
               Visit a campus near you and experience the Harvesters family
             </p>
           </div>
@@ -248,11 +246,11 @@ export default function ContactPage() {
             {campuses.map((region, index) => (
               <div
                 key={index}
-                className="bg-white dark:bg-slate-800 rounded-2xl shadow-xl p-8"
+                className="bg-ds-surface-elevated rounded-2xl shadow-ds-xl p-8"
               >
-                <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-6 flex items-center gap-3">
-                  <div className="w-10 h-10 bg-green-50 dark:bg-green-900/20 rounded-lg flex items-center justify-center">
-                    <EnvironmentOutlined className="text-xl text-green-600 dark:text-green-400" />
+                <h3 className="text-2xl font-bold text-ds-text-primary mb-6 flex items-center gap-3">
+                  <div className="w-10 h-10 bg-ds-status-success/5 dark:bg-green-900/20 rounded-lg flex items-center justify-center">
+                    <EnvironmentOutlined className="text-xl text-ds-status-success" />
                   </div>
                   {region.region}
                 </h3>
@@ -260,19 +258,19 @@ export default function ContactPage() {
                   {region.locations.map((location, locIndex) => (
                     <div
                       key={locIndex}
-                      className="p-4 rounded-xl bg-gray-50 dark:bg-slate-700 hover:bg-green-50 dark:hover:bg-green-900/20 transition-colors"
+                      className="p-4 rounded-xl bg-ds-surface-sunken hover:bg-ds-status-success/5 dark:hover:bg-green-900/20 transition-colors"
                     >
                       <div className="flex items-start gap-3">
                         <span className="mt-1 w-2 h-2 bg-green-600 dark:bg-green-400 rounded-full flex-shrink-0"></span>
                         <div>
-                          <p className="font-semibold text-gray-900 dark:text-white">
+                          <p className="font-semibold text-ds-text-primary">
                             {location.name}
                           </p>
-                          <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">
+                          <p className="text-sm text-ds-text-secondary mt-1">
                             {location.address}
                           </p>
                           {location.type === "Headquarters" && (
-                            <span className="inline-block mt-2 px-2 py-1 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 text-xs rounded font-semibold">
+                            <span className="inline-block mt-2 px-2 py-1 bg-ds-status-success/10 dark:bg-green-900/30 text-ds-status-success text-xs rounded font-semibold">
                               Headquarters
                             </span>
                           )}
@@ -290,13 +288,11 @@ export default function ContactPage() {
       {/* CRM Support Section */}
       <section className="py-16 px-4">
         <div className="max-w-6xl mx-auto">
-          <div className="bg-gradient-to-r from-green-600 to-blue-600 rounded-3xl shadow-2xl p-8 md:p-12 text-white">
-            <h2 className="text-4xl font-bold mb-6">
-              Small Groups CRM Support
-            </h2>
+          <div className="bg-gradient-to-r from-green-600 to-blue-600 rounded-3xl shadow-ds-xl p-8 md:p-12 text-white">
+            <h2 className="text-4xl font-bold mb-6">Church CRM Support</h2>
             <p className="text-lg leading-relaxed mb-6 opacity-95">
-              Need help with the Small Groups CRM platform? Our support team is
-              ready to assist you with technical issues, feature questions, or
+              Need help with the Church CRM platform? Our support team is ready
+              to assist you with technical issues, feature questions, or
               training resources.
             </p>
             <div className="space-y-4">
@@ -325,7 +321,7 @@ export default function ContactPage() {
             <div className="mt-8">
               <Link
                 href="/login"
-                className="inline-block px-8 py-4 bg-white text-green-600 rounded-lg hover:bg-gray-100 transition-colors shadow-lg font-semibold text-lg"
+                className="inline-block px-8 py-4 bg-white text-ds-status-success rounded-lg hover:bg-ds-surface-sunken transition-colors shadow-lg font-semibold text-lg"
               >
                 Login to CRM
               </Link>
@@ -337,12 +333,12 @@ export default function ContactPage() {
       {/* Map Notice */}
       <section className="py-16 px-4">
         <div className="max-w-6xl mx-auto">
-          <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-2xl p-8 text-center">
-            <GlobalOutlined className="text-5xl text-blue-600 dark:text-blue-400 mb-4" />
-            <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
+          <div className="bg-ds-chart-1/5 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-2xl p-8 text-center">
+            <GlobalOutlined className="text-5xl text-ds-chart-1 mb-4" />
+            <h3 className="text-2xl font-bold text-ds-text-primary mb-4">
               Find Us Online
             </h3>
-            <p className="text-gray-600 dark:text-gray-300 mb-6">
+            <p className="text-ds-text-secondary mb-6">
               For detailed directions, service times, and contact information
               for specific campuses, please visit our main website.
             </p>
@@ -359,7 +355,7 @@ export default function ContactPage() {
       </section>
 
       {/* Footer */}
-      <footer className="bg-slate-900 text-white py-12 px-4">
+      <footer className="bg-ds-surface-base text-white py-12 px-4">
         <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8">
           <div>
             <Image
@@ -369,13 +365,13 @@ export default function ContactPage() {
               height={50}
               className="object-contain mb-4"
             />
-            <p className="text-gray-400">
+            <p className="text-ds-text-subtle">
               Changing lives through thriving churches across the globe.
             </p>
           </div>
           <div>
             <h4 className="font-bold text-lg mb-4">Quick Links</h4>
-            <ul className="space-y-2 text-gray-400">
+            <ul className="space-y-2 text-ds-text-subtle">
               <li>
                 <Link
                   href="/about"
@@ -412,7 +408,7 @@ export default function ContactPage() {
           </div>
           <div>
             <h4 className="font-bold text-lg mb-4">Connect With Us</h4>
-            <p className="text-gray-400 mb-2">
+            <p className="text-ds-text-subtle mb-2">
               Visit{" "}
               <a
                 href="https://harvestersng.org"
@@ -423,7 +419,7 @@ export default function ContactPage() {
                 harvestersng.org
               </a>
             </p>
-            <p className="text-gray-400 text-sm mt-6">
+            <p className="text-ds-text-subtle text-sm mt-6">
               &copy; {new Date().getFullYear()} Harvesters International
               Christian Centre. All rights reserved.
             </p>

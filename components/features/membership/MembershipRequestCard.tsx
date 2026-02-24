@@ -1,4 +1,5 @@
-import { Card, Tag } from "antd";
+import Card from "@/components/ui/Card";
+import StatusBadge from "@/components/ui/StatusBadge";
 import {
   UserOutlined,
   TeamOutlined,
@@ -29,23 +30,6 @@ export default function MembershipRequestCard({
   onApprove,
   onReject,
 }: MembershipRequestCardProps) {
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "PENDING":
-        return "warning";
-      case "APPROVED":
-        return "success";
-      case "REJECTED":
-        return "error";
-      default:
-        return "default";
-    }
-  };
-
-  const getTypeColor = (type: string) => {
-    return type === "JOIN" ? "blue" : "purple";
-  };
-
   return (
     <Card
       hoverable={request.status === "PENDING"}
@@ -56,14 +40,14 @@ export default function MembershipRequestCard({
               <button
                 key="approve"
                 onClick={() => onApprove?.(request.id)}
-                className="text-green-600 hover:text-green-800 font-medium"
+                className="text-ds-status-success hover:text-ds-status-success font-medium"
               >
                 Approve
               </button>,
               <button
                 key="reject"
                 onClick={() => onReject?.(request.id)}
-                className="text-red-600 hover:text-red-800 font-medium"
+                className="text-ds-status-error hover:text-ds-status-error font-medium"
               >
                 Reject
               </button>,
@@ -74,25 +58,25 @@ export default function MembershipRequestCard({
       <div className="space-y-3">
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-2">
-            <Tag color={getTypeColor(request.type)}>{request.type}</Tag>
-            <Tag color={getStatusColor(request.status)}>{request.status}</Tag>
+            <StatusBadge status={request.type} category="requestType" />
+            <StatusBadge status={request.status} category="request" />
           </div>
-          <div className="flex items-center gap-1 text-xs text-gray-500">
+          <div className="flex items-center gap-1 text-xs text-ds-text-subtle">
             <ClockCircleOutlined />
-            <span>{format(new Date(request.requestDate), "MMM dd, yyyy")}</span>
+            <span>{format(new Date(request.requestDate), "d MMM yyyy")}</span>
           </div>
         </div>
 
         <div className="space-y-2">
-          <div className="flex items-center gap-2 text-gray-900">
-            <UserOutlined className="text-church-primary" />
+          <div className="flex items-center gap-2 text-ds-text-primary">
+            <UserOutlined className="text-ds-brand-accent" />
             <span className="font-medium">{request.memberName}</span>
           </div>
 
-          <div className="text-sm text-gray-600">
+          <div className="text-sm text-ds-text-secondary">
             {request.type === "JOIN" ? (
               <div className="flex items-center gap-2">
-                <TeamOutlined className="text-church-primary" />
+                <TeamOutlined className="text-ds-brand-accent" />
                 <span>
                   Wants to join{" "}
                   <span className="font-medium">{request.toGroupName}</span>
@@ -101,14 +85,14 @@ export default function MembershipRequestCard({
             ) : (
               <div className="space-y-1">
                 <div className="flex items-center gap-2">
-                  <TeamOutlined className="text-gray-400" />
+                  <TeamOutlined className="text-ds-text-subtle" />
                   <span>
                     From:{" "}
                     <span className="font-medium">{request.fromGroupName}</span>
                   </span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <TeamOutlined className="text-church-primary" />
+                  <TeamOutlined className="text-ds-brand-accent" />
                   <span>
                     To:{" "}
                     <span className="font-medium">{request.toGroupName}</span>
@@ -119,7 +103,7 @@ export default function MembershipRequestCard({
           </div>
 
           {request.message && (
-            <div className="mt-2 p-2 bg-gray-50 rounded text-sm text-gray-700">
+            <div className="mt-2 p-2 bg-ds-surface-sunken rounded text-sm text-ds-text-secondary">
               <p className="italic">&ldquo;{request.message}&rdquo;</p>
             </div>
           )}

@@ -9,7 +9,7 @@ import {
 } from "react";
 import { useRouter } from "next/navigation";
 import { App } from "antd";
-import { USER_ROLES } from "@/lib/constants";
+import { getDashboardRoute } from "@/lib/constants/roles";
 import { UserRole, Gender, EmploymentStatus, MaritalStatus } from "@/lib/types";
 
 interface AuthContextType {
@@ -164,10 +164,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const getRoleBasedRedirect = (role: UserRole): string => {
-    if (role === USER_ROLES.SUPERADMIN) return "/superadmin/dashboard";
-    if (role === USER_ROLES.MEMBER) return "/member/dashboard";
-    // All leader roles go to /leader/
-    return "/leader/dashboard";
+    return getDashboardRoute(role);
   };
 
   const value: AuthContextType = {

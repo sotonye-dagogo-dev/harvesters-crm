@@ -6,7 +6,6 @@ import { useRouter, useParams } from "next/navigation";
 import { useAuth } from "@/providers/AuthProvider";
 import {
   Card,
-  Table,
   Tag,
   Spin,
   message,
@@ -17,6 +16,7 @@ import {
   Statistic,
   Progress,
 } from "antd";
+import Table from "@/components/ui/Table";
 import {
   ArrowLeftOutlined,
   CheckCircleOutlined,
@@ -215,7 +215,7 @@ export default function AttendanceReportsPage() {
 
     const csvContent = [
       `Group: ${group.name}`,
-      `Report Period: ${dateRange[0]?.format("MMM D, YYYY")} - ${dateRange[1]?.format("MMM D, YYYY")}`,
+      `Report Period: ${dateRange[0]?.format("D MMM YYYY")} - ${dateRange[1]?.format("D MMM YYYY")}`,
       `Total Meetings: ${overallStats.totalMeetings}`,
       `Average Attendance: ${overallStats.averageAttendance}`,
       "",
@@ -287,7 +287,7 @@ export default function AttendanceReportsPage() {
           <div className="font-medium">
             {record.member.firstName} {record.member.lastName}
           </div>
-          <div className="text-sm text-gray-500">{record.member.email}</div>
+          <div className="text-sm text-ds-text-subtle">{record.member.email}</div>
         </div>
       ),
       sorter: (a, b) => a.member.firstName.localeCompare(b.member.firstName),
@@ -375,8 +375,8 @@ export default function AttendanceReportsPage() {
       key: "date",
       render: (date: string) => (
         <div className="flex items-center gap-2">
-          <CalendarOutlined className="text-gray-400" />
-          <span>{format(new Date(date), "MMM d, yyyy")}</span>
+          <CalendarOutlined className="text-ds-text-subtle" />
+          <span>{format(new Date(date), "d MMM yyyy")}</span>
         </div>
       ),
       sorter: (a, b) =>
@@ -386,7 +386,7 @@ export default function AttendanceReportsPage() {
       title: "Time",
       key: "time",
       render: (_, record) => (
-        <span className="text-gray-600">
+        <span className="text-ds-text-secondary">
           {record.meeting.startTime} - {record.meeting.endTime}
         </span>
       ),
@@ -430,7 +430,7 @@ export default function AttendanceReportsPage() {
       <div className="mb-6">
         <AntButton
           icon={<ArrowLeftOutlined />}
-          onClick={() => router.push(`/leader/groups/${groupId}`)}
+          onClick={() => router.push(`/leader/my-group`)}
           className="mb-4"
         >
           Back to Group
@@ -438,10 +438,10 @@ export default function AttendanceReportsPage() {
 
         <div className="flex items-center justify-between mb-4">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">
+            <h1 className="text-2xl font-bold text-ds-text-primary">
               Attendance Reports
             </h1>
-            <p className="text-gray-600">{group.name}</p>
+            <p className="text-ds-text-secondary">{group.name}</p>
           </div>
           <AntButton
             type="primary"
@@ -456,7 +456,7 @@ export default function AttendanceReportsPage() {
         {/* Date Range Filter */}
         <Card className="mb-6">
           <Space>
-            <span className="text-gray-600">Report Period:</span>
+            <span className="text-ds-text-secondary">Report Period:</span>
             <RangePicker
               value={dateRange}
               onChange={(dates) =>

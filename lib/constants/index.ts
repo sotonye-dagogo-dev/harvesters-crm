@@ -3,89 +3,73 @@
 // ============================================================================
 
 // ============================================================================
-// USER ROLES (Organizational Hierarchy)
-// Cell → Zone → Area → Community → District → Campus → Group
+// RE-EXPORT ROLE & ORG HIERARCHY CONFIGURATION (Single Source of Truth)
+// ============================================================================
+// All role-driven and org-hierarchy-driven config lives in roles.ts.
+// Re-exported here so consumers can import from "@/lib/constants" as before.
+// ============================================================================
+export {
+  ROLE_CONFIG,
+  getRoleConfig,
+  canRolePerformAction,
+  getRoleNavItems,
+  getRoleReportPermissions,
+  getDashboardRoute,
+  isRoleLeadership,
+  ORG_HIERARCHY_CONFIG,
+  getOrgLevelConfig,
+  getParentLevel,
+  getChildLevel,
+  getLeaderRoleForLevel,
+  getLevelsBetween,
+  getHierarchyChain,
+  DEPARTMENT_CONFIG,
+  getDepartmentConfig,
+  getGlobalDepartments,
+  getDepartmentKeys,
+  orgLevelHasFeature,
+} from "./roles";
+
+// ============================================================================
+// USER ROLES (Runtime string constants — mirrors UserRole enum for JS usage)
 // ============================================================================
 
 export const USER_ROLES = {
   SUPERADMIN: "SUPERADMIN" as const,
-  SPO: "SPO" as const,
-  CHURCH_MINISTRY: "CHURCH_MINISTRY" as const,
+  GROUP_PASTOR: "GROUP_PASTOR" as const,
   GROUP_ADMIN: "GROUP_ADMIN" as const,
-  GROUP_LEADER: "GROUP_LEADER" as const,
   CAMPUS_PASTOR: "CAMPUS_PASTOR" as const,
-  CAMPUS_LEADER: "CAMPUS_LEADER" as const,
-  DISTRICT_LEADER: "DISTRICT_LEADER" as const,
-  COMMUNITY_LEADER: "COMMUNITY_LEADER" as const,
-  AREA_LEADER: "AREA_LEADER" as const,
-  ZONE_LEADER: "ZONE_LEADER" as const,
+  CAMPUS_ADMIN: "CAMPUS_ADMIN" as const,
+  ZONAL_LEADER: "ZONAL_LEADER" as const,
+  HOD: "HOD" as const,
+  SMALL_GROUP_LEADER: "SMALL_GROUP_LEADER" as const,
   CELL_LEADER: "CELL_LEADER" as const,
+  DATA_ENTRY: "DATA_ENTRY" as const,
   MEMBER: "MEMBER" as const,
 };
 
-export const USER_ROLE_LABELS: Record<string, string> = {
-  [USER_ROLES.SUPERADMIN]: "Super Admin (CEO)",
-  [USER_ROLES.SPO]: "Senior Pastor Officer",
-  [USER_ROLES.CHURCH_MINISTRY]: "Church Ministry",
-  [USER_ROLES.GROUP_ADMIN]: "Group Admin",
-  [USER_ROLES.GROUP_LEADER]: "Group Leader",
-  [USER_ROLES.CAMPUS_PASTOR]: "Campus Pastor",
-  [USER_ROLES.CAMPUS_LEADER]: "Campus Leader",
-  [USER_ROLES.DISTRICT_LEADER]: "District Leader",
-  [USER_ROLES.COMMUNITY_LEADER]: "Community Leader",
-  [USER_ROLES.AREA_LEADER]: "Area Leader",
-  [USER_ROLES.ZONE_LEADER]: "Zone Leader",
-  [USER_ROLES.CELL_LEADER]: "Cell Leader",
-  [USER_ROLES.MEMBER]: "Member",
-};
+// Derive labels from ROLE_CONFIG so there's one source of truth for role names.
+import { ROLE_CONFIG } from "./roles";
+import { UserRole } from "../types";
 
-/** Hierarchy order: lower number = higher authority */
-export const HIERARCHY_ORDER: Record<string, number> = {
-  [USER_ROLES.SUPERADMIN]: 0,
-  [USER_ROLES.SPO]: 1,
-  [USER_ROLES.CHURCH_MINISTRY]: 1,
-  [USER_ROLES.GROUP_ADMIN]: 2,
-  [USER_ROLES.GROUP_LEADER]: 3,
-  [USER_ROLES.CAMPUS_PASTOR]: 4,
-  [USER_ROLES.CAMPUS_LEADER]: 4,
-  [USER_ROLES.DISTRICT_LEADER]: 5,
-  [USER_ROLES.COMMUNITY_LEADER]: 6,
-  [USER_ROLES.AREA_LEADER]: 7,
-  [USER_ROLES.ZONE_LEADER]: 8,
-  [USER_ROLES.CELL_LEADER]: 9,
-  [USER_ROLES.MEMBER]: 10,
-};
+export const USER_ROLE_LABELS: Record<string, string> = Object.fromEntries(
+  Object.values(ROLE_CONFIG).map((rc) => [rc.role, rc.label])
+);
+
+/** Hierarchy order derived from ROLE_CONFIG.hierarchyOrder: lower = higher authority */
+export const HIERARCHY_ORDER: Record<string, number> = Object.fromEntries(
+  Object.values(ROLE_CONFIG).map((rc) => [rc.role, rc.hierarchyOrder])
+);
 
 /** Returns true if roleA is above roleB in the hierarchy */
 export const isAboveInHierarchy = (roleA: string, roleB: string): boolean => {
   return (HIERARCHY_ORDER[roleA] ?? 99) < (HIERARCHY_ORDER[roleB] ?? 99);
 };
 
-/** Returns true if the role is a leadership role (not regular member or superadmin) */
+/** Returns true if the role is a leadership role (derived from ROLE_CONFIG) */
 export const isLeadershipRole = (role: string): boolean => {
-  return role !== USER_ROLES.MEMBER && role !== USER_ROLES.SUPERADMIN;
-};
-
-/** All leader roles that route to /leader/ */
-export const LEADER_ROLES: string[] = [
-  USER_ROLES.SPO,
-  USER_ROLES.CHURCH_MINISTRY,
-  USER_ROLES.GROUP_ADMIN,
-  USER_ROLES.GROUP_LEADER,
-  USER_ROLES.CAMPUS_PASTOR,
-  USER_ROLES.CAMPUS_LEADER,
-  USER_ROLES.DISTRICT_LEADER,
-  USER_ROLES.COMMUNITY_LEADER,
-  USER_ROLES.AREA_LEADER,
-  USER_ROLES.ZONE_LEADER,
-  USER_ROLES.CELL_LEADER,
-];
-
-/** Returns the route prefix for a given role */
-export const getRoleRoutePrefix = (role: string): string => {
-  if (role === USER_ROLES.SUPERADMIN) return "/superadmin";
-  if (role === USER_ROLES.MEMBER) return "/member";
-  return "/leader";
+  const config = ROLE_CONFIG[role as UserRole];
+  return config ? config.isLeadership : false;
 };
 
 /** Returns the roles that are below a given role in the hierarchy */
@@ -136,8 +120,29 @@ export const MEETING_LEVEL_PERMISSIONS: Record<string, string[]> = {
     MEETING_LEVELS.SMALL_GROUP,
     MEETING_LEVELS.CELL,
   ],
-  [USER_ROLES.SPO]: [
+  [USER_ROLES.GROUP_PASTOR]: [
     MEETING_LEVELS.ALL,
+    MEETING_LEVELS.ZONE,
+    MEETING_LEVELS.CAMPUS,
+    MEETING_LEVELS.DEPARTMENT,
+    MEETING_LEVELS.SMALL_GROUP,
+    MEETING_LEVELS.CELL,
+  ],
+  [USER_ROLES.GROUP_ADMIN]: [
+    MEETING_LEVELS.ALL,
+    MEETING_LEVELS.ZONE,
+    MEETING_LEVELS.CAMPUS,
+    MEETING_LEVELS.DEPARTMENT,
+    MEETING_LEVELS.SMALL_GROUP,
+    MEETING_LEVELS.CELL,
+  ],
+  [USER_ROLES.CAMPUS_PASTOR]: [
+    MEETING_LEVELS.CAMPUS,
+    MEETING_LEVELS.DEPARTMENT,
+    MEETING_LEVELS.SMALL_GROUP,
+    MEETING_LEVELS.CELL,
+  ],
+  [USER_ROLES.ZONAL_LEADER]: [
     MEETING_LEVELS.ZONE,
     MEETING_LEVELS.CAMPUS,
     MEETING_LEVELS.DEPARTMENT,
@@ -194,6 +199,7 @@ export const MEETING_LEVEL_PERMISSIONS: Record<string, string[]> = {
   ],
   [USER_ROLES.ZONE_LEADER]: [MEETING_LEVELS.CELL],
   [USER_ROLES.CELL_LEADER]: [MEETING_LEVELS.CELL],
+  [USER_ROLES.DATA_ENTRY]: [],
   [USER_ROLES.MEMBER]: [],
 };
 
@@ -367,6 +373,18 @@ export const NOTIFICATION_TYPES = {
   NEW_REQUEST: "NEW_REQUEST" as const,
   CAMPAIGN_NEW: "CAMPAIGN_NEW" as const,
   REFERRAL_CONVERSION: "REFERRAL_CONVERSION" as const,
+  // Report notifications
+  REPORT_SUBMITTED: "REPORT_SUBMITTED" as const,
+  REPORT_EDITS_REQUESTED: "REPORT_EDITS_REQUESTED" as const,
+  REPORT_APPROVED: "REPORT_APPROVED" as const,
+  REPORT_REVIEWED: "REPORT_REVIEWED" as const,
+  REPORT_EDIT_APPROVED: "REPORT_EDIT_APPROVED" as const,
+  REPORT_EDIT_REJECTED: "REPORT_EDIT_REJECTED" as const,
+  REPORT_UPDATE_REQUEST_SUBMITTED: "REPORT_UPDATE_REQUEST_SUBMITTED" as const,
+  REPORT_UPDATE_REQUEST_APPROVED: "REPORT_UPDATE_REQUEST_APPROVED" as const,
+  REPORT_UPDATE_REQUEST_REJECTED: "REPORT_UPDATE_REQUEST_REJECTED" as const,
+  REPORT_DEADLINE_REMINDER: "REPORT_DEADLINE_REMINDER" as const,
+  REPORT_DEADLINE_FINAL: "REPORT_DEADLINE_FINAL" as const,
 };
 
 export const NOTIFICATION_TYPE_LABELS: Record<string, string> = {
@@ -377,6 +395,18 @@ export const NOTIFICATION_TYPE_LABELS: Record<string, string> = {
   [NOTIFICATION_TYPES.NEW_REQUEST]: "New Request",
   [NOTIFICATION_TYPES.CAMPAIGN_NEW]: "New Campaign",
   [NOTIFICATION_TYPES.REFERRAL_CONVERSION]: "Referral Conversion",
+  // Report notification labels
+  [NOTIFICATION_TYPES.REPORT_SUBMITTED]: "Report Submitted",
+  [NOTIFICATION_TYPES.REPORT_EDITS_REQUESTED]: "Report Edits Requested",
+  [NOTIFICATION_TYPES.REPORT_APPROVED]: "Report Approved",
+  [NOTIFICATION_TYPES.REPORT_REVIEWED]: "Report Reviewed",
+  [NOTIFICATION_TYPES.REPORT_EDIT_APPROVED]: "Report Edit Approved",
+  [NOTIFICATION_TYPES.REPORT_EDIT_REJECTED]: "Report Edit Rejected",
+  [NOTIFICATION_TYPES.REPORT_UPDATE_REQUEST_SUBMITTED]: "Report Update Request Submitted",
+  [NOTIFICATION_TYPES.REPORT_UPDATE_REQUEST_APPROVED]: "Report Update Request Approved",
+  [NOTIFICATION_TYPES.REPORT_UPDATE_REQUEST_REJECTED]: "Report Update Request Rejected",
+  [NOTIFICATION_TYPES.REPORT_DEADLINE_REMINDER]: "Report Deadline Reminder",
+  [NOTIFICATION_TYPES.REPORT_DEADLINE_FINAL]: "Report Deadline Final Notice",
 };
 
 // ============================================================================
@@ -499,6 +529,43 @@ export const API_ROUTES = {
   HIERARCHY_ANALYTICS: "/api/analytics/hierarchy",
   CHURCH_ANALYTICS: "/api/analytics/church",
   EXPORT_ANALYTICS: "/api/analytics/export",
+
+  // Reports
+  REPORTS: "/api/reports",
+  REPORT_BY_ID: (id: string) => `/api/reports/${id}`,
+  REPORT_SUBMIT: (id: string) => `/api/reports/${id}/submit`,
+  REPORT_APPROVE: (id: string) => `/api/reports/${id}/approve`,
+  REPORT_REQUEST_EDITS: (id: string) => `/api/reports/${id}/request-edits`,
+  REPORT_REVIEW: (id: string) => `/api/reports/${id}/review`,
+  REPORT_LOCK: (id: string) => `/api/reports/${id}/lock`,
+  REPORT_HISTORY: (id: string) => `/api/reports/${id}/history`,
+  REPORT_VERSIONS: (id: string) => `/api/reports/${id}/versions`,
+  REPORT_EDITS: (id: string) => `/api/reports/${id}/edits`,
+  REPORT_EDIT_BY_ID: (reportId: string, editId: string) =>
+    `/api/reports/${reportId}/edits/${editId}`,
+  REPORT_EDIT_SUBMIT: (reportId: string, editId: string) =>
+    `/api/reports/${reportId}/edits/${editId}/submit`,
+  REPORT_EDIT_APPROVE: (reportId: string, editId: string) =>
+    `/api/reports/${reportId}/edits/${editId}/approve`,
+  REPORT_EDIT_REJECT: (reportId: string, editId: string) =>
+    `/api/reports/${reportId}/edits/${editId}/reject`,
+
+  // Report Templates
+  REPORT_TEMPLATES: "/api/report-templates",
+  REPORT_TEMPLATE_BY_ID: (id: string) => `/api/report-templates/${id}`,
+  REPORT_TEMPLATE_PUBLISH: (id: string) => `/api/report-templates/${id}/publish`,
+  REPORT_TEMPLATE_VERSIONS: (id: string) => `/api/report-templates/${id}/versions`,
+
+  // Report Update Requests
+  REPORT_UPDATE_REQUESTS: "/api/report-update-requests",
+  REPORT_UPDATE_REQUEST_BY_ID: (id: string) => `/api/report-update-requests/${id}`,
+  REPORT_UPDATE_REQUEST_APPROVE: (id: string) => `/api/report-update-requests/${id}/approve`,
+  REPORT_UPDATE_REQUEST_REJECT: (id: string) => `/api/report-update-requests/${id}/reject`,
+
+  // Report Analytics
+  REPORT_ANALYTICS: "/api/analytics/reports",
+  REPORT_ANALYTICS_CAMPUS: (id: string) => `/api/analytics/reports/campus/${id}`,
+  REPORT_ANALYTICS_GROUP: (id: string) => `/api/analytics/reports/group/${id}`,
 } as const;
 
 // ============================================================================
@@ -528,6 +595,12 @@ export const APP_ROUTES = {
   SUPERADMIN_ANALYTICS: "/superadmin/analytics",
   SUPERADMIN_CAMPAIGNS: "/superadmin/campaigns",
   SUPERADMIN_REFERRALS: "/superadmin/referrals",
+  SUPERADMIN_REPORTS: "/superadmin/reports",
+  SUPERADMIN_REPORT_TEMPLATES: "/superadmin/reports/templates",
+  SUPERADMIN_REPORT_TEMPLATE_NEW: "/superadmin/reports/templates/new",
+  SUPERADMIN_REPORT_TEMPLATE_BY_ID: (id: string) => `/superadmin/reports/templates/${id}`,
+  SUPERADMIN_REPORT_UPDATE_REQUESTS: "/superadmin/reports/update-requests",
+  SUPERADMIN_REPORT_ANALYTICS: "/superadmin/reports/analytics",
 
   // Leader (all leadership roles)
   LEADER_DASHBOARD: "/leader/dashboard",
@@ -536,8 +609,18 @@ export const APP_ROUTES = {
   LEADER_MEMBERS: "/leader/members",
   LEADER_ANALYTICS: "/leader/analytics",
   LEADER_REPORTS: "/leader/reports",
-  LEADER_REPORTS_SUBMIT: "/leader/reports/submit",
-  LEADER_REPORTS_ANALYTICS: "/leader/reports/analytics",
+  LEADER_REPORT_NEW: "/leader/reports/new",
+  LEADER_REPORT_BY_ID: (id: string) => `/leader/reports/${id}`,
+  LEADER_REPORT_EDIT: (id: string) => `/leader/reports/${id}/edit`,
+  LEADER_REPORT_HISTORY: (id: string) => `/leader/reports/${id}/history`,
+  LEADER_REPORT_EDITS: (id: string) => `/leader/reports/${id}/edits`,
+  LEADER_DATA_ENTRY: "/leader/reports/data-entry",
+
+  // Cell Leader
+  CELL_LEADER_DASHBOARD: "/cell-leader/dashboard",
+  CELL_LEADER_MY_CELL: "/cell-leader/my-cell",
+  CELL_LEADER_MEETINGS: "/cell-leader/meetings",
+  CELL_LEADER_MEMBERS: "/cell-leader/members",
 
   // Member
   MEMBER_DASHBOARD: "/member/dashboard",
@@ -606,10 +689,15 @@ export const FILE_UPLOAD = {
 // ============================================================================
 
 export const DATE_FORMATS = {
-  DISPLAY: "MMM D, YYYY",
+  /** Dayjs display format — 20 Feb 2026 */
+  DISPLAY: "D MMM YYYY",
+  /** Dayjs input/API — 2026-02-20 */
   INPUT: "YYYY-MM-DD",
+  /** Dayjs time — 3:30 PM */
   TIME: "h:mm A",
-  DATETIME: "MMM D, YYYY h:mm A",
+  /** Dayjs datetime — 20 Feb 2026 at 3:30 PM */
+  DATETIME: "D MMM YYYY [at] h:mm A",
+  /** ISO 8601 */
   ISO: "YYYY-MM-DDTHH:mm:ss.SSSZ",
 };
 
@@ -763,6 +851,17 @@ export const ERROR_MESSAGES = {
   CAMPAIGN_EXPIRED: "This campaign has expired",
   INVITE_EXPIRED: "This invite link has expired",
   INVITE_INVALID: "This invite link is no longer valid",
+  // Report errors
+  REPORT_NOT_FOUND: "Report not found",
+  REPORT_ALREADY_SUBMITTED: "This report has already been submitted",
+  REPORT_LOCKED: "This report is locked and cannot be modified",
+  REPORT_INVALID_STATUS_TRANSITION: "This status transition is not allowed",
+  REPORT_INCOMPLETE: "Please complete all required fields before submitting",
+  REPORT_DEADLINE_PASSED: "The submission deadline has passed",
+  REPORT_TEMPLATE_NOT_FOUND: "Report template not found",
+  REPORT_EDIT_NOT_FOUND: "Report edit not found",
+  REPORT_UPDATE_REQUEST_NOT_FOUND: "Update request not found",
+  REPORT_FIELD_LOCKED: "This field is locked and cannot be modified",
 };
 
 // ============================================================================
@@ -781,4 +880,22 @@ export const SUCCESS_MESSAGES = {
   CAMPAIGN_PUBLISHED: "Campaign published and will be active for 24 hours",
   INVITE_CREATED: "Invite link created successfully",
   INVITE_ACCEPTED: "Welcome! You have successfully joined",
+  // Report success messages
+  REPORT_CREATED: "Report created successfully",
+  REPORT_UPDATED: "Report updated successfully",
+  REPORT_SUBMITTED: "Report submitted successfully",
+  REPORT_APPROVED: "Report approved successfully",
+  REPORT_REVIEWED: "Report marked as reviewed",
+  REPORT_EDITS_REQUESTED: "Edit request sent successfully",
+  REPORT_EDIT_CREATED: "Report edit created",
+  REPORT_EDIT_SUBMITTED: "Report edit submitted for review",
+  REPORT_EDIT_APPROVED: "Report edit approved and applied",
+  REPORT_EDIT_REJECTED: "Report edit rejected",
+  REPORT_LOCKED: "Report locked successfully",
+  REPORT_TEMPLATE_CREATED: "Report template created successfully",
+  REPORT_TEMPLATE_UPDATED: "Report template updated successfully",
+  REPORT_TEMPLATE_PUBLISHED: "Template version published",
+  REPORT_UPDATE_REQUEST_CREATED: "Update request submitted",
+  REPORT_UPDATE_REQUEST_APPROVED: "Update request approved and applied",
+  REPORT_UPDATE_REQUEST_REJECTED: "Update request rejected",
 };

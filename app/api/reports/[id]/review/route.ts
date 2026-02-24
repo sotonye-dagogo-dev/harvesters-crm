@@ -1,63 +1,53 @@
 import { NextRequest } from "next/server";
-import { reportSubmissionDb, reportNotificationDb } from "@/lib/data/database";
-import { requireRole } from "@/lib/utils/middleware";
+import { reportDb } from "@/lib/data/database";
+import { getAuthenticatedUser } from "@/lib/utils/middleware";
 import {
-  successResponse,
-  notFoundResponse,
-  badRequestResponse,
-  handleApiError,
+    successResponse,
+    notFoundResponse,
+    badRequestResponse,
+    forbiddenResponse,
+    handleApiError,
 } from "@/lib/utils/api";
 import { USER_ROLES } from "@/lib/constants";
-import { UserRole, ReportStatus, ReportNotificationKind } from "@/lib/types";
+import { ReportStatus } from "@/lib/types";
+import { sendReportReviewedNotification } from "@/lib/utils/notificationHelpers";
 
-interface RouteParams {
-  params: Promise<{ id: string }>;
-}
+// Roles allowed to review (mark approved → reviewed)
+const REVIEWERS: string[] = [
+    USER_ROLES.SUPERADMIN,
+    USER_ROLES.GROUP_PASTOR,
+    USER_ROLES.GROUP_ADMIN,
+];
 
-// POST /api/reports/[id]/review — Mark a report as reviewed
-export async function POST(request: NextRequest, { params }: RouteParams) {
-  try {
-    const { user, error } = await requireRole([
-      USER_ROLES.SUPERADMIN as UserRole,
-      USER_ROLES.ZONAL_LEADER as UserRole,
-    ]);
-    if (error) return error;
-    if (!user) return badRequestResponse("Authentication required.");
+// POST /api/reports/:id/review — Mark an approved report as reviewed
+export async function POST(
+    _request: NextRequest,
+    { params }: { params: Promise<{ id: string }> }
+) {
+    try {
+        const { id } = await params;
+        const { user, error } = await getAuthenticatedUser();
+        if (error) return error;
 
-    const { id } = await params;
-    const existing = reportSubmissionDb.findById(id);
+        if (!REVIEWERS.includes(user!.role)) {
+            return forbiddenResponse("You do not have permission to review reports.");
+        }
 
-    if (!existing) {
-      return notFoundResponse("Report submission not found.");
+        const report = reportDb.findById(id);
+        if (!report) return notFoundResponse("Report not found");
+
+        if (report.status !== ReportStatus.APPROVED) {
+            return badRequestResponse("Only approved reports can be reviewed.");
+        }
+
+        const updated = reportDb.review(id, user!.id);
+        if (!updated) return badRequestResponse("Failed to review report.");
+
+        // Notify report submitter
+        await sendReportReviewedNotification(id, user!.id);
+
+        return successResponse(updated, "Report reviewed successfully");
+    } catch (err) {
+        return handleApiError(err);
     }
-
-    if (existing.status !== ReportStatus.APPROVED) {
-      return badRequestResponse(
-        "Only approved reports can be marked as reviewed."
-      );
-    }
-
-    const body = await request.json().catch(() => ({}));
-    const notes = (body as Record<string, unknown>).notes as string | undefined;
-
-    const updated = reportSubmissionDb.review(id, user.id, notes);
-
-    if (!updated) {
-      return badRequestResponse("Failed to review report.");
-    }
-
-    reportNotificationDb.create({
-      userId: existing.submittedById,
-      reportSubmissionId: id,
-      notificationType: ReportNotificationKind.AVAILABLE_FOR_REVIEW,
-      title: "Report Reviewed",
-      message: `Your report has been reviewed by ${user.firstName} ${user.lastName}.`,
-      isRead: false,
-      emailSent: false,
-    });
-
-    return successResponse(updated, "Report marked as reviewed.");
-  } catch (error) {
-    return handleApiError(error);
-  }
 }

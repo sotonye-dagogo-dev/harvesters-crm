@@ -1,235 +1,202 @@
 import { NextRequest } from "next/server";
-import {
-  reportSubmissionDb,
-  reportTypeDb,
-  reportNotificationDb,
-} from "@/lib/data/database";
+import { reportDb, reportTemplateDb, userDb, campusDb } from "@/lib/data/database";
 import { getAuthenticatedUser } from "@/lib/utils/middleware";
 import {
-  successResponse,
-  paginatedResponse,
-  badRequestResponse,
-  createdResponse,
-  forbiddenResponse,
-  handleApiError,
+    successResponse,
+    paginatedResponse,
+    badRequestResponse,
+    handleApiError,
 } from "@/lib/utils/api";
 import { USER_ROLES } from "@/lib/constants";
-import {
-  ReportStatus,
-  OrganizationalLevel,
-  ReportNotificationKind,
-} from "@/lib/types";
+import { createReportSchema } from "@/lib/utils/validation";
+import { ReportStatus } from "@/lib/types";
+import { shouldAutoApprove } from "@/lib/utils/reportFieldUtils";
 
-// GET /api/reports - List report submissions
+// ── Roles allowed to create reports ──
+const REPORT_CREATORS: string[] = [
+    USER_ROLES.SUPERADMIN,
+    USER_ROLES.GROUP_PASTOR,
+    USER_ROLES.GROUP_ADMIN,
+    USER_ROLES.CAMPUS_PASTOR,
+    USER_ROLES.CAMPUS_ADMIN,
+    USER_ROLES.ZONAL_LEADER,
+    USER_ROLES.HOD,
+    USER_ROLES.SMALL_GROUP_LEADER,
+    USER_ROLES.CELL_LEADER,
+    USER_ROLES.DATA_ENTRY,
+];
+
+// GET /api/reports — List reports (role-scoped)
 export async function GET(request: NextRequest) {
-  try {
-    const { user, error } = await getAuthenticatedUser();
-    if (error) return error;
+    try {
+        const { user, error } = await getAuthenticatedUser();
+        if (error) return error;
 
-    const searchParams = request.nextUrl.searchParams;
-    const page = parseInt(searchParams.get("page") || "1");
-    const pageSize = parseInt(searchParams.get("pageSize") || "20");
-    const reportTypeId = searchParams.get("reportTypeId") || undefined;
-    const reportTypeCode = searchParams.get("reportTypeCode") || undefined;
-    const status = searchParams.get("status") as ReportStatus | null;
-    const submittedById = searchParams.get("submittedById") || undefined;
-    const organizationalLevelType = searchParams.get(
-      "organizationalLevelType"
-    ) as OrganizationalLevel | null;
-    const organizationalUnitId =
-      searchParams.get("organizationalUnitId") || undefined;
-    const reportYear = searchParams.get("reportYear");
-    const reportMonth = searchParams.get("reportMonth");
-    const reportWeek = searchParams.get("reportWeek");
-    const search = searchParams.get("search") || undefined;
+        const sp = request.nextUrl.searchParams;
+        const page = parseInt(sp.get("page") || "1");
+        const pageSize = parseInt(sp.get("pageSize") || "20");
+        const campusId = sp.get("campusId") || undefined;
+        const groupId = sp.get("groupId") || undefined;
+        const status = (sp.get("status") as ReportStatus) || undefined;
+        const periodType = (sp.get("periodType") as import("@/lib/types").ReportPeriodType) || undefined;
+        const templateId = sp.get("templateId") || undefined;
+        const periodYear = sp.get("periodYear")
+            ? parseInt(sp.get("periodYear")!)
+            : undefined;
+        const periodMonth = sp.get("periodMonth")
+            ? parseInt(sp.get("periodMonth")!)
+            : undefined;
+        const submittedById = sp.get("submittedById") || undefined;
+        const isDataEntry = sp.get("isDataEntry")
+            ? sp.get("isDataEntry") === "true"
+            : undefined;
+        const search = sp.get("search") || undefined;
+        const dateFrom = sp.get("dateFrom") || undefined;
+        const dateTo = sp.get("dateTo") || undefined;
 
-    const filters: ReportSubmissionFilters = {
-      reportTypeId,
-      reportTypeCode,
-      status: status || undefined,
-      submittedById,
-      organizationalLevelType: organizationalLevelType || undefined,
-      organizationalUnitId,
-      reportYear: reportYear ? parseInt(reportYear) : undefined,
-      reportMonth: reportMonth ? parseInt(reportMonth) : undefined,
-      reportWeek: reportWeek ? parseInt(reportWeek) : undefined,
-      search,
-    };
+        let results = reportDb.findAll({
+            campusId,
+            groupId,
+            status,
+            periodType,
+            templateId,
+            periodYear,
+            periodMonth,
+            submittedById,
+            isDataEntry,
+            search,
+            dateFrom,
+            dateTo,
+        });
 
-    let allSubmissions = reportSubmissionDb.findAll(filters);
-
-    // Role-based filtering
-    if (user) {
-      switch (user.role) {
-        case USER_ROLES.SUPERADMIN:
-          // Can see all submissions
-          break;
-        case USER_ROLES.ZONAL_LEADER:
-          // Can see submissions from their zone's campuses
-          allSubmissions = allSubmissions.filter(
-            (rs) =>
-              rs.submittedById === user.id ||
-              rs.reviewedById === user.id ||
-              rs.approvedById === user.id
-          );
-          break;
-        case USER_ROLES.CAMPUS_ADMIN:
-          // Can see submissions from their campus
-          allSubmissions = allSubmissions.filter(
-            (rs) =>
-              rs.organizationalUnitId === user.campusId ||
-              rs.submittedById === user.id
-          );
-          break;
-        case USER_ROLES.HOD:
-          // Can see submissions they created
-          allSubmissions = allSubmissions.filter(
-            (rs) => rs.submittedById === user.id
-          );
-          break;
-        default:
-          // Members see nothing unless specifically assigned
-          allSubmissions = allSubmissions.filter(
-            (rs) => rs.submittedById === user.id
-          );
-          break;
-      }
-    }
-
-    const total = allSubmissions.length;
-    const start = (page - 1) * pageSize;
-    const end = start + pageSize;
-    const paginated = allSubmissions.slice(start, end);
-
-    // Enrich with report type information
-    const enriched = paginated.map((rs) => {
-      const reportType = reportTypeDb.findById(rs.reportTypeId);
-      return {
-        ...rs,
-        reportTypeName: reportType?.name ?? "Unknown",
-        reportTypeCode: reportType?.code ?? "UNKNOWN",
-      };
-    });
-
-    return paginatedResponse(enriched, total, page, pageSize);
-  } catch (error) {
-    return handleApiError(error);
-  }
-}
-
-// POST /api/reports - Create a report submission
-export async function POST(request: NextRequest) {
-  try {
-    const { user, error } = await getAuthenticatedUser();
-    if (error) return error;
-    if (!user) return forbiddenResponse("Authentication required.");
-
-    const body = await request.json();
-    const {
-      reportTypeId,
-      reportYear,
-      reportMonth,
-      reportWeek,
-      periodStartDate,
-      periodEndDate,
-      organizationalLevelType,
-      organizationalUnitId,
-      formData,
-    } = body;
-
-    // Validate required fields
-    if (
-      !reportTypeId ||
-      !reportYear ||
-      !reportMonth ||
-      !periodStartDate ||
-      !periodEndDate ||
-      !formData
-    ) {
-      return badRequestResponse(
-        "Report type, year, month, period dates, and form data are required."
-      );
-    }
-
-    // Verify report type exists
-    const reportType = reportTypeDb.findById(reportTypeId);
-    if (!reportType) {
-      return badRequestResponse("Invalid report type.");
-    }
-
-    // Verify user is allowed to submit this report type
-    if (
-      !reportType.allowedSubmitterRoles.includes(user.role) &&
-      user.role !== USER_ROLES.SUPERADMIN
-    ) {
-      return forbiddenResponse(
-        "You are not authorized to submit this type of report."
-      );
-    }
-
-    // Validate form data against form definition
-    const validationErrors = validateFormData(
-      reportType.formDefinition,
-      formData
-    );
-    if (validationErrors.length > 0) {
-      return badRequestResponse(
-        `Form validation failed: ${validationErrors.join(", ")}`
-      );
-    }
-
-    const submission = reportSubmissionDb.create({
-      reportTypeId,
-      reportYear,
-      reportMonth,
-      reportWeek,
-      periodStartDate,
-      periodEndDate,
-      organizationalLevelType:
-        organizationalLevelType || OrganizationalLevel.CAMPUS,
-      organizationalUnitId: organizationalUnitId || user.campusId || "",
-      formData,
-      submittedById: user.id,
-      submitterRole: user.role,
-    });
-
-    return createdResponse(submission, "Report created successfully.");
-  } catch (error) {
-    return handleApiError(error);
-  }
-}
-
-// Validate form data against form definition
-function validateFormData(
-  formDefinition: FormDefinition,
-  formData: Record<string, unknown>
-): string[] {
-  const errors: string[] = [];
-
-  for (const section of formDefinition.sections) {
-    for (const field of section.fields) {
-      const value = formData[field.name];
-
-      if (
-        field.isRequired &&
-        (value === undefined || value === null || value === "")
-      ) {
-        errors.push(`${field.label} is required`);
-        continue;
-      }
-
-      if (value !== undefined && value !== null && value !== "") {
-        if (field.type === "NUMBER" && typeof value === "number") {
-          if (field.minValue !== undefined && value < field.minValue) {
-            errors.push(`${field.label} must be at least ${field.minValue}`);
-          }
-          if (field.maxValue !== undefined && value > field.maxValue) {
-            errors.push(`${field.label} must be at most ${field.maxValue}`);
-          }
+        // Auto-approve submitted reports past their deadline (FR29)
+        for (const report of results) {
+            if (shouldAutoApprove(report.status, report.deadline)) {
+                reportDb.autoApprove(report.id);
+            }
         }
-      }
-    }
-  }
 
-  return errors;
+        // Re-fetch if any were auto-approved (status changed)
+        results = reportDb.findAll({
+            campusId,
+            groupId,
+            status,
+            periodType,
+            templateId,
+            periodYear,
+            periodMonth,
+            submittedById,
+            isDataEntry,
+            search,
+            dateFrom,
+            dateTo,
+        });
+
+        // Role-based scoping
+        const role = user!.role;
+        if (
+            role === USER_ROLES.CAMPUS_ADMIN ||
+            role === USER_ROLES.CAMPUS_PASTOR
+        ) {
+            results = results.filter((r) => r.campusId === user!.campusId);
+        } else if (
+            role === USER_ROLES.ZONAL_LEADER ||
+            role === USER_ROLES.HOD
+        ) {
+            results = results.filter((r) => r.campusId === user!.campusId);
+        } else if (
+            role === USER_ROLES.SMALL_GROUP_LEADER ||
+            role === USER_ROLES.CELL_LEADER
+        ) {
+            results = results.filter((r) => r.submittedById === user!.id);
+        } else if (role === USER_ROLES.DATA_ENTRY) {
+            results = results.filter(
+                (r) => r.dataEntryById === user!.id || r.submittedById === user!.id
+            );
+        } else if (role === USER_ROLES.MEMBER) {
+            // Members can only see their own campus reports that are approved+
+            results = results.filter(
+                (r) =>
+                    r.campusId === user!.campusId &&
+                    [
+                        ReportStatus.APPROVED,
+                        ReportStatus.REVIEWED,
+                        ReportStatus.LOCKED,
+                    ].includes(r.status)
+            );
+        }
+        // SUPERADMIN, GROUP_PASTOR, GROUP_ADMIN see all (already unfiltered)
+
+        const total = results.length;
+        const start = (page - 1) * pageSize;
+        const paginated = results.slice(start, start + pageSize);
+
+        // Hydrate each report with template, campus, and submitter details
+        const hydrated = paginated.map((r) => {
+            const template = reportTemplateDb.findById(r.templateId);
+            const campus = campusDb.findById(r.campusId);
+            const submitter = userDb.findById(r.submittedById);
+            return {
+                ...r,
+                template: template ? { name: template.name } : undefined,
+                campus: campus ? { name: campus.name } : undefined,
+                submittedBy: submitter
+                    ? { firstName: submitter.firstName, lastName: submitter.lastName }
+                    : undefined,
+            };
+        });
+
+        return paginatedResponse(hydrated, total, page, pageSize);
+    } catch (err) {
+        return handleApiError(err);
+    }
+}
+
+// POST /api/reports — Create a new report
+export async function POST(request: NextRequest) {
+    try {
+        const { user, error } = await getAuthenticatedUser();
+        if (error) return error;
+
+        if (!REPORT_CREATORS.includes(user!.role)) {
+            return badRequestResponse("You do not have permission to create reports.");
+        }
+
+        const body = await request.json();
+        const parsed = createReportSchema.safeParse(body);
+        if (!parsed.success) {
+            return badRequestResponse(
+                parsed.error.issues.map((i) => i.message).join(", ")
+            );
+        }
+
+        const data = parsed.data;
+
+        // Validate template exists
+        const template = reportTemplateDb.findById(data.templateId);
+        if (!template) {
+            return badRequestResponse("Report template not found.");
+        }
+
+        // Determine deadline (48 hours from now if not provided)
+        const deadline =
+            data.deadline ||
+            new Date(Date.now() + 48 * 60 * 60 * 1000).toISOString();
+
+        // Determine templateVersionId
+        const templateVersionId =
+            data.templateVersionId || `tv-${template.version}`;
+
+        const report = reportDb.create({
+            ...data,
+            templateVersionId,
+            deadline,
+            submittedById: data.submittedById || user!.id,
+            dataEntryById: data.isDataEntry ? (data.dataEntryById || user!.id) : undefined,
+        });
+
+        return successResponse(report, "Report created successfully", 201);
+    } catch (err) {
+        return handleApiError(err);
+    }
 }

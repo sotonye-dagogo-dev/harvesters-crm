@@ -1,6 +1,6 @@
 "use client";
 
-import { Card } from "antd";
+import Card from "@/components/ui/Card";
 import {
   PieChart,
   Pie,
@@ -80,14 +80,14 @@ const CustomTooltip = ({ active, payload, total }: TooltipProps) => {
     const data = payload[0];
     const percentage = ((data.value / total) * 100).toFixed(1);
     return (
-      <div className="bg-white dark:bg-gray-800 p-3 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700">
-        <p className="font-semibold text-gray-900 dark:text-white">
+      <div className="bg-ds-surface-elevated p-3 rounded-lg shadow-lg border border-ds-border-base">
+        <p className="font-semibold text-ds-text-primary">
           {data.name}
         </p>
-        <p className="text-gray-600 dark:text-gray-300">
+        <p className="text-ds-text-secondary">
           Count: <span className="font-medium">{data.value}</span>
         </p>
-        <p className="text-gray-600 dark:text-gray-300">
+        <p className="text-ds-text-secondary">
           Percentage: <span className="font-medium">{percentage}%</span>
         </p>
       </div>

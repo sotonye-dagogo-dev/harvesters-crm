@@ -156,10 +156,10 @@ export default function CreateMeetingPage() {
     <DashboardLayout role={user?.role || UserRole.SMALL_GROUP_LEADER}>
       <div className="space-y-6">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900">
+          <h2 className="text-2xl font-bold text-ds-text-primary">
             Create New Meeting
           </h2>
-          <p className="text-gray-600 mt-1">
+          <p className="text-ds-text-secondary mt-1">
             Log a fellowship meeting for your group
           </p>
         </div>
@@ -184,7 +184,7 @@ export default function CreateMeetingPage() {
                 }
               >
                 <div className="space-y-3">
-                  <p className="text-sm text-gray-600 mb-4">
+                  <p className="text-sm text-ds-text-secondary mb-4">
                     Select a template to pre-fill meeting details, or create a
                     new meeting from scratch below.
                   </p>
@@ -196,31 +196,31 @@ export default function CreateMeetingPage() {
                       className={`cursor-pointer transition-all ${
                         selectedTemplate?.id === template.id
                           ? "border-2 border-purple-500 bg-purple-50"
-                          : "border border-gray-200"
+                          : "border border-ds-border-base"
                       }`}
                       onClick={() => handleTemplateSelect(template)}
                     >
                       <div className="flex items-start justify-between">
                         <div className="flex-1">
-                          <h4 className="font-semibold text-gray-900">
+                          <h4 className="font-semibold text-ds-text-primary">
                             {template.topic || "Fellowship Meeting"}
                           </h4>
-                          <div className="flex gap-4 mt-2 text-sm text-gray-600">
+                          <div className="flex gap-4 mt-2 text-sm text-ds-text-secondary">
                             <span>
-                              📅 {dayjs(template.date).format("MMM D, YYYY")}
+                              📅 {dayjs(template.date).format("D MMM YYYY")}
                             </span>
                             <span>
                               🕐 {template.startTime} - {template.endTime}
                             </span>
                           </div>
                           {template.notes && (
-                            <p className="text-xs text-gray-500 mt-2 line-clamp-2">
+                            <p className="text-xs text-ds-text-subtle mt-2 line-clamp-2">
                               {template.notes}
                             </p>
                           )}
                         </div>
                         {selectedTemplate?.id === template.id && (
-                          <CheckOutlined className="text-purple-600 text-lg" />
+                          <CheckOutlined className="text-ds-chart-3 text-lg" />
                         )}
                       </div>
                     </Card>
@@ -257,7 +257,7 @@ export default function CreateMeetingPage() {
                   name="date"
                   rules={[{ required: true, message: "Please select a date" }]}
                 >
-                  <DatePicker style={{ width: "100%" }} format="MMMM D, YYYY" />
+                  <DatePicker style={{ width: "100%" }} format="D MMM YYYY" />
                 </Form.Item>
 
                 <Form.Item label="Meeting Topic (Optional)" name="topic">
@@ -316,10 +316,10 @@ export default function CreateMeetingPage() {
                 >
                   <Card
                     size="small"
-                    className="bg-gray-50 max-h-64 overflow-y-auto"
+                    className="bg-ds-surface-sunken max-h-64 overflow-y-auto"
                   >
                     {members.length === 0 ? (
-                      <p className="text-center text-gray-500 py-4">
+                      <p className="text-center text-ds-text-subtle py-4">
                         No members in your group yet
                       </p>
                     ) : (
@@ -336,10 +336,10 @@ export default function CreateMeetingPage() {
                               }
                             >
                               <div className="ml-2">
-                                <p className="font-medium text-gray-900">
+                                <p className="font-medium text-ds-text-primary">
                                   {member.firstName} {member.lastName}
                                 </p>
-                                <p className="text-xs text-gray-500">
+                                <p className="text-xs text-ds-text-subtle">
                                   {member.email}
                                 </p>
                               </div>
@@ -350,7 +350,7 @@ export default function CreateMeetingPage() {
                     )}
                   </Card>
                   {selectedMembers.length > 0 && (
-                    <p className="text-sm text-gray-600 mt-2">
+                    <p className="text-sm text-ds-text-secondary mt-2">
                       {selectedMembers.length} member
                       {selectedMembers.length !== 1 ? "s" : ""} selected
                     </p>

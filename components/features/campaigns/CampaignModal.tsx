@@ -1,6 +1,6 @@
 "use client";
 
-import { Modal } from "antd";
+import Modal from "@/components/ui/Modal";
 import { useState, useEffect } from "react";
 import CampaignBanner from "./CampaignBanner";
 import { LeftOutlined, RightOutlined } from "@ant-design/icons";
@@ -89,7 +89,7 @@ export default function CampaignModal({
             {currentIndex > 0 && (
               <button
                 onClick={handlePrevious}
-                className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-12 z-10 w-10 h-10 rounded-full bg-white dark:bg-gray-800 shadow-lg flex items-center justify-center hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-12 z-10 w-10 h-10 rounded-full bg-ds-surface-elevated shadow-lg flex items-center justify-center hover:bg-ds-surface-sunken transition-colors"
                 aria-label="Previous campaign"
               >
                 <LeftOutlined />
@@ -98,7 +98,7 @@ export default function CampaignModal({
             {currentIndex < campaigns.length - 1 && (
               <button
                 onClick={handleNext}
-                className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-12 z-10 w-10 h-10 rounded-full bg-white dark:bg-gray-800 shadow-lg flex items-center justify-center hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-12 z-10 w-10 h-10 rounded-full bg-ds-surface-elevated shadow-lg flex items-center justify-center hover:bg-ds-surface-sunken transition-colors"
                 aria-label="Next campaign"
               >
                 <RightOutlined />
@@ -118,8 +118,8 @@ export default function CampaignModal({
                 key={index}
                 className={`h-1 rounded-full transition-all ${
                   index === currentIndex
-                    ? "w-8 bg-indigo-600"
-                    : "w-1 bg-gray-300 dark:bg-gray-600"
+                    ? "w-8 bg-ds-brand-accent"
+                    : "w-1 bg-ds-border-base dark:bg-ds-border-subtle"
                 }`}
               />
             ))}

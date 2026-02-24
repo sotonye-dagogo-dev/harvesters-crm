@@ -1,3 +1,4 @@
+
 // ============================================================================
 // GLOBAL TYPES FOR CHURCH FELLOWSHIP CRM
 // ============================================================================
@@ -13,20 +14,15 @@
 export enum UserRole {
   // Top-level admin
   SUPERADMIN = "SUPERADMIN",
-  // Administrative / reporting leadership roles
-  SPO = "SPO",
-  CHURCH_MINISTRY = "CHURCH_MINISTRY",
+  GROUP_PASTOR = "GROUP_PASTOR",
   GROUP_ADMIN = "GROUP_ADMIN",
-  // Organizational hierarchy leaders (highest → lowest)
-  GROUP_LEADER = "GROUP_LEADER",
   CAMPUS_PASTOR = "CAMPUS_PASTOR",
-  CAMPUS_LEADER = "CAMPUS_LEADER",
-  DISTRICT_LEADER = "DISTRICT_LEADER",
-  COMMUNITY_LEADER = "COMMUNITY_LEADER",
-  AREA_LEADER = "AREA_LEADER",
-  ZONE_LEADER = "ZONE_LEADER",
+  CAMPUS_ADMIN = "CAMPUS_ADMIN",
+  ZONAL_LEADER = "ZONAL_LEADER",
+  HOD = "HOD",
+  SMALL_GROUP_LEADER = "SMALL_GROUP_LEADER",
   CELL_LEADER = "CELL_LEADER",
-  // Regular member
+  DATA_ENTRY = "DATA_ENTRY",
   MEMBER = "MEMBER",
 }
 
@@ -81,6 +77,18 @@ export enum NotificationType {
   NEW_REQUEST = "NEW_REQUEST",
   CAMPAIGN_NEW = "CAMPAIGN_NEW",
   REFERRAL_CONVERSION = "REFERRAL_CONVERSION",
+  // Report notifications
+  REPORT_SUBMITTED = "REPORT_SUBMITTED",
+  REPORT_EDITS_REQUESTED = "REPORT_EDITS_REQUESTED",
+  REPORT_APPROVED = "REPORT_APPROVED",
+  REPORT_REVIEWED = "REPORT_REVIEWED",
+  REPORT_EDIT_APPROVED = "REPORT_EDIT_APPROVED",
+  REPORT_EDIT_REJECTED = "REPORT_EDIT_REJECTED",
+  REPORT_UPDATE_REQUEST_SUBMITTED = "REPORT_UPDATE_REQUEST_SUBMITTED",
+  REPORT_UPDATE_REQUEST_APPROVED = "REPORT_UPDATE_REQUEST_APPROVED",
+  REPORT_UPDATE_REQUEST_REJECTED = "REPORT_UPDATE_REQUEST_REJECTED",
+  REPORT_DEADLINE_REMINDER = "REPORT_DEADLINE_REMINDER",
+  REPORT_DEADLINE_FINAL = "REPORT_DEADLINE_FINAL",
 }
 
 export enum CampaignStatus {
@@ -127,7 +135,7 @@ export enum InviteLinkType {
 }
 
 // ============================================================================
-// REPORTING SYSTEM ENUMS
+// REPORT ENUMS
 // ============================================================================
 
 export enum ReportStatus {
@@ -136,81 +144,54 @@ export enum ReportStatus {
   REQUIRES_EDITS = "REQUIRES_EDITS",
   APPROVED = "APPROVED",
   REVIEWED = "REVIEWED",
-  FINALIZED = "FINALIZED",
+  LOCKED = "LOCKED",
 }
 
-export enum ReportCategory {
-  CAMPUS = "CAMPUS",
-  GROUP = "GROUP",
-  MINISTRY = "MINISTRY",
-  SPECIAL = "SPECIAL",
+export enum ReportEventType {
+  CREATED = "CREATED",
+  SUBMITTED = "SUBMITTED",
+  EDIT_REQUESTED = "EDIT_REQUESTED",
+  EDIT_SUBMITTED = "EDIT_SUBMITTED",
+  EDIT_APPROVED = "EDIT_APPROVED",
+  EDIT_REJECTED = "EDIT_REJECTED",
+  EDIT_APPLIED = "EDIT_APPLIED",
+  APPROVED = "APPROVED",
+  REVIEWED = "REVIEWED",
+  LOCKED = "LOCKED",
+  DEADLINE_PASSED = "DEADLINE_PASSED",
+  UPDATE_REQUESTED = "UPDATE_REQUESTED",
+  UPDATE_APPROVED = "UPDATE_APPROVED",
+  UPDATE_REJECTED = "UPDATE_REJECTED",
+  DATA_ENTRY_CREATED = "DATA_ENTRY_CREATED",
+  TEMPLATE_VERSION_NOTE = "TEMPLATE_VERSION_NOTE",
+  FIELD_UNLOCKED = "FIELD_UNLOCKED",
+  AUTO_APPROVED = "AUTO_APPROVED",
 }
 
-export enum ReportFrequency {
+export enum ReportPeriodType {
   WEEKLY = "WEEKLY",
   MONTHLY = "MONTHLY",
-  QUARTERLY = "QUARTERLY",
   YEARLY = "YEARLY",
-  AD_HOC = "AD_HOC",
 }
 
-export enum FormFieldType {
-  TEXT = "TEXT",
-  NUMBER = "NUMBER",
-  DATE = "DATE",
-  SELECT = "SELECT",
-  TEXTAREA = "TEXTAREA",
-  CHECKBOX = "CHECKBOX",
-  STRATEGIC_INDICATOR = "STRATEGIC_INDICATOR",
-  FILE_UPLOAD = "FILE_UPLOAD",
-  MULTI_FILE_UPLOAD = "MULTI_FILE_UPLOAD",
-}
-
-export enum OrganizationalLevel {
-  CELL = "CELL",
-  ZONE = "ZONE",
-  AREA = "AREA",
-  COMMUNITY = "COMMUNITY",
-  DISTRICT = "DISTRICT",
-  CAMPUS = "CAMPUS",
-  GROUP = "GROUP",
-}
-
-export enum StrategicIndicatorCategory {
-  MEMBERSHIP = "MEMBERSHIP",
-  ATTENDANCE = "ATTENDANCE",
-  FINANCE = "FINANCE",
-  PROGRAMS = "PROGRAMS",
-  OUTREACH = "OUTREACH",
-}
-
-export enum MetricDataType {
+export enum MetricFieldType {
   NUMBER = "NUMBER",
   PERCENTAGE = "PERCENTAGE",
+  TEXT = "TEXT",
   CURRENCY = "CURRENCY",
 }
 
-export enum ReportCommentType {
-  FEEDBACK = "FEEDBACK",
-  REQUEST_EDIT = "REQUEST_EDIT",
-  APPROVAL_NOTE = "APPROVAL_NOTE",
-  CLARIFICATION = "CLARIFICATION",
+export enum ReportEditStatus {
+  DRAFT = "DRAFT",
+  SUBMITTED = "SUBMITTED",
+  APPROVED = "APPROVED",
+  REJECTED = "REJECTED",
 }
 
-export enum ReportNotificationKind {
-  REPORT_SUBMITTED = "REPORT_SUBMITTED",
-  EDITS_REQUESTED = "EDITS_REQUESTED",
-  REPORT_APPROVED = "REPORT_APPROVED",
-  AVAILABLE_FOR_REVIEW = "AVAILABLE_FOR_REVIEW",
-  DEADLINE_APPROACHING = "DEADLINE_APPROACHING",
-}
-
-export enum ValidationRuleType {
-  REQUIRED = "REQUIRED",
-  MIN = "MIN",
-  MAX = "MAX",
-  PATTERN = "PATTERN",
-  CUSTOM = "CUSTOM",
+export enum ReportUpdateRequestStatus {
+  PENDING = "PENDING",
+  APPROVED = "APPROVED",
+  REJECTED = "REJECTED",
 }
 
 // ============================================================================
@@ -219,17 +200,15 @@ export enum ValidationRuleType {
 
 export const HIERARCHY_ORDER: Record<UserRole, number> = {
   [UserRole.SUPERADMIN]: 0,
-  [UserRole.SPO]: 1,
-  [UserRole.CHURCH_MINISTRY]: 1,
+  [UserRole.GROUP_PASTOR]: 1,
   [UserRole.GROUP_ADMIN]: 2,
-  [UserRole.GROUP_LEADER]: 3,
-  [UserRole.CAMPUS_PASTOR]: 4,
-  [UserRole.CAMPUS_LEADER]: 4,
-  [UserRole.DISTRICT_LEADER]: 5,
-  [UserRole.COMMUNITY_LEADER]: 6,
-  [UserRole.AREA_LEADER]: 7,
-  [UserRole.ZONE_LEADER]: 8,
-  [UserRole.CELL_LEADER]: 9,
+  [UserRole.CAMPUS_PASTOR]: 3,
+  [UserRole.CAMPUS_ADMIN]: 4,
+  [UserRole.ZONAL_LEADER]: 5,
+  [UserRole.HOD]: 6,
+  [UserRole.SMALL_GROUP_LEADER]: 7,
+  [UserRole.CELL_LEADER]: 8,
+  [UserRole.DATA_ENTRY]: 9,
   [UserRole.MEMBER]: 10,
 };
 
@@ -241,76 +220,169 @@ export const HIERARCHY_ORDER: Record<UserRole, number> = {
 
 declare global {
   // ============================================================================
-  // ORGANIZATIONAL UNIT TYPES
+  // UNIVERSAL ORG UNIT BASE INTERFACE
+  // ============================================================================
+  // Single base shape shared by ALL organisational levels (Cell, Zone, Area,
+  // Community, District, Campus, Group). Each concrete interface extends this
+  // with level-specific required/optional fields.
+  //
+  // Why: Adding a new org level means extending OrgUnitBase, not creating an
+  // entirely new interface from scratch. Utility functions can work generically
+  // with OrgUnitBase for listing, searching, breadcrumbs, etc.
   // ============================================================================
 
-  interface Campus {
+  interface OrgUnitBase {
     id: string;
     name: string;
     description: string;
-    location: string;
-    country: string;
-    zoneId: string;
-    adminId: string;
+    /** The hierarchy level key this entity belongs to (e.g. "CELL", "CAMPUS", "GROUP") */
+    orgLevel: string;
+    /** ID of the direct parent org unit (null for top-level entities) */
+    parentId: string | null;
+    /** The hierarchy level of the parent (mirrors OrgLevelConfig.parentLevel) */
+    parentLevel: string | null;
     isActive: boolean;
     createdAt: string;
     updatedAt: string;
+
+    // ── Optional fields driven by OrgLevelConfig flags ──
+    /** Leader assigned to this unit */
+    leaderId?: string;
+    /** Admin assigned to this unit (hasAdmin levels) */
+    adminId?: string;
+    /** Country scope (hasCountry levels like Group) */
+    country?: string;
+    /** Regional scope (hasRegion levels like Zone) */
+    region?: string;
+    /** Physical address (hasLocation levels) */
+    address?: string;
+    /** Display-friendly location string (e.g. "Lekki, Lagos") */
+    location?: string;
+    /** Latitude for map features (hasLocation levels) */
+    latitude?: number;
+    /** Longitude for map features (hasLocation levels) */
+    longitude?: number;
+    /** Contact phone (hasLocation levels) */
+    phone?: string;
+    /** Department association (hasDepartment levels) */
+    departmentId?: string;
+    /** Meeting schedule (hasMeetingFrequency levels) */
+    meetingFrequency?: MeetingFrequency;
+    /** Tracked member count (hasMemberCount levels) */
+    memberCount?: number;
+    /** Referral / join code (hasInviteCode levels) */
+    inviteCode?: string;
   }
 
-  interface Zone {
-    id: string;
-    name: string;
-    description: string;
+  // ============================================================================
+  // TOP-LEVEL ORG GROUP (highest hierarchy level)
+  // ============================================================================
+
+  interface OrgGroup extends OrgUnitBase {
+    orgLevel: "GROUP";
+    parentId: null;
+    parentLevel: null;
+    /** Country this Group entity covers (e.g. "Nigeria", "United Kingdom") */
+    country: string;
     region?: string;
     leaderId: string;
-    isActive: boolean;
-    createdAt: string;
-    updatedAt: string;
   }
 
-  interface Department {
-    id: string;
+  interface OrgGroupWithDetails extends OrgGroup {
+    leader?: UserProfile;
+    campuses: Campus[];
+    totalMembers: number;
+    totalCampuses: number;
+  }
+
+  interface CreateOrgGroupInput {
     name: string;
     description: string;
+    country: string;
+    region?: string;
+    leaderId: string;
+  }
+
+  interface UpdateOrgGroupInput {
+    name?: string;
+    description?: string;
+    country?: string;
+    region?: string;
+    leaderId?: string;
+    isActive?: boolean;
+  }
+
+  // ============================================================================
+  // ORGANIZATIONAL UNIT TYPES — All extend OrgUnitBase
+  // ============================================================================
+  // Every org unit inherits from OrgUnitBase:
+  //   id, name, description, orgLevel, parentId, parentLevel,
+  //   isActive, createdAt, updatedAt,
+  //   + optional: leaderId, adminId, country, region, address, location,
+  //     latitude, longitude, phone, departmentId, meetingFrequency,
+  //     memberCount, inviteCode
+  //
+  // Level-specific interfaces narrow optional fields to required where needed
+  // and add any level-specific fields (e.g. hodId on Department).
+  // ============================================================================
+
+  interface Campus extends OrgUnitBase {
+    orgLevel: "CAMPUS";
+    /** Parent OrgGroup ID — the top-level organisational group */
+    parentId: string;
+    parentLevel: "GROUP";
+    /** Campus administrator (narrowed to required) */
+    adminId: string;
+    /** Country where the campus is located (narrowed to required) */
+    country: string;
+    /** Display-friendly location label, e.g. "Lekki, Lagos" (narrowed to required) */
+    location: string;
+  }
+
+  interface Zone extends OrgUnitBase {
+    orgLevel: "ZONE";
+    /** Zone leader (narrowed to required) */
+    leaderId: string;
+  }
+
+  interface Department extends OrgUnitBase {
+    orgLevel: "DEPARTMENT";
+    /** Campus this department belongs to (denormalised cross-reference) */
     campusId: string;
+    /** OrgGroup association (denormalised cross-reference) */
     zoneId?: string;
-    leaderId: string;
-    isActive: boolean;
-    createdAt: string;
-    updatedAt: string;
+    /** Head of Department — department-specific field */
+    hodId: string;
   }
 
-  interface SmallGroup {
-    id: string;
-    name: string;
-    description: string;
+  interface SmallGroup extends OrgUnitBase {
+    orgLevel: "SMALL_GROUP";
+    /** Campus this group belongs to (denormalised) */
     campusId: string;
+    /** OrgGroup (top-level zone) this group belongs to (denormalised) */
     zoneId: string;
-    departmentId?: string;
+    /** Group leader (narrowed to required) */
     leaderId: string;
+    /** Meeting schedule (narrowed to required) */
     meetingFrequency: MeetingFrequency;
+    /** Tracked member count (narrowed to required) */
     memberCount: number;
-    inviteCode?: string;
-    isActive: boolean;
-    createdAt: string;
-    updatedAt: string;
   }
 
-  interface Cell {
-    id: string;
-    name: string;
-    description: string;
-    campusId: string;
-    zoneId: string;
-    departmentId?: string;
+  interface Cell extends OrgUnitBase {
+    orgLevel: "CELL";
+    /** Parent SmallGroup this cell belongs to */
     groupId: string;
+    /** Campus reference (denormalised) */
+    campusId: string;
+    /** OrgGroup reference (denormalised) */
+    zoneId: string;
+    /** Cell leader (narrowed to required) */
     leaderId: string;
+    /** Meeting schedule (narrowed to required) */
     meetingFrequency: MeetingFrequency;
+    /** Tracked member count (narrowed to required) */
     memberCount: number;
-    inviteCode?: string;
-    isActive: boolean;
-    createdAt: string;
-    updatedAt: string;
   }
 
   // ============================================================================
@@ -318,7 +390,8 @@ declare global {
   // ============================================================================
 
   interface CampusWithDetails extends Campus {
-    zone: Zone;
+    /** Parent OrgGroup entity */
+    orgGroup?: OrgGroup;
     admin?: UserProfile;
     departments: Department[];
     groups: SmallGroup[];
@@ -341,8 +414,7 @@ declare global {
 
   interface DepartmentWithDetails extends Department {
     campus: Campus;
-    zone?: Zone;
-    leader?: UserProfile;
+    hod?: UserProfile;
     groups: SmallGroup[];
     totalMembers: number;
     totalGroups: number;
@@ -379,8 +451,13 @@ declare global {
     description: string;
     location: string;
     country: string;
-    zoneId: string;
+    /** Parent OrgGroup ID */
+    parentId: string;
     adminId: string;
+    address?: string;
+    latitude?: number;
+    longitude?: number;
+    phone?: string;
   }
 
   interface UpdateCampusInput {
@@ -388,8 +465,13 @@ declare global {
     description?: string;
     location?: string;
     country?: string;
-    zoneId?: string;
+    /** Parent OrgGroup ID */
+    parentId?: string;
     adminId?: string;
+    address?: string;
+    latitude?: number;
+    longitude?: number;
+    phone?: string;
     isActive?: boolean;
   }
 
@@ -413,7 +495,7 @@ declare global {
     description: string;
     campusId: string;
     zoneId?: string;
-    leaderId: string;
+    hodId: string;
   }
 
   interface UpdateDepartmentInput {
@@ -421,7 +503,7 @@ declare global {
     description?: string;
     campusId?: string;
     zoneId?: string;
-    leaderId?: string;
+    hodId?: string;
     isActive?: boolean;
   }
 
@@ -549,10 +631,10 @@ declare global {
   }
 
   // ============================================================================
-  // GROUP TYPES (BACKWARD COMPAT - MAPS TO SmallGroup)
+  // GROUP TYPES (Convenience alias — Group ≡ SmallGroup)
   // ============================================================================
 
-  // Group is an alias for SmallGroup (maintained for backward compatibility)
+  /** Short alias used throughout the codebase. SmallGroup is the canonical name. */
   type Group = SmallGroup;
 
   interface GroupWithDetails extends Group {
@@ -781,6 +863,9 @@ declare global {
   // NOTIFICATION TYPES
   // ============================================================================
 
+  /** Notification delivery channel */
+  type NotificationChannel = "in_app" | "email" | "both";
+
   interface appNotification {
     id: string;
     userId: string;
@@ -790,6 +875,17 @@ declare global {
     relatedId?: string;
     read: boolean;
     createdAt: string;
+    /** Delivery channel — defaults to "both" */
+    channel?: NotificationChannel;
+    /** Whether the email counterpart has been "sent" (simulated) */
+    emailSent?: boolean;
+    /** Simulated email metadata (populated for email/both channels) */
+    emailMeta?: {
+      to: string;
+      subject: string;
+      body: string;
+      sentAt?: string;
+    };
   }
 
   interface NotificationWithDetails extends appNotification {
@@ -1580,20 +1676,680 @@ declare global {
   }
 
   // ============================================================================
-  // REPORTING SYSTEM TYPES
+  // ORGANIZATIONAL HIERARCHY TYPES (NEW: Area, Community, District)
   // ============================================================================
 
-  // --- Form Definition Types ---
-
-  interface FormFieldOption {
-    label: string;
-    value: string;
+  interface Area {
+    id: string;
+    name: string;
+    description: string;
+    zoneIds: string[];
+    campusId: string;
+    leaderId?: string;
+    isActive: boolean;
+    createdAt: string;
+    updatedAt: string;
   }
 
-  interface FormFieldLockingConfig {
-    lockAfterSubmit?: boolean;
-    lockAfterDate?: string;
-    lockAfterValue?: boolean;
+  interface Community {
+    id: string;
+    name: string;
+    description: string;
+    areaIds: string[];
+    campusId: string;
+    leaderId?: string;
+    isActive: boolean;
+    createdAt: string;
+    updatedAt: string;
+  }
+
+  interface District {
+    id: string;
+    name: string;
+    description: string;
+    communityIds: string[];
+    campusId: string;
+    leaderId?: string;
+    isActive: boolean;
+    createdAt: string;
+    updatedAt: string;
+  }
+
+  interface CreateAreaInput {
+    name: string;
+    description: string;
+    zoneIds?: string[];
+    campusId: string;
+    leaderId?: string;
+  }
+
+  interface UpdateAreaInput {
+    name?: string;
+    description?: string;
+    zoneIds?: string[];
+    leaderId?: string;
+    isActive?: boolean;
+  }
+
+  interface CreateCommunityInput {
+    name: string;
+    description: string;
+    areaIds?: string[];
+    campusId: string;
+    leaderId?: string;
+  }
+
+  interface UpdateCommunityInput {
+    name?: string;
+    description?: string;
+    areaIds?: string[];
+    leaderId?: string;
+    isActive?: boolean;
+  }
+
+  interface CreateDistrictInput {
+    name: string;
+    description: string;
+    communityIds?: string[];
+    campusId: string;
+    leaderId?: string;
+  }
+
+  interface UpdateDistrictInput {
+    name?: string;
+    description?: string;
+    communityIds?: string[];
+    leaderId?: string;
+    isActive?: boolean;
+  }
+
+  // ============================================================================
+  // REPORT TEMPLATE TYPES (Superadmin-configurable, data-driven)
+  // ============================================================================
+
+  interface ReportTemplateMetric {
+    id: string;
+    sectionId: string;
+    name: string;
+    description?: string;
+    fieldType: MetricFieldType;
+    isRequired: boolean;
+    minValue?: number;
+    maxValue?: number;
+    order: number;
+    /** Whether this metric captures a Monthly Goal value */
+    capturesGoal: boolean;
+    /** Whether this metric captures a Monthly Achieved value */
+    capturesAchieved: boolean;
+    /** Whether this metric captures a Year-on-Year Goal value */
+    capturesYoY: boolean;
+  }
+
+  interface ReportTemplateSection {
+    id: string;
+    templateId: string;
+    name: string;
+    description?: string;
+    order: number;
+    isRequired: boolean;
+    /** Optional sub-sections for grouping (e.g., "Church Planting" under "Report Summary") */
+    subSections?: ReportTemplateSubSection[];
+    metrics: ReportTemplateMetric[];
+  }
+
+  interface ReportTemplateSubSection {
+    id: string;
+    sectionId: string;
+    name: string;
+    description?: string;
+    order: number;
+    metrics: ReportTemplateMetric[];
+  }
+
+  interface ReportTemplate {
+    id: string;
+    name: string;
+    description?: string;
+    version: number;
+    sections: ReportTemplateSection[];
+    isActive: boolean;
+    isDefault: boolean;
+    createdById: string;
+    /** Optional scope: if set, this template applies only to a specific campus */
+    campusId?: string;
+    /** Optional scope: if set, this template applies only to a specific group */
+    groupId?: string;
+    createdAt: string;
+    updatedAt: string;
+  }
+
+  interface ReportTemplateVersion {
+    id: string;
+    templateId: string;
+    versionNumber: number;
+    /** Full snapshot of the template at this version */
+    snapshot: ReportTemplate;
+    createdAt: string;
+    createdById: string;
+    changeNotes?: string;
+  }
+
+  interface ReportFieldPermission {
+    templateId: string;
+    sectionId: string;
+    role: UserRole;
+    canEdit: boolean;
+    canView: boolean;
+  }
+
+  interface CreateReportTemplateInput {
+    name: string;
+    description?: string;
+    sections: CreateTemplateSectionInput[];
+    isDefault?: boolean;
+    campusId?: string;
+    groupId?: string;
+  }
+
+  interface UpdateReportTemplateInput {
+    name?: string;
+    description?: string;
+    sections?: CreateTemplateSectionInput[];
+    isActive?: boolean;
+    isDefault?: boolean;
+    campusId?: string;
+    groupId?: string;
+    changeNotes?: string;
+  }
+
+  interface CreateTemplateSectionInput {
+    name: string;
+    description?: string;
+    order: number;
+    isRequired: boolean;
+    subSections?: CreateTemplateSubSectionInput[];
+    metrics: CreateTemplateMetricInput[];
+  }
+
+  interface CreateTemplateSubSectionInput {
+    name: string;
+    description?: string;
+    order: number;
+    metrics: CreateTemplateMetricInput[];
+  }
+
+  interface CreateTemplateMetricInput {
+    name: string;
+    description?: string;
+    fieldType: MetricFieldType;
+    isRequired: boolean;
+    minValue?: number;
+    maxValue?: number;
+    order: number;
+    capturesGoal: boolean;
+    capturesAchieved: boolean;
+    capturesYoY: boolean;
+  }
+
+  // ============================================================================
+  // REPORT TYPES (Core report entities)
+  // ============================================================================
+
+  interface PeriodicReport {
+    id: string;
+    templateId: string;
+    templateVersionId: string;
+    campusId: string;
+    groupId?: string;
+    periodType: ReportPeriodType;
+    periodYear: number;
+    periodMonth: number;
+    periodWeek?: number;
+    status: ReportStatus;
+    submittedById: string;
+    reviewedById?: string;
+    approvedById?: string;
+    deadline: string;
+    lockedAt?: string;
+    /** Whether this report was created through the Data Entry interface */
+    isDataEntry: boolean;
+    /** The Data Entry user who created this report (if applicable) */
+    dataEntryById?: string;
+    /** The custom date set by Data Entry for historical reports */
+    dataEntryDate?: string;
+    notes?: string;
+    sections: ReportSection[];
+    createdAt: string;
+    updatedAt: string;
+  }
+
+  interface ReportSection {
+    id: string;
+    reportId: string;
+    templateSectionId: string;
+    /** Snapshot of section name from template at creation time */
+    sectionName: string;
+    order: number;
+    metrics: ReportMetric[];
+  }
+
+  interface ReportMetric {
+    id: string;
+    reportSectionId: string;
+    templateMetricId: string;
+    /** Snapshot of metric name from template at creation time */
+    metricName: string;
+    fieldType: MetricFieldType;
+    monthlyGoal?: number;
+    monthlyAchieved?: number;
+    yoyGoal?: number;
+    textValue?: string;
+    /** Auto-calculated: (monthlyAchieved / monthlyGoal) * 100 */
+    computedPercentage?: number;
+    isLocked: boolean;
+    lockedAt?: string;
+    lockedById?: string;
+    order: number;
+  }
+
+  interface ReportWithDetails extends PeriodicReport {
+    template?: ReportTemplate;
+    templateVersion?: ReportTemplateVersion;
+    campus?: Campus;
+    group?: SmallGroup;
+    submittedBy?: UserProfile;
+    reviewedBy?: UserProfile;
+    approvedBy?: UserProfile;
+    dataEntryBy?: UserProfile;
+    events?: ReportEvent[];
+    edits?: ReportEdit[];
+    updateRequests?: ReportUpdateRequest[];
+  }
+
+  // ============================================================================
+  // REPORT EDIT TYPES (Separate entity for revision tracking)
+  // ============================================================================
+
+  interface ReportEdit {
+    id: string;
+    reportId: string;
+    submittedById: string;
+    status: ReportEditStatus;
+    reason?: string;
+    sections: ReportEditSection[];
+    reviewedById?: string;
+    reviewNotes?: string;
+    rejectionReason?: string;
+    createdAt: string;
+    updatedAt: string;
+  }
+
+  interface ReportEditSection {
+    id: string;
+    reportEditId: string;
+    templateSectionId: string;
+    sectionName: string;
+    order: number;
+    metrics: ReportEditMetric[];
+  }
+
+  interface ReportEditMetric {
+    id: string;
+    reportEditSectionId: string;
+    templateMetricId: string;
+    metricName: string;
+    fieldType: MetricFieldType;
+    monthlyGoal?: number;
+    monthlyAchieved?: number;
+    yoyGoal?: number;
+    textValue?: string;
+    /** The original value from the parent report (for diff display) */
+    originalMonthlyGoal?: number;
+    originalMonthlyAchieved?: number;
+    originalYoyGoal?: number;
+    originalTextValue?: string;
+    order: number;
+  }
+
+  interface ReportEditWithDetails extends ReportEdit {
+    report?: PeriodicReport;
+    submittedBy?: UserProfile;
+    reviewedBy?: UserProfile;
+  }
+
+  interface CreateReportEditInput {
+    reportId: string;
+    submittedById: string;
+    reason?: string;
+    sections: CreateReportEditSectionInput[];
+  }
+
+  interface CreateReportEditSectionInput {
+    templateSectionId: string;
+    sectionName: string;
+    order: number;
+    metrics: CreateReportEditMetricInput[];
+  }
+
+  interface CreateReportEditMetricInput {
+    templateMetricId: string;
+    metricName: string;
+    fieldType: MetricFieldType;
+    monthlyGoal?: number;
+    monthlyAchieved?: number;
+    yoyGoal?: number;
+    textValue?: string;
+    originalMonthlyGoal?: number;
+    originalMonthlyAchieved?: number;
+    originalYoyGoal?: number;
+    order: number;
+  }
+
+  // ============================================================================
+  // REPORT UPDATE REQUEST TYPES (Post-deadline changes)
+  // ============================================================================
+
+  interface ReportUpdateRequest {
+    id: string;
+    reportId: string;
+    requestedById: string;
+    reason: string;
+    sections: ReportEditSection[];
+    status: ReportUpdateRequestStatus;
+    reviewedById?: string;
+    reviewNotes?: string;
+    rejectionReason?: string;
+    createdAt: string;
+    updatedAt: string;
+  }
+
+  interface ReportUpdateRequestWithDetails extends ReportUpdateRequest {
+    report?: PeriodicReport;
+    requestedBy?: UserProfile;
+    reviewedBy?: UserProfile;
+  }
+
+  interface CreateReportUpdateRequestInput {
+    reportId: string;
+    requestedById: string;
+    reason: string;
+    sections: CreateReportEditSectionInput[];
+  }
+
+  // ============================================================================
+  // REPORT EVENT / AUDIT TRAIL TYPES
+  // ============================================================================
+
+  interface ReportEvent {
+    id: string;
+    reportId: string;
+    eventType: ReportEventType;
+    actorId: string;
+    timestamp: string;
+    /** JSON details about what changed */
+    details?: Record<string, unknown>;
+    previousStatus?: ReportStatus;
+    newStatus?: ReportStatus;
+    /** Reference to a version snapshot if one was created */
+    snapshotId?: string;
+  }
+
+  interface ReportEventWithDetails extends ReportEvent {
+    actor?: UserProfile;
+  }
+
+  interface ReportVersion {
+    id: string;
+    reportId: string;
+    versionNumber: number;
+    /** Full snapshot of the report at this version */
+    snapshot: PeriodicReport;
+    createdAt: string;
+    createdById: string;
+    reason?: string;
+  }
+
+  // ============================================================================
+  // REPORT ANALYTICS TYPES
+  // ============================================================================
+
+  interface ReportAnalytics {
+    metricName: string;
+    totalGoal: number;
+    totalAchieved: number;
+    achievementRate: number;
+    yoyGrowth: number;
+    reportCount: number;
+  }
+
+  interface ReportComplianceSummary {
+    campusId: string;
+    campusName: string;
+    totalExpected: number;
+    submitted: number;
+    onTime: number;
+    late: number;
+    missing: number;
+    compliancePercentage: number;
+  }
+
+  interface ReportDashboardStats {
+    totalReports: number;
+    draftReports: number;
+    submittedReports: number;
+    approvedReports: number;
+    requiresEditsReports: number;
+    lockedReports: number;
+    overdueReports: number;
+    complianceRate: number;
+  }
+
+  // ============================================================================
+  // ROLE CONFIG TYPES (Data-driven role system)
+  // ============================================================================
+
+  interface RoleNavItem {
+    key: string;
+    label: string;
+    icon: string;
+    path: string;
+    children?: RoleNavItem[];
+  }
+
+  interface RoleConfig {
+    role: UserRole;
+    label: string;
+    hierarchyOrder: number;
+    dashboardRoute: string;
+    /** Whether this role can create new reports */
+    canCreateReports: boolean;
+    /** Whether this role can review reports */
+    canReviewReports: boolean;
+    /** Whether this role can approve reports */
+    canApproveReports: boolean;
+    /** Whether this role can manage report templates */
+    canManageTemplates: boolean;
+    /** Whether this role has data entry capabilities */
+    canDataEntry: boolean;
+    /** Scope of report visibility: 'all' | 'group' | 'campus' | 'own' */
+    reportVisibilityScope: "all" | "group" | "campus" | "own" | "none";
+    /** Navigation items for this role */
+    navItems: RoleNavItem[];
+    /** Whether this role is a leadership role */
+    isLeadership: boolean;
+    /** Route prefix for this role */
+    routePrefix: string;
+  }
+
+  // ============================================================================
+  // ORG HIERARCHY CONFIG TYPES (Data-driven org structure)
+  // ============================================================================
+
+  interface OrgLevelConfig {
+    level: string;
+    label: string;
+    pluralLabel: string;
+    parentLevel: string | null;
+    childLevel: string | null;
+    membersPerUnit: number;
+    leaderRole: UserRole | null;
+    hasAdmin: boolean;
+    hasPastor: boolean;
+    /** Whether entities at this level can have geolocation (address, lat, lng, phone) */
+    hasLocation: boolean;
+    /** Whether entities at this level have a meeting frequency */
+    hasMeetingFrequency: boolean;
+    /** Whether entities at this level have invite codes */
+    hasInviteCode: boolean;
+    /** Whether entities at this level track member counts */
+    hasMemberCount: boolean;
+    /** Whether entities at this level can belong to a department */
+    hasDepartment: boolean;
+    /** Whether entities at this level have a country field */
+    hasCountry: boolean;
+    /** Whether entities at this level have a region field */
+    hasRegion: boolean;
+  }
+
+  // ============================================================================
+  // DEPARTMENT CONFIG TYPES (Data-driven department registry)
+  // ============================================================================
+
+  interface DepartmentConfig {
+    /** Stable key used as ID prefix (e.g. "worship" → "dept-worship") */
+    key: string;
+    /** Display name */
+    name: string;
+    /** Short description of the department's focus */
+    description: string;
+    /** Default icon key for UI rendering */
+    icon: string;
+    /** Whether this department is available across all campuses */
+    isGlobal: boolean;
+  }
+
+  // ============================================================================
+  // REPORT FORM & FILTER TYPES
+  // ============================================================================
+
+  interface ReportFilters {
+    campusId?: string;
+    groupId?: string;
+    periodType?: ReportPeriodType;
+    periodYear?: number;
+    periodMonth?: number;
+    periodWeek?: number;
+    status?: ReportStatus;
+    templateId?: string;
+    search?: string;
+    isDataEntry?: boolean;
+    submittedById?: string;
+    dateFrom?: string;
+    dateTo?: string;
+  }
+
+  interface ReportFormValues {
+    templateId: string;
+    campusId: string;
+    groupId?: string;
+    periodType: ReportPeriodType;
+    periodYear: number;
+    periodMonth: number;
+    periodWeek?: number;
+    notes?: string;
+    /** For data entry: the actual date this report covers */
+    dataEntryDate?: string;
+    /** Section metric values keyed by metricId */
+    metrics: Record<string, {
+      monthlyGoal?: number;
+      monthlyAchieved?: number;
+      yoyGoal?: number;
+      textValue?: string;
+    }>;
+  }
+
+  interface ReportTemplateFormValues {
+    name: string;
+    description?: string;
+    isDefault: boolean;
+    campusId?: string;
+    groupId?: string;
+    sections: Array<{
+      name: string;
+      description?: string;
+      order: number;
+      isRequired: boolean;
+      subSections?: Array<{
+        name: string;
+        description?: string;
+        order: number;
+        metrics: Array<{
+          name: string;
+          description?: string;
+          fieldType: MetricFieldType;
+          isRequired: boolean;
+          minValue?: number;
+          maxValue?: number;
+          order: number;
+          capturesGoal: boolean;
+          capturesAchieved: boolean;
+          capturesYoY: boolean;
+        }>;
+      }>;
+      metrics: Array<{
+        name: string;
+        description?: string;
+        fieldType: MetricFieldType;
+        isRequired: boolean;
+        minValue?: number;
+        maxValue?: number;
+        order: number;
+        capturesGoal: boolean;
+        capturesAchieved: boolean;
+        capturesYoY: boolean;
+      }>;
+    }>;
+  }
+
+  interface CreateReportInput {
+    templateId: string;
+    templateVersionId: string;
+    campusId: string;
+    groupId?: string;
+    periodType: ReportPeriodType;
+    periodYear: number;
+    periodMonth: number;
+    periodWeek?: number;
+    submittedById: string;
+    deadline: string;
+    notes?: string;
+    isDataEntry?: boolean;
+    dataEntryById?: string;
+    dataEntryDate?: string;
+    sections?: CreateReportSectionInput[];
+  }
+
+  interface CreateReportSectionInput {
+    templateSectionId: string;
+    sectionName: string;
+    order: number;
+    metrics: CreateReportMetricInput[];
+  }
+
+  interface CreateReportMetricInput {
+    templateMetricId: string;
+    metricName: string;
+    fieldType: MetricFieldType;
+    monthlyGoal?: number;
+    monthlyAchieved?: number;
+    yoyGoal?: number;
+    textValue?: string;
+    order: number;
+  }
+
+  interface UpdateReportInput {
+    notes?: string;
+    sections?: CreateReportSectionInput[];
   }
 
   interface FormField {
@@ -1922,4 +2678,4 @@ declare global {
 // MODULE EXPORTS (for use as values, not types)
 // ============================================================================
 // Export statement to ensure this file is treated as a module
-export {};
+export { };

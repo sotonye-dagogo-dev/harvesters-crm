@@ -3,7 +3,9 @@
 import { useState } from "react";
 import { useAuth } from "@/providers/AuthProvider";
 import DashboardLayout from "@/components/features/navigation/DashboardLayout";
-import { Form, Button as AntButton, Card, message } from "antd";
+import { Form, message } from "antd";
+import Button from "@/components/ui/Button";
+import Card from "@/components/ui/Card";
 import { SaveOutlined } from "@ant-design/icons";
 import { useRouter } from "next/navigation";
 import { PasswordInput } from "@/components/ui/Input";
@@ -55,10 +57,10 @@ export default function ChangePasswordPage() {
     <DashboardLayout role={user?.role || UserRole.MEMBER}>
       <div className="space-y-6">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+          <h2 className="text-2xl font-bold text-ds-text-primary">
             Change Password
           </h2>
-          <p className="text-gray-600 dark:text-gray-400 mt-1">
+          <p className="text-ds-text-secondary mt-1">
             Update your password to keep your account secure
           </p>
         </div>
@@ -115,17 +117,16 @@ export default function ChangePasswordPage() {
             </Form.Item>
 
             <div className="flex gap-3 justify-end mt-6">
-              <AntButton onClick={() => router.push("/profile")}>
+              <Button variant="secondary" onClick={() => router.push("/profile")}>
                 Cancel
-              </AntButton>
-              <AntButton
-                type="primary"
+              </Button>
+              <Button
                 htmlType="submit"
                 icon={<SaveOutlined />}
                 loading={saving}
               >
                 Change Password
-              </AntButton>
+              </Button>
             </div>
           </Form>
         </Card>

@@ -1,71 +1,66 @@
 import { NextRequest } from "next/server";
-import { reportSubmissionDb, reportNotificationDb } from "@/lib/data/database";
-import { getAuthenticatedUser, requireRole } from "@/lib/utils/middleware";
+import { reportDb } from "@/lib/data/database";
+import { getAuthenticatedUser } from "@/lib/utils/middleware";
 import {
-  successResponse,
-  notFoundResponse,
-  badRequestResponse,
-  handleApiError,
+    successResponse,
+    notFoundResponse,
+    badRequestResponse,
+    forbiddenResponse,
+    handleApiError,
 } from "@/lib/utils/api";
 import { USER_ROLES } from "@/lib/constants";
-import { UserRole, ReportStatus, ReportNotificationKind } from "@/lib/types";
+import { requestEditsSchema } from "@/lib/utils/validation";
+import { ReportStatus } from "@/lib/types";
+import { sendReportEditsRequestedNotification } from "@/lib/utils/notificationHelpers";
 
-interface RouteParams {
-  params: Promise<{ id: string }>;
-}
+// Roles allowed to request edits
+const REVIEWERS: string[] = [
+    USER_ROLES.SUPERADMIN,
+    USER_ROLES.GROUP_PASTOR,
+    USER_ROLES.GROUP_ADMIN,
+    USER_ROLES.CAMPUS_PASTOR,
+];
 
-// POST /api/reports/[id]/request-edits — Request edits on a submitted report
-export async function POST(request: NextRequest, { params }: RouteParams) {
-  try {
-    const { user, error } = await requireRole([
-      USER_ROLES.SUPERADMIN as UserRole,
-      USER_ROLES.ZONAL_LEADER as UserRole,
-      USER_ROLES.CAMPUS_ADMIN as UserRole,
-    ]);
-    if (error) return error;
-    if (!user) return badRequestResponse("Authentication required.");
+// POST /api/reports/:id/request-edits — Request changes to a submitted report
+export async function POST(
+    request: NextRequest,
+    { params }: { params: Promise<{ id: string }> }
+) {
+    try {
+        const { id } = await params;
+        const { user, error } = await getAuthenticatedUser();
+        if (error) return error;
 
-    const { id } = await params;
-    const existing = reportSubmissionDb.findById(id);
+        if (!REVIEWERS.includes(user!.role)) {
+            return forbiddenResponse("You do not have permission to request edits.");
+        }
 
-    if (!existing) {
-      return notFoundResponse("Report submission not found.");
+        const report = reportDb.findById(id);
+        if (!report) return notFoundResponse("Report not found");
+
+        if (report.status !== ReportStatus.SUBMITTED) {
+            return badRequestResponse(
+                "Only submitted reports can have edits requested."
+            );
+        }
+
+        const body = await request.json();
+        const parsed = requestEditsSchema.safeParse(body);
+        if (!parsed.success) {
+            return badRequestResponse(
+                parsed.error.issues.map((i) => i.message).join(", ")
+            );
+        }
+
+        const updated = reportDb.requestEdits(id, user!.id, parsed.data.reason);
+        if (!updated)
+            return badRequestResponse("Failed to request edits on report.");
+
+        // Notify report submitter
+        await sendReportEditsRequestedNotification(id, user!.id, parsed.data.reason);
+
+        return successResponse(updated, "Edits requested successfully");
+    } catch (err) {
+        return handleApiError(err);
     }
-
-    if (existing.status !== ReportStatus.SUBMITTED) {
-      return badRequestResponse(
-        "Only submitted reports can be sent back for edits."
-      );
-    }
-
-    const body = await request.json();
-    const notes = (body as Record<string, unknown>).notes as string | undefined;
-
-    if (!notes) {
-      return badRequestResponse(
-        "Please provide notes explaining what edits are needed."
-      );
-    }
-
-    const updated = reportSubmissionDb.requestEdits(id, user.id, notes);
-
-    if (!updated) {
-      return badRequestResponse("Failed to request edits.");
-    }
-
-    // Notify the submitter
-    reportNotificationDb.create({
-      userId: existing.submittedById,
-      reportSubmissionId: id,
-      notificationType: ReportNotificationKind.EDITS_REQUESTED,
-      title: "Report Edits Required",
-      message: `Your report requires edits: ${notes}`,
-      isRead: false,
-      emailSent: false,
-    });
-
-    return successResponse(updated, "Edit request sent to the submitter.");
-  } catch (error) {
-    return handleApiError(error);
-  }
 }

@@ -1,7 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Card, Badge, Empty, Spin, message, Button } from "antd";
+import { Badge, Empty, Spin, message } from "antd";
+import Button from "@/components/ui/Button";
+import Card from "@/components/ui/Card";
 import {
   BellOutlined,
   ClockCircleOutlined,
@@ -9,6 +11,7 @@ import {
   RightOutlined,
 } from "@ant-design/icons";
 import Link from "next/link";
+import StatusBadge from "@/components/ui/StatusBadge";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 
@@ -38,6 +41,7 @@ export default function FollowUpReminderWidget({
 
   useEffect(() => {
     fetchOverdueFollowUps();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [leaderGroupId]);
 
   const fetchOverdueFollowUps = async () => {
@@ -82,19 +86,6 @@ export default function FollowUpReminderWidget({
     }
   };
 
-  const getPriorityColor = (priority: string) => {
-    switch (priority) {
-      case "HIGH":
-        return "red";
-      case "MEDIUM":
-        return "orange";
-      case "LOW":
-        return "blue";
-      default:
-        return "default";
-    }
-  };
-
   const handleMarkComplete = async (followUpId: string) => {
     try {
       const response = await fetch(`/api/follow-ups/${followUpId}`, {
@@ -107,7 +98,7 @@ export default function FollowUpReminderWidget({
         message.success("Follow-up marked as complete");
         setOverdueFollowUps((prev) => prev.filter((f) => f.id !== followUpId));
       }
-    } catch (error) {
+    } catch {
       message.error("Failed to mark follow-up as complete");
     }
   };
@@ -127,7 +118,7 @@ export default function FollowUpReminderWidget({
       title={
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <BellOutlined className="text-orange-500" />
+            <BellOutlined className="text-ds-chart-4" />
             <span>Overdue Follow-ups</span>
             {overdueFollowUps.length > 0 && (
               <Badge count={overdueFollowUps.length} showZero={false} />
@@ -135,7 +126,7 @@ export default function FollowUpReminderWidget({
           </div>
           <Link
             href="/leader/follow-ups"
-            className="text-sm text-blue-600 hover:text-blue-700"
+            className="text-sm text-ds-chart-1 hover:text-blue-700"
           >
             View All <RightOutlined />
           </Link>
@@ -154,38 +145,35 @@ export default function FollowUpReminderWidget({
           {overdueFollowUps.slice(0, 5).map((followUp) => (
             <div
               key={followUp.id}
-              className="p-3 border border-gray-200 rounded-lg hover:shadow-md transition-shadow"
+              className="p-3 border border-ds-border-base rounded-lg hover:shadow-md transition-shadow"
             >
               <div className="flex items-start justify-between gap-3">
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-1">
-                    <UserOutlined className="text-gray-500" />
-                    <span className="font-medium text-gray-900">
+                    <UserOutlined className="text-ds-text-subtle" />
+                    <span className="font-medium text-ds-text-primary">
                       {followUp.memberName}
                     </span>
-                    <Badge
-                      color={getPriorityColor(followUp.priority)}
-                      text={followUp.priority}
-                    />
+                    <StatusBadge status={followUp.priority} category="priority" />
                   </div>
-                  <p className="text-sm text-gray-600 mb-2">
+                  <p className="text-sm text-ds-text-secondary mb-2">
                     {followUp.reason}
                   </p>
-                  <div className="flex items-center gap-1 text-xs text-red-600">
+                  <div className="flex items-center gap-1 text-xs text-ds-status-error">
                     <ClockCircleOutlined />
                     <span>
                       {followUp.daysOverdue} day
                       {followUp.daysOverdue !== 1 ? "s" : ""} overdue
                     </span>
-                    <span className="text-gray-400">•</span>
-                    <span className="text-gray-500">
-                      Due {dayjs(followUp.scheduledDate).format("MMM D")}
+                    <span className="text-ds-text-subtle">•</span>
+                    <span className="text-ds-text-subtle">
+                      Due {dayjs(followUp.scheduledDate).format("D MMM")}
                     </span>
                   </div>
                 </div>
                 <Button
                   size="small"
-                  type="link"
+                  variant="link"
                   onClick={() => handleMarkComplete(followUp.id)}
                 >
                   Mark Done
@@ -196,7 +184,7 @@ export default function FollowUpReminderWidget({
           {overdueFollowUps.length > 5 && (
             <Link
               href="/leader/follow-ups"
-              className="block text-center text-sm text-blue-600 hover:text-blue-700 pt-2"
+              className="block text-center text-sm text-ds-chart-1 hover:text-blue-700 pt-2"
             >
               View {overdueFollowUps.length - 5} more overdue follow-ups
             </Link>

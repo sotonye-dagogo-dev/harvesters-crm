@@ -1,7 +1,9 @@
 "use client";
 
-import { CampaignStatus, CampaignMediaType } from "@/lib/types";
-import { Card, Tag, Tooltip } from "antd";
+import { CampaignMediaType } from "@/lib/types";
+import { Tag, Tooltip } from "antd";
+import Card from "@/components/ui/Card";
+import StatusBadge from "@/components/ui/StatusBadge";
 import {
   EyeOutlined,
   PlayCircleOutlined,
@@ -34,22 +36,6 @@ export default function CampaignCard({
     ? "Expired"
     : formatDistanceToNow(expiresAt, { addSuffix: true });
 
-  // Get status color
-  const getStatusColor = (status: CampaignStatus) => {
-    switch (status) {
-      case "ACTIVE":
-        return "success";
-      case "DRAFT":
-        return "processing";
-      case "EXPIRED":
-        return "default";
-      case "ARCHIVED":
-        return "warning";
-      default:
-        return "default";
-    }
-  };
-
   // Get media type icon
   const getMediaIcon = (mediaType: CampaignMediaType) => {
     switch (mediaType) {
@@ -68,7 +54,7 @@ export default function CampaignCard({
   const renderThumbnail = () => {
     if (campaign.mediaType === "IMAGE" && campaign.mediaUrl) {
       return (
-        <div className="relative w-full h-48 bg-gradient-to-br from-indigo-100 to-purple-100 dark:from-indigo-900 dark:to-purple-900">
+        <div className="relative w-full h-48 bg-gradient-to-br from-ds-brand-accent-subtle to-purple-100 dark:from-ds-brand-accent dark:to-purple-900">
           <Image
             src={campaign.mediaUrl}
             alt={campaign.title}
@@ -81,7 +67,7 @@ export default function CampaignCard({
 
     if (campaign.mediaType === "VIDEO" && campaign.thumbnailUrl) {
       return (
-        <div className="relative w-full h-48 bg-gradient-to-br from-indigo-100 to-purple-100 dark:from-indigo-900 dark:to-purple-900">
+        <div className="relative w-full h-48 bg-gradient-to-br from-ds-brand-accent-subtle to-purple-100 dark:from-ds-brand-accent dark:to-purple-900">
           <Image
             src={campaign.thumbnailUrl}
             alt={campaign.title}
@@ -97,7 +83,7 @@ export default function CampaignCard({
 
     // Default gradient for text-only campaigns
     return (
-      <div className="relative w-full h-48 bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 flex items-center justify-center">
+      <div className="relative w-full h-48 bg-gradient-to-br from-ds-brand-accent via-purple-500 to-pink-500 flex items-center justify-center">
         <div className="text-center text-white p-6">
           <ShareAltOutlined className="text-5xl mb-4" />
           <p className="text-lg font-semibold">{campaign.title}</p>
@@ -109,7 +95,7 @@ export default function CampaignCard({
   return (
     <Card
       hoverable
-      className="overflow-hidden shadow-md hover:shadow-xl transition-all duration-300"
+      className="overflow-hidden shadow-md hover:shadow-ds-xl transition-all duration-300"
       cover={renderThumbnail()}
       onClick={() => onView?.(campaign)}
       actions={
@@ -141,26 +127,26 @@ export default function CampaignCard({
         title={
           <div className="flex items-start justify-between gap-2">
             <span className="line-clamp-1">{campaign.title}</span>
-            <Tag color={getStatusColor(campaign.status)}>{campaign.status}</Tag>
+            <StatusBadge status={campaign.status} category="campaign" />
           </div>
         }
         description={
           <div className="space-y-2">
-            <p className="line-clamp-2 text-gray-600 dark:text-gray-300">
+            <p className="line-clamp-2 text-ds-text-secondary">
               {campaign.description}
             </p>
 
             <div className="flex items-center justify-between text-sm">
               <div className="flex items-center gap-2">
                 {campaign.mediaType && getMediaIcon(campaign.mediaType)}
-                <span className="text-gray-500 dark:text-gray-400">
+                <span className="text-ds-text-subtle">
                   {campaign.mediaType || "TEXT"}
                 </span>
               </div>
 
-              <div className="flex items-center gap-1 text-gray-500 dark:text-gray-400">
+              <div className="flex items-center gap-1 text-ds-text-subtle">
                 <ClockCircleOutlined />
-                <span className={isExpired ? "text-red-500" : ""}>
+                <span className={isExpired ? "text-ds-status-error" : ""}>
                   {timeRemaining}
                 </span>
               </div>

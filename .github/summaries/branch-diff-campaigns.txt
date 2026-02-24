@@ -1,0 +1,5923 @@
+diff --git a/lib/constants/index.ts b/lib/constants/index.ts
+index 96d9ef4..3719602 100644
+--- a/lib/constants/index.ts
++++ b/lib/constants/index.ts
+@@ -8,45 +8,33 @@
+ 
+ export const USER_ROLES = {
+   SUPERADMIN: "SUPERADMIN" as const,
+-  GROUP_PASTOR: "GROUP_PASTOR" as const,
+-  GROUP_ADMIN: "GROUP_ADMIN" as const,
+-  CAMPUS_PASTOR: "CAMPUS_PASTOR" as const,
+-  CAMPUS_ADMIN: "CAMPUS_ADMIN" as const,
+   ZONAL_LEADER: "ZONAL_LEADER" as const,
++  CAMPUS_ADMIN: "CAMPUS_ADMIN" as const,
+   HOD: "HOD" as const,
+   SMALL_GROUP_LEADER: "SMALL_GROUP_LEADER" as const,
+   CELL_LEADER: "CELL_LEADER" as const,
+-  DATA_ENTRY: "DATA_ENTRY" as const,
+   MEMBER: "MEMBER" as const,
+ };
+ 
+ export const USER_ROLE_LABELS: Record<string, string> = {
+   [USER_ROLES.SUPERADMIN]: "Super Admin",
+-  [USER_ROLES.GROUP_PASTOR]: "Group Pastor",
+-  [USER_ROLES.GROUP_ADMIN]: "Group Admin",
+-  [USER_ROLES.CAMPUS_PASTOR]: "Campus Pastor",
+-  [USER_ROLES.CAMPUS_ADMIN]: "Campus Admin",
+   [USER_ROLES.ZONAL_LEADER]: "Zonal Leader",
++  [USER_ROLES.CAMPUS_ADMIN]: "Campus Admin",
+   [USER_ROLES.HOD]: "Head of Department",
+   [USER_ROLES.SMALL_GROUP_LEADER]: "Small Group Leader",
+   [USER_ROLES.CELL_LEADER]: "Cell Leader",
+-  [USER_ROLES.DATA_ENTRY]: "Data Entry",
+   [USER_ROLES.MEMBER]: "Member",
+ };
+ 
+ /** Hierarchy order: lower number = higher authority */
+ export const HIERARCHY_ORDER: Record<string, number> = {
+   [USER_ROLES.SUPERADMIN]: 0,
+-  [USER_ROLES.GROUP_PASTOR]: 1,
+-  [USER_ROLES.GROUP_ADMIN]: 2,
+-  [USER_ROLES.CAMPUS_PASTOR]: 3,
+-  [USER_ROLES.CAMPUS_ADMIN]: 4,
+-  [USER_ROLES.ZONAL_LEADER]: 5,
+-  [USER_ROLES.HOD]: 6,
+-  [USER_ROLES.SMALL_GROUP_LEADER]: 7,
+-  [USER_ROLES.CELL_LEADER]: 8,
+-  [USER_ROLES.DATA_ENTRY]: 9,
+-  [USER_ROLES.MEMBER]: 10,
++  [USER_ROLES.ZONAL_LEADER]: 1,
++  [USER_ROLES.CAMPUS_ADMIN]: 2,
++  [USER_ROLES.HOD]: 3,
++  [USER_ROLES.SMALL_GROUP_LEADER]: 4,
++  [USER_ROLES.CELL_LEADER]: 5,
++  [USER_ROLES.MEMBER]: 6,
+ };
+ 
+ /** Returns true if roleA is above roleB in the hierarchy */
+@@ -54,9 +42,9 @@ export const isAboveInHierarchy = (roleA: string, roleB: string): boolean => {
+   return (HIERARCHY_ORDER[roleA] ?? 99) < (HIERARCHY_ORDER[roleB] ?? 99);
+ };
+ 
+-/** Returns true if the role is a leadership role (not regular member or data entry) */
++/** Returns true if the role is a leadership role (not regular member) */
+ export const isLeadershipRole = (role: string): boolean => {
+-  return role !== USER_ROLES.MEMBER && role !== USER_ROLES.DATA_ENTRY;
++  return role !== USER_ROLES.MEMBER;
+ };
+ 
+ /** Returns the roles that are below a given role in the hierarchy */
+@@ -107,28 +95,6 @@ export const MEETING_LEVEL_PERMISSIONS: Record<string, string[]> = {
+     MEETING_LEVELS.SMALL_GROUP,
+     MEETING_LEVELS.CELL,
+   ],
+-  [USER_ROLES.GROUP_PASTOR]: [
+-    MEETING_LEVELS.ALL,
+-    MEETING_LEVELS.ZONE,
+-    MEETING_LEVELS.CAMPUS,
+-    MEETING_LEVELS.DEPARTMENT,
+-    MEETING_LEVELS.SMALL_GROUP,
+-    MEETING_LEVELS.CELL,
+-  ],
+-  [USER_ROLES.GROUP_ADMIN]: [
+-    MEETING_LEVELS.ALL,
+-    MEETING_LEVELS.ZONE,
+-    MEETING_LEVELS.CAMPUS,
+-    MEETING_LEVELS.DEPARTMENT,
+-    MEETING_LEVELS.SMALL_GROUP,
+-    MEETING_LEVELS.CELL,
+-  ],
+-  [USER_ROLES.CAMPUS_PASTOR]: [
+-    MEETING_LEVELS.CAMPUS,
+-    MEETING_LEVELS.DEPARTMENT,
+-    MEETING_LEVELS.SMALL_GROUP,
+-    MEETING_LEVELS.CELL,
+-  ],
+   [USER_ROLES.ZONAL_LEADER]: [
+     MEETING_LEVELS.ZONE,
+     MEETING_LEVELS.CAMPUS,
+@@ -152,7 +118,6 @@ export const MEETING_LEVEL_PERMISSIONS: Record<string, string[]> = {
+     MEETING_LEVELS.CELL,
+   ],
+   [USER_ROLES.CELL_LEADER]: [MEETING_LEVELS.CELL],
+-  [USER_ROLES.DATA_ENTRY]: [],
+   [USER_ROLES.MEMBER]: [],
+ };
+ 
+@@ -326,18 +291,6 @@ export const NOTIFICATION_TYPES = {
+   NEW_REQUEST: "NEW_REQUEST" as const,
+   CAMPAIGN_NEW: "CAMPAIGN_NEW" as const,
+   REFERRAL_CONVERSION: "REFERRAL_CONVERSION" as const,
+-  // Report notifications
+-  REPORT_SUBMITTED: "REPORT_SUBMITTED" as const,
+-  REPORT_EDITS_REQUESTED: "REPORT_EDITS_REQUESTED" as const,
+-  REPORT_APPROVED: "REPORT_APPROVED" as const,
+-  REPORT_REVIEWED: "REPORT_REVIEWED" as const,
+-  REPORT_EDIT_APPROVED: "REPORT_EDIT_APPROVED" as const,
+-  REPORT_EDIT_REJECTED: "REPORT_EDIT_REJECTED" as const,
+-  REPORT_UPDATE_REQUEST_SUBMITTED: "REPORT_UPDATE_REQUEST_SUBMITTED" as const,
+-  REPORT_UPDATE_REQUEST_APPROVED: "REPORT_UPDATE_REQUEST_APPROVED" as const,
+-  REPORT_UPDATE_REQUEST_REJECTED: "REPORT_UPDATE_REQUEST_REJECTED" as const,
+-  REPORT_DEADLINE_REMINDER: "REPORT_DEADLINE_REMINDER" as const,
+-  REPORT_DEADLINE_FINAL: "REPORT_DEADLINE_FINAL" as const,
+ };
+ 
+ export const NOTIFICATION_TYPE_LABELS: Record<string, string> = {
+@@ -348,18 +301,6 @@ export const NOTIFICATION_TYPE_LABELS: Record<string, string> = {
+   [NOTIFICATION_TYPES.NEW_REQUEST]: "New Request",
+   [NOTIFICATION_TYPES.CAMPAIGN_NEW]: "New Campaign",
+   [NOTIFICATION_TYPES.REFERRAL_CONVERSION]: "Referral Conversion",
+-  // Report notification labels
+-  [NOTIFICATION_TYPES.REPORT_SUBMITTED]: "Report Submitted",
+-  [NOTIFICATION_TYPES.REPORT_EDITS_REQUESTED]: "Report Edits Requested",
+-  [NOTIFICATION_TYPES.REPORT_APPROVED]: "Report Approved",
+-  [NOTIFICATION_TYPES.REPORT_REVIEWED]: "Report Reviewed",
+-  [NOTIFICATION_TYPES.REPORT_EDIT_APPROVED]: "Report Edit Approved",
+-  [NOTIFICATION_TYPES.REPORT_EDIT_REJECTED]: "Report Edit Rejected",
+-  [NOTIFICATION_TYPES.REPORT_UPDATE_REQUEST_SUBMITTED]: "Report Update Request Submitted",
+-  [NOTIFICATION_TYPES.REPORT_UPDATE_REQUEST_APPROVED]: "Report Update Request Approved",
+-  [NOTIFICATION_TYPES.REPORT_UPDATE_REQUEST_REJECTED]: "Report Update Request Rejected",
+-  [NOTIFICATION_TYPES.REPORT_DEADLINE_REMINDER]: "Report Deadline Reminder",
+-  [NOTIFICATION_TYPES.REPORT_DEADLINE_FINAL]: "Report Deadline Final Notice",
+ };
+ 
+ // ============================================================================
+@@ -482,43 +423,6 @@ export const API_ROUTES = {
+   HIERARCHY_ANALYTICS: "/api/analytics/hierarchy",
+   CHURCH_ANALYTICS: "/api/analytics/church",
+   EXPORT_ANALYTICS: "/api/analytics/export",
+-
+-  // Reports
+-  REPORTS: "/api/reports",
+-  REPORT_BY_ID: (id: string) => `/api/reports/${id}`,
+-  REPORT_SUBMIT: (id: string) => `/api/reports/${id}/submit`,
+-  REPORT_APPROVE: (id: string) => `/api/reports/${id}/approve`,
+-  REPORT_REQUEST_EDITS: (id: string) => `/api/reports/${id}/request-edits`,
+-  REPORT_REVIEW: (id: string) => `/api/reports/${id}/review`,
+-  REPORT_LOCK: (id: string) => `/api/reports/${id}/lock`,
+-  REPORT_HISTORY: (id: string) => `/api/reports/${id}/history`,
+-  REPORT_VERSIONS: (id: string) => `/api/reports/${id}/versions`,
+-  REPORT_EDITS: (id: string) => `/api/reports/${id}/edits`,
+-  REPORT_EDIT_BY_ID: (reportId: string, editId: string) =>
+-    `/api/reports/${reportId}/edits/${editId}`,
+-  REPORT_EDIT_SUBMIT: (reportId: string, editId: string) =>
+-    `/api/reports/${reportId}/edits/${editId}/submit`,
+-  REPORT_EDIT_APPROVE: (reportId: string, editId: string) =>
+-    `/api/reports/${reportId}/edits/${editId}/approve`,
+-  REPORT_EDIT_REJECT: (reportId: string, editId: string) =>
+-    `/api/reports/${reportId}/edits/${editId}/reject`,
+-
+-  // Report Templates
+-  REPORT_TEMPLATES: "/api/report-templates",
+-  REPORT_TEMPLATE_BY_ID: (id: string) => `/api/report-templates/${id}`,
+-  REPORT_TEMPLATE_PUBLISH: (id: string) => `/api/report-templates/${id}/publish`,
+-  REPORT_TEMPLATE_VERSIONS: (id: string) => `/api/report-templates/${id}/versions`,
+-
+-  // Report Update Requests
+-  REPORT_UPDATE_REQUESTS: "/api/report-update-requests",
+-  REPORT_UPDATE_REQUEST_BY_ID: (id: string) => `/api/report-update-requests/${id}`,
+-  REPORT_UPDATE_REQUEST_APPROVE: (id: string) => `/api/report-update-requests/${id}/approve`,
+-  REPORT_UPDATE_REQUEST_REJECT: (id: string) => `/api/report-update-requests/${id}/reject`,
+-
+-  // Report Analytics
+-  REPORT_ANALYTICS: "/api/analytics/reports",
+-  REPORT_ANALYTICS_CAMPUS: (id: string) => `/api/analytics/reports/campus/${id}`,
+-  REPORT_ANALYTICS_GROUP: (id: string) => `/api/analytics/reports/group/${id}`,
+ } as const;
+ 
+ // ============================================================================
+@@ -548,12 +452,6 @@ export const APP_ROUTES = {
+   SUPERADMIN_ANALYTICS: "/superadmin/analytics",
+   SUPERADMIN_CAMPAIGNS: "/superadmin/campaigns",
+   SUPERADMIN_REFERRALS: "/superadmin/referrals",
+-  SUPERADMIN_REPORTS: "/superadmin/reports",
+-  SUPERADMIN_REPORT_TEMPLATES: "/superadmin/reports/templates",
+-  SUPERADMIN_REPORT_TEMPLATE_NEW: "/superadmin/reports/templates/new",
+-  SUPERADMIN_REPORT_TEMPLATE_BY_ID: (id: string) => `/superadmin/reports/templates/${id}`,
+-  SUPERADMIN_REPORT_UPDATE_REQUESTS: "/superadmin/reports/update-requests",
+-  SUPERADMIN_REPORT_ANALYTICS: "/superadmin/reports/analytics",
+ 
+   // Zonal Leader
+   ZONAL_LEADER_DASHBOARD: "/zonal-leader/dashboard",
+@@ -584,13 +482,6 @@ export const APP_ROUTES = {
+   LEADER_MEETINGS: "/leader/meetings",
+   LEADER_MEMBERS: "/leader/members",
+   LEADER_ANALYTICS: "/leader/analytics",
+-  LEADER_REPORTS: "/leader/reports",
+-  LEADER_REPORT_NEW: "/leader/reports/new",
+-  LEADER_REPORT_BY_ID: (id: string) => `/leader/reports/${id}`,
+-  LEADER_REPORT_EDIT: (id: string) => `/leader/reports/${id}/edit`,
+-  LEADER_REPORT_HISTORY: (id: string) => `/leader/reports/${id}/history`,
+-  LEADER_REPORT_EDITS: (id: string) => `/leader/reports/${id}/edits`,
+-  LEADER_DATA_ENTRY: "/leader/reports/data-entry",
+ 
+   // Cell Leader
+   CELL_LEADER_DASHBOARD: "/cell-leader/dashboard",
+@@ -714,17 +605,6 @@ export const ERROR_MESSAGES = {
+   CAMPAIGN_EXPIRED: "This campaign has expired",
+   INVITE_EXPIRED: "This invite link has expired",
+   INVITE_INVALID: "This invite link is no longer valid",
+-  // Report errors
+-  REPORT_NOT_FOUND: "Report not found",
+-  REPORT_ALREADY_SUBMITTED: "This report has already been submitted",
+-  REPORT_LOCKED: "This report is locked and cannot be modified",
+-  REPORT_INVALID_STATUS_TRANSITION: "This status transition is not allowed",
+-  REPORT_INCOMPLETE: "Please complete all required fields before submitting",
+-  REPORT_DEADLINE_PASSED: "The submission deadline has passed",
+-  REPORT_TEMPLATE_NOT_FOUND: "Report template not found",
+-  REPORT_EDIT_NOT_FOUND: "Report edit not found",
+-  REPORT_UPDATE_REQUEST_NOT_FOUND: "Update request not found",
+-  REPORT_FIELD_LOCKED: "This field is locked and cannot be modified",
+ };
+ 
+ // ============================================================================
+@@ -743,22 +623,4 @@ export const SUCCESS_MESSAGES = {
+   CAMPAIGN_PUBLISHED: "Campaign published and will be active for 24 hours",
+   INVITE_CREATED: "Invite link created successfully",
+   INVITE_ACCEPTED: "Welcome! You have successfully joined",
+-  // Report success messages
+-  REPORT_CREATED: "Report created successfully",
+-  REPORT_UPDATED: "Report updated successfully",
+-  REPORT_SUBMITTED: "Report submitted successfully",
+-  REPORT_APPROVED: "Report approved successfully",
+-  REPORT_REVIEWED: "Report marked as reviewed",
+-  REPORT_EDITS_REQUESTED: "Edit request sent successfully",
+-  REPORT_EDIT_CREATED: "Report edit created",
+-  REPORT_EDIT_SUBMITTED: "Report edit submitted for review",
+-  REPORT_EDIT_APPROVED: "Report edit approved and applied",
+-  REPORT_EDIT_REJECTED: "Report edit rejected",
+-  REPORT_LOCKED: "Report locked successfully",
+-  REPORT_TEMPLATE_CREATED: "Report template created successfully",
+-  REPORT_TEMPLATE_UPDATED: "Report template updated successfully",
+-  REPORT_TEMPLATE_PUBLISHED: "Template version published",
+-  REPORT_UPDATE_REQUEST_CREATED: "Update request submitted",
+-  REPORT_UPDATE_REQUEST_APPROVED: "Update request approved and applied",
+-  REPORT_UPDATE_REQUEST_REJECTED: "Update request rejected",
+ };
+diff --git a/lib/data/database.ts b/lib/data/database.ts
+index 272b85e..672d6af 100644
+--- a/lib/data/database.ts
++++ b/lib/data/database.ts
+@@ -5,11 +5,6 @@ import {
+   MeetingLevel,
+   CampaignInteractionType,
+   InviteLinkType,
+-  ReportStatus,
+-  ReportEventType,
+-  ReportPeriodType,
+-  ReportEditStatus,
+-  ReportUpdateRequestStatus,
+ } from "@/lib/types";
+ import {
+   mockUsers,
+@@ -26,13 +21,6 @@ import {
+   mockCampaignInteractions,
+   mockInviteLinks,
+   mockInviteLinkVisits,
+-  mockReportTemplates,
+-  mockReportTemplateVersions,
+-  mockReports,
+-  mockReportEvents,
+-  mockReportVersions,
+-  mockReportEdits,
+-  mockReportUpdateRequests,
+ } from "./mockData";
+ 
+ // ============================================================================
+@@ -58,13 +46,6 @@ const globalForDb = globalThis as unknown as {
+     campaignInteractions: CampaignInteraction[];
+     inviteLinks: InviteLink[];
+     inviteLinkVisits: InviteLinkVisit[];
+-    reportTemplates: ReportTemplate[];
+-    reportTemplateVersions: ReportTemplateVersion[];
+-    reports: Report[];
+-    reportEvents: ReportEvent[];
+-    reportVersions: ReportVersion[];
+-    reportEdits: ReportEdit[];
+-    reportUpdateRequests: ReportUpdateRequest[];
+   };
+ };
+ 
+@@ -84,13 +65,6 @@ if (!globalForDb.dbStore) {
+     campaignInteractions: cloneData(mockCampaignInteractions),
+     inviteLinks: cloneData(mockInviteLinks),
+     inviteLinkVisits: cloneData(mockInviteLinkVisits),
+-    reportTemplates: cloneData(mockReportTemplates),
+-    reportTemplateVersions: cloneData(mockReportTemplateVersions),
+-    reports: cloneData(mockReports),
+-    reportEvents: cloneData(mockReportEvents),
+-    reportVersions: cloneData(mockReportVersions),
+-    reportEdits: cloneData(mockReportEdits),
+-    reportUpdateRequests: cloneData(mockReportUpdateRequests),
+   };
+ }
+ 
+@@ -108,13 +82,6 @@ const campaigns = globalForDb.dbStore.campaigns;
+ const campaignInteractions = globalForDb.dbStore.campaignInteractions;
+ const inviteLinks = globalForDb.dbStore.inviteLinks;
+ const inviteLinkVisits = globalForDb.dbStore.inviteLinkVisits;
+-const reportTemplates = globalForDb.dbStore.reportTemplates;
+-const reportTemplateVersions = globalForDb.dbStore.reportTemplateVersions;
+-const reports = globalForDb.dbStore.reports;
+-const reportEvents = globalForDb.dbStore.reportEvents;
+-const reportVersions = globalForDb.dbStore.reportVersions;
+-const reportEdits = globalForDb.dbStore.reportEdits;
+-const reportUpdateRequests = globalForDb.dbStore.reportUpdateRequests;
+ 
+ // ── Helpers ──────────────────────────────────────────────────────────────────
+ const generateId = () =>
+@@ -1365,9 +1332,9 @@ export const analyticsDb = {
+     const attendanceRate =
+       groupMembers.length > 0 && groupMeetings.length > 0
+         ? Math.round(
+-          (totalAttendance / (groupMembers.length * groupMeetings.length)) *
+-          100
+-        )
++            (totalAttendance / (groupMembers.length * groupMeetings.length)) *
++              100
++          )
+         : 0;
+     return {
+       memberCount: groupMembers.length,
+@@ -1404,9 +1371,9 @@ export const analyticsDb = {
+       engagementRate:
+         campaign.viewCount + views > 0
+           ? Math.round(
+-            ((campaign.clickCount + clicks) / (campaign.viewCount + views)) *
+-            100
+-          )
++              ((campaign.clickCount + clicks) / (campaign.viewCount + views)) *
++                100
++            )
+           : 0,
+     };
+   },
+@@ -1471,1371 +1438,6 @@ export const analyticsDb = {
+   },
+ };
+ 
+-// ============================================================================
+-// REPORT TEMPLATE OPERATIONS
+-// ============================================================================
+-
+-export const reportTemplateDb = {
+-  findAll: (filters?: {
+-    isActive?: boolean;
+-    search?: string;
+-  }): ReportTemplate[] => {
+-    let result = [...reportTemplates];
+-    if (filters?.isActive !== undefined)
+-      result = result.filter((t) => t.isActive === filters.isActive);
+-    if (filters?.search) {
+-      const q = filters.search.toLowerCase();
+-      result = result.filter(
+-        (t) =>
+-          t.name.toLowerCase().includes(q) ||
+-          t.description?.toLowerCase().includes(q)
+-      );
+-    }
+-    return result;
+-  },
+-
+-  findById: (id: string): ReportTemplate | undefined =>
+-    reportTemplates.find((t) => t.id === id),
+-
+-  findDefault: (): ReportTemplate | undefined =>
+-    reportTemplates.find((t) => t.isDefault && t.isActive),
+-
+-  create: (data: CreateReportTemplateInput, createdById: string): ReportTemplate => {
+-    const id = generateId();
+-    const sections: ReportTemplateSection[] = (data.sections || []).map(
+-      (sec, si) => {
+-        const sectionId = `tsec-${id}-${si}`;
+-        return {
+-          id: sectionId,
+-          templateId: id,
+-          name: sec.name,
+-          description: sec.description,
+-          order: sec.order,
+-          isRequired: sec.isRequired ?? true,
+-          subSections: (sec.subSections || []).map((ss, ssi) => ({
+-            id: `tssec-${id}-${si}-${ssi}`,
+-            sectionId,
+-            name: ss.name,
+-            order: ss.order,
+-            metrics: (ss.metrics || []).map((m, mi) => ({
+-              id: `tm-${id}-${si}-${ssi}-${mi}`,
+-              sectionId,
+-              name: m.name,
+-              fieldType: m.fieldType,
+-              isRequired: m.isRequired ?? true,
+-              order: m.order,
+-              capturesGoal: m.capturesGoal ?? true,
+-              capturesAchieved: m.capturesAchieved ?? true,
+-              capturesYoY: m.capturesYoY ?? true,
+-            })),
+-          })),
+-          metrics: (sec.metrics || []).map((m, mi) => ({
+-            id: `tm-${id}-${si}-${mi}`,
+-            sectionId,
+-            name: m.name,
+-            fieldType: m.fieldType,
+-            isRequired: m.isRequired ?? true,
+-            order: m.order,
+-            capturesGoal: m.capturesGoal ?? true,
+-            capturesAchieved: m.capturesAchieved ?? true,
+-            capturesYoY: m.capturesYoY ?? true,
+-          })),
+-        };
+-      }
+-    );
+-
+-    const template: ReportTemplate = {
+-      id,
+-      name: data.name,
+-      description: data.description,
+-      version: 1,
+-      sections,
+-      isActive: true,
+-      isDefault: data.isDefault ?? false,
+-      createdById,
+-      createdAt: now(),
+-      updatedAt: now(),
+-    };
+-
+-    // If this is set as default, unset other defaults
+-    if (template.isDefault) {
+-      reportTemplates.forEach((t, idx) => {
+-        if (t.id !== id && t.isDefault) {
+-          reportTemplates[idx] = { ...t, isDefault: false, updatedAt: now() };
+-        }
+-      });
+-    }
+-
+-    reportTemplates.push(template);
+-
+-    // Create initial version snapshot
+-    reportTemplateVersionDb.create(id, 1, template, createdById, "Initial creation");
+-
+-    return template;
+-  },
+-
+-  update: (
+-    id: string,
+-    data: UpdateReportTemplateInput,
+-    updatedById: string
+-  ): ReportTemplate | undefined => {
+-    const idx = reportTemplates.findIndex((t) => t.id === id);
+-    if (idx === -1) return undefined;
+-
+-    const existing = reportTemplates[idx];
+-    const newVersion = existing.version + 1;
+-
+-    // Rebuild sections if provided
+-    let sections = existing.sections;
+-    if (data.sections) {
+-      sections = data.sections.map((sec, si) => {
+-        const sectionId = `tsec-${id}-v${newVersion}-${si}`;
+-        return {
+-          id: sectionId,
+-          templateId: id,
+-          name: sec.name,
+-          description: sec.description,
+-          order: sec.order,
+-          isRequired: sec.isRequired ?? true,
+-          subSections: (sec.subSections || []).map((ss, ssi) => ({
+-            id: `tssec-${id}-v${newVersion}-${si}-${ssi}`,
+-            sectionId,
+-            name: ss.name,
+-            order: ss.order,
+-            metrics: (ss.metrics || []).map((m, mi) => ({
+-              id: `tm-${id}-v${newVersion}-${si}-${ssi}-${mi}`,
+-              sectionId,
+-              name: m.name,
+-              fieldType: m.fieldType,
+-              isRequired: m.isRequired ?? true,
+-              order: m.order,
+-              capturesGoal: m.capturesGoal ?? true,
+-              capturesAchieved: m.capturesAchieved ?? true,
+-              capturesYoY: m.capturesYoY ?? true,
+-            })),
+-          })),
+-          metrics: (sec.metrics || []).map((m, mi) => ({
+-            id: `tm-${id}-v${newVersion}-${si}-${mi}`,
+-            sectionId,
+-            name: m.name,
+-            fieldType: m.fieldType,
+-            isRequired: m.isRequired ?? true,
+-            order: m.order,
+-            capturesGoal: m.capturesGoal ?? true,
+-            capturesAchieved: m.capturesAchieved ?? true,
+-            capturesYoY: m.capturesYoY ?? true,
+-          })),
+-        };
+-      });
+-    }
+-
+-    const updated: ReportTemplate = {
+-      ...existing,
+-      name: data.name ?? existing.name,
+-      description: data.description ?? existing.description,
+-      version: newVersion,
+-      sections,
+-      isDefault: data.isDefault ?? existing.isDefault,
+-      updatedAt: now(),
+-    };
+-
+-    // Unset other defaults if newly set as default
+-    if (data.isDefault && !existing.isDefault) {
+-      reportTemplates.forEach((t, i) => {
+-        if (t.id !== id && t.isDefault) {
+-          reportTemplates[i] = { ...t, isDefault: false, updatedAt: now() };
+-        }
+-      });
+-    }
+-
+-    reportTemplates[idx] = updated;
+-
+-    // Snapshot the new version
+-    reportTemplateVersionDb.create(
+-      id,
+-      newVersion,
+-      updated,
+-      updatedById,
+-      data.changeNotes || `Updated to version ${newVersion}`
+-    );
+-
+-    return updated;
+-  },
+-
+-  deactivate: (id: string): ReportTemplate | undefined => {
+-    const idx = reportTemplates.findIndex((t) => t.id === id);
+-    if (idx === -1) return undefined;
+-    reportTemplates[idx] = {
+-      ...reportTemplates[idx],
+-      isActive: false,
+-      updatedAt: now(),
+-    };
+-    return reportTemplates[idx];
+-  },
+-
+-  delete: (id: string): boolean => {
+-    const idx = reportTemplates.findIndex((t) => t.id === id);
+-    if (idx === -1) return false;
+-    reportTemplates.splice(idx, 1);
+-    return true;
+-  },
+-
+-  count: (filters?: { isActive?: boolean }): number =>
+-    reportTemplateDb.findAll(filters).length,
+-};
+-
+-// ============================================================================
+-// REPORT TEMPLATE VERSION OPERATIONS
+-// ============================================================================
+-
+-export const reportTemplateVersionDb = {
+-  findByTemplateId: (templateId: string): ReportTemplateVersion[] =>
+-    reportTemplateVersions
+-      .filter((v) => v.templateId === templateId)
+-      .sort((a, b) => b.versionNumber - a.versionNumber),
+-
+-  findById: (id: string): ReportTemplateVersion | undefined =>
+-    reportTemplateVersions.find((v) => v.id === id),
+-
+-  findByVersion: (
+-    templateId: string,
+-    versionNumber: number
+-  ): ReportTemplateVersion | undefined =>
+-    reportTemplateVersions.find(
+-      (v) => v.templateId === templateId && v.versionNumber === versionNumber
+-    ),
+-
+-  create: (
+-    templateId: string,
+-    versionNumber: number,
+-    snapshot: ReportTemplate,
+-    createdById: string,
+-    changeNotes?: string
+-  ): ReportTemplateVersion => {
+-    const version: ReportTemplateVersion = {
+-      id: generateId(),
+-      templateId,
+-      versionNumber,
+-      snapshot: cloneData(snapshot),
+-      createdAt: now(),
+-      createdById,
+-      changeNotes,
+-    };
+-    reportTemplateVersions.push(version);
+-    return version;
+-  },
+-};
+-
+-// ============================================================================
+-// REPORT OPERATIONS (core report CRUD + workflow)
+-// ============================================================================
+-
+-export const reportDb = {
+-  findAll: (filters?: ReportFilters): Report[] => {
+-    let result = [...reports];
+-
+-    if (filters?.campusId)
+-      result = result.filter((r) => r.campusId === filters.campusId);
+-    if (filters?.status)
+-      result = result.filter((r) => r.status === filters.status);
+-    if (filters?.periodType)
+-      result = result.filter((r) => r.periodType === filters.periodType);
+-    if (filters?.periodYear)
+-      result = result.filter((r) => r.periodYear === filters.periodYear);
+-    if (filters?.periodMonth)
+-      result = result.filter((r) => r.periodMonth === filters.periodMonth);
+-    if (filters?.periodWeek)
+-      result = result.filter((r) => r.periodWeek === filters.periodWeek);
+-    if (filters?.submittedById)
+-      result = result.filter((r) => r.submittedById === filters.submittedById);
+-    if (filters?.templateId)
+-      result = result.filter((r) => r.templateId === filters.templateId);
+-    if (filters?.isDataEntry !== undefined)
+-      result = result.filter((r) => r.isDataEntry === filters.isDataEntry);
+-    if (filters?.search) {
+-      const q = filters.search.toLowerCase();
+-      result = result.filter(
+-        (r) =>
+-          r.notes?.toLowerCase().includes(q) ||
+-          r.id.toLowerCase().includes(q) ||
+-          r.campusId.toLowerCase().includes(q)
+-      );
+-    }
+-
+-    // Most recent first
+-    result.sort(
+-      (a, b) =>
+-        new Date(b.updatedAt || b.createdAt).getTime() -
+-        new Date(a.updatedAt || a.createdAt).getTime()
+-    );
+-    return result;
+-  },
+-
+-  findById: (id: string): Report | undefined =>
+-    reports.find((r) => r.id === id),
+-
+-  getWithDetails: (id: string): ReportWithDetails | undefined => {
+-    const report = reports.find((r) => r.id === id);
+-    if (!report) return undefined;
+-
+-    const template = reportTemplates.find((t) => t.id === report.templateId);
+-    const campus = campuses.find((c) => c.id === report.campusId);
+-    const submittedBy = users.find((u) => u.id === report.submittedById);
+-    const approvedBy = report.approvedById
+-      ? users.find((u) => u.id === report.approvedById)
+-      : undefined;
+-    const reviewedBy = report.reviewedById
+-      ? users.find((u) => u.id === report.reviewedById)
+-      : undefined;
+-    const events = reportEvents
+-      .filter((e) => e.reportId === id)
+-      .sort(
+-        (a, b) =>
+-          new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+-      );
+-    const edits = reportEdits.filter((e) => e.reportId === id);
+-    const updateRequests = reportUpdateRequests.filter(
+-      (ur) => ur.reportId === id
+-    );
+-
+-    const toProfile = (u: User): UserProfile => ({
+-      id: u.id,
+-      email: u.email,
+-      firstName: u.firstName,
+-      lastName: u.lastName,
+-      phone: u.phone,
+-      whatsappPhone: u.whatsappPhone,
+-      location: u.location,
+-      age: u.age,
+-      maritalStatus: u.maritalStatus,
+-      employmentStatus: u.employmentStatus,
+-      interests: u.interests,
+-      role: u.role,
+-      campusId: u.campusId,
+-      zoneId: u.zoneId,
+-      departmentId: u.departmentId,
+-      groupId: u.groupId,
+-      cellId: u.cellId,
+-      avatar: u.avatar,
+-      isActive: u.isActive,
+-      inviteCode: u.inviteCode,
+-      createdAt: u.createdAt,
+-      updatedAt: u.updatedAt,
+-    });
+-
+-    return {
+-      ...report,
+-      template,
+-      campus,
+-      submittedBy: submittedBy ? toProfile(submittedBy) : undefined,
+-      approvedBy: approvedBy ? toProfile(approvedBy) : undefined,
+-      reviewedBy: reviewedBy ? toProfile(reviewedBy) : undefined,
+-      events,
+-      edits,
+-      updateRequests,
+-    };
+-  },
+-
+-  create: (data: CreateReportInput): Report => {
+-    const id = generateId();
+-
+-    // Build report sections from input
+-    const sections: ReportSection[] = (data.sections || []).map((sec, si) => {
+-      const sectionId = `rs-${id}-${si}`;
+-      return {
+-        id: sectionId,
+-        reportId: id,
+-        templateSectionId: sec.templateSectionId,
+-        sectionName: sec.sectionName,
+-        order: sec.order,
+-        metrics: (sec.metrics || []).map((m, mi) => ({
+-          id: `rm-${id}-${si}-${mi}`,
+-          reportSectionId: sectionId,
+-          templateMetricId: m.templateMetricId,
+-          metricName: m.metricName,
+-          fieldType: m.fieldType,
+-          monthlyGoal: m.monthlyGoal,
+-          monthlyAchieved: m.monthlyAchieved,
+-          yoyGoal: m.yoyGoal,
+-          computedPercentage:
+-            m.monthlyGoal && m.monthlyAchieved
+-              ? Math.round((m.monthlyAchieved / m.monthlyGoal) * 100)
+-              : undefined,
+-          isLocked: false,
+-          order: m.order,
+-        })),
+-      };
+-    });
+-
+-    const report: Report = {
+-      id,
+-      templateId: data.templateId,
+-      templateVersionId: data.templateVersionId,
+-      campusId: data.campusId,
+-      periodType: data.periodType,
+-      periodYear: data.periodYear,
+-      periodMonth: data.periodMonth,
+-      periodWeek: data.periodWeek,
+-      status: ReportStatus.DRAFT,
+-      submittedById: data.submittedById,
+-      deadline: data.deadline,
+-      isDataEntry: data.isDataEntry || false,
+-      dataEntryById: data.dataEntryById,
+-      dataEntryDate: data.dataEntryDate,
+-      notes: data.notes,
+-      sections,
+-      createdAt: now(),
+-      updatedAt: now(),
+-    };
+-
+-    reports.push(report);
+-
+-    // Create audit event
+-    reportEventDb.create({
+-      reportId: id,
+-      eventType: data.isDataEntry
+-        ? ReportEventType.DATA_ENTRY_CREATED
+-        : ReportEventType.CREATED,
+-      actorId: data.submittedById,
+-      newStatus: ReportStatus.DRAFT,
+-      details: data.isDataEntry
+-        ? { dataEntryDate: data.dataEntryDate }
+-        : undefined,
+-    });
+-
+-    return report;
+-  },
+-
+-  update: (id: string, data: UpdateReportInput): Report | undefined => {
+-    const idx = reports.findIndex((r) => r.id === id);
+-    if (idx === -1) return undefined;
+-
+-    const existing = reports[idx];
+-
+-    // Rebuild sections if provided
+-    let sections = existing.sections;
+-    if (data.sections) {
+-      sections = data.sections.map((sec, si) => {
+-        const sectionId = `rs-${id}-upd-${si}`;
+-        return {
+-          id: sectionId,
+-          reportId: id,
+-          templateSectionId: sec.templateSectionId,
+-          sectionName: sec.sectionName,
+-          order: sec.order,
+-          metrics: (sec.metrics || []).map((m, mi) => ({
+-            id: `rm-${id}-upd-${si}-${mi}`,
+-            reportSectionId: sectionId,
+-            templateMetricId: m.templateMetricId,
+-            metricName: m.metricName,
+-            fieldType: m.fieldType,
+-            monthlyGoal: m.monthlyGoal,
+-            monthlyAchieved: m.monthlyAchieved,
+-            yoyGoal: m.yoyGoal,
+-            computedPercentage:
+-              m.monthlyGoal && m.monthlyAchieved
+-                ? Math.round((m.monthlyAchieved / m.monthlyGoal) * 100)
+-                : undefined,
+-            isLocked: false,
+-            order: m.order,
+-          })),
+-        };
+-      });
+-    }
+-
+-    reports[idx] = {
+-      ...existing,
+-      notes: data.notes ?? existing.notes,
+-      sections,
+-      updatedAt: now(),
+-    };
+-
+-    return reports[idx];
+-  },
+-
+-  /** Submit a draft report for review */
+-  submit: (id: string, actorId: string): Report | undefined => {
+-    const idx = reports.findIndex((r) => r.id === id);
+-    if (idx === -1) return undefined;
+-    if (reports[idx].status !== ReportStatus.DRAFT && reports[idx].status !== ReportStatus.REQUIRES_EDITS)
+-      return undefined;
+-
+-    const previousStatus = reports[idx].status;
+-    reports[idx] = {
+-      ...reports[idx],
+-      status: ReportStatus.SUBMITTED,
+-      updatedAt: now(),
+-    };
+-
+-    reportEventDb.create({
+-      reportId: id,
+-      eventType: ReportEventType.SUBMITTED,
+-      actorId,
+-      previousStatus,
+-      newStatus: ReportStatus.SUBMITTED,
+-    });
+-
+-    // Create version snapshot
+-    reportVersionDb.create(id, reports[idx], actorId, "Submitted for review");
+-
+-    return reports[idx];
+-  },
+-
+-  /** Approve a submitted report */
+-  approve: (id: string, actorId: string): Report | undefined => {
+-    const idx = reports.findIndex((r) => r.id === id);
+-    if (idx === -1) return undefined;
+-    if (reports[idx].status !== ReportStatus.SUBMITTED) return undefined;
+-
+-    reports[idx] = {
+-      ...reports[idx],
+-      status: ReportStatus.APPROVED,
+-      approvedById: actorId,
+-      updatedAt: now(),
+-    };
+-
+-    reportEventDb.create({
+-      reportId: id,
+-      eventType: ReportEventType.APPROVED,
+-      actorId,
+-      previousStatus: ReportStatus.SUBMITTED,
+-      newStatus: ReportStatus.APPROVED,
+-    });
+-
+-    return reports[idx];
+-  },
+-
+-  /** Request edits on a submitted report */
+-  requestEdits: (
+-    id: string,
+-    actorId: string,
+-    reason: string
+-  ): Report | undefined => {
+-    const idx = reports.findIndex((r) => r.id === id);
+-    if (idx === -1) return undefined;
+-    if (reports[idx].status !== ReportStatus.SUBMITTED) return undefined;
+-
+-    reports[idx] = {
+-      ...reports[idx],
+-      status: ReportStatus.REQUIRES_EDITS,
+-      reviewedById: actorId,
+-      updatedAt: now(),
+-    };
+-
+-    reportEventDb.create({
+-      reportId: id,
+-      eventType: ReportEventType.EDIT_REQUESTED,
+-      actorId,
+-      previousStatus: ReportStatus.SUBMITTED,
+-      newStatus: ReportStatus.REQUIRES_EDITS,
+-      details: { reason },
+-    });
+-
+-    return reports[idx];
+-  },
+-
+-  /** Mark an approved report as reviewed */
+-  review: (id: string, actorId: string): Report | undefined => {
+-    const idx = reports.findIndex((r) => r.id === id);
+-    if (idx === -1) return undefined;
+-    if (reports[idx].status !== ReportStatus.APPROVED) return undefined;
+-
+-    reports[idx] = {
+-      ...reports[idx],
+-      status: ReportStatus.REVIEWED,
+-      reviewedById: actorId,
+-      updatedAt: now(),
+-    };
+-
+-    reportEventDb.create({
+-      reportId: id,
+-      eventType: ReportEventType.REVIEWED,
+-      actorId,
+-      previousStatus: ReportStatus.APPROVED,
+-      newStatus: ReportStatus.REVIEWED,
+-    });
+-
+-    return reports[idx];
+-  },
+-
+-  /** Lock a reviewed report (final state) */
+-  lock: (id: string, actorId: string): Report | undefined => {
+-    const idx = reports.findIndex((r) => r.id === id);
+-    if (idx === -1) return undefined;
+-    if (reports[idx].status !== ReportStatus.REVIEWED) return undefined;
+-
+-    reports[idx] = {
+-      ...reports[idx],
+-      status: ReportStatus.LOCKED,
+-      lockedAt: now(),
+-      updatedAt: now(),
+-    };
+-
+-    reportEventDb.create({
+-      reportId: id,
+-      eventType: ReportEventType.LOCKED,
+-      actorId,
+-      previousStatus: ReportStatus.REVIEWED,
+-      newStatus: ReportStatus.LOCKED,
+-    });
+-
+-    return reports[idx];
+-  },
+-
+-  /** Apply approved edit changes to the report */
+-  applyEdit: (reportId: string, editId: string): Report | undefined => {
+-    const rIdx = reports.findIndex((r) => r.id === reportId);
+-    if (rIdx === -1) return undefined;
+-
+-    const edit = reportEdits.find((e) => e.id === editId);
+-    if (!edit || edit.status !== ReportEditStatus.APPROVED) return undefined;
+-
+-    // Snapshot before applying
+-    reportVersionDb.create(
+-      reportId,
+-      reports[rIdx],
+-      edit.submittedById,
+-      `Pre-edit snapshot before edit ${editId}`
+-    );
+-
+-    // Merge edit sections into report
+-    for (const editSection of edit.sections) {
+-      const existingSectionIdx = reports[rIdx].sections.findIndex(
+-        (s) => s.templateSectionId === editSection.templateSectionId
+-      );
+-      if (existingSectionIdx !== -1) {
+-        // Update existing section metrics
+-        for (const editMetric of editSection.metrics) {
+-          const existingMetricIdx = reports[rIdx].sections[
+-            existingSectionIdx
+-          ].metrics.findIndex(
+-            (m) => m.templateMetricId === editMetric.templateMetricId
+-          );
+-          if (existingMetricIdx !== -1) {
+-            reports[rIdx].sections[existingSectionIdx].metrics[
+-              existingMetricIdx
+-            ] = {
+-              ...reports[rIdx].sections[existingSectionIdx].metrics[
+-              existingMetricIdx
+-              ],
+-              monthlyGoal: editMetric.monthlyGoal,
+-              monthlyAchieved: editMetric.monthlyAchieved,
+-              yoyGoal: editMetric.yoyGoal,
+-              computedPercentage:
+-                editMetric.monthlyGoal && editMetric.monthlyAchieved
+-                  ? Math.round(
+-                    (editMetric.monthlyAchieved / editMetric.monthlyGoal) *
+-                    100
+-                  )
+-                  : undefined,
+-            };
+-          }
+-        }
+-      }
+-    }
+-
+-    reports[rIdx] = { ...reports[rIdx], updatedAt: now() };
+-
+-    reportEventDb.create({
+-      reportId,
+-      eventType: ReportEventType.EDIT_APPLIED,
+-      actorId: edit.submittedById,
+-      details: { editId },
+-    });
+-
+-    return reports[rIdx];
+-  },
+-
+-  delete: (id: string): boolean => {
+-    const idx = reports.findIndex((r) => r.id === id);
+-    if (idx === -1) return false;
+-    reports.splice(idx, 1);
+-    return true;
+-  },
+-
+-  count: (filters?: ReportFilters): number =>
+-    reportDb.findAll(filters).length,
+-};
+-
+-// ============================================================================
+-// REPORT EVENT OPERATIONS (Audit Trail)
+-// ============================================================================
+-
+-export const reportEventDb = {
+-  findByReportId: (reportId: string): ReportEvent[] =>
+-    reportEvents
+-      .filter((e) => e.reportId === reportId)
+-      .sort(
+-        (a, b) =>
+-          new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+-      ),
+-
+-  findById: (id: string): ReportEvent | undefined =>
+-    reportEvents.find((e) => e.id === id),
+-
+-  create: (
+-    data: Omit<ReportEvent, "id" | "timestamp">
+-  ): ReportEvent => {
+-    const event: ReportEvent = {
+-      ...data,
+-      id: generateId(),
+-      timestamp: now(),
+-    };
+-    reportEvents.push(event);
+-    return event;
+-  },
+-
+-  getWithDetails: (reportId: string): ReportEventWithDetails[] => {
+-    const events = reportEventDb.findByReportId(reportId);
+-    return events.map((e) => {
+-      const actor = users.find((u) => u.id === e.actorId);
+-      return {
+-        ...e,
+-        actorName: actor
+-          ? `${actor.firstName} ${actor.lastName}`
+-          : "Unknown User",
+-        actorRole: actor?.role,
+-      };
+-    });
+-  },
+-};
+-
+-// ============================================================================
+-// REPORT VERSION OPERATIONS (Snapshots)
+-// ============================================================================
+-
+-export const reportVersionDb = {
+-  findByReportId: (reportId: string): ReportVersion[] =>
+-    reportVersions
+-      .filter((v) => v.reportId === reportId)
+-      .sort((a, b) => b.versionNumber - a.versionNumber),
+-
+-  findById: (id: string): ReportVersion | undefined =>
+-    reportVersions.find((v) => v.id === id),
+-
+-  create: (
+-    reportId: string,
+-    snapshot: Report,
+-    createdById: string,
+-    reason?: string
+-  ): ReportVersion => {
+-    const existing = reportVersionDb.findByReportId(reportId);
+-    const nextVersion =
+-      existing.length > 0
+-        ? Math.max(...existing.map((v) => v.versionNumber)) + 1
+-        : 1;
+-
+-    const version: ReportVersion = {
+-      id: generateId(),
+-      reportId,
+-      versionNumber: nextVersion,
+-      snapshot: cloneData(snapshot),
+-      createdAt: now(),
+-      createdById,
+-      reason,
+-    };
+-    reportVersions.push(version);
+-    return version;
+-  },
+-};
+-
+-// ============================================================================
+-// REPORT EDIT OPERATIONS
+-// ============================================================================
+-
+-export const reportEditDb = {
+-  findAll: (filters?: {
+-    reportId?: string;
+-    submittedById?: string;
+-    status?: ReportEditStatus;
+-  }): ReportEdit[] => {
+-    let result = [...reportEdits];
+-    if (filters?.reportId)
+-      result = result.filter((e) => e.reportId === filters.reportId);
+-    if (filters?.submittedById)
+-      result = result.filter((e) => e.submittedById === filters.submittedById);
+-    if (filters?.status)
+-      result = result.filter((e) => e.status === filters.status);
+-    result.sort(
+-      (a, b) =>
+-        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+-    );
+-    return result;
+-  },
+-
+-  findById: (id: string): ReportEdit | undefined =>
+-    reportEdits.find((e) => e.id === id),
+-
+-  findByReportId: (reportId: string): ReportEdit[] =>
+-    reportEdits.filter((e) => e.reportId === reportId),
+-
+-  getWithDetails: (id: string): ReportEditWithDetails | undefined => {
+-    const edit = reportEdits.find((e) => e.id === id);
+-    if (!edit) return undefined;
+-
+-    const report = reports.find((r) => r.id === edit.reportId);
+-    const submittedBy = users.find((u) => u.id === edit.submittedById);
+-    const reviewedBy = edit.reviewedById
+-      ? users.find((u) => u.id === edit.reviewedById)
+-      : undefined;
+-
+-    const toProfile = (u: User): UserProfile => ({
+-      id: u.id,
+-      email: u.email,
+-      firstName: u.firstName,
+-      lastName: u.lastName,
+-      phone: u.phone,
+-      whatsappPhone: u.whatsappPhone,
+-      location: u.location,
+-      age: u.age,
+-      maritalStatus: u.maritalStatus,
+-      employmentStatus: u.employmentStatus,
+-      interests: u.interests,
+-      role: u.role,
+-      campusId: u.campusId,
+-      zoneId: u.zoneId,
+-      departmentId: u.departmentId,
+-      groupId: u.groupId,
+-      cellId: u.cellId,
+-      avatar: u.avatar,
+-      isActive: u.isActive,
+-      inviteCode: u.inviteCode,
+-      createdAt: u.createdAt,
+-      updatedAt: u.updatedAt,
+-    });
+-
+-    return {
+-      ...edit,
+-      report,
+-      submittedBy: submittedBy ? toProfile(submittedBy) : undefined,
+-      reviewedBy: reviewedBy ? toProfile(reviewedBy) : undefined,
+-    };
+-  },
+-
+-  create: (data: CreateReportEditInput): ReportEdit => {
+-    const id = generateId();
+-
+-    const sections: ReportEditSection[] = (data.sections || []).map(
+-      (sec, si) => {
+-        const sectionId = `res-${id}-${si}`;
+-        return {
+-          id: sectionId,
+-          reportEditId: id,
+-          templateSectionId: sec.templateSectionId,
+-          sectionName: sec.sectionName,
+-          order: sec.order,
+-          metrics: (sec.metrics || []).map((m, mi) => ({
+-            id: `rem-${id}-${si}-${mi}`,
+-            reportEditSectionId: sectionId,
+-            templateMetricId: m.templateMetricId,
+-            metricName: m.metricName,
+-            fieldType: m.fieldType,
+-            monthlyGoal: m.monthlyGoal,
+-            monthlyAchieved: m.monthlyAchieved,
+-            yoyGoal: m.yoyGoal,
+-            originalMonthlyGoal: m.originalMonthlyGoal,
+-            originalMonthlyAchieved: m.originalMonthlyAchieved,
+-            originalYoyGoal: m.originalYoyGoal,
+-            order: m.order,
+-          })),
+-        };
+-      }
+-    );
+-
+-    const edit: ReportEdit = {
+-      id,
+-      reportId: data.reportId,
+-      submittedById: data.submittedById,
+-      status: ReportEditStatus.DRAFT,
+-      reason: data.reason,
+-      sections,
+-      createdAt: now(),
+-      updatedAt: now(),
+-    };
+-
+-    reportEdits.push(edit);
+-
+-    reportEventDb.create({
+-      reportId: data.reportId,
+-      eventType: ReportEventType.EDIT_SUBMITTED,
+-      actorId: data.submittedById,
+-      details: { editId: id, reason: data.reason },
+-    });
+-
+-    return edit;
+-  },
+-
+-  submit: (id: string): ReportEdit | undefined => {
+-    const idx = reportEdits.findIndex((e) => e.id === id);
+-    if (idx === -1) return undefined;
+-    if (reportEdits[idx].status !== ReportEditStatus.DRAFT) return undefined;
+-
+-    reportEdits[idx] = {
+-      ...reportEdits[idx],
+-      status: ReportEditStatus.SUBMITTED,
+-      updatedAt: now(),
+-    };
+-    return reportEdits[idx];
+-  },
+-
+-  approve: (id: string, reviewerId: string): ReportEdit | undefined => {
+-    const idx = reportEdits.findIndex((e) => e.id === id);
+-    if (idx === -1) return undefined;
+-    if (reportEdits[idx].status !== ReportEditStatus.SUBMITTED) return undefined;
+-
+-    reportEdits[idx] = {
+-      ...reportEdits[idx],
+-      status: ReportEditStatus.APPROVED,
+-      reviewedById: reviewerId,
+-      updatedAt: now(),
+-    };
+-
+-    reportEventDb.create({
+-      reportId: reportEdits[idx].reportId,
+-      eventType: ReportEventType.EDIT_APPROVED,
+-      actorId: reviewerId,
+-      details: { editId: id },
+-    });
+-
+-    // Auto-apply the edit to the report
+-    reportDb.applyEdit(reportEdits[idx].reportId, id);
+-
+-    return reportEdits[idx];
+-  },
+-
+-  reject: (
+-    id: string,
+-    reviewerId: string,
+-    reason?: string
+-  ): ReportEdit | undefined => {
+-    const idx = reportEdits.findIndex((e) => e.id === id);
+-    if (idx === -1) return undefined;
+-    if (reportEdits[idx].status !== ReportEditStatus.SUBMITTED) return undefined;
+-
+-    reportEdits[idx] = {
+-      ...reportEdits[idx],
+-      status: ReportEditStatus.REJECTED,
+-      reviewedById: reviewerId,
+-      rejectionReason: reason,
+-      updatedAt: now(),
+-    };
+-
+-    reportEventDb.create({
+-      reportId: reportEdits[idx].reportId,
+-      eventType: ReportEventType.EDIT_REJECTED,
+-      actorId: reviewerId,
+-      details: { editId: id, reason },
+-    });
+-
+-    return reportEdits[idx];
+-  },
+-
+-  count: (filters?: { reportId?: string; status?: ReportEditStatus }): number =>
+-    reportEditDb.findAll(filters).length,
+-};
+-
+-// ============================================================================
+-// REPORT UPDATE REQUEST OPERATIONS (Post-deadline changes)
+-// ============================================================================
+-
+-export const reportUpdateRequestDb = {
+-  findAll: (filters?: {
+-    reportId?: string;
+-    requestedById?: string;
+-    status?: ReportUpdateRequestStatus;
+-  }): ReportUpdateRequest[] => {
+-    let result = [...reportUpdateRequests];
+-    if (filters?.reportId)
+-      result = result.filter((r) => r.reportId === filters.reportId);
+-    if (filters?.requestedById)
+-      result = result.filter((r) => r.requestedById === filters.requestedById);
+-    if (filters?.status)
+-      result = result.filter((r) => r.status === filters.status);
+-    result.sort(
+-      (a, b) =>
+-        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+-    );
+-    return result;
+-  },
+-
+-  findById: (id: string): ReportUpdateRequest | undefined =>
+-    reportUpdateRequests.find((r) => r.id === id),
+-
+-  findByReportId: (reportId: string): ReportUpdateRequest[] =>
+-    reportUpdateRequests.filter((r) => r.reportId === reportId),
+-
+-  getWithDetails: (id: string): ReportUpdateRequestWithDetails | undefined => {
+-    const request = reportUpdateRequests.find((r) => r.id === id);
+-    if (!request) return undefined;
+-
+-    const report = reports.find((r) => r.id === request.reportId);
+-    const requestedBy = users.find((u) => u.id === request.requestedById);
+-    const reviewedBy = request.reviewedById
+-      ? users.find((u) => u.id === request.reviewedById)
+-      : undefined;
+-
+-    const toProfile = (u: User): UserProfile => ({
+-      id: u.id,
+-      email: u.email,
+-      firstName: u.firstName,
+-      lastName: u.lastName,
+-      phone: u.phone,
+-      whatsappPhone: u.whatsappPhone,
+-      location: u.location,
+-      age: u.age,
+-      maritalStatus: u.maritalStatus,
+-      employmentStatus: u.employmentStatus,
+-      interests: u.interests,
+-      role: u.role,
+-      campusId: u.campusId,
+-      zoneId: u.zoneId,
+-      departmentId: u.departmentId,
+-      groupId: u.groupId,
+-      cellId: u.cellId,
+-      avatar: u.avatar,
+-      isActive: u.isActive,
+-      inviteCode: u.inviteCode,
+-      createdAt: u.createdAt,
+-      updatedAt: u.updatedAt,
+-    });
+-
+-    return {
+-      ...request,
+-      report,
+-      requestedBy: requestedBy ? toProfile(requestedBy) : undefined,
+-      reviewedBy: reviewedBy ? toProfile(reviewedBy) : undefined,
+-    };
+-  },
+-
+-  create: (data: CreateReportUpdateRequestInput): ReportUpdateRequest => {
+-    const id = generateId();
+-
+-    const sections: ReportEditSection[] = (data.sections || []).map(
+-      (sec, si) => {
+-        const sectionId = `rus-${id}-${si}`;
+-        return {
+-          id: sectionId,
+-          reportEditId: id,
+-          templateSectionId: sec.templateSectionId,
+-          sectionName: sec.sectionName,
+-          order: sec.order,
+-          metrics: (sec.metrics || []).map((m, mi) => ({
+-            id: `rum-${id}-${si}-${mi}`,
+-            reportEditSectionId: sectionId,
+-            templateMetricId: m.templateMetricId,
+-            metricName: m.metricName,
+-            fieldType: m.fieldType,
+-            monthlyGoal: m.monthlyGoal,
+-            monthlyAchieved: m.monthlyAchieved,
+-            yoyGoal: m.yoyGoal,
+-            originalMonthlyGoal: m.originalMonthlyGoal,
+-            originalMonthlyAchieved: m.originalMonthlyAchieved,
+-            originalYoyGoal: m.originalYoyGoal,
+-            order: m.order,
+-          })),
+-        };
+-      }
+-    );
+-
+-    const request: ReportUpdateRequest = {
+-      id,
+-      reportId: data.reportId,
+-      requestedById: data.requestedById,
+-      reason: data.reason,
+-      sections,
+-      status: ReportUpdateRequestStatus.PENDING,
+-      createdAt: now(),
+-      updatedAt: now(),
+-    };
+-
+-    reportUpdateRequests.push(request);
+-
+-    reportEventDb.create({
+-      reportId: data.reportId,
+-      eventType: ReportEventType.UPDATE_REQUESTED,
+-      actorId: data.requestedById,
+-      details: { updateRequestId: id, reason: data.reason },
+-    });
+-
+-    return request;
+-  },
+-
+-  approve: (
+-    id: string,
+-    reviewerId: string
+-  ): ReportUpdateRequest | undefined => {
+-    const idx = reportUpdateRequests.findIndex((r) => r.id === id);
+-    if (idx === -1) return undefined;
+-    if (reportUpdateRequests[idx].status !== ReportUpdateRequestStatus.PENDING)
+-      return undefined;
+-
+-    reportUpdateRequests[idx] = {
+-      ...reportUpdateRequests[idx],
+-      status: ReportUpdateRequestStatus.APPROVED,
+-      reviewedById: reviewerId,
+-      updatedAt: now(),
+-    };
+-
+-    const req = reportUpdateRequests[idx];
+-
+-    // Apply the update request changes to the report
+-    const rIdx = reports.findIndex((r) => r.id === req.reportId);
+-    if (rIdx !== -1) {
+-      // Snapshot before applying
+-      reportVersionDb.create(
+-        req.reportId,
+-        reports[rIdx],
+-        reviewerId,
+-        `Pre-update-request snapshot before request ${id}`
+-      );
+-
+-      // Merge changes
+-      for (const urSection of req.sections) {
+-        const existingSectionIdx = reports[rIdx].sections.findIndex(
+-          (s) => s.templateSectionId === urSection.templateSectionId
+-        );
+-        if (existingSectionIdx !== -1) {
+-          for (const urMetric of urSection.metrics) {
+-            const existingMetricIdx = reports[rIdx].sections[
+-              existingSectionIdx
+-            ].metrics.findIndex(
+-              (m) => m.templateMetricId === urMetric.templateMetricId
+-            );
+-            if (existingMetricIdx !== -1) {
+-              reports[rIdx].sections[existingSectionIdx].metrics[
+-                existingMetricIdx
+-              ] = {
+-                ...reports[rIdx].sections[existingSectionIdx].metrics[
+-                existingMetricIdx
+-                ],
+-                monthlyGoal: urMetric.monthlyGoal,
+-                monthlyAchieved: urMetric.monthlyAchieved,
+-                yoyGoal: urMetric.yoyGoal,
+-                computedPercentage:
+-                  urMetric.monthlyGoal && urMetric.monthlyAchieved
+-                    ? Math.round(
+-                      (urMetric.monthlyAchieved / urMetric.monthlyGoal) * 100
+-                    )
+-                    : undefined,
+-              };
+-            }
+-          }
+-        }
+-      }
+-
+-      reports[rIdx] = { ...reports[rIdx], updatedAt: now() };
+-    }
+-
+-    reportEventDb.create({
+-      reportId: req.reportId,
+-      eventType: ReportEventType.UPDATE_APPROVED,
+-      actorId: reviewerId,
+-      details: { updateRequestId: id },
+-    });
+-
+-    return reportUpdateRequests[idx];
+-  },
+-
+-  reject: (
+-    id: string,
+-    reviewerId: string,
+-    reason?: string
+-  ): ReportUpdateRequest | undefined => {
+-    const idx = reportUpdateRequests.findIndex((r) => r.id === id);
+-    if (idx === -1) return undefined;
+-    if (reportUpdateRequests[idx].status !== ReportUpdateRequestStatus.PENDING)
+-      return undefined;
+-
+-    reportUpdateRequests[idx] = {
+-      ...reportUpdateRequests[idx],
+-      status: ReportUpdateRequestStatus.REJECTED,
+-      reviewedById: reviewerId,
+-      rejectionReason: reason,
+-      updatedAt: now(),
+-    };
+-
+-    reportEventDb.create({
+-      reportId: reportUpdateRequests[idx].reportId,
+-      eventType: ReportEventType.UPDATE_REJECTED,
+-      actorId: reviewerId,
+-      details: { updateRequestId: id, reason },
+-    });
+-
+-    return reportUpdateRequests[idx];
+-  },
+-
+-  count: (filters?: {
+-    reportId?: string;
+-    status?: ReportUpdateRequestStatus;
+-  }): number => reportUpdateRequestDb.findAll(filters).length,
+-};
+-
+-// ============================================================================
+-// REPORT ANALYTICS HELPERS
+-// ============================================================================
+-
+-export const reportAnalyticsDb = {
+-  /** Get dashboard stats for reports, scoped by campus or church-wide */
+-  getDashboardStats: (campusId?: string): ReportDashboardStats => {
+-    let scoped = [...reports];
+-    if (campusId) scoped = scoped.filter((r) => r.campusId === campusId);
+-
+-    const total = scoped.length;
+-    const submitted = scoped.filter(
+-      (r) => r.status === ReportStatus.SUBMITTED
+-    ).length;
+-    const approved = scoped.filter(
+-      (r) => r.status === ReportStatus.APPROVED
+-    ).length;
+-    const draft = scoped.filter(
+-      (r) => r.status === ReportStatus.DRAFT
+-    ).length;
+-    const requiresEdits = scoped.filter(
+-      (r) => r.status === ReportStatus.REQUIRES_EDITS
+-    ).length;
+-    const locked = scoped.filter(
+-      (r) => r.status === ReportStatus.LOCKED
+-    ).length;
+-    const overdue = scoped.filter(
+-      (r) =>
+-        r.status === ReportStatus.DRAFT &&
+-        r.deadline &&
+-        new Date(r.deadline).getTime() < Date.now()
+-    ).length;
+-
+-    return {
+-      totalReports: total,
+-      submittedReports: submitted,
+-      approvedReports: approved,
+-      draftReports: draft,
+-      requiresEditsReports: requiresEdits,
+-      lockedReports: locked,
+-      overdueReports: overdue,
+-      complianceRate:
+-        total > 0
+-          ? Math.round(
+-            ((approved + locked + submitted) / total) * 100
+-          )
+-          : 0,
+-    };
+-  },
+-
+-  /** Compliance summary across all campuses */
+-  getComplianceSummary: (): ReportComplianceSummary[] => {
+-    const campusList = [...campuses];
+-    return campusList.map((campus) => {
+-      const campusReports = reports.filter(
+-        (r) => r.campusId === campus.id
+-      );
+-      const total = campusReports.length;
+-      const onTime = campusReports.filter(
+-        (r) =>
+-          r.deadline &&
+-          r.status !== ReportStatus.DRAFT &&
+-          new Date(r.updatedAt || r.createdAt).getTime() <=
+-          new Date(r.deadline).getTime()
+-      ).length;
+-      const late = campusReports.filter(
+-        (r) =>
+-          r.deadline &&
+-          r.status !== ReportStatus.DRAFT &&
+-          new Date(r.updatedAt || r.createdAt).getTime() >
+-          new Date(r.deadline).getTime()
+-      ).length;
+-      const missing = campusReports.filter(
+-        (r) =>
+-          r.status === ReportStatus.DRAFT &&
+-          r.deadline &&
+-          new Date(r.deadline).getTime() < Date.now()
+-      ).length;
+-
+-      return {
+-        campusId: campus.id,
+-        campusName: campus.name,
+-        totalExpected: total || 1,
+-        submitted: onTime + late,
+-        onTime,
+-        late,
+-        missing,
+-        compliancePercentage:
+-          total > 0 ? Math.round(((onTime + late) / total) * 100) : 0,
+-      };
+-    });
+-  },
+-
+-  /** Metric aggregates for analytics dashboards */
+-  getMetricAggregates: (filters?: {
+-    campusId?: string;
+-    periodYear?: number;
+-    periodMonth?: number;
+-    metricName?: string;
+-  }): ReportAnalytics[] => {
+-    let scoped = reports.filter(
+-      (r) =>
+-        r.status === ReportStatus.APPROVED ||
+-        r.status === ReportStatus.REVIEWED ||
+-        r.status === ReportStatus.LOCKED
+-    );
+-    if (filters?.campusId)
+-      scoped = scoped.filter((r) => r.campusId === filters.campusId);
+-    if (filters?.periodYear)
+-      scoped = scoped.filter((r) => r.periodYear === filters.periodYear);
+-    if (filters?.periodMonth)
+-      scoped = scoped.filter((r) => r.periodMonth === filters.periodMonth);
+-
+-    // Aggregate metrics across all matching reports
+-    const metricMap = new Map<
+-      string,
+-      { totalGoal: number; totalAchieved: number; totalYoY: number; count: number }
+-    >();
+-
+-    for (const report of scoped) {
+-      for (const section of report.sections) {
+-        for (const metric of section.metrics) {
+-          if (filters?.metricName && metric.metricName !== filters.metricName)
+-            continue;
+-          const key = metric.metricName;
+-          const existing = metricMap.get(key) || {
+-            totalGoal: 0,
+-            totalAchieved: 0,
+-            totalYoY: 0,
+-            count: 0,
+-          };
+-          metricMap.set(key, {
+-            totalGoal: existing.totalGoal + (metric.monthlyGoal || 0),
+-            totalAchieved:
+-              existing.totalAchieved + (metric.monthlyAchieved || 0),
+-            totalYoY: existing.totalYoY + (metric.yoyGoal || 0),
+-            count: existing.count + 1,
+-          });
+-        }
+-      }
+-    }
+-
+-    const results: ReportAnalytics[] = [];
+-    metricMap.forEach((agg, metricName) => {
+-      results.push({
+-        metricName,
+-        totalGoal: agg.totalGoal,
+-        totalAchieved: agg.totalAchieved,
+-        achievementRate:
+-          agg.totalGoal > 0
+-            ? Math.round((agg.totalAchieved / agg.totalGoal) * 100)
+-            : 0,
+-        yoyGrowth:
+-          agg.totalYoY > 0
+-            ? Math.round(
+-              ((agg.totalAchieved - agg.totalYoY) / agg.totalYoY) * 100
+-            )
+-            : 0,
+-        reportCount: agg.count,
+-      });
+-    });
+-
+-    return results.sort((a, b) => b.reportCount - a.reportCount);
+-  },
+-};
+-
+ // ============================================================================
+ // Combined Database Export (for backward compatibility)
+ // ============================================================================
+@@ -2855,12 +1457,4 @@ export const db = {
+   inviteLinks: inviteLinkDb,
+   inviteLinkVisits: inviteLinkVisitDb,
+   analytics: analyticsDb,
+-  reportTemplates: reportTemplateDb,
+-  reportTemplateVersions: reportTemplateVersionDb,
+-  reports: reportDb,
+-  reportEvents: reportEventDb,
+-  reportVersions: reportVersionDb,
+-  reportEdits: reportEditDb,
+-  reportUpdateRequests: reportUpdateRequestDb,
+-  reportAnalytics: reportAnalyticsDb,
+ };
+diff --git a/lib/data/mockData.ts b/lib/data/mockData.ts
+index 8671f57..cd959a2 100644
+--- a/lib/data/mockData.ts
++++ b/lib/data/mockData.ts
+@@ -13,12 +13,6 @@ import {
+   MeetingLevel,
+   InviteLinkType,
+   CampaignInteractionType,
+-  ReportStatus,
+-  ReportEventType,
+-  ReportPeriodType,
+-  MetricFieldType,
+-  ReportEditStatus,
+-  ReportUpdateRequestStatus,
+ } from "@/lib/types";
+ 
+ // ============================================================================
+@@ -821,170 +815,6 @@ export const mockUsers: User[] = [
+     createdAt: getDateString(30),
+     updatedAt: getDateString(5),
+   },
+-
+-  // ── GROUP PASTORS ──────────────────────────────────────────────────
+-  {
+-    id: "user-group-pastor-1",
+-    email: "group.pastor@harvestersng.org",
+-    password: hashPassword("Pastor@123"),
+-    firstName: "Adeboye",
+-    lastName: "Olusegun",
+-    phone: "+2348012345690",
+-    whatsappPhone: "+2348012345690",
+-    location: "Lekki, Lagos",
+-    age: 52,
+-    maritalStatus: "MARRIED" as MaritalStatus,
+-    employmentStatus: "EMPLOYED" as EmploymentStatus,
+-    interests: ["Teaching", "Mentorship", "Prayer", "Administration"],
+-    role: "GROUP_PASTOR" as UserRole,
+-    campusId: undefined,
+-    zoneId: "zone-lagos",
+-    departmentId: undefined,
+-    groupId: undefined,
+-    cellId: undefined,
+-    avatar: undefined,
+-    isActive: true,
+-    invitedById: "user-superadmin-1",
+-    inviteCode: "GPAS001",
+-    createdAt: getDateString(365),
+-    updatedAt: getDateString(1),
+-  },
+-
+-  // ── GROUP ADMINS ──────────────────────────────────────────────────
+-  {
+-    id: "user-group-admin-1",
+-    email: "group.admin@harvestersng.org",
+-    password: hashPassword("GroupAdmin@123"),
+-    firstName: "Chioma",
+-    lastName: "Nwosu",
+-    phone: "+2348012345691",
+-    whatsappPhone: "+2348012345691",
+-    location: "Victoria Island, Lagos",
+-    age: 40,
+-    maritalStatus: "MARRIED" as MaritalStatus,
+-    employmentStatus: "EMPLOYED" as EmploymentStatus,
+-    interests: ["Administration", "Counseling", "Evangelism"],
+-    role: "GROUP_ADMIN" as UserRole,
+-    campusId: undefined,
+-    zoneId: "zone-lagos",
+-    departmentId: undefined,
+-    groupId: undefined,
+-    cellId: undefined,
+-    avatar: undefined,
+-    isActive: true,
+-    invitedById: "user-superadmin-1",
+-    inviteCode: "GADM001",
+-    createdAt: getDateString(365),
+-    updatedAt: getDateString(1),
+-  },
+-
+-  // ── CAMPUS PASTORS ────────────────────────────────────────────────
+-  {
+-    id: "user-campus-pastor-1",
+-    email: "lekki.pastor@harvestersng.org",
+-    password: hashPassword("Pastor@123"),
+-    firstName: "Emeka",
+-    lastName: "Okwu",
+-    phone: "+2348012345692",
+-    whatsappPhone: "+2348012345692",
+-    location: "Lekki, Lagos",
+-    age: 46,
+-    maritalStatus: "MARRIED" as MaritalStatus,
+-    employmentStatus: "EMPLOYED" as EmploymentStatus,
+-    interests: ["Teaching", "Prayer", "Mentorship", "Counseling"],
+-    role: "CAMPUS_PASTOR" as UserRole,
+-    campusId: "campus-lagos-lekki",
+-    zoneId: "zone-lagos",
+-    departmentId: undefined,
+-    groupId: undefined,
+-    cellId: undefined,
+-    avatar: undefined,
+-    isActive: true,
+-    invitedById: "user-group-pastor-1",
+-    inviteCode: "CPAS001",
+-    createdAt: getDateString(350),
+-    updatedAt: getDateString(1),
+-  },
+-  {
+-    id: "user-campus-pastor-2",
+-    email: "gbagada.pastor@harvestersng.org",
+-    password: hashPassword("Pastor@123"),
+-    firstName: "Oluwaseun",
+-    lastName: "Adeleke",
+-    phone: "+2348012345693",
+-    whatsappPhone: "+2348012345693",
+-    location: "Gbagada, Lagos",
+-    age: 44,
+-    maritalStatus: "MARRIED" as MaritalStatus,
+-    employmentStatus: "EMPLOYED" as EmploymentStatus,
+-    interests: ["Teaching", "Evangelism", "Mentorship"],
+-    role: "CAMPUS_PASTOR" as UserRole,
+-    campusId: "campus-lagos-gbagada",
+-    zoneId: "zone-lagos",
+-    departmentId: undefined,
+-    groupId: undefined,
+-    cellId: undefined,
+-    avatar: undefined,
+-    isActive: true,
+-    invitedById: "user-group-pastor-1",
+-    inviteCode: "CPAS002",
+-    createdAt: getDateString(290),
+-    updatedAt: getDateString(2),
+-  },
+-
+-  // ── DATA ENTRY USERS ──────────────────────────────────────────────
+-  {
+-    id: "user-data-entry-1",
+-    email: "dataentry1@harvestersng.org",
+-    password: hashPassword("DataEntry@123"),
+-    firstName: "Blessing",
+-    lastName: "Igwe",
+-    phone: "+2348012345694",
+-    whatsappPhone: "+2348012345694",
+-    location: "Lekki, Lagos",
+-    age: 27,
+-    maritalStatus: "SINGLE" as MaritalStatus,
+-    employmentStatus: "EMPLOYED" as EmploymentStatus,
+-    interests: ["Administration", "Technology"],
+-    role: "DATA_ENTRY" as UserRole,
+-    campusId: undefined,
+-    zoneId: undefined,
+-    departmentId: undefined,
+-    groupId: undefined,
+-    cellId: undefined,
+-    avatar: undefined,
+-    isActive: true,
+-    invitedById: "user-superadmin-1",
+-    inviteCode: "DENT001",
+-    createdAt: getDateString(60),
+-    updatedAt: getDateString(1),
+-  },
+-  {
+-    id: "user-data-entry-2",
+-    email: "dataentry2@harvestersng.org",
+-    password: hashPassword("DataEntry@123"),
+-    firstName: "Emmanuel",
+-    lastName: "Okafor",
+-    phone: "+2348012345695",
+-    whatsappPhone: "+2348012345695",
+-    location: "Gbagada, Lagos",
+-    age: 30,
+-    maritalStatus: "SINGLE" as MaritalStatus,
+-    employmentStatus: "EMPLOYED" as EmploymentStatus,
+-    interests: ["Administration", "Education"],
+-    role: "DATA_ENTRY" as UserRole,
+-    campusId: undefined,
+-    zoneId: undefined,
+-    departmentId: undefined,
+-    groupId: undefined,
+-    cellId: undefined,
+-    avatar: undefined,
+-    isActive: true,
+-    invitedById: "user-superadmin-1",
+-    inviteCode: "DENT002",
+-    createdAt: getDateString(55),
+-    updatedAt: getDateString(1),
+-  },
+ ];
+ 
+ // ============================================================================
+@@ -1756,640 +1586,3 @@ export const mockInviteLinkVisits: InviteLinkVisit[] = [
+     createdAt: getDateString(0),
+   },
+ ];
+-
+-// ============================================================================
+-// MOCK REPORT TEMPLATE
+-// ============================================================================
+-// This is the seeded default template with all 11 sections from the PRD.
+-// Generated from DEFAULT_REPORT_TEMPLATE constant with IDs assigned.
+-// ============================================================================
+-
+-function makeTemplateMetric(
+-  id: string,
+-  sectionId: string,
+-  name: string,
+-  order: number,
+-  opts?: { fieldType?: MetricFieldType; isRequired?: boolean }
+-): ReportTemplateMetric {
+-  return {
+-    id,
+-    sectionId,
+-    name,
+-    fieldType: opts?.fieldType ?? MetricFieldType.NUMBER,
+-    isRequired: opts?.isRequired ?? true,
+-    order,
+-    capturesGoal: true,
+-    capturesAchieved: true,
+-    capturesYoY: true,
+-  };
+-}
+-
+-const templateId = "template-default-1";
+-
+-export const mockReportTemplates: ReportTemplate[] = [
+-  {
+-    id: templateId,
+-    name: "Harvesters Weekly Campus Report",
+-    description:
+-      "Standard weekly report template for campus-level departmental leaders covering all strategic indicators and key metrics.",
+-    version: 1,
+-    sections: [
+-      {
+-        id: "tsec-1",
+-        templateId,
+-        name: "Report Summary – Special Programs",
+-        description: "Overview of special programs including Church Planting and key program metrics.",
+-        order: 1,
+-        isRequired: true,
+-        subSections: [
+-          {
+-            id: "tssec-1-1",
+-            sectionId: "tsec-1",
+-            name: "Church Planting",
+-            order: 1,
+-            metrics: [
+-              makeTemplateMetric("tm-1-1-1", "tsec-1", "Number of Church Plants", 1),
+-              makeTemplateMetric("tm-1-1-2", "tsec-1", "Church Plant Attendance", 2),
+-              makeTemplateMetric("tm-1-1-3", "tsec-1", "Church Plant Offerings", 3, { fieldType: MetricFieldType.CURRENCY }),
+-            ],
+-          },
+-          {
+-            id: "tssec-1-2",
+-            sectionId: "tsec-1",
+-            name: "Program Metrics",
+-            order: 2,
+-            metrics: [
+-              makeTemplateMetric("tm-1-2-1", "tsec-1", "Total Programs Held", 1),
+-              makeTemplateMetric("tm-1-2-2", "tsec-1", "Total Program Attendance", 2),
+-              makeTemplateMetric("tm-1-2-3", "tsec-1", "Special Events Count", 3),
+-            ],
+-          },
+-        ],
+-        metrics: [],
+-      },
+-      {
+-        id: "tsec-2",
+-        templateId,
+-        name: "Attendance & Quality of Program",
+-        order: 2,
+-        isRequired: true,
+-        metrics: [
+-          makeTemplateMetric("tm-2-1", "tsec-2", "Sunday Service Attendance", 1),
+-          makeTemplateMetric("tm-2-2", "tsec-2", "Midweek Service Attendance", 2),
+-          makeTemplateMetric("tm-2-3", "tsec-2", "Average Program Quality Score", 3, { fieldType: MetricFieldType.PERCENTAGE }),
+-          makeTemplateMetric("tm-2-4", "tsec-2", "Online Attendance", 4),
+-          makeTemplateMetric("tm-2-5", "tsec-2", "Total Unique Attendees", 5),
+-        ],
+-      },
+-      {
+-        id: "tsec-3",
+-        templateId,
+-        name: "NLP (New Life Program)",
+-        order: 3,
+-        isRequired: true,
+-        metrics: [
+-          makeTemplateMetric("tm-3-1", "tsec-3", "NLP Enrollees", 1),
+-          makeTemplateMetric("tm-3-2", "tsec-3", "NLP Graduates", 2),
+-          makeTemplateMetric("tm-3-3", "tsec-3", "NLP Attendance", 3),
+-          makeTemplateMetric("tm-3-4", "tsec-3", "NLP Retention Rate", 4, { fieldType: MetricFieldType.PERCENTAGE }),
+-        ],
+-      },
+-      {
+-        id: "tsec-4",
+-        templateId,
+-        name: "Salvation",
+-        order: 4,
+-        isRequired: true,
+-        metrics: [
+-          makeTemplateMetric("tm-4-1", "tsec-4", "Salvations (Altar Call)", 1),
+-          makeTemplateMetric("tm-4-2", "tsec-4", "Salvations (Small Group)", 2),
+-          makeTemplateMetric("tm-4-3", "tsec-4", "Salvations (Outreach)", 3),
+-          makeTemplateMetric("tm-4-4", "tsec-4", "Total Salvations", 4),
+-          makeTemplateMetric("tm-4-5", "tsec-4", "First Timer Follow-ups", 5),
+-        ],
+-      },
+-      {
+-        id: "tsec-5",
+-        templateId,
+-        name: "Small Group / Cell",
+-        order: 5,
+-        isRequired: true,
+-        metrics: [
+-          makeTemplateMetric("tm-5-1", "tsec-5", "Total Cells Active", 1),
+-          makeTemplateMetric("tm-5-2", "tsec-5", "Total Cell Meetings Held", 2),
+-          makeTemplateMetric("tm-5-3", "tsec-5", "Total Cell Attendance", 3),
+-          makeTemplateMetric("tm-5-4", "tsec-5", "Average Cell Attendance", 4),
+-          makeTemplateMetric("tm-5-5", "tsec-5", "New Cells Started", 5),
+-          makeTemplateMetric("tm-5-6", "tsec-5", "Cell Leaders Trained", 6),
+-        ],
+-      },
+-      {
+-        id: "tsec-6",
+-        templateId,
+-        name: "Discipleship / Assimilation",
+-        order: 6,
+-        isRequired: true,
+-        metrics: [
+-          makeTemplateMetric("tm-6-1", "tsec-6", "New Members Assimilated", 1),
+-          makeTemplateMetric("tm-6-2", "tsec-6", "Discipleship Classes Enrollment", 2),
+-          makeTemplateMetric("tm-6-3", "tsec-6", "Discipleship Classes Completion", 3),
+-          makeTemplateMetric("tm-6-4", "tsec-6", "Mentoring Pairs Active", 4),
+-          makeTemplateMetric("tm-6-5", "tsec-6", "Water Baptism Count", 5),
+-        ],
+-      },
+-      {
+-        id: "tsec-7",
+-        templateId,
+-        name: "Next Gen (Kid-Zone + Stir House)",
+-        order: 7,
+-        isRequired: true,
+-        subSections: [
+-          {
+-            id: "tssec-7-1",
+-            sectionId: "tsec-7",
+-            name: "Kid-Zone",
+-            order: 1,
+-            metrics: [
+-              makeTemplateMetric("tm-7-1-1", "tsec-7", "Kid-Zone Attendance", 1),
+-              makeTemplateMetric("tm-7-1-2", "tsec-7", "Kid-Zone New Registrations", 2),
+-              makeTemplateMetric("tm-7-1-3", "tsec-7", "Kid-Zone Volunteers", 3),
+-              makeTemplateMetric("tm-7-1-4", "tsec-7", "Kid-Zone Salvations", 4),
+-            ],
+-          },
+-          {
+-            id: "tssec-7-2",
+-            sectionId: "tsec-7",
+-            name: "Stir House",
+-            order: 2,
+-            metrics: [
+-              makeTemplateMetric("tm-7-2-1", "tsec-7", "Stir House Attendance", 1),
+-              makeTemplateMetric("tm-7-2-2", "tsec-7", "Stir House New Members", 2),
+-              makeTemplateMetric("tm-7-2-3", "tsec-7", "Stir House Salvations", 3),
+-              makeTemplateMetric("tm-7-2-4", "tsec-7", "Stir House Small Groups", 4),
+-            ],
+-          },
+-        ],
+-        metrics: [],
+-      },
+-      {
+-        id: "tsec-8",
+-        templateId,
+-        name: "Partnership",
+-        order: 8,
+-        isRequired: true,
+-        metrics: [
+-          makeTemplateMetric("tm-8-1", "tsec-8", "Total Partners", 1),
+-          makeTemplateMetric("tm-8-2", "tsec-8", "New Partners This Week", 2),
+-          makeTemplateMetric("tm-8-3", "tsec-8", "Partnership Amount", 3, { fieldType: MetricFieldType.CURRENCY }),
+-          makeTemplateMetric("tm-8-4", "tsec-8", "Partnership Retention Rate", 4, { fieldType: MetricFieldType.PERCENTAGE }),
+-        ],
+-      },
+-      {
+-        id: "tsec-9",
+-        templateId,
+-        name: "HAEF (Harvesters Advancement & Empowerment Fund)",
+-        order: 9,
+-        isRequired: true,
+-        metrics: [
+-          makeTemplateMetric("tm-9-1", "tsec-9", "HAEF Contributions", 1, { fieldType: MetricFieldType.CURRENCY }),
+-          makeTemplateMetric("tm-9-2", "tsec-9", "HAEF Disbursements", 2, { fieldType: MetricFieldType.CURRENCY }),
+-          makeTemplateMetric("tm-9-3", "tsec-9", "HAEF Beneficiaries", 3),
+-          makeTemplateMetric("tm-9-4", "tsec-9", "HAEF New Contributors", 4),
+-        ],
+-      },
+-      {
+-        id: "tsec-10",
+-        templateId,
+-        name: "Spiritual",
+-        order: 10,
+-        isRequired: false,
+-        metrics: [
+-          makeTemplateMetric("tm-10-1", "tsec-10", "Prayer Chain Participants", 1),
+-          makeTemplateMetric("tm-10-2", "tsec-10", "Fasting Participants", 2),
+-          makeTemplateMetric("tm-10-3", "tsec-10", "Prophetic Words Received", 3, { isRequired: false }),
+-          makeTemplateMetric("tm-10-4", "tsec-10", "Healing Testimonies", 4, { isRequired: false }),
+-          makeTemplateMetric("tm-10-5", "tsec-10", "Spiritual Growth Score", 5, { fieldType: MetricFieldType.PERCENTAGE, isRequired: false }),
+-        ],
+-      },
+-      {
+-        id: "tsec-11",
+-        templateId,
+-        name: "Relationship Breakthrough",
+-        order: 11,
+-        isRequired: false,
+-        metrics: [
+-          makeTemplateMetric("tm-11-1", "tsec-11", "Marriage Counseling Sessions", 1, { isRequired: false }),
+-          makeTemplateMetric("tm-11-2", "tsec-11", "Pre-Marital Counseling Sessions", 2, { isRequired: false }),
+-          makeTemplateMetric("tm-11-3", "tsec-11", "Singles Ministry Attendance", 3, { isRequired: false }),
+-          makeTemplateMetric("tm-11-4", "tsec-11", "Family Reconciliations", 4, { isRequired: false }),
+-          makeTemplateMetric("tm-11-5", "tsec-11", "Relationship Workshops Held", 5, { isRequired: false }),
+-        ],
+-      },
+-    ],
+-    isActive: true,
+-    isDefault: true,
+-    createdById: "user-superadmin-1",
+-    createdAt: getDateString(365),
+-    updatedAt: getDateString(30),
+-  },
+-];
+-
+-export const mockReportTemplateVersions: ReportTemplateVersion[] = [
+-  {
+-    id: "tv-1",
+-    templateId: templateId,
+-    versionNumber: 1,
+-    snapshot: mockReportTemplates[0],
+-    createdAt: getDateString(365),
+-    createdById: "user-superadmin-1",
+-    changeNotes: "Initial template creation with all 11 sections.",
+-  },
+-];
+-
+-// ============================================================================
+-// MOCK REPORTS
+-// ============================================================================
+-
+-function makeReportMetric(
+-  id: string,
+-  sectionId: string,
+-  templateMetricId: string,
+-  metricName: string,
+-  order: number,
+-  values: { goal?: number; achieved?: number; yoy?: number },
+-  fieldType: MetricFieldType = MetricFieldType.NUMBER
+-): ReportMetric {
+-  const pct =
+-    values.goal && values.achieved
+-      ? Math.round((values.achieved / values.goal) * 100)
+-      : undefined;
+-  return {
+-    id,
+-    reportSectionId: sectionId,
+-    templateMetricId,
+-    metricName,
+-    fieldType,
+-    monthlyGoal: values.goal,
+-    monthlyAchieved: values.achieved,
+-    yoyGoal: values.yoy,
+-    computedPercentage: pct,
+-    isLocked: false,
+-    order,
+-  };
+-}
+-
+-const currentYear = new Date().getFullYear();
+-const currentMonth = new Date().getMonth() + 1;
+-
+-export const mockReports: Report[] = [
+-  // Report 1: Submitted (Lekki campus, current week)
+-  {
+-    id: "report-1",
+-    templateId: templateId,
+-    templateVersionId: "tv-1",
+-    campusId: "campus-lagos-lekki",
+-    periodType: ReportPeriodType.WEEKLY,
+-    periodYear: currentYear,
+-    periodMonth: currentMonth,
+-    periodWeek: 1,
+-    status: ReportStatus.SUBMITTED,
+-    submittedById: "user-campus-admin-1",
+-    deadline: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+-    isDataEntry: false,
+-    notes: "Weekly report for Lekki campus — first week of the month.",
+-    sections: [
+-      {
+-        id: "rs-1-1",
+-        reportId: "report-1",
+-        templateSectionId: "tsec-2",
+-        sectionName: "Attendance & Quality of Program",
+-        order: 1,
+-        metrics: [
+-          makeReportMetric("rm-1-1-1", "rs-1-1", "tm-2-1", "Sunday Service Attendance", 1, { goal: 500, achieved: 478, yoy: 450 }),
+-          makeReportMetric("rm-1-1-2", "rs-1-1", "tm-2-2", "Midweek Service Attendance", 2, { goal: 300, achieved: 265, yoy: 280 }),
+-          makeReportMetric("rm-1-1-3", "rs-1-1", "tm-2-3", "Average Program Quality Score", 3, { goal: 90, achieved: 87, yoy: 85 }, MetricFieldType.PERCENTAGE),
+-          makeReportMetric("rm-1-1-4", "rs-1-1", "tm-2-4", "Online Attendance", 4, { goal: 200, achieved: 156, yoy: 120 }),
+-          makeReportMetric("rm-1-1-5", "rs-1-1", "tm-2-5", "Total Unique Attendees", 5, { goal: 600, achieved: 542, yoy: 500 }),
+-        ],
+-      },
+-      {
+-        id: "rs-1-2",
+-        reportId: "report-1",
+-        templateSectionId: "tsec-4",
+-        sectionName: "Salvation",
+-        order: 2,
+-        metrics: [
+-          makeReportMetric("rm-1-2-1", "rs-1-2", "tm-4-1", "Salvations (Altar Call)", 1, { goal: 20, achieved: 15, yoy: 12 }),
+-          makeReportMetric("rm-1-2-2", "rs-1-2", "tm-4-2", "Salvations (Small Group)", 2, { goal: 10, achieved: 8, yoy: 7 }),
+-          makeReportMetric("rm-1-2-3", "rs-1-2", "tm-4-3", "Salvations (Outreach)", 3, { goal: 15, achieved: 12, yoy: 10 }),
+-          makeReportMetric("rm-1-2-4", "rs-1-2", "tm-4-4", "Total Salvations", 4, { goal: 45, achieved: 35, yoy: 29 }),
+-          makeReportMetric("rm-1-2-5", "rs-1-2", "tm-4-5", "First Timer Follow-ups", 5, { goal: 30, achieved: 25, yoy: 22 }),
+-        ],
+-      },
+-      {
+-        id: "rs-1-3",
+-        reportId: "report-1",
+-        templateSectionId: "tsec-5",
+-        sectionName: "Small Group / Cell",
+-        order: 3,
+-        metrics: [
+-          makeReportMetric("rm-1-3-1", "rs-1-3", "tm-5-1", "Total Cells Active", 1, { goal: 25, achieved: 22, yoy: 20 }),
+-          makeReportMetric("rm-1-3-2", "rs-1-3", "tm-5-2", "Total Cell Meetings Held", 2, { goal: 25, achieved: 20, yoy: 18 }),
+-          makeReportMetric("rm-1-3-3", "rs-1-3", "tm-5-3", "Total Cell Attendance", 3, { goal: 200, achieved: 175, yoy: 160 }),
+-          makeReportMetric("rm-1-3-4", "rs-1-3", "tm-5-4", "Average Cell Attendance", 4, { goal: 8, achieved: 7, yoy: 7 }),
+-          makeReportMetric("rm-1-3-5", "rs-1-3", "tm-5-5", "New Cells Started", 5, { goal: 2, achieved: 1, yoy: 1 }),
+-          makeReportMetric("rm-1-3-6", "rs-1-3", "tm-5-6", "Cell Leaders Trained", 6, { goal: 5, achieved: 3, yoy: 4 }),
+-        ],
+-      },
+-    ],
+-    createdAt: getDateString(3),
+-    updatedAt: getDateString(1),
+-  },
+-
+-  // Report 2: Approved (Gbagada campus, previous week)
+-  {
+-    id: "report-2",
+-    templateId: templateId,
+-    templateVersionId: "tv-1",
+-    campusId: "campus-lagos-gbagada",
+-    periodType: ReportPeriodType.WEEKLY,
+-    periodYear: currentYear,
+-    periodMonth: currentMonth > 1 ? currentMonth - 1 : 12,
+-    periodWeek: 4,
+-    status: ReportStatus.APPROVED,
+-    submittedById: "user-campus-admin-2",
+-    approvedById: "user-campus-pastor-2",
+-    deadline: getDateString(5),
+-    isDataEntry: false,
+-    notes: "Last week's report for Gbagada campus.",
+-    sections: [
+-      {
+-        id: "rs-2-1",
+-        reportId: "report-2",
+-        templateSectionId: "tsec-2",
+-        sectionName: "Attendance & Quality of Program",
+-        order: 1,
+-        metrics: [
+-          makeReportMetric("rm-2-1-1", "rs-2-1", "tm-2-1", "Sunday Service Attendance", 1, { goal: 350, achieved: 320, yoy: 300 }),
+-          makeReportMetric("rm-2-1-2", "rs-2-1", "tm-2-2", "Midweek Service Attendance", 2, { goal: 200, achieved: 185, yoy: 170 }),
+-        ],
+-      },
+-    ],
+-    createdAt: getDateString(10),
+-    updatedAt: getDateString(5),
+-  },
+-
+-  // Report 3: Draft (Lekki campus, being filled)
+-  {
+-    id: "report-3",
+-    templateId: templateId,
+-    templateVersionId: "tv-1",
+-    campusId: "campus-lagos-lekki",
+-    periodType: ReportPeriodType.WEEKLY,
+-    periodYear: currentYear,
+-    periodMonth: currentMonth,
+-    periodWeek: 2,
+-    status: ReportStatus.DRAFT,
+-    submittedById: "user-campus-admin-1",
+-    deadline: new Date(Date.now() + 48 * 60 * 60 * 1000).toISOString(),
+-    isDataEntry: false,
+-    sections: [],
+-    createdAt: getDateString(0),
+-    updatedAt: getDateString(0),
+-  },
+-
+-  // Report 4: REQUIRES_EDITS (Lekki campus)
+-  {
+-    id: "report-4",
+-    templateId: templateId,
+-    templateVersionId: "tv-1",
+-    campusId: "campus-lagos-lekki",
+-    periodType: ReportPeriodType.WEEKLY,
+-    periodYear: currentYear,
+-    periodMonth: currentMonth > 1 ? currentMonth - 1 : 12,
+-    periodWeek: 3,
+-    status: ReportStatus.REQUIRES_EDITS,
+-    submittedById: "user-campus-admin-1",
+-    reviewedById: "user-campus-pastor-1",
+-    deadline: getDateString(8),
+-    isDataEntry: false,
+-    notes: "Some discrepancies in salvation numbers need correction.",
+-    sections: [
+-      {
+-        id: "rs-4-1",
+-        reportId: "report-4",
+-        templateSectionId: "tsec-4",
+-        sectionName: "Salvation",
+-        order: 1,
+-        metrics: [
+-          makeReportMetric("rm-4-1-1", "rs-4-1", "tm-4-4", "Total Salvations", 1, { goal: 45, achieved: 50, yoy: 30 }),
+-        ],
+-      },
+-    ],
+-    createdAt: getDateString(12),
+-    updatedAt: getDateString(8),
+-  },
+-
+-  // Report 5: Data Entry historical report (REVIEWED + locked)
+-  {
+-    id: "report-5",
+-    templateId: templateId,
+-    templateVersionId: "tv-1",
+-    campusId: "campus-lagos-lekki",
+-    periodType: ReportPeriodType.WEEKLY,
+-    periodYear: currentYear - 1,
+-    periodMonth: 6,
+-    periodWeek: 2,
+-    status: ReportStatus.LOCKED,
+-    submittedById: "user-data-entry-1",
+-    approvedById: "user-campus-pastor-1",
+-    reviewedById: "user-group-admin-1",
+-    deadline: getDateString(200),
+-    lockedAt: getDateString(195),
+-    isDataEntry: true,
+-    dataEntryById: "user-data-entry-1",
+-    dataEntryDate: `${currentYear - 1}-06-14`,
+-    notes: "Historical report entered via data entry.",
+-    sections: [
+-      {
+-        id: "rs-5-1",
+-        reportId: "report-5",
+-        templateSectionId: "tsec-2",
+-        sectionName: "Attendance & Quality of Program",
+-        order: 1,
+-        metrics: [
+-          makeReportMetric("rm-5-1-1", "rs-5-1", "tm-2-1", "Sunday Service Attendance", 1, { goal: 400, achieved: 380, yoy: 350 }),
+-        ],
+-      },
+-    ],
+-    createdAt: getDateString(200),
+-    updatedAt: getDateString(195),
+-  },
+-];
+-
+-// ============================================================================
+-// MOCK REPORT EVENTS (Audit Trail)
+-// ============================================================================
+-
+-export const mockReportEvents: ReportEvent[] = [
+-  {
+-    id: "re-1",
+-    reportId: "report-1",
+-    eventType: ReportEventType.CREATED,
+-    actorId: "user-campus-admin-1",
+-    timestamp: getDateString(3),
+-    newStatus: ReportStatus.DRAFT,
+-  },
+-  {
+-    id: "re-2",
+-    reportId: "report-1",
+-    eventType: ReportEventType.SUBMITTED,
+-    actorId: "user-campus-admin-1",
+-    timestamp: getDateString(1),
+-    previousStatus: ReportStatus.DRAFT,
+-    newStatus: ReportStatus.SUBMITTED,
+-  },
+-  {
+-    id: "re-3",
+-    reportId: "report-2",
+-    eventType: ReportEventType.CREATED,
+-    actorId: "user-campus-admin-2",
+-    timestamp: getDateString(10),
+-    newStatus: ReportStatus.DRAFT,
+-  },
+-  {
+-    id: "re-4",
+-    reportId: "report-2",
+-    eventType: ReportEventType.SUBMITTED,
+-    actorId: "user-campus-admin-2",
+-    timestamp: getDateString(8),
+-    previousStatus: ReportStatus.DRAFT,
+-    newStatus: ReportStatus.SUBMITTED,
+-  },
+-  {
+-    id: "re-5",
+-    reportId: "report-2",
+-    eventType: ReportEventType.APPROVED,
+-    actorId: "user-campus-pastor-2",
+-    timestamp: getDateString(5),
+-    previousStatus: ReportStatus.SUBMITTED,
+-    newStatus: ReportStatus.APPROVED,
+-  },
+-  {
+-    id: "re-6",
+-    reportId: "report-4",
+-    eventType: ReportEventType.EDIT_REQUESTED,
+-    actorId: "user-campus-pastor-1",
+-    timestamp: getDateString(8),
+-    previousStatus: ReportStatus.SUBMITTED,
+-    newStatus: ReportStatus.REQUIRES_EDITS,
+-    details: { reason: "Salvation numbers seem unusually high. Please verify." },
+-  },
+-  {
+-    id: "re-7",
+-    reportId: "report-5",
+-    eventType: ReportEventType.DATA_ENTRY_CREATED,
+-    actorId: "user-data-entry-1",
+-    timestamp: getDateString(200),
+-    newStatus: ReportStatus.DRAFT,
+-    details: { dataEntryDate: `${currentYear - 1}-06-14` },
+-  },
+-];
+-
+-// ============================================================================
+-// MOCK REPORT VERSIONS
+-// ============================================================================
+-
+-export const mockReportVersions: ReportVersion[] = [
+-  {
+-    id: "rv-1",
+-    reportId: "report-1",
+-    versionNumber: 1,
+-    snapshot: mockReports[0],
+-    createdAt: getDateString(1),
+-    createdById: "user-campus-admin-1",
+-    reason: "Initial submission",
+-  },
+-];
+-
+-// ============================================================================
+-// MOCK REPORT EDITS
+-// ============================================================================
+-
+-export const mockReportEdits: ReportEdit[] = [
+-  {
+-    id: "redit-1",
+-    reportId: "report-4",
+-    submittedById: "user-campus-admin-1",
+-    status: ReportEditStatus.DRAFT,
+-    reason: "Correcting salvation numbers as requested by Campus Pastor.",
+-    sections: [
+-      {
+-        id: "res-1-1",
+-        reportEditId: "redit-1",
+-        templateSectionId: "tsec-4",
+-        sectionName: "Salvation",
+-        order: 1,
+-        metrics: [
+-          {
+-            id: "rem-1-1-1",
+-            reportEditSectionId: "res-1-1",
+-            templateMetricId: "tm-4-4",
+-            metricName: "Total Salvations",
+-            fieldType: MetricFieldType.NUMBER,
+-            monthlyGoal: 45,
+-            monthlyAchieved: 38,
+-            yoyGoal: 30,
+-            originalMonthlyGoal: 45,
+-            originalMonthlyAchieved: 50,
+-            originalYoyGoal: 30,
+-            order: 1,
+-          },
+-        ],
+-      },
+-    ],
+-    createdAt: getDateString(7),
+-    updatedAt: getDateString(7),
+-  },
+-];
+-
+-// ============================================================================
+-// MOCK REPORT UPDATE REQUESTS (Post-deadline)
+-// ============================================================================
+-
+-export const mockReportUpdateRequests: ReportUpdateRequest[] = [
+-  {
+-    id: "rur-1",
+-    reportId: "report-5",
+-    requestedById: "user-campus-admin-1",
+-    reason: "Found additional attendance records from a cell that was missing from the original report.",
+-    sections: [
+-      {
+-        id: "rus-1-1",
+-        reportEditId: "rur-1",
+-        templateSectionId: "tsec-2",
+-        sectionName: "Attendance & Quality of Program",
+-        order: 1,
+-        metrics: [
+-          {
+-            id: "rum-1-1-1",
+-            reportEditSectionId: "rus-1-1",
+-            templateMetricId: "tm-2-1",
+-            metricName: "Sunday Service Attendance",
+-            fieldType: MetricFieldType.NUMBER,
+-            monthlyGoal: 400,
+-            monthlyAchieved: 395,
+-            yoyGoal: 350,
+-            originalMonthlyGoal: 400,
+-            originalMonthlyAchieved: 380,
+-            originalYoyGoal: 350,
+-            order: 1,
+-          },
+-        ],
+-      },
+-    ],
+-    status: ReportUpdateRequestStatus.PENDING,
+-    createdAt: getDateString(190),
+-    updatedAt: getDateString(190),
+-  },
+-];
+diff --git a/lib/types.ts b/lib/types.ts
+index 6fdb968..ddcb8e0 100644
+--- a/lib/types.ts
++++ b/lib/types.ts
+@@ -1,4 +1,4 @@
+-
++ 
+ // ============================================================================
+ // GLOBAL TYPES FOR CHURCH FELLOWSHIP CRM
+ // ============================================================================
+@@ -13,15 +13,11 @@
+ 
+ export enum UserRole {
+   SUPERADMIN = "SUPERADMIN",
+-  GROUP_PASTOR = "GROUP_PASTOR",
+-  GROUP_ADMIN = "GROUP_ADMIN",
+-  CAMPUS_PASTOR = "CAMPUS_PASTOR",
+-  CAMPUS_ADMIN = "CAMPUS_ADMIN",
+   ZONAL_LEADER = "ZONAL_LEADER",
++  CAMPUS_ADMIN = "CAMPUS_ADMIN",
+   HOD = "HOD",
+   SMALL_GROUP_LEADER = "SMALL_GROUP_LEADER",
+   CELL_LEADER = "CELL_LEADER",
+-  DATA_ENTRY = "DATA_ENTRY",
+   MEMBER = "MEMBER",
+ }
+ 
+@@ -76,18 +72,6 @@ export enum NotificationType {
+   NEW_REQUEST = "NEW_REQUEST",
+   CAMPAIGN_NEW = "CAMPAIGN_NEW",
+   REFERRAL_CONVERSION = "REFERRAL_CONVERSION",
+-  // Report notifications
+-  REPORT_SUBMITTED = "REPORT_SUBMITTED",
+-  REPORT_EDITS_REQUESTED = "REPORT_EDITS_REQUESTED",
+-  REPORT_APPROVED = "REPORT_APPROVED",
+-  REPORT_REVIEWED = "REPORT_REVIEWED",
+-  REPORT_EDIT_APPROVED = "REPORT_EDIT_APPROVED",
+-  REPORT_EDIT_REJECTED = "REPORT_EDIT_REJECTED",
+-  REPORT_UPDATE_REQUEST_SUBMITTED = "REPORT_UPDATE_REQUEST_SUBMITTED",
+-  REPORT_UPDATE_REQUEST_APPROVED = "REPORT_UPDATE_REQUEST_APPROVED",
+-  REPORT_UPDATE_REQUEST_REJECTED = "REPORT_UPDATE_REQUEST_REJECTED",
+-  REPORT_DEADLINE_REMINDER = "REPORT_DEADLINE_REMINDER",
+-  REPORT_DEADLINE_FINAL = "REPORT_DEADLINE_FINAL",
+ }
+ 
+ export enum CampaignStatus {
+@@ -133,81 +117,18 @@ export enum InviteLinkType {
+   CAMPAIGN = "CAMPAIGN",
+ }
+ 
+-// ============================================================================
+-// REPORT ENUMS
+-// ============================================================================
+-
+-export enum ReportStatus {
+-  DRAFT = "DRAFT",
+-  SUBMITTED = "SUBMITTED",
+-  REQUIRES_EDITS = "REQUIRES_EDITS",
+-  APPROVED = "APPROVED",
+-  REVIEWED = "REVIEWED",
+-  LOCKED = "LOCKED",
+-}
+-
+-export enum ReportEventType {
+-  CREATED = "CREATED",
+-  SUBMITTED = "SUBMITTED",
+-  EDIT_REQUESTED = "EDIT_REQUESTED",
+-  EDIT_SUBMITTED = "EDIT_SUBMITTED",
+-  EDIT_APPROVED = "EDIT_APPROVED",
+-  EDIT_REJECTED = "EDIT_REJECTED",
+-  APPROVED = "APPROVED",
+-  REVIEWED = "REVIEWED",
+-  LOCKED = "LOCKED",
+-  DEADLINE_PASSED = "DEADLINE_PASSED",
+-  UPDATE_REQUESTED = "UPDATE_REQUESTED",
+-  UPDATE_APPROVED = "UPDATE_APPROVED",
+-  UPDATE_REJECTED = "UPDATE_REJECTED",
+-  DATA_ENTRY_CREATED = "DATA_ENTRY_CREATED",
+-  TEMPLATE_VERSION_NOTE = "TEMPLATE_VERSION_NOTE",
+-  FIELD_UNLOCKED = "FIELD_UNLOCKED",
+-  AUTO_APPROVED = "AUTO_APPROVED",
+-}
+-
+-export enum ReportPeriodType {
+-  WEEKLY = "WEEKLY",
+-  MONTHLY = "MONTHLY",
+-  YEARLY = "YEARLY",
+-}
+-
+-export enum MetricFieldType {
+-  NUMBER = "NUMBER",
+-  PERCENTAGE = "PERCENTAGE",
+-  TEXT = "TEXT",
+-  CURRENCY = "CURRENCY",
+-}
+-
+-export enum ReportEditStatus {
+-  DRAFT = "DRAFT",
+-  SUBMITTED = "SUBMITTED",
+-  APPROVED = "APPROVED",
+-  REJECTED = "REJECTED",
+-}
+-
+-export enum ReportUpdateRequestStatus {
+-  PENDING = "PENDING",
+-  APPROVED = "APPROVED",
+-  REJECTED = "REJECTED",
+-}
+-
+ // ============================================================================
+ // HIERARCHY LEVEL - ordered from highest to lowest
+ // ============================================================================
+ 
+ export const HIERARCHY_ORDER: Record<UserRole, number> = {
+   [UserRole.SUPERADMIN]: 0,
+-  [UserRole.GROUP_PASTOR]: 1,
+-  [UserRole.GROUP_ADMIN]: 2,
+-  [UserRole.CAMPUS_PASTOR]: 3,
+-  [UserRole.CAMPUS_ADMIN]: 4,
+-  [UserRole.ZONAL_LEADER]: 5,
+-  [UserRole.HOD]: 6,
+-  [UserRole.SMALL_GROUP_LEADER]: 7,
+-  [UserRole.CELL_LEADER]: 8,
+-  [UserRole.DATA_ENTRY]: 9,
+-  [UserRole.MEMBER]: 10,
++  [UserRole.ZONAL_LEADER]: 1,
++  [UserRole.CAMPUS_ADMIN]: 2,
++  [UserRole.HOD]: 3,
++  [UserRole.SMALL_GROUP_LEADER]: 4,
++  [UserRole.CELL_LEADER]: 5,
++  [UserRole.MEMBER]: 6,
+ };
+ 
+ // ============================================================================
+@@ -222,1978 +143,1339 @@ declare global {
+   // ============================================================================
+ 
+   interface Campus {
+-    id: string;
+-    name: string;
+-    description: string;
+-    location: string;
+-    country: string;
+-    zoneId: string;
+-    adminId: string;
+-    isActive: boolean;
+-    createdAt: string;
+-    updatedAt: string;
+-  }
++  id: string;
++  name: string;
++  description: string;
++  location: string;
++  country: string;
++  zoneId: string;
++  adminId: string;
++  isActive: boolean;
++  createdAt: string;
++  updatedAt: string;
++}
+ 
+-  interface Zone {
+-    id: string;
+-    name: string;
+-    description: string;
+-    region?: string;
+-    leaderId: string;
+-    isActive: boolean;
+-    createdAt: string;
+-    updatedAt: string;
+-  }
+-
+-  interface Department {
+-    id: string;
+-    name: string;
+-    description: string;
+-    campusId: string;
+-    zoneId?: string;
+-    hodId: string;
+-    isActive: boolean;
+-    createdAt: string;
+-    updatedAt: string;
+-  }
+-
+-  interface SmallGroup {
+-    id: string;
+-    name: string;
+-    description: string;
+-    campusId: string;
+-    zoneId: string;
+-    departmentId?: string;
+-    leaderId: string;
+-    meetingFrequency: MeetingFrequency;
+-    memberCount: number;
+-    inviteCode?: string;
+-    isActive: boolean;
+-    createdAt: string;
+-    updatedAt: string;
+-  }
++interface Zone {
++  id: string;
++  name: string;
++  description: string;
++  region?: string;
++  leaderId: string;
++  isActive: boolean;
++  createdAt: string;
++  updatedAt: string;
++}
+ 
+-  interface Cell {
+-    id: string;
+-    name: string;
+-    description: string;
+-    campusId: string;
+-    zoneId: string;
+-    departmentId?: string;
+-    groupId: string;
+-    leaderId: string;
+-    meetingFrequency: MeetingFrequency;
+-    memberCount: number;
+-    inviteCode?: string;
+-    isActive: boolean;
+-    createdAt: string;
+-    updatedAt: string;
+-  }
++interface Department {
++  id: string;
++  name: string;
++  description: string;
++  campusId: string;
++  zoneId?: string;
++  hodId: string;
++  isActive: boolean;
++  createdAt: string;
++  updatedAt: string;
++}
+ 
+-  // ============================================================================
+-  // ORG UNIT WITH DETAILS
+-  // ============================================================================
++interface SmallGroup {
++  id: string;
++  name: string;
++  description: string;
++  campusId: string;
++  zoneId: string;
++  departmentId?: string;
++  leaderId: string;
++  meetingFrequency: MeetingFrequency;
++  memberCount: number;
++  inviteCode?: string;
++  isActive: boolean;
++  createdAt: string;
++  updatedAt: string;
++}
+ 
+-  interface CampusWithDetails extends Campus {
+-    zone: Zone;
+-    admin?: UserProfile;
+-    departments: Department[];
+-    groups: SmallGroup[];
+-    cells: Cell[];
+-    totalMembers: number;
+-    totalGroups: number;
+-    totalCells: number;
+-    totalDepartments: number;
+-  }
++interface Cell {
++  id: string;
++  name: string;
++  description: string;
++  campusId: string;
++  zoneId: string;
++  departmentId?: string;
++  groupId: string;
++  leaderId: string;
++  meetingFrequency: MeetingFrequency;
++  memberCount: number;
++  inviteCode?: string;
++  isActive: boolean;
++  createdAt: string;
++  updatedAt: string;
++}
+ 
+-  interface ZoneWithDetails extends Zone {
+-    leader?: UserProfile;
+-    campuses: Campus[];
+-    departments: Department[];
+-    groups: SmallGroup[];
+-    totalMembers: number;
+-    totalCampuses: number;
+-    totalDepartments: number;
+-  }
++// ============================================================================
++// ORG UNIT WITH DETAILS
++// ============================================================================
+ 
+-  interface DepartmentWithDetails extends Department {
+-    campus: Campus;
+-    zone?: Zone;
+-    hod?: UserProfile;
+-    groups: SmallGroup[];
+-    totalMembers: number;
+-    totalGroups: number;
+-  }
+-
+-  interface SmallGroupWithDetails extends SmallGroup {
+-    campus: Campus;
+-    zone: Zone;
+-    department?: Department;
+-    leader?: UserProfile;
+-    members: UserProfile[];
+-    cells: Cell[];
+-    recentMeetings: Meeting[];
+-    attendanceRate?: number;
+-  }
+-
+-  interface CellWithDetails extends Cell {
+-    campus: Campus;
+-    zone: Zone;
+-    department?: Department;
+-    group: SmallGroup;
+-    leader?: UserProfile;
+-    members: UserProfile[];
+-    recentMeetings: Meeting[];
+-    attendanceRate?: number;
+-  }
++interface CampusWithDetails extends Campus {
++  zone: Zone;
++  admin?: UserProfile;
++  departments: Department[];
++  groups: SmallGroup[];
++  cells: Cell[];
++  totalMembers: number;
++  totalGroups: number;
++  totalCells: number;
++  totalDepartments: number;
++}
+ 
+-  // ============================================================================
+-  // CREATE/UPDATE INPUTS FOR ORG UNITS
+-  // ============================================================================
++interface ZoneWithDetails extends Zone {
++  leader?: UserProfile;
++  campuses: Campus[];
++  departments: Department[];
++  groups: SmallGroup[];
++  totalMembers: number;
++  totalCampuses: number;
++  totalDepartments: number;
++}
+ 
+-  interface CreateCampusInput {
+-    name: string;
+-    description: string;
+-    location: string;
+-    country: string;
+-    zoneId: string;
+-    adminId: string;
+-  }
+-
+-  interface UpdateCampusInput {
+-    name?: string;
+-    description?: string;
+-    location?: string;
+-    country?: string;
+-    zoneId?: string;
+-    adminId?: string;
+-    isActive?: boolean;
+-  }
+-
+-  interface CreateZoneInput {
+-    name: string;
+-    description: string;
+-    region?: string;
+-    leaderId: string;
+-  }
+-
+-  interface UpdateZoneInput {
+-    name?: string;
+-    description?: string;
+-    region?: string;
+-    leaderId?: string;
+-    isActive?: boolean;
+-  }
+-
+-  interface CreateDepartmentInput {
+-    name: string;
+-    description: string;
+-    campusId: string;
+-    zoneId?: string;
+-    hodId: string;
+-  }
+-
+-  interface UpdateDepartmentInput {
+-    name?: string;
+-    description?: string;
+-    campusId?: string;
+-    zoneId?: string;
+-    hodId?: string;
+-    isActive?: boolean;
+-  }
+-
+-  interface CreateSmallGroupInput {
+-    name: string;
+-    description: string;
+-    campusId: string;
+-    zoneId: string;
+-    departmentId?: string;
+-    leaderId: string;
+-    meetingFrequency: MeetingFrequency;
+-  }
+-
+-  interface UpdateSmallGroupInput {
+-    name?: string;
+-    description?: string;
+-    departmentId?: string;
+-    leaderId?: string;
+-    meetingFrequency?: MeetingFrequency;
+-    inviteCode?: string;
+-    isActive?: boolean;
+-  }
+-
+-  interface CreateCellInput {
+-    name: string;
+-    description: string;
+-    campusId: string;
+-    zoneId: string;
+-    departmentId?: string;
+-    groupId: string;
+-    leaderId: string;
+-    meetingFrequency: MeetingFrequency;
+-  }
+-
+-  interface UpdateCellInput {
+-    name?: string;
+-    description?: string;
+-    departmentId?: string;
+-    leaderId?: string;
+-    meetingFrequency?: MeetingFrequency;
+-    inviteCode?: string;
+-    isActive?: boolean;
+-  }
++interface DepartmentWithDetails extends Department {
++  campus: Campus;
++  zone?: Zone;
++  hod?: UserProfile;
++  groups: SmallGroup[];
++  totalMembers: number;
++  totalGroups: number;
++}
+ 
+-  // ============================================================================
+-  // USER TYPES (UPDATED FOR HIERARCHY)
+-  // ============================================================================
++interface SmallGroupWithDetails extends SmallGroup {
++  campus: Campus;
++  zone: Zone;
++  department?: Department;
++  leader?: UserProfile;
++  members: UserProfile[];
++  cells: Cell[];
++  recentMeetings: Meeting[];
++  attendanceRate?: number;
++}
+ 
+-  interface User {
+-    id: string;
+-    email: string;
+-    password: string;
+-    firstName: string;
+-    lastName: string;
+-    phone: string;
+-    whatsappPhone?: string;
+-    location?: string;
+-    age?: number;
+-    maritalStatus?: MaritalStatus;
+-    employmentStatus?: EmploymentStatus;
+-    interests: string[];
+-    role: UserRole;
+-    campusId?: string;
+-    zoneId?: string;
+-    departmentId?: string;
+-    groupId?: string;
+-    cellId?: string;
+-    avatar?: string;
+-    isActive: boolean;
+-    invitedById?: string;
+-    inviteCode?: string;
+-    createdAt: string;
+-    updatedAt: string;
+-  }
+-
+-  interface UserProfile extends Omit<User, "password"> {
+-    campus?: Campus;
+-    zone?: Zone;
+-    department?: Department;
+-    group?: SmallGroup;
+-    cell?: Cell;
+-    attendanceRate?: number;
+-    engagementScore?: number;
+-  }
+-
+-  interface CreateUserInput {
+-    email: string;
+-    password: string;
+-    firstName: string;
+-    lastName: string;
+-    phone: string;
+-    whatsappPhone?: string;
+-    location?: string;
+-    age?: number;
+-    maritalStatus?: MaritalStatus;
+-    employmentStatus?: EmploymentStatus;
+-    interests?: string[];
+-    campusId?: string;
+-    zoneId?: string;
+-    departmentId?: string;
+-    groupId?: string;
+-    cellId?: string;
+-    invitedById?: string;
+-    inviteCode?: string;
+-  }
+-
+-  interface UpdateUserInput {
+-    firstName?: string;
+-    lastName?: string;
+-    phone?: string;
+-    whatsappPhone?: string;
+-    location?: string;
+-    age?: number;
+-    maritalStatus?: MaritalStatus;
+-    employmentStatus?: EmploymentStatus;
+-    interests?: string[];
+-    avatar?: string;
+-    campusId?: string;
+-    zoneId?: string;
+-    departmentId?: string;
+-    groupId?: string;
+-    cellId?: string;
+-    isActive?: boolean;
+-    role?: UserRole;
+-  }
++interface CellWithDetails extends Cell {
++  campus: Campus;
++  zone: Zone;
++  department?: Department;
++  group: SmallGroup;
++  leader?: UserProfile;
++  members: UserProfile[];
++  recentMeetings: Meeting[];
++  attendanceRate?: number;
++}
+ 
+-  // ============================================================================
+-  // GROUP TYPES (BACKWARD COMPAT - MAPS TO SmallGroup)
+-  // ============================================================================
++// ============================================================================
++// CREATE/UPDATE INPUTS FOR ORG UNITS
++// ============================================================================
+ 
+-  // Group is an alias for SmallGroup (maintained for backward compatibility)
+-  type Group = SmallGroup;
++interface CreateCampusInput {
++  name: string;
++  description: string;
++  location: string;
++  country: string;
++  zoneId: string;
++  adminId: string;
++}
+ 
+-  interface GroupWithDetails extends Group {
+-    leader?: UserProfile;
+-    members: UserProfile[];
+-    cells: Cell[];
+-    recentMeetings: Meeting[];
+-    attendanceRate?: number;
+-  }
++interface UpdateCampusInput {
++  name?: string;
++  description?: string;
++  location?: string;
++  country?: string;
++  zoneId?: string;
++  adminId?: string;
++  isActive?: boolean;
++}
+ 
+-  interface CreateGroupInput {
+-    name: string;
+-    description: string;
+-    meetingFrequency: MeetingFrequency;
+-    leaderId: string;
+-    campusId?: string;
+-    zoneId?: string;
+-    departmentId?: string;
+-  }
+-
+-  interface UpdateGroupInput {
+-    name?: string;
+-    description?: string;
+-    meetingFrequency?: MeetingFrequency;
+-    leaderId?: string;
+-    campusId?: string;
+-    zoneId?: string;
+-    departmentId?: string;
+-    inviteCode?: string;
+-    isActive?: boolean;
+-  }
++interface CreateZoneInput {
++  name: string;
++  description: string;
++  region?: string;
++  leaderId: string;
++}
+ 
+-  // ============================================================================
+-  // MEETING TYPES (UPDATED FOR HIERARCHY)
+-  // ============================================================================
++interface UpdateZoneInput {
++  name?: string;
++  description?: string;
++  region?: string;
++  leaderId?: string;
++  isActive?: boolean;
++}
+ 
+-  interface Meeting {
+-    id: string;
+-    title?: string;
+-    date: string;
+-    startTime: string;
+-    endTime: string;
+-    topic?: string;
+-    attendeeCount: number;
+-    attendeeIds: string[];
+-    screenshotUrl?: string;
+-    notes?: string;
+-    createdById: string;
+-    level: MeetingLevel;
+-    campusId?: string;
+-    zoneId?: string;
+-    departmentId?: string;
+-    groupId?: string;
+-    cellId?: string;
+-    isBroadcast?: boolean;
+-    isTemplate?: boolean;
+-    targetGroupIds?: string[];
+-    targetCellIds?: string[];
+-    templateId?: string;
+-    campusNotes?: CampusMeetingNotes;
+-    createdAt: string;
+-    updatedAt: string;
+-  }
+-
+-  interface CampusMeetingNotes {
+-    totalCells?: number;
+-    cellsHeld?: number;
+-    newGroups?: number;
+-    firstTimers?: number;
+-    testimonies?: string[];
+-    salvations?: number;
+-    additionalNotes?: string;
+-  }
+-
+-  interface MeetingWithDetails extends Meeting {
+-    campus?: Campus;
+-    zone?: Zone;
+-    department?: Department;
+-    group?: Group;
+-    cell?: Cell;
+-    createdBy: UserProfile;
+-    attendees: UserProfile[];
+-  }
+-
+-  interface CreateMeetingInput {
+-    title?: string;
+-    date: string;
+-    startTime: string;
+-    endTime: string;
+-    topic?: string;
+-    attendeeCount?: number;
+-    attendeeIds?: string[];
+-    screenshotUrl?: string;
+-    notes?: string;
+-    level: MeetingLevel;
+-    campusId?: string;
+-    zoneId?: string;
+-    departmentId?: string;
+-    groupId?: string;
+-    cellId?: string;
+-    isBroadcast?: boolean;
+-    isTemplate?: boolean;
+-    targetGroupIds?: string[];
+-    targetCellIds?: string[];
+-    campusNotes?: CampusMeetingNotes;
+-  }
+-
+-  interface UpdateMeetingInput {
+-    title?: string;
+-    date?: string;
+-    startTime?: string;
+-    endTime?: string;
+-    topic?: string;
+-    attendeeCount?: number;
+-    attendeeIds?: string[];
+-    screenshotUrl?: string;
+-    notes?: string;
+-    level?: MeetingLevel;
+-    campusNotes?: CampusMeetingNotes;
+-  }
++interface CreateDepartmentInput {
++  name: string;
++  description: string;
++  campusId: string;
++  zoneId?: string;
++  hodId: string;
++}
+ 
+-  // ============================================================================
+-  // ATTENDANCE TYPES
+-  // ============================================================================
++interface UpdateDepartmentInput {
++  name?: string;
++  description?: string;
++  campusId?: string;
++  zoneId?: string;
++  hodId?: string;
++  isActive?: boolean;
++}
+ 
+-  interface Attendance {
+-    id: string;
+-    meetingId: string;
+-    memberId: string;
+-    present: boolean;
+-    createdAt: string;
+-  }
++interface CreateSmallGroupInput {
++  name: string;
++  description: string;
++  campusId: string;
++  zoneId: string;
++  departmentId?: string;
++  leaderId: string;
++  meetingFrequency: MeetingFrequency;
++}
+ 
+-  interface AttendanceRecord extends Attendance {
+-    member: UserProfile;
+-    meeting: Meeting;
+-  }
++interface UpdateSmallGroupInput {
++  name?: string;
++  description?: string;
++  departmentId?: string;
++  leaderId?: string;
++  meetingFrequency?: MeetingFrequency;
++  inviteCode?: string;
++  isActive?: boolean;
++}
+ 
+-  // ============================================================================
+-  // INTERACTION TYPES
+-  // ============================================================================
++interface CreateCellInput {
++  name: string;
++  description: string;
++  campusId: string;
++  zoneId: string;
++  departmentId?: string;
++  groupId: string;
++  leaderId: string;
++  meetingFrequency: MeetingFrequency;
++}
+ 
+-  interface Interaction {
+-    id: string;
+-    leaderId: string;
+-    memberId: string;
+-    type: InteractionType;
+-    notes?: string;
+-    timestamp: string;
+-    groupId?: string;
+-    cellId?: string;
+-    campusId?: string;
+-    zoneId?: string;
+-    departmentId?: string;
+-    createdAt: string;
+-  }
+-
+-  interface InteractionWithDetails extends Interaction {
+-    leader: UserProfile;
+-    member: UserProfile;
+-  }
+-
+-  interface CreateInteractionInput {
+-    memberId: string;
+-    type: InteractionType;
+-    notes?: string;
+-    timestamp?: string;
+-  }
++interface UpdateCellInput {
++  name?: string;
++  description?: string;
++  departmentId?: string;
++  leaderId?: string;
++  meetingFrequency?: MeetingFrequency;
++  inviteCode?: string;
++  isActive?: boolean;
++}
+ 
+-  interface UpdateInteractionInput {
+-    type?: InteractionType;
+-    notes?: string;
+-    timestamp?: string;
+-  }
++// ============================================================================
++// USER TYPES (UPDATED FOR HIERARCHY)
++// ============================================================================
+ 
+-  // ============================================================================
+-  // MEMBERSHIP REQUEST TYPES
+-  // ============================================================================
++interface User {
++  id: string;
++  email: string;
++  password: string;
++  firstName: string;
++  lastName: string;
++  phone: string;
++  whatsappPhone?: string;
++  location?: string;
++  age?: number;
++  maritalStatus?: MaritalStatus;
++  employmentStatus?: EmploymentStatus;
++  interests: string[];
++  role: UserRole;
++  campusId?: string;
++  zoneId?: string;
++  departmentId?: string;
++  groupId?: string;
++  cellId?: string;
++  avatar?: string;
++  isActive: boolean;
++  invitedById?: string;
++  inviteCode?: string;
++  createdAt: string;
++  updatedAt: string;
++}
+ 
+-  interface MembershipRequest {
+-    id: string;
+-    memberId: string;
+-    fromGroupId?: string;
+-    fromCellId?: string;
+-    toGroupId?: string;
+-    toCellId?: string;
+-    toCampusId?: string;
+-    toZoneId?: string;
+-    toDepartmentId?: string;
+-    type: MembershipRequestType;
+-    status: MembershipRequestStatus;
+-    message?: string;
+-    requestedAt: string;
+-    respondedAt?: string;
+-    respondedById?: string;
+-    responseMessage?: string;
+-  }
+-
+-  interface MembershipRequestWithDetails extends MembershipRequest {
+-    member: UserProfile;
+-    fromGroup?: Group;
+-    toGroup?: Group;
+-    fromCell?: Cell;
+-    toCell?: Cell;
+-    respondedBy?: UserProfile;
+-  }
+-
+-  interface CreateMembershipRequestInput {
+-    toGroupId?: string;
+-    toCellId?: string;
+-    toCampusId?: string;
+-    toZoneId?: string;
+-    toDepartmentId?: string;
+-    fromGroupId?: string;
+-    fromCellId?: string;
+-    type: MembershipRequestType;
+-    message?: string;
+-  }
+-
+-  interface RespondToRequestInput {
+-    status: MembershipRequestStatus.APPROVED | MembershipRequestStatus.REJECTED;
+-    responseMessage?: string;
+-  }
++interface UserProfile extends Omit<User, "password"> {
++  campus?: Campus;
++  zone?: Zone;
++  department?: Department;
++  group?: SmallGroup;
++  cell?: Cell;
++  attendanceRate?: number;
++  engagementScore?: number;
++}
+ 
+-  // ============================================================================
+-  // NOTIFICATION TYPES
+-  // ============================================================================
++interface CreateUserInput {
++  email: string;
++  password: string;
++  firstName: string;
++  lastName: string;
++  phone: string;
++  whatsappPhone?: string;
++  location?: string;
++  age?: number;
++  maritalStatus?: MaritalStatus;
++  employmentStatus?: EmploymentStatus;
++  interests?: string[];
++  campusId?: string;
++  zoneId?: string;
++  departmentId?: string;
++  groupId?: string;
++  cellId?: string;
++  invitedById?: string;
++  inviteCode?: string;
++}
+ 
+-  interface appNotification {
+-    id: string;
+-    userId: string;
+-    type: NotificationType;
+-    title: string;
+-    message: string;
+-    relatedId?: string;
+-    read: boolean;
+-    createdAt: string;
+-  }
++interface UpdateUserInput {
++  firstName?: string;
++  lastName?: string;
++  phone?: string;
++  whatsappPhone?: string;
++  location?: string;
++  age?: number;
++  maritalStatus?: MaritalStatus;
++  employmentStatus?: EmploymentStatus;
++  interests?: string[];
++  avatar?: string;
++  campusId?: string;
++  zoneId?: string;
++  departmentId?: string;
++  groupId?: string;
++  cellId?: string;
++  isActive?: boolean;
++  role?: UserRole;
++}
+ 
+-  interface NotificationWithDetails extends appNotification {
+-    user: UserProfile;
+-  }
++// ============================================================================
++// GROUP TYPES (BACKWARD COMPAT - MAPS TO SmallGroup)
++// ============================================================================
+ 
+-  // ============================================================================
+-  // CAMPAIGN TYPES
+-  // ============================================================================
++// Group is an alias for SmallGroup (maintained for backward compatibility)
++type Group = SmallGroup;
+ 
+-  interface CampaignMedia {
+-    id: string;
+-    type: CampaignMediaType;
+-    url: string;
+-    thumbnailUrl?: string;
+-    altText?: string;
+-    order: number;
+-  }
+-
+-  interface Campaign {
+-    id: string;
+-    title: string;
+-    description: string;
+-    content: string;
+-    media: CampaignMedia[];
+-    mediaType?: CampaignMediaType; // Primary media type for simplified access
+-    mediaUrl?: string; // Primary media URL for simplified access
+-    thumbnailUrl?: string; // Primary thumbnail URL for simplified access
+-    ctaText?: string;
+-    ctaUrl?: string;
+-    createdById: string;
+-    status: CampaignStatus;
+-    targetAudience?: string[]; // Target audience categories
+-    publishedAt?: string;
+-    expiresAt?: string;
+-    metaTitle?: string;
+-    metaDescription?: string;
+-    metaImage?: string;
+-    targetLevel?: MeetingLevel;
+-    targetCampusId?: string;
+-    targetZoneId?: string;
+-    targetDepartmentId?: string;
+-    targetGroupId?: string;
+-    targetCellId?: string;
+-    viewCount: number;
+-    likeCount?: number; // Number of likes
+-    clickCount: number;
+-    shareCount: number;
+-    createdAt: string;
+-    updatedAt: string;
+-  }
++interface GroupWithDetails extends Group {
++  leader?: UserProfile;
++  members: UserProfile[];
++  cells: Cell[];
++  recentMeetings: Meeting[];
++  attendanceRate?: number;
++}
+ 
+-  interface CampaignWithDetails extends Campaign {
+-    createdBy: UserProfile;
+-    interactions: CampaignInteraction[];
+-    isActive: boolean;
+-  }
++interface CreateGroupInput {
++  name: string;
++  description: string;
++  meetingFrequency: MeetingFrequency;
++  leaderId: string;
++  campusId?: string;
++  zoneId?: string;
++  departmentId?: string;
++}
+ 
+-  interface CampaignInteraction {
+-    id: string;
+-    campaignId: string;
+-    userId?: string;
+-    type: CampaignInteractionType;
+-    referralCode?: string;
+-    metadata?: Record<string, unknown>;
+-    createdAt: string;
+-  }
++interface UpdateGroupInput {
++  name?: string;
++  description?: string;
++  meetingFrequency?: MeetingFrequency;
++  leaderId?: string;
++  campusId?: string;
++  zoneId?: string;
++  departmentId?: string;
++  inviteCode?: string;
++  isActive?: boolean;
++}
+ 
+-  interface CreateCampaignInput {
+-    title: string;
+-    description: string;
+-    content: string;
+-    media?: CampaignMedia[];
+-    ctaText?: string;
+-    ctaUrl?: string;
+-    metaTitle?: string;
+-    metaDescription?: string;
+-    metaImage?: string;
+-    targetLevel?: MeetingLevel;
+-    targetCampusId?: string;
+-    targetZoneId?: string;
+-    publishImmediately?: boolean;
+-  }
+-
+-  interface UpdateCampaignInput {
+-    title?: string;
+-    description?: string;
+-    content?: string;
+-    media?: CampaignMedia[];
+-    ctaText?: string;
+-    ctaUrl?: string;
+-    metaTitle?: string;
+-    metaDescription?: string;
+-    metaImage?: string;
+-    targetLevel?: MeetingLevel;
+-    targetCampusId?: string;
+-    targetZoneId?: string;
+-    targetDepartmentId?: string;
+-    targetGroupId?: string;
+-    targetCellId?: string;
+-    status?: CampaignStatus;
+-    expiresAt?: string;
+-  }
++// ============================================================================
++// MEETING TYPES (UPDATED FOR HIERARCHY)
++// ============================================================================
+ 
+-  // ============================================================================
+-  // REFERRAL / INVITE LINK TYPES
+-  // ============================================================================
++interface Meeting {
++  id: string;
++  title?: string;
++  date: string;
++  startTime: string;
++  endTime: string;
++  topic?: string;
++  attendeeCount: number;
++  attendeeIds: string[];
++  screenshotUrl?: string;
++  notes?: string;
++  createdById: string;
++  level: MeetingLevel;
++  campusId?: string;
++  zoneId?: string;
++  departmentId?: string;
++  groupId?: string;
++  cellId?: string;
++  isBroadcast?: boolean;
++  isTemplate?: boolean;
++  targetGroupIds?: string[];
++  targetCellIds?: string[];
++  templateId?: string;
++  campusNotes?: CampusMeetingNotes;
++  createdAt: string;
++  updatedAt: string;
++}
+ 
+-  interface InviteLink {
+-    id: string;
+-    code: string;
+-    createdById: string;
+-    type: InviteLinkType;
+-    targetId: string;
+-    assignRole?: UserRole;
+-    expiresAt?: string;
+-    maxUses?: number;
+-    isActive: boolean;
+-    visitCount: number;
+-    conversionCount: number;
+-    createdAt: string;
+-    updatedAt: string;
+-  }
+-
+-  interface InviteLinkVisit {
+-    id: string;
+-    inviteLinkId: string;
+-    visitorUserId?: string;
+-    visitorIp?: string;
+-    referrer?: string;
+-    userAgent?: string;
+-    ipAddress?: string;
+-    converted: boolean;
+-    convertedUserId?: string;
+-    createdAt: string;
+-  }
+-
+-  interface ReferralStats {
+-    userId: string;
+-    totalInvitesSent: number;
+-    totalVisits: number;
+-    totalConversions: number;
+-    conversionRate: number;
+-    topPerformingLink?: InviteLink;
+-    invitees: Array<{
+-      userId: string;
+-      name: string;
+-      joinedAt: string;
+-      via: InviteLinkType;
+-    }>;
+-  }
+-
+-  interface CreateInviteLinkInput {
+-    type: InviteLinkType;
+-    targetId: string;
+-    assignRole?: UserRole;
+-    expiresAt?: string;
+-  }
++interface CampusMeetingNotes {
++  totalCells?: number;
++  cellsHeld?: number;
++  newGroups?: number;
++  firstTimers?: number;
++  testimonies?: string[];
++  salvations?: number;
++  additionalNotes?: string;
++}
+ 
+-  // ============================================================================
+-  // ANALYTICS TYPES (UPDATED FOR HIERARCHY)
+-  // ============================================================================
++interface MeetingWithDetails extends Meeting {
++  campus?: Campus;
++  zone?: Zone;
++  department?: Department;
++  group?: Group;
++  cell?: Cell;
++  createdBy: UserProfile;
++  attendees: UserProfile[];
++}
+ 
+-  interface MemberAnalytics {
+-    userId: string;
+-    attendanceRate: number;
+-    totalMeetings: number;
+-    attendedMeetings: number;
+-    missedMeetings: number;
+-    engagementScore: number;
+-    lastInteraction?: string;
+-    interactionCount: number;
+-    isAtRisk: boolean;
+-  }
++interface CreateMeetingInput {
++  title?: string;
++  date: string;
++  startTime: string;
++  endTime: string;
++  topic?: string;
++  attendeeCount?: number;
++  attendeeIds?: string[];
++  screenshotUrl?: string;
++  notes?: string;
++  level: MeetingLevel;
++  campusId?: string;
++  zoneId?: string;
++  departmentId?: string;
++  groupId?: string;
++  cellId?: string;
++  isBroadcast?: boolean;
++  isTemplate?: boolean;
++  targetGroupIds?: string[];
++  targetCellIds?: string[];
++  campusNotes?: CampusMeetingNotes;
++}
+ 
+-  interface GroupAnalytics {
+-    groupId: string;
+-    attendanceRate: number;
+-    totalMeetings: number;
+-    averageAttendance: number;
+-    memberCount: number;
+-    activeMembers: number;
+-    atRiskMembers: number;
+-    meetingFrequencyAdherence: number;
+-    leaderInteractionRate: number;
+-  }
++interface UpdateMeetingInput {
++  title?: string;
++  date?: string;
++  startTime?: string;
++  endTime?: string;
++  topic?: string;
++  attendeeCount?: number;
++  attendeeIds?: string[];
++  screenshotUrl?: string;
++  notes?: string;
++  level?: MeetingLevel;
++  campusNotes?: CampusMeetingNotes;
++}
+ 
+-  interface CampusAnalytics {
+-    campusId: string;
+-    campusName: string;
+-    zoneId: string;
+-    zoneName: string;
+-    totalMembers: number;
+-    totalDepartments: number;
+-    totalGroups: number;
+-    totalCells: number;
+-    totalMeetings: number;
+-    overallAttendanceRate: number;
+-    zonePerformance: Array<{
+-      zoneId: string;
+-      zoneName: string;
+-      attendanceRate: number;
+-      memberCount: number;
+-    }>;
+-    campusMeetingSummary?: CampusMeetingNotes;
+-  }
+-
+-  interface ZoneAnalytics {
+-    zoneId: string;
+-    zoneName: string;
+-    totalCampuses: number;
+-    totalMembers: number;
+-    totalGroups: number;
+-    totalCells: number;
+-    totalMeetings: number;
+-    attendanceRate: number;
+-    groupPerformance: Array<{
+-      groupId: string;
+-      groupName: string;
+-      attendanceRate: number;
+-      memberCount: number;
+-    }>;
+-  }
+-
+-  interface HierarchyAnalytics {
+-    level: MeetingLevel;
+-    entityId: string;
+-    entityName: string;
+-    period: string;
+-    totalMeetings: number;
+-    averageAttendance: number;
+-    attendanceRate: number;
+-    totalMembers: number;
+-    activeMembers: number;
+-    atRiskMembers: number;
+-    trendData: Array<{
+-      date: string;
+-      attendance: number;
+-      meetings: number;
+-    }>;
+-  }
+-
+-  interface ChurchWideAnalytics {
+-    totalMembers: number;
+-    activeMembers: number;
+-    inactiveMembers: number;
+-    totalCampuses: number;
+-    totalZones: number;
+-    totalDepartments: number;
+-    totalGroups: number;
+-    totalCells: number;
+-    activeGroups: number;
+-    totalMeetings: number;
+-    overallAttendanceRate: number;
+-    averageEngagementScore: number;
+-    atRiskMemberCount: number;
+-    interestDistribution: Record<string, number>;
+-    campusPerformance: Array<{
+-      campusId: string;
+-      campusName: string;
+-      attendanceRate: number;
+-      memberCount: number;
+-      groupCount: number;
+-    }>;
+-    groupPerformance: Array<{
+-      groupId: string;
+-      groupName: string;
+-      attendanceRate: number;
+-      memberCount: number;
+-    }>;
+-    campaignStats: {
+-      totalCampaigns: number;
+-      activeCampaigns: number;
+-      totalViews: number;
+-      totalShares: number;
+-    };
+-    referralStats: {
+-      totalReferrals: number;
+-      totalConversions: number;
+-      conversionRate: number;
+-    };
+-  }
++// ============================================================================
++// ATTENDANCE TYPES
++// ============================================================================
+ 
+-  // ============================================================================
+-  // API-SPECIFIC RESPONSE TYPES
+-  // ============================================================================
++interface Attendance {
++  id: string;
++  meetingId: string;
++  memberId: string;
++  present: boolean;
++  createdAt: string;
++}
+ 
+-  interface MemberDashboardAnalytics {
+-    attendanceRate: number;
+-    totalMeetings: number;
+-    meetingsAttended: number;
+-    totalInteractions: number;
+-    engagementLevel: "HIGH" | "MEDIUM" | "LOW" | "AT_RISK";
+-  }
++interface AttendanceRecord extends Attendance {
++  member: UserProfile;
++  meeting: Meeting;
++}
+ 
+-  interface MemberAnalyticsResponse {
+-    attendancePercentage: number;
+-    totalMeetings: number;
+-    attendedMeetings: number;
+-    missedMeetings: number;
+-    interactionCount: number;
+-    lastInteractionDate: string | null;
+-    engagementScore: number;
+-    memberSince: string;
+-    recentActivity: Array<{
+-      id: string;
+-      type: string;
+-      title: string;
+-      date: string;
+-      status?: string;
+-    }>;
+-  }
+-
+-  interface GroupDashboardAnalytics {
+-    group: {
+-      id: string;
+-      name: string;
+-      description: string;
+-      leader: {
+-        id: string;
+-        name: string;
+-      };
+-    };
+-    summary: {
+-      totalMembers: number;
+-      totalMeetings: number;
+-      totalInteractions: number;
+-      averageAttendance: number;
+-      attendanceRate: number;
+-    };
+-    memberEngagement: Array<{
+-      memberId: string;
+-      memberName: string;
+-      totalMeetings: number;
+-      meetingsAttended: number;
+-      attendanceRate: number;
+-      totalInteractions: number;
+-      lastAttendance?: string;
+-    }>;
+-    interactionsByType: Record<string, number>;
+-    atRiskMembers: Array<{
+-      memberId: string;
+-      memberName: string;
+-      attendanceRate: number;
+-      lastAttendance?: string;
+-    }>;
+-    highlyEngagedMembers: Array<{
+-      memberId: string;
+-      memberName: string;
+-      attendanceRate: number;
+-      totalInteractions: number;
+-    }>;
+-  }
+-
+-  interface LeaderAnalyticsResponse {
+-    groupName: string;
+-    totalMembers: number;
+-    activeMembers: number;
+-    atRiskMembers: number;
+-    averageAttendance: number;
+-    totalMeetings: number;
+-    meetingFrequencyAdherence: number;
+-    memberPerformance: Array<{
+-      member: User;
+-      attendanceRate: number;
+-      meetingsAttended: number;
+-      totalMeetings: number;
+-      engagementScore: number;
+-      status: "excellent" | "good" | "fair" | "at-risk";
+-    }>;
+-    recentTrend: "improving" | "stable" | "declining";
+-  }
+-
+-  interface SuperadminDashboardAnalytics {
+-    totalUsers: number;
+-    totalCampuses: number;
+-    totalZones: number;
+-    totalGroups: number;
+-    totalCells: number;
+-    recentMeetings: number;
+-    recentInteractions: number;
+-    activeUsers: number;
+-    activeGroups: number;
+-    activeCampaigns: number;
+-  }
+-
+-  interface SuperadminAnalyticsOverview {
+-    overview: {
+-      totalUsers: number;
+-      totalCampuses: number;
+-      totalZones: number;
+-      totalDepartments: number;
+-      totalGroups: number;
+-      totalCells: number;
+-      totalMeetings: number;
+-      totalInteractions: number;
+-      activeUsers: number;
+-      activeGroups: number;
+-      inactiveUsers: number;
+-    };
+-    engagementMetrics: {
+-      overallAttendanceRate: number;
+-      averageGroupSize: number;
+-      averageMeetingsPerGroup: number;
+-      totalInteractionsLastMonth: number;
+-    };
+-    atRiskMembers: Array<{
+-      id: string;
+-      name: string;
+-      groupId: string;
+-      groupName: string;
+-      campusName: string;
+-      attendanceRate: number;
+-      lastMeeting?: string;
+-      lastInteraction?: string;
+-    }>;
+-    topPerformingGroups: Array<{
+-      groupId: string;
+-      groupName: string;
+-      leaderName: string;
+-      campusName: string;
+-      attendanceRate: number;
+-      memberCount: number;
+-      meetingCount: number;
+-    }>;
+-    campusPerformance: Array<{
+-      campusId: string;
+-      campusName: string;
+-      memberCount: number;
+-      groupCount: number;
+-      attendanceRate: number;
+-    }>;
+-    interestDistribution: Record<string, number>;
+-  }
+-
+-  interface FollowUpReminder {
+-    id: string;
+-    memberId: string;
+-    memberName: string;
+-    groupId: string;
+-    lastMeetingDate?: string;
+-    lastInteractionDate?: string;
+-    daysSinceLastContact: number;
+-    attendanceRate: number;
+-    status: "overdue" | "due_soon" | "at_risk";
+-    priority: "high" | "medium" | "low";
+-  }
++// ============================================================================
++// INTERACTION TYPES
++// ============================================================================
+ 
+-  interface InactiveMember {
+-    id: string;
+-    name: string;
+-    email: string;
+-    phone: string;
+-    groupId: string;
+-    groupName: string;
+-    campusName?: string;
+-    lastAttendance?: string;
+-    lastInteraction?: string;
+-    daysSinceLastAttendance: number;
+-    totalMeetingsMissed: number;
+-    attendanceRate: number;
+-  }
+-
+-  interface MeetingHistory {
+-    meetings: Meeting[];
+-    attendanceRecords: Array<{
+-      meetingId: string;
+-      date: string;
+-      groupName: string;
+-      attended: boolean;
+-      notes?: string;
+-    }>;
+-    summary: {
+-      totalMeetings: number;
+-      attended: number;
+-      missed: number;
+-      attendanceRate: number;
+-    };
+-  }
++interface Interaction {
++  id: string;
++  leaderId: string;
++  memberId: string;
++  type: InteractionType;
++  notes?: string;
++  timestamp: string;
++  groupId?: string;
++  cellId?: string;
++  campusId?: string;
++  zoneId?: string;
++  departmentId?: string;
++  createdAt: string;
++}
+ 
+-  // ============================================================================
+-  // CAMPAIGN ANALYTICS
+-  // ============================================================================
++interface InteractionWithDetails extends Interaction {
++  leader: UserProfile;
++  member: UserProfile;
++}
+ 
+-  interface CampaignAnalytics {
+-    campaignId: string;
+-    title: string;
+-    totalViews: number;
+-    uniqueViews: number;
+-    totalClicks: number;
+-    totalShares: number;
+-    totalScreenshots: number;
+-    skipCount: number;
+-    backCount: number;
+-    engagementRate: number;
+-    sharesByUser: Array<{
+-      userId: string;
+-      userName: string;
+-      shareCount: number;
+-      visitsGenerated: number;
+-      conversions: number;
+-    }>;
+-    interactionTimeline: Array<{
+-      timestamp: string;
+-      type: CampaignInteractionType;
+-      count: number;
+-    }>;
+-  }
++interface CreateInteractionInput {
++  memberId: string;
++  type: InteractionType;
++  notes?: string;
++  timestamp?: string;
++}
+ 
+-  // ============================================================================
+-  // DATA VISUALIZATION TYPES
+-  // ============================================================================
++interface UpdateInteractionInput {
++  type?: InteractionType;
++  notes?: string;
++  timestamp?: string;
++}
+ 
+-  interface ChartDataPoint {
+-    label: string;
+-    value: number;
+-    color?: string;
+-  }
++// ============================================================================
++// MEMBERSHIP REQUEST TYPES
++// ============================================================================
+ 
+-  interface TimeSeriesData {
+-    date: string;
+-    value: number;
+-    category?: string;
+-  }
+-
+-  interface PerformanceMetric {
+-    label: string;
+-    current: number;
+-    previous: number;
+-    change: number;
+-    changePercent: number;
+-    trend: "up" | "down" | "stable";
+-  }
++interface MembershipRequest {
++  id: string;
++  memberId: string;
++  fromGroupId?: string;
++  fromCellId?: string;
++  toGroupId?: string;
++  toCellId?: string;
++  toCampusId?: string;
++  toZoneId?: string;
++  toDepartmentId?: string;
++  type: MembershipRequestType;
++  status: MembershipRequestStatus;
++  message?: string;
++  requestedAt: string;
++  respondedAt?: string;
++  respondedById?: string;
++  responseMessage?: string;
++}
+ 
+-  // ============================================================================
+-  // AUTH TYPES
+-  // ============================================================================
++interface MembershipRequestWithDetails extends MembershipRequest {
++  member: UserProfile;
++  fromGroup?: Group;
++  toGroup?: Group;
++  fromCell?: Cell;
++  toCell?: Cell;
++  respondedBy?: UserProfile;
++}
+ 
+-  interface LoginCredentials {
+-    email: string;
+-    password: string;
+-  }
+-
+-  interface RegisterInput extends CreateUserInput {
+-    confirmPassword: string;
+-  }
+-
+-  interface AuthTokens {
+-    accessToken: string;
+-    refreshToken: string;
+-  }
+-
+-  interface AuthUser extends Omit<User, "password"> {
+-    campus?: Campus;
+-    zone?: Zone;
+-    department?: Department;
+-    group?: Group;
+-    cell?: Cell;
+-  }
+-
+-  interface AuthState {
+-    user: AuthUser | null;
+-    isAuthenticated: boolean;
+-    isLoading: boolean;
+-    error: string | null;
+-  }
++interface CreateMembershipRequestInput {
++  toGroupId?: string;
++  toCellId?: string;
++  toCampusId?: string;
++  toZoneId?: string;
++  toDepartmentId?: string;
++  fromGroupId?: string;
++  fromCellId?: string;
++  type: MembershipRequestType;
++  message?: string;
++}
+ 
+-  // ============================================================================
+-  // API RESPONSE TYPES
+-  // ============================================================================
++interface RespondToRequestInput {
++  status: MembershipRequestStatus.APPROVED | MembershipRequestStatus.REJECTED;
++  responseMessage?: string;
++}
+ 
+-  interface ApiResponse<T = unknown> {
+-    data?: T;
+-    message?: string;
+-    error?: string;
+-    success: boolean;
+-  }
+-
+-  interface PaginatedResponse<T = unknown> {
+-    data: T[];
+-    total: number;
+-    page: number;
+-    pageSize: number;
+-    hasMore: boolean;
+-  }
+-
+-  interface ApiError {
+-    message: string;
+-    code?: string;
+-    status?: number;
+-    details?: Record<string, unknown>;
+-  }
++// ============================================================================
++// NOTIFICATION TYPES
++// ============================================================================
+ 
+-  // ============================================================================
+-  // UTILITY TYPES
+-  // ============================================================================
++interface appNotification {
++  id: string;
++  userId: string;
++  type: NotificationType;
++  title: string;
++  message: string;
++  relatedId?: string;
++  read: boolean;
++  createdAt: string;
++}
+ 
+-  type WithId<T> = T & { id: string };
++interface NotificationWithDetails extends appNotification {
++  user: UserProfile;
++}
+ 
+-  type WithTimestamps<T> = T & {
+-    createdAt: string;
+-    updatedAt: string;
+-  };
++// ============================================================================
++// CAMPAIGN TYPES
++// ============================================================================
+ 
+-  type Optional<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;
++interface CampaignMedia {
++  id: string;
++  type: CampaignMediaType;
++  url: string;
++  thumbnailUrl?: string;
++  altText?: string;
++  order: number;
++}
+ 
+-  type RequireAtLeastOne<T, Keys extends keyof T = keyof T> = Pick<
+-    T,
+-    Exclude<keyof T, Keys>
+-  > &
+-    {
+-      [K in Keys]-?: Required<Pick<T, K>> & Partial<Pick<T, Exclude<Keys, K>>>;
+-    }[Keys];
++interface Campaign {
++  id: string;
++  title: string;
++  description: string;
++  content: string;
++  media: CampaignMedia[];
++  mediaType?: CampaignMediaType; // Primary media type for simplified access
++  mediaUrl?: string; // Primary media URL for simplified access
++  thumbnailUrl?: string; // Primary thumbnail URL for simplified access
++  ctaText?: string;
++  ctaUrl?: string;
++  createdById: string;
++  status: CampaignStatus;
++  targetAudience?: string[]; // Target audience categories
++  publishedAt?: string;
++  expiresAt?: string;
++  metaTitle?: string;
++  metaDescription?: string;
++  metaImage?: string;
++  targetLevel?: MeetingLevel;
++  targetCampusId?: string;
++  targetZoneId?: string;
++  targetDepartmentId?: string;
++  targetGroupId?: string;
++  targetCellId?: string;
++  viewCount: number;
++  likeCount?: number; // Number of likes
++  clickCount: number;
++  shareCount: number;
++  createdAt: string;
++  updatedAt: string;
++}
+ 
+-  // ============================================================================
+-  // FORM TYPES
+-  // ============================================================================
++interface CampaignWithDetails extends Campaign {
++  createdBy: UserProfile;
++  interactions: CampaignInteraction[];
++  isActive: boolean;
++}
+ 
+-  interface LoginFormValues {
+-    email: string;
+-    password: string;
+-    remember?: boolean;
+-  }
+-
+-  interface RegisterFormValues {
+-    firstName: string;
+-    lastName: string;
+-    email: string;
+-    phone: string;
+-    whatsappPhone?: string;
+-    password: string;
+-    confirmPassword: string;
+-    location?: string;
+-    age?: number;
+-    maritalStatus?: MaritalStatus;
+-    employmentStatus?: EmploymentStatus;
+-    interests?: string[];
+-    campusId?: string;
+-    zoneId?: string;
+-    groupId?: string;
+-    cellId?: string;
+-    inviteCode?: string;
+-  }
+-
+-  interface ProfileFormValues {
+-    firstName: string;
+-    lastName: string;
+-    phone: string;
+-    whatsappPhone?: string;
+-    location?: string;
+-    age?: number;
+-    maritalStatus?: MaritalStatus;
+-    employmentStatus?: EmploymentStatus;
+-    interests: string[];
+-  }
+-
+-  interface GroupFormValues {
+-    name: string;
+-    description: string;
+-    meetingFrequency: MeetingFrequency;
+-    campusId?: string;
+-    zoneId?: string;
+-    departmentId?: string;
+-    leaderId?: string;
+-  }
+-
+-  interface MeetingFormValues {
+-    title?: string;
+-    date: string;
+-    startTime: string;
+-    endTime: string;
+-    level: MeetingLevel;
+-    attendanceMethod: "count" | "checklist";
+-    attendeeCount?: number;
+-    attendeeIds?: string[];
+-    notes?: string;
+-    screenshot?: File | string;
+-    campusNotes?: CampusMeetingNotes;
+-  }
++interface CampaignInteraction {
++  id: string;
++  campaignId: string;
++  userId?: string;
++  type: CampaignInteractionType;
++  referralCode?: string;
++  metadata?: Record<string, unknown>;
++  createdAt: string;
++}
+ 
+-  interface CampaignFormValues {
+-    title: string;
+-    description: string;
+-    content: string;
+-    media?: File[];
+-    ctaText?: string;
+-    ctaUrl?: string;
+-    targetLevel?: MeetingLevel;
+-    targetCampusId?: string;
+-    targetZoneId?: string;
+-    publishImmediately?: boolean;
+-  }
+-
+-  interface InteractionFormValues {
+-    memberId: string;
+-    type: InteractionType;
+-    notes?: string;
+-    timestamp?: string;
+-  }
++interface CreateCampaignInput {
++  title: string;
++  description: string;
++  content: string;
++  media?: CampaignMedia[];
++  ctaText?: string;
++  ctaUrl?: string;
++  metaTitle?: string;
++  metaDescription?: string;
++  metaImage?: string;
++  targetLevel?: MeetingLevel;
++  targetCampusId?: string;
++  targetZoneId?: string;
++  publishImmediately?: boolean;
++}
+ 
+-  interface MembershipRequestFormValues {
+-    toGroupId?: string;
+-    toCellId?: string;
+-    message?: string;
+-  }
++interface UpdateCampaignInput {
++  title?: string;
++  description?: string;
++  content?: string;
++  media?: CampaignMedia[];
++  ctaText?: string;
++  ctaUrl?: string;
++  metaTitle?: string;
++  metaDescription?: string;
++  metaImage?: string;
++  targetLevel?: MeetingLevel;
++  targetCampusId?: string;
++  targetZoneId?: string;
++  targetDepartmentId?: string;
++  targetGroupId?: string;
++  targetCellId?: string;
++  status?: CampaignStatus;
++  expiresAt?: string;
++}
+ 
+-  // ============================================================================
+-  // FILTER & SORT TYPES
+-  // ============================================================================
++// ============================================================================
++// REFERRAL / INVITE LINK TYPES
++// ============================================================================
+ 
+-  interface UserFilters {
+-    role?: UserRole;
+-    campusId?: string;
+-    zoneId?: string;
+-    departmentId?: string;
+-    groupId?: string;
+-    cellId?: string;
+-    isActive?: boolean;
+-    search?: string;
+-  }
+-
+-  interface GroupFilters {
+-    campusId?: string;
+-    zoneId?: string;
+-    departmentId?: string;
+-    leaderId?: string;
+-    search?: string;
+-    isActive?: boolean;
+-  }
+-
+-  interface MeetingFilters {
+-    level?: MeetingLevel;
+-    campusId?: string;
+-    zoneId?: string;
+-    departmentId?: string;
+-    groupId?: string;
+-    cellId?: string;
+-    dateFrom?: string;
+-    dateTo?: string;
+-    startDate?: string;
+-    endDate?: string;
+-    search?: string;
+-    createdById?: string;
+-  }
+-
+-  interface CampaignFilters {
+-    status?: CampaignStatus;
+-    createdById?: string;
+-    targetLevel?: MeetingLevel;
+-    targetCampusId?: string;
+-    search?: string;
+-  }
+-
+-  interface InteractionFilters {
+-    leaderId?: string;
+-    memberId?: string;
+-    type?: InteractionType;
+-    dateFrom?: string;
+-    dateTo?: string;
+-    startDate?: string;
+-    endDate?: string;
+-  }
+-
+-  interface MembershipRequestFilters {
+-    memberId?: string;
+-    toGroupId?: string;
+-    toCellId?: string;
+-    status?: MembershipRequestStatus;
+-    type?: MembershipRequestType;
+-  }
+-
+-  type SortOrder = "asc" | "desc";
+-
+-  interface SortOptions {
+-    field: string;
+-    order: SortOrder;
+-  }
+-
+-  interface PaginationOptions {
+-    page: number;
+-    pageSize: number;
+-  }
+-
+-  interface QueryOptions {
+-    filters?: Record<string, unknown>;
+-    sort?: SortOptions;
+-    pagination?: PaginationOptions;
+-  }
++interface InviteLink {
++  id: string;
++  code: string;
++  createdById: string;
++  type: InviteLinkType;
++  targetId: string;
++  assignRole?: UserRole;
++  expiresAt?: string;
++  maxUses?: number;
++  isActive: boolean;
++  visitCount: number;
++  conversionCount: number;
++  createdAt: string;
++  updatedAt: string;
++}
+ 
+-  // ============================================================================
+-  // ORGANIZATIONAL HIERARCHY TYPES (NEW: Area, Community, District)
+-  // ============================================================================
++interface InviteLinkVisit {
++  id: string;
++  inviteLinkId: string;
++  visitorUserId?: string;
++  visitorIp?: string;
++  referrer?: string;
++  userAgent?: string;
++  ipAddress?: string;
++  converted: boolean;
++  convertedUserId?: string;
++  createdAt: string;
++}
+ 
+-  interface Area {
+-    id: string;
++interface ReferralStats {
++  userId: string;
++  totalInvitesSent: number;
++  totalVisits: number;
++  totalConversions: number;
++  conversionRate: number;
++  topPerformingLink?: InviteLink;
++  invitees: Array<{
++    userId: string;
+     name: string;
+-    description: string;
+-    zoneIds: string[];
+-    campusId: string;
+-    leaderId?: string;
+-    isActive: boolean;
+-    createdAt: string;
+-    updatedAt: string;
+-  }
++    joinedAt: string;
++    via: InviteLinkType;
++  }>;
++}
+ 
+-  interface Community {
+-    id: string;
+-    name: string;
+-    description: string;
+-    areaIds: string[];
+-    campusId: string;
+-    leaderId?: string;
+-    isActive: boolean;
+-    createdAt: string;
+-    updatedAt: string;
+-  }
++interface CreateInviteLinkInput {
++  type: InviteLinkType;
++  targetId: string;
++  assignRole?: UserRole;
++  expiresAt?: string;
++}
+ 
+-  interface District {
+-    id: string;
+-    name: string;
+-    description: string;
+-    communityIds: string[];
+-    campusId: string;
+-    leaderId?: string;
+-    isActive: boolean;
+-    createdAt: string;
+-    updatedAt: string;
+-  }
++// ============================================================================
++// ANALYTICS TYPES (UPDATED FOR HIERARCHY)
++// ============================================================================
+ 
+-  interface CreateAreaInput {
+-    name: string;
+-    description: string;
+-    zoneIds?: string[];
+-    campusId: string;
+-    leaderId?: string;
+-  }
+-
+-  interface UpdateAreaInput {
+-    name?: string;
+-    description?: string;
+-    zoneIds?: string[];
+-    leaderId?: string;
+-    isActive?: boolean;
+-  }
+-
+-  interface CreateCommunityInput {
+-    name: string;
+-    description: string;
+-    areaIds?: string[];
+-    campusId: string;
+-    leaderId?: string;
+-  }
+-
+-  interface UpdateCommunityInput {
+-    name?: string;
+-    description?: string;
+-    areaIds?: string[];
+-    leaderId?: string;
+-    isActive?: boolean;
+-  }
+-
+-  interface CreateDistrictInput {
+-    name: string;
+-    description: string;
+-    communityIds?: string[];
++interface MemberAnalytics {
++  userId: string;
++  attendanceRate: number;
++  totalMeetings: number;
++  attendedMeetings: number;
++  missedMeetings: number;
++  engagementScore: number;
++  lastInteraction?: string;
++  interactionCount: number;
++  isAtRisk: boolean;
++}
++
++interface GroupAnalytics {
++  groupId: string;
++  attendanceRate: number;
++  totalMeetings: number;
++  averageAttendance: number;
++  memberCount: number;
++  activeMembers: number;
++  atRiskMembers: number;
++  meetingFrequencyAdherence: number;
++  leaderInteractionRate: number;
++}
++
++interface CampusAnalytics {
++  campusId: string;
++  campusName: string;
++  zoneId: string;
++  zoneName: string;
++  totalMembers: number;
++  totalDepartments: number;
++  totalGroups: number;
++  totalCells: number;
++  totalMeetings: number;
++  overallAttendanceRate: number;
++  zonePerformance: Array<{
++    zoneId: string;
++    zoneName: string;
++    attendanceRate: number;
++    memberCount: number;
++  }>;
++  campusMeetingSummary?: CampusMeetingNotes;
++}
++
++interface ZoneAnalytics {
++  zoneId: string;
++  zoneName: string;
++  totalCampuses: number;
++  totalMembers: number;
++  totalGroups: number;
++  totalCells: number;
++  totalMeetings: number;
++  attendanceRate: number;
++  groupPerformance: Array<{
++    groupId: string;
++    groupName: string;
++    attendanceRate: number;
++    memberCount: number;
++  }>;
++}
++
++interface HierarchyAnalytics {
++  level: MeetingLevel;
++  entityId: string;
++  entityName: string;
++  period: string;
++  totalMeetings: number;
++  averageAttendance: number;
++  attendanceRate: number;
++  totalMembers: number;
++  activeMembers: number;
++  atRiskMembers: number;
++  trendData: Array<{
++    date: string;
++    attendance: number;
++    meetings: number;
++  }>;
++}
++
++interface ChurchWideAnalytics {
++  totalMembers: number;
++  activeMembers: number;
++  inactiveMembers: number;
++  totalCampuses: number;
++  totalZones: number;
++  totalDepartments: number;
++  totalGroups: number;
++  totalCells: number;
++  activeGroups: number;
++  totalMeetings: number;
++  overallAttendanceRate: number;
++  averageEngagementScore: number;
++  atRiskMemberCount: number;
++  interestDistribution: Record<string, number>;
++  campusPerformance: Array<{
+     campusId: string;
+-    leaderId?: string;
+-  }
++    campusName: string;
++    attendanceRate: number;
++    memberCount: number;
++    groupCount: number;
++  }>;
++  groupPerformance: Array<{
++    groupId: string;
++    groupName: string;
++    attendanceRate: number;
++    memberCount: number;
++  }>;
++  campaignStats: {
++    totalCampaigns: number;
++    activeCampaigns: number;
++    totalViews: number;
++    totalShares: number;
++  };
++  referralStats: {
++    totalReferrals: number;
++    totalConversions: number;
++    conversionRate: number;
++  };
++}
+ 
+-  interface UpdateDistrictInput {
+-    name?: string;
+-    description?: string;
+-    communityIds?: string[];
+-    leaderId?: string;
+-    isActive?: boolean;
+-  }
++// ============================================================================
++// API-SPECIFIC RESPONSE TYPES
++// ============================================================================
+ 
+-  // ============================================================================
+-  // REPORT TEMPLATE TYPES (Superadmin-configurable, data-driven)
+-  // ============================================================================
++interface MemberDashboardAnalytics {
++  attendanceRate: number;
++  totalMeetings: number;
++  meetingsAttended: number;
++  totalInteractions: number;
++  engagementLevel: "HIGH" | "MEDIUM" | "LOW" | "AT_RISK";
++}
+ 
+-  interface ReportTemplateMetric {
+-    id: string;
+-    sectionId: string;
+-    name: string;
+-    description?: string;
+-    fieldType: MetricFieldType;
+-    isRequired: boolean;
+-    minValue?: number;
+-    maxValue?: number;
+-    order: number;
+-    /** Whether this metric captures a Monthly Goal value */
+-    capturesGoal: boolean;
+-    /** Whether this metric captures a Monthly Achieved value */
+-    capturesAchieved: boolean;
+-    /** Whether this metric captures a Year-on-Year Goal value */
+-    capturesYoY: boolean;
+-  }
+-
+-  interface ReportTemplateSection {
+-    id: string;
+-    templateId: string;
+-    name: string;
+-    description?: string;
+-    order: number;
+-    isRequired: boolean;
+-    /** Optional sub-sections for grouping (e.g., "Church Planting" under "Report Summary") */
+-    subSections?: ReportTemplateSubSection[];
+-    metrics: ReportTemplateMetric[];
+-  }
+-
+-  interface ReportTemplateSubSection {
++interface MemberAnalyticsResponse {
++  attendancePercentage: number;
++  totalMeetings: number;
++  attendedMeetings: number;
++  missedMeetings: number;
++  interactionCount: number;
++  lastInteractionDate: string | null;
++  engagementScore: number;
++  memberSince: string;
++  recentActivity: Array<{
+     id: string;
+-    sectionId: string;
+-    name: string;
+-    description?: string;
+-    order: number;
+-    metrics: ReportTemplateMetric[];
+-  }
++    type: string;
++    title: string;
++    date: string;
++    status?: string;
++  }>;
++}
+ 
+-  interface ReportTemplate {
++interface GroupDashboardAnalytics {
++  group: {
+     id: string;
+     name: string;
+-    description?: string;
+-    version: number;
+-    sections: ReportTemplateSection[];
+-    isActive: boolean;
+-    isDefault: boolean;
+-    createdById: string;
+-    /** Optional scope: if set, this template applies only to a specific campus */
+-    campusId?: string;
+-    /** Optional scope: if set, this template applies only to a specific group */
+-    groupId?: string;
+-    createdAt: string;
+-    updatedAt: string;
+-  }
+-
+-  interface ReportTemplateVersion {
+-    id: string;
+-    templateId: string;
+-    versionNumber: number;
+-    /** Full snapshot of the template at this version */
+-    snapshot: ReportTemplate;
+-    createdAt: string;
+-    createdById: string;
+-    changeNotes?: string;
+-  }
+-
+-  interface ReportFieldPermission {
+-    templateId: string;
+-    sectionId: string;
+-    role: UserRole;
+-    canEdit: boolean;
+-    canView: boolean;
+-  }
+-
+-  interface CreateReportTemplateInput {
+-    name: string;
+-    description?: string;
+-    sections: CreateTemplateSectionInput[];
+-    isDefault?: boolean;
+-    campusId?: string;
+-    groupId?: string;
+-  }
+-
+-  interface UpdateReportTemplateInput {
+-    name?: string;
+-    description?: string;
+-    sections?: CreateTemplateSectionInput[];
+-    isActive?: boolean;
+-    isDefault?: boolean;
+-    campusId?: string;
+-    groupId?: string;
+-  }
+-
+-  interface CreateTemplateSectionInput {
+-    name: string;
+-    description?: string;
+-    order: number;
+-    isRequired: boolean;
+-    subSections?: CreateTemplateSubSectionInput[];
+-    metrics: CreateTemplateMetricInput[];
+-  }
+-
+-  interface CreateTemplateSubSectionInput {
+-    name: string;
+-    description?: string;
+-    order: number;
+-    metrics: CreateTemplateMetricInput[];
+-  }
++    description: string;
++    leader: {
++      id: string;
++      name: string;
++    };
++  };
++  summary: {
++    totalMembers: number;
++    totalMeetings: number;
++    totalInteractions: number;
++    averageAttendance: number;
++    attendanceRate: number;
++  };
++  memberEngagement: Array<{
++    memberId: string;
++    memberName: string;
++    totalMeetings: number;
++    meetingsAttended: number;
++    attendanceRate: number;
++    totalInteractions: number;
++    lastAttendance?: string;
++  }>;
++  interactionsByType: Record<string, number>;
++  atRiskMembers: Array<{
++    memberId: string;
++    memberName: string;
++    attendanceRate: number;
++    lastAttendance?: string;
++  }>;
++  highlyEngagedMembers: Array<{
++    memberId: string;
++    memberName: string;
++    attendanceRate: number;
++    totalInteractions: number;
++  }>;
++}
+ 
+-  interface CreateTemplateMetricInput {
+-    name: string;
+-    description?: string;
+-    fieldType: MetricFieldType;
+-    isRequired: boolean;
+-    minValue?: number;
+-    maxValue?: number;
+-    order: number;
+-    capturesGoal: boolean;
+-    capturesAchieved: boolean;
+-    capturesYoY: boolean;
+-  }
++interface LeaderAnalyticsResponse {
++  groupName: string;
++  totalMembers: number;
++  activeMembers: number;
++  atRiskMembers: number;
++  averageAttendance: number;
++  totalMeetings: number;
++  meetingFrequencyAdherence: number;
++  memberPerformance: Array<{
++    member: User;
++    attendanceRate: number;
++    meetingsAttended: number;
++    totalMeetings: number;
++    engagementScore: number;
++    status: "excellent" | "good" | "fair" | "at-risk";
++  }>;
++  recentTrend: "improving" | "stable" | "declining";
++}
+ 
+-  // ============================================================================
+-  // REPORT TYPES (Core report entities)
+-  // ============================================================================
++interface SuperadminDashboardAnalytics {
++  totalUsers: number;
++  totalCampuses: number;
++  totalZones: number;
++  totalGroups: number;
++  totalCells: number;
++  recentMeetings: number;
++  recentInteractions: number;
++  activeUsers: number;
++  activeGroups: number;
++  activeCampaigns: number;
++}
+ 
+-  interface Report {
++interface SuperadminAnalyticsOverview {
++  overview: {
++    totalUsers: number;
++    totalCampuses: number;
++    totalZones: number;
++    totalDepartments: number;
++    totalGroups: number;
++    totalCells: number;
++    totalMeetings: number;
++    totalInteractions: number;
++    activeUsers: number;
++    activeGroups: number;
++    inactiveUsers: number;
++  };
++  engagementMetrics: {
++    overallAttendanceRate: number;
++    averageGroupSize: number;
++    averageMeetingsPerGroup: number;
++    totalInteractionsLastMonth: number;
++  };
++  atRiskMembers: Array<{
+     id: string;
+-    templateId: string;
+-    templateVersionId: string;
++    name: string;
++    groupId: string;
++    groupName: string;
++    campusName: string;
++    attendanceRate: number;
++    lastMeeting?: string;
++    lastInteraction?: string;
++  }>;
++  topPerformingGroups: Array<{
++    groupId: string;
++    groupName: string;
++    leaderName: string;
++    campusName: string;
++    attendanceRate: number;
++    memberCount: number;
++    meetingCount: number;
++  }>;
++  campusPerformance: Array<{
+     campusId: string;
+-    groupId?: string;
+-    periodType: ReportPeriodType;
+-    periodYear: number;
+-    periodMonth: number;
+-    periodWeek?: number;
+-    status: ReportStatus;
+-    submittedById: string;
+-    reviewedById?: string;
+-    approvedById?: string;
+-    deadline: string;
+-    lockedAt?: string;
+-    /** Whether this report was created through the Data Entry interface */
+-    isDataEntry: boolean;
+-    /** The Data Entry user who created this report (if applicable) */
+-    dataEntryById?: string;
+-    /** The custom date set by Data Entry for historical reports */
+-    dataEntryDate?: string;
++    campusName: string;
++    memberCount: number;
++    groupCount: number;
++    attendanceRate: number;
++  }>;
++  interestDistribution: Record<string, number>;
++}
++
++interface FollowUpReminder {
++  id: string;
++  memberId: string;
++  memberName: string;
++  groupId: string;
++  lastMeetingDate?: string;
++  lastInteractionDate?: string;
++  daysSinceLastContact: number;
++  attendanceRate: number;
++  status: "overdue" | "due_soon" | "at_risk";
++  priority: "high" | "medium" | "low";
++}
++
++interface InactiveMember {
++  id: string;
++  name: string;
++  email: string;
++  phone: string;
++  groupId: string;
++  groupName: string;
++  campusName?: string;
++  lastAttendance?: string;
++  lastInteraction?: string;
++  daysSinceLastAttendance: number;
++  totalMeetingsMissed: number;
++  attendanceRate: number;
++}
++
++interface MeetingHistory {
++  meetings: Meeting[];
++  attendanceRecords: Array<{
++    meetingId: string;
++    date: string;
++    groupName: string;
++    attended: boolean;
+     notes?: string;
+-    sections: ReportSection[];
+-    createdAt: string;
+-    updatedAt: string;
+-  }
++  }>;
++  summary: {
++    totalMeetings: number;
++    attended: number;
++    missed: number;
++    attendanceRate: number;
++  };
++}
+ 
+-  interface ReportSection {
+-    id: string;
+-    reportId: string;
+-    templateSectionId: string;
+-    /** Snapshot of section name from template at creation time */
+-    sectionName: string;
+-    order: number;
+-    metrics: ReportMetric[];
+-  }
+-
+-  interface ReportMetric {
+-    id: string;
+-    reportSectionId: string;
+-    templateMetricId: string;
+-    /** Snapshot of metric name from template at creation time */
+-    metricName: string;
+-    fieldType: MetricFieldType;
+-    monthlyGoal?: number;
+-    monthlyAchieved?: number;
+-    yoyGoal?: number;
+-    textValue?: string;
+-    /** Auto-calculated: (monthlyAchieved / monthlyGoal) * 100 */
+-    computedPercentage?: number;
+-    isLocked: boolean;
+-    lockedAt?: string;
+-    lockedById?: string;
+-    order: number;
+-  }
+-
+-  interface ReportWithDetails extends Report {
+-    template?: ReportTemplate;
+-    templateVersion?: ReportTemplateVersion;
+-    campus?: Campus;
+-    group?: SmallGroup;
+-    submittedBy?: UserProfile;
+-    reviewedBy?: UserProfile;
+-    approvedBy?: UserProfile;
+-    dataEntryBy?: UserProfile;
+-    events?: ReportEvent[];
+-    edits?: ReportEdit[];
+-  }
++// ============================================================================
++// CAMPAIGN ANALYTICS
++// ============================================================================
+ 
+-  // ============================================================================
+-  // REPORT EDIT TYPES (Separate entity for revision tracking)
+-  // ============================================================================
++interface CampaignAnalytics {
++  campaignId: string;
++  title: string;
++  totalViews: number;
++  uniqueViews: number;
++  totalClicks: number;
++  totalShares: number;
++  totalScreenshots: number;
++  skipCount: number;
++  backCount: number;
++  engagementRate: number;
++  sharesByUser: Array<{
++    userId: string;
++    userName: string;
++    shareCount: number;
++    visitsGenerated: number;
++    conversions: number;
++  }>;
++  interactionTimeline: Array<{
++    timestamp: string;
++    type: CampaignInteractionType;
++    count: number;
++  }>;
++}
+ 
+-  interface ReportEdit {
+-    id: string;
+-    reportId: string;
+-    submittedById: string;
+-    status: ReportEditStatus;
+-    reason?: string;
+-    sections: ReportEditSection[];
+-    reviewedById?: string;
+-    reviewNotes?: string;
+-    createdAt: string;
+-    updatedAt: string;
+-  }
+-
+-  interface ReportEditSection {
+-    id: string;
+-    reportEditId: string;
+-    templateSectionId: string;
+-    sectionName: string;
+-    order: number;
+-    metrics: ReportEditMetric[];
+-  }
+-
+-  interface ReportEditMetric {
+-    id: string;
+-    reportEditSectionId: string;
+-    templateMetricId: string;
+-    metricName: string;
+-    fieldType: MetricFieldType;
+-    monthlyGoal?: number;
+-    monthlyAchieved?: number;
+-    yoyGoal?: number;
+-    textValue?: string;
+-    /** The original value from the parent report (for diff display) */
+-    originalMonthlyGoal?: number;
+-    originalMonthlyAchieved?: number;
+-    originalYoyGoal?: number;
+-    originalTextValue?: string;
+-    order: number;
+-  }
+-
+-  interface ReportEditWithDetails extends ReportEdit {
+-    report?: Report;
+-    submittedBy?: UserProfile;
+-    reviewedBy?: UserProfile;
+-  }
+-
+-  interface CreateReportEditInput {
+-    reportId: string;
+-    submittedById: string;
+-    reason?: string;
+-    sections: CreateReportEditSectionInput[];
+-  }
+-
+-  interface CreateReportEditSectionInput {
+-    templateSectionId: string;
+-    sectionName: string;
+-    order: number;
+-    metrics: CreateReportEditMetricInput[];
+-  }
+-
+-  interface CreateReportEditMetricInput {
+-    templateMetricId: string;
+-    metricName: string;
+-    fieldType: MetricFieldType;
+-    monthlyGoal?: number;
+-    monthlyAchieved?: number;
+-    yoyGoal?: number;
+-    textValue?: string;
+-    order: number;
+-  }
++// ============================================================================
++// DATA VISUALIZATION TYPES
++// ============================================================================
+ 
+-  // ============================================================================
+-  // REPORT UPDATE REQUEST TYPES (Post-deadline changes)
+-  // ============================================================================
++interface ChartDataPoint {
++  label: string;
++  value: number;
++  color?: string;
++}
+ 
+-  interface ReportUpdateRequest {
+-    id: string;
+-    reportId: string;
+-    requestedById: string;
+-    reason: string;
+-    sections: ReportEditSection[];
+-    status: ReportUpdateRequestStatus;
+-    reviewedById?: string;
+-    reviewNotes?: string;
+-    createdAt: string;
+-    updatedAt: string;
+-  }
+-
+-  interface ReportUpdateRequestWithDetails extends ReportUpdateRequest {
+-    report?: Report;
+-    requestedBy?: UserProfile;
+-    reviewedBy?: UserProfile;
+-  }
+-
+-  interface CreateReportUpdateRequestInput {
+-    reportId: string;
+-    requestedById: string;
+-    reason: string;
+-    sections: CreateReportEditSectionInput[];
+-  }
++interface TimeSeriesData {
++  date: string;
++  value: number;
++  category?: string;
++}
+ 
+-  // ============================================================================
+-  // REPORT EVENT / AUDIT TRAIL TYPES
+-  // ============================================================================
++interface PerformanceMetric {
++  label: string;
++  current: number;
++  previous: number;
++  change: number;
++  changePercent: number;
++  trend: "up" | "down" | "stable";
++}
+ 
+-  interface ReportEvent {
+-    id: string;
+-    reportId: string;
+-    eventType: ReportEventType;
+-    actorId: string;
+-    timestamp: string;
+-    /** JSON details about what changed */
+-    details?: Record<string, unknown>;
+-    previousStatus?: ReportStatus;
+-    newStatus?: ReportStatus;
+-    /** Reference to a version snapshot if one was created */
+-    snapshotId?: string;
+-  }
+-
+-  interface ReportEventWithDetails extends ReportEvent {
+-    actor?: UserProfile;
+-  }
+-
+-  interface ReportVersion {
+-    id: string;
+-    reportId: string;
+-    versionNumber: number;
+-    /** Full snapshot of the report at this version */
+-    snapshot: Report;
+-    createdAt: string;
+-    createdById: string;
+-    reason?: string;
+-  }
++// ============================================================================
++// AUTH TYPES
++// ============================================================================
+ 
+-  // ============================================================================
+-  // REPORT ANALYTICS TYPES
+-  // ============================================================================
++interface LoginCredentials {
++  email: string;
++  password: string;
++}
+ 
+-  interface ReportAnalytics {
+-    metricName: string;
+-    totalGoal: number;
+-    totalAchieved: number;
+-    achievementRate: number;
+-    yoyGrowth: number;
+-    reportCount: number;
+-  }
++interface RegisterInput extends CreateUserInput {
++  confirmPassword: string;
++}
+ 
+-  interface ReportComplianceSummary {
+-    campusId: string;
+-    campusName: string;
+-    totalExpected: number;
+-    submitted: number;
+-    onTime: number;
+-    late: number;
+-    missing: number;
+-    compliancePercentage: number;
+-  }
+-
+-  interface ReportDashboardStats {
+-    totalReports: number;
+-    draftReports: number;
+-    submittedReports: number;
+-    approvedReports: number;
+-    requiresEditsReports: number;
+-    lockedReports: number;
+-    overdueReports: number;
+-    complianceRate: number;
+-  }
++interface AuthTokens {
++  accessToken: string;
++  refreshToken: string;
++}
+ 
+-  // ============================================================================
+-  // ROLE CONFIG TYPES (Data-driven role system)
+-  // ============================================================================
++interface AuthUser extends Omit<User, "password"> {
++  campus?: Campus;
++  zone?: Zone;
++  department?: Department;
++  group?: Group;
++  cell?: Cell;
++}
+ 
+-  interface RoleNavItem {
+-    key: string;
+-    label: string;
+-    icon: string;
+-    path: string;
+-    children?: RoleNavItem[];
+-  }
+-
+-  interface RoleConfig {
+-    role: UserRole;
+-    label: string;
+-    hierarchyOrder: number;
+-    dashboardRoute: string;
+-    /** Whether this role can create new reports */
+-    canCreateReports: boolean;
+-    /** Whether this role can review reports */
+-    canReviewReports: boolean;
+-    /** Whether this role can approve reports */
+-    canApproveReports: boolean;
+-    /** Whether this role can manage report templates */
+-    canManageTemplates: boolean;
+-    /** Whether this role has data entry capabilities */
+-    canDataEntry: boolean;
+-    /** Scope of report visibility: 'all' | 'group' | 'campus' | 'own' */
+-    reportVisibilityScope: "all" | "group" | "campus" | "own" | "none";
+-    /** Navigation items for this role */
+-    navItems: RoleNavItem[];
+-    /** Whether this role is a leadership role */
+-    isLeadership: boolean;
+-    /** Route prefix for this role */
+-    routePrefix: string;
+-  }
++interface AuthState {
++  user: AuthUser | null;
++  isAuthenticated: boolean;
++  isLoading: boolean;
++  error: string | null;
++}
+ 
+-  // ============================================================================
+-  // ORG HIERARCHY CONFIG TYPES (Data-driven org structure)
+-  // ============================================================================
++// ============================================================================
++// API RESPONSE TYPES
++// ============================================================================
+ 
+-  interface OrgLevelConfig {
+-    level: string;
+-    label: string;
+-    pluralLabel: string;
+-    parentLevel: string | null;
+-    childLevel: string | null;
+-    membersPerUnit: number;
+-    leaderRole: UserRole | null;
+-    hasAdmin: boolean;
+-    hasPastor: boolean;
+-  }
++interface ApiResponse<T = unknown> {
++  data?: T;
++  message?: string;
++  error?: string;
++  success: boolean;
++}
+ 
+-  // ============================================================================
+-  // REPORT FORM & FILTER TYPES
+-  // ============================================================================
++interface PaginatedResponse<T = unknown> {
++  data: T[];
++  total: number;
++  page: number;
++  pageSize: number;
++  hasMore: boolean;
++}
+ 
+-  interface ReportFilters {
+-    campusId?: string;
+-    groupId?: string;
+-    periodType?: ReportPeriodType;
+-    periodYear?: number;
+-    periodMonth?: number;
+-    periodWeek?: number;
+-    status?: ReportStatus;
+-    templateId?: string;
+-    search?: string;
+-    isDataEntry?: boolean;
+-    submittedById?: string;
+-    dateFrom?: string;
+-    dateTo?: string;
+-  }
+-
+-  interface ReportFormValues {
+-    templateId: string;
+-    campusId: string;
+-    groupId?: string;
+-    periodType: ReportPeriodType;
+-    periodYear: number;
+-    periodMonth: number;
+-    periodWeek?: number;
+-    notes?: string;
+-    /** For data entry: the actual date this report covers */
+-    dataEntryDate?: string;
+-    /** Section metric values keyed by metricId */
+-    metrics: Record<string, {
+-      monthlyGoal?: number;
+-      monthlyAchieved?: number;
+-      yoyGoal?: number;
+-      textValue?: string;
+-    }>;
+-  }
+-
+-  interface ReportTemplateFormValues {
+-    name: string;
+-    description?: string;
+-    isDefault: boolean;
+-    campusId?: string;
+-    groupId?: string;
+-    sections: Array<{
+-      name: string;
+-      description?: string;
+-      order: number;
+-      isRequired: boolean;
+-      subSections?: Array<{
+-        name: string;
+-        description?: string;
+-        order: number;
+-        metrics: Array<{
+-          name: string;
+-          description?: string;
+-          fieldType: MetricFieldType;
+-          isRequired: boolean;
+-          minValue?: number;
+-          maxValue?: number;
+-          order: number;
+-          capturesGoal: boolean;
+-          capturesAchieved: boolean;
+-          capturesYoY: boolean;
+-        }>;
+-      }>;
+-      metrics: Array<{
+-        name: string;
+-        description?: string;
+-        fieldType: MetricFieldType;
+-        isRequired: boolean;
+-        minValue?: number;
+-        maxValue?: number;
+-        order: number;
+-        capturesGoal: boolean;
+-        capturesAchieved: boolean;
+-        capturesYoY: boolean;
+-      }>;
+-    }>;
+-  }
+-
+-  interface CreateReportInput {
+-    templateId: string;
+-    templateVersionId: string;
+-    campusId: string;
+-    groupId?: string;
+-    periodType: ReportPeriodType;
+-    periodYear: number;
+-    periodMonth: number;
+-    periodWeek?: number;
+-    submittedById: string;
+-    deadline: string;
+-    notes?: string;
+-    isDataEntry?: boolean;
+-    dataEntryById?: string;
+-    dataEntryDate?: string;
+-    sections?: CreateReportSectionInput[];
+-  }
+-
+-  interface CreateReportSectionInput {
+-    templateSectionId: string;
+-    sectionName: string;
+-    order: number;
+-    metrics: CreateReportMetricInput[];
+-  }
+-
+-  interface CreateReportMetricInput {
+-    templateMetricId: string;
+-    metricName: string;
+-    fieldType: MetricFieldType;
+-    monthlyGoal?: number;
+-    monthlyAchieved?: number;
+-    yoyGoal?: number;
+-    textValue?: string;
+-    order: number;
+-  }
+-
+-  interface UpdateReportInput {
+-    notes?: string;
+-    sections?: CreateReportSectionInput[];
+-  }
++interface ApiError {
++  message: string;
++  code?: string;
++  status?: number;
++  details?: Record<string, unknown>;
++}
++
++// ============================================================================
++// UTILITY TYPES
++// ============================================================================
++
++type WithId<T> = T & { id: string };
++
++type WithTimestamps<T> = T & {
++  createdAt: string;
++  updatedAt: string;
++};
++
++type Optional<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;
++
++type RequireAtLeastOne<T, Keys extends keyof T = keyof T> = Pick<
++  T,
++  Exclude<keyof T, Keys>
++> &
++  {
++    [K in Keys]-?: Required<Pick<T, K>> & Partial<Pick<T, Exclude<Keys, K>>>;
++  }[Keys];
++
++// ============================================================================
++// FORM TYPES
++// ============================================================================
++
++interface LoginFormValues {
++  email: string;
++  password: string;
++  remember?: boolean;
++}
++
++interface RegisterFormValues {
++  firstName: string;
++  lastName: string;
++  email: string;
++  phone: string;
++  whatsappPhone?: string;
++  password: string;
++  confirmPassword: string;
++  location?: string;
++  age?: number;
++  maritalStatus?: MaritalStatus;
++  employmentStatus?: EmploymentStatus;
++  interests?: string[];
++  campusId?: string;
++  zoneId?: string;
++  groupId?: string;
++  cellId?: string;
++  inviteCode?: string;
++}
++
++interface ProfileFormValues {
++  firstName: string;
++  lastName: string;
++  phone: string;
++  whatsappPhone?: string;
++  location?: string;
++  age?: number;
++  maritalStatus?: MaritalStatus;
++  employmentStatus?: EmploymentStatus;
++  interests: string[];
++}
++
++interface GroupFormValues {
++  name: string;
++  description: string;
++  meetingFrequency: MeetingFrequency;
++  campusId?: string;
++  zoneId?: string;
++  departmentId?: string;
++  leaderId?: string;
++}
++
++interface MeetingFormValues {
++  title?: string;
++  date: string;
++  startTime: string;
++  endTime: string;
++  level: MeetingLevel;
++  attendanceMethod: "count" | "checklist";
++  attendeeCount?: number;
++  attendeeIds?: string[];
++  notes?: string;
++  screenshot?: File | string;
++  campusNotes?: CampusMeetingNotes;
++}
++
++interface CampaignFormValues {
++  title: string;
++  description: string;
++  content: string;
++  media?: File[];
++  ctaText?: string;
++  ctaUrl?: string;
++  targetLevel?: MeetingLevel;
++  targetCampusId?: string;
++  targetZoneId?: string;
++  publishImmediately?: boolean;
++}
++
++interface InteractionFormValues {
++  memberId: string;
++  type: InteractionType;
++  notes?: string;
++  timestamp?: string;
++}
++
++interface MembershipRequestFormValues {
++  toGroupId?: string;
++  toCellId?: string;
++  message?: string;
++}
++
++// ============================================================================
++// FILTER & SORT TYPES
++// ============================================================================
++
++interface UserFilters {
++  role?: UserRole;
++  campusId?: string;
++  zoneId?: string;
++  departmentId?: string;
++  groupId?: string;
++  cellId?: string;
++  isActive?: boolean;
++  search?: string;
++}
++
++interface GroupFilters {
++  campusId?: string;
++  zoneId?: string;
++  departmentId?: string;
++  leaderId?: string;
++  search?: string;
++  isActive?: boolean;
++}
++
++interface MeetingFilters {
++  level?: MeetingLevel;
++  campusId?: string;
++  zoneId?: string;
++  departmentId?: string;
++  groupId?: string;
++  cellId?: string;
++  dateFrom?: string;
++  dateTo?: string;
++  startDate?: string;
++  endDate?: string;
++  search?: string;
++  createdById?: string;
++}
++
++interface CampaignFilters {
++  status?: CampaignStatus;
++  createdById?: string;
++  targetLevel?: MeetingLevel;
++  targetCampusId?: string;
++  search?: string;
++}
++
++interface InteractionFilters {
++  leaderId?: string;
++  memberId?: string;
++  type?: InteractionType;
++  dateFrom?: string;
++  dateTo?: string;
++  startDate?: string;
++  endDate?: string;
++}
++
++interface MembershipRequestFilters {
++  memberId?: string;
++  toGroupId?: string;
++  toCellId?: string;
++  status?: MembershipRequestStatus;
++  type?: MembershipRequestType;
++}
++
++type SortOrder = "asc" | "desc";
++
++interface SortOptions {
++  field: string;
++  order: SortOrder;
++}
++
++interface PaginationOptions {
++  page: number;
++  pageSize: number;
++}
++
++interface QueryOptions {
++  filters?: Record<string, unknown>;
++  sort?: SortOptions;
++  pagination?: PaginationOptions;
++}
+ 
+ } // End of declare global
+ 
+@@ -2201,4 +1483,4 @@ declare global {
+ // MODULE EXPORTS (for use as values, not types)
+ // ============================================================================
+ // Export statement to ensure this file is treated as a module
+-export { };
++export {};

@@ -9,6 +9,13 @@ import {
   MEMBERSHIP_REQUEST_TYPES,
   MEMBERSHIP_REQUEST_STATUS,
 } from "@/lib/constants";
+import {
+  ReportPeriodType,
+  MetricFieldType,
+  ReportEditStatus,
+  ReportUpdateRequestStatus,
+  ReportStatus,
+} from "@/lib/types";
 
 // ============================================================================
 // USER VALIDATION SCHEMAS
@@ -128,6 +135,7 @@ export const registerSchema = z
     invitedById: z.string().optional(),
     inviteCode: z.string().optional(),
     inviteType: z.string().optional(),
+    referralCode: z.string().optional(),
   })
   .refine(
     (data) => !data.confirmPassword || data.password === data.confirmPassword,
@@ -524,6 +532,163 @@ export const membershipRequestFiltersSchema = z.object({
   type: z
     .enum([MEMBERSHIP_REQUEST_TYPES.JOIN, MEMBERSHIP_REQUEST_TYPES.TRANSFER])
     .optional(),
+});
+
+// ============================================================================
+// REPORT VALIDATION SCHEMAS
+// ============================================================================
+
+const reportMetricInputSchema = z.object({
+  templateMetricId: z.string().min(1, "Template metric ID is required"),
+  metricName: z.string().optional().default(""),
+  fieldType: z.nativeEnum(MetricFieldType).optional().default(MetricFieldType.NUMBER),
+  monthlyGoal: z.number().optional(),
+  monthlyAchieved: z.number().optional(),
+  yoyGoal: z.number().optional(),
+  textValue: z.string().optional(),
+  order: z.number().int().min(0).optional().default(0),
+});
+
+const reportSectionInputSchema = z.object({
+  templateSectionId: z.string().min(1, "Template section ID is required"),
+  sectionName: z.string().min(1, "Section name is required"),
+  order: z.number().int().min(0),
+  metrics: z.array(reportMetricInputSchema).default([]),
+});
+
+export const createReportSchema = z.object({
+  templateId: z.string().min(1, "Template ID is required"),
+  templateVersionId: z.string().optional(),
+  campusId: z.string().min(1, "Campus ID is required"),
+  periodType: z.nativeEnum(ReportPeriodType),
+  periodYear: z.number().int().min(2020).max(2100),
+  periodMonth: z.number().int().min(1).max(12),
+  periodWeek: z.number().int().min(1).max(53).optional(),
+  deadline: z.string().optional(),
+  isDataEntry: z.boolean().default(false),
+  dataEntryDate: z.string().optional(),
+  dataEntryById: z.string().optional(),
+  submittedById: z.string().optional(),
+  notes: z.string().max(2000).optional(),
+  sections: z.array(reportSectionInputSchema).default([]),
+});
+
+export const updateReportSchema = z.object({
+  notes: z.string().max(2000).optional(),
+  sections: z.array(reportSectionInputSchema).optional(),
+});
+
+// Re-export the metric schema for reuse by edit schemas
+export type ReportMetricInput = z.infer<typeof reportMetricInputSchema>;
+
+export const reportFiltersSchema = z.object({
+  campusId: z.string().optional(),
+  status: z.nativeEnum(ReportStatus).optional(),
+  periodType: z.nativeEnum(ReportPeriodType).optional(),
+  periodYear: z.coerce.number().int().optional(),
+  periodMonth: z.coerce.number().int().optional(),
+  periodWeek: z.coerce.number().int().optional(),
+  submittedById: z.string().optional(),
+  templateId: z.string().optional(),
+  isDataEntry: z
+    .string()
+    .transform((v) => v === "true")
+    .optional(),
+  search: z.string().optional(),
+});
+
+export const requestEditsSchema = z.object({
+  reason: z.string().min(5, "Reason must be at least 5 characters").max(1000),
+});
+
+// Report Edit Schemas
+const reportEditMetricInputSchema = z.object({
+  templateMetricId: z.string().min(1),
+  metricName: z.string().min(1),
+  fieldType: z.nativeEnum(MetricFieldType),
+  monthlyGoal: z.number().optional(),
+  monthlyAchieved: z.number().optional(),
+  yoyGoal: z.number().optional(),
+  originalMonthlyGoal: z.number().optional(),
+  originalMonthlyAchieved: z.number().optional(),
+  originalYoyGoal: z.number().optional(),
+  order: z.number().int().min(0),
+});
+
+const reportEditSectionInputSchema = z.object({
+  templateSectionId: z.string().min(1),
+  sectionName: z.string().min(1),
+  order: z.number().int().min(0),
+  metrics: z.array(reportEditMetricInputSchema).default([]),
+});
+
+export const createReportEditSchema = z.object({
+  reason: z.string().min(5, "Reason must be at least 5 characters").max(1000),
+  sections: z.array(reportEditSectionInputSchema).min(1, "At least one section is required"),
+});
+
+// Report Template Schemas
+const templateMetricInputSchema = z.object({
+  name: z.string().min(1, "Metric name is required"),
+  fieldType: z.nativeEnum(MetricFieldType),
+  isRequired: z.boolean().default(true),
+  order: z.number().int().min(0),
+  capturesGoal: z.boolean().default(true),
+  capturesAchieved: z.boolean().default(true),
+  capturesYoY: z.boolean().default(true),
+});
+
+const templateSubSectionInputSchema = z.object({
+  name: z.string().min(1, "Sub-section name is required"),
+  order: z.number().int().min(0),
+  metrics: z.array(templateMetricInputSchema).default([]),
+});
+
+const templateSectionInputSchema = z.object({
+  name: z.string().min(1, "Section name is required"),
+  description: z.string().optional(),
+  order: z.number().int().min(0),
+  isRequired: z.boolean().default(true),
+  subSections: z.array(templateSubSectionInputSchema).optional(),
+  metrics: z.array(templateMetricInputSchema).default([]),
+});
+
+export const createReportTemplateSchema = z.object({
+  name: z.string().min(3, "Name must be at least 3 characters").max(200),
+  description: z.string().max(1000).optional(),
+  isDefault: z.boolean().default(false),
+  sections: z.array(templateSectionInputSchema).min(1, "At least one section is required"),
+});
+
+export const updateReportTemplateSchema = z.object({
+  name: z.string().min(3).max(200).optional(),
+  description: z.string().max(1000).optional(),
+  isDefault: z.boolean().optional(),
+  sections: z.array(templateSectionInputSchema).optional(),
+  changeNotes: z.string().max(500).optional(),
+});
+
+// Report Update Request Schemas
+export const createReportUpdateRequestSchema = z.object({
+  reportId: z.string().min(1, "Report ID is required"),
+  reason: z.string().min(5, "Reason must be at least 5 characters").max(1000),
+  sections: z.array(reportEditSectionInputSchema).min(1, "At least one section is required"),
+});
+
+export const rejectReasonSchema = z.object({
+  reason: z.string().min(5, "Reason must be at least 5 characters").max(1000).optional(),
+});
+
+export const reportEditFiltersSchema = z.object({
+  reportId: z.string().optional(),
+  submittedById: z.string().optional(),
+  status: z.nativeEnum(ReportEditStatus).optional(),
+});
+
+export const reportUpdateRequestFiltersSchema = z.object({
+  reportId: z.string().optional(),
+  requestedById: z.string().optional(),
+  status: z.nativeEnum(ReportUpdateRequestStatus).optional(),
 });
 
 // ============================================================================

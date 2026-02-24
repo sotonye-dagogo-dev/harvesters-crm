@@ -13,7 +13,8 @@ import {
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Card from "@/components/ui/Card";
-import { Spin, Button, message } from "antd";
+import Button from "@/components/ui/Button";
+import { Spin, message } from "antd";
 import { useAuth } from "@/providers/AuthProvider";
 
 export default function MemberDashboard() {
@@ -58,15 +59,15 @@ export default function MemberDashboard() {
   const getEngagementColor = (level: string) => {
     switch (level) {
       case "HIGH":
-        return "text-green-600 dark:text-green-400";
+        return "text-ds-status-success";
       case "MEDIUM":
-        return "text-blue-600 dark:text-blue-400";
+        return "text-ds-chart-1";
       case "LOW":
-        return "text-orange-600 dark:text-orange-400";
+        return "text-ds-chart-4";
       case "AT_RISK":
-        return "text-red-600 dark:text-red-400";
+        return "text-ds-status-error";
       default:
-        return "text-gray-600 dark:text-gray-400";
+        return "text-ds-text-secondary";
     }
   };
 
@@ -76,19 +77,19 @@ export default function MemberDashboard() {
       title: "Attendance Rate",
       value: `${analytics?.attendanceRate?.toFixed(1) || 0}%`,
       icon: <CalendarOutlined />,
-      color: "text-blue-600 dark:text-blue-400",
+      color: "text-ds-chart-1",
     },
     {
       title: "Meetings Attended",
       value: `${analytics?.meetingsAttended || 0}/${analytics?.totalMeetings || 0}`,
       icon: <TeamOutlined />,
-      color: "text-green-600 dark:text-green-400",
+      color: "text-ds-brand-accent",
     },
     {
       title: "Leader Interactions",
       value: analytics?.totalInteractions || 0,
       icon: <PhoneOutlined />,
-      color: "text-purple-600 dark:text-purple-400",
+      color: "text-ds-chart-3",
     },
     {
       title: "Engagement Level",
@@ -113,15 +114,14 @@ export default function MemberDashboard() {
       <div className="space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+            <h2 className="text-2xl font-bold text-ds-text-primary mb-2">
               My Dashboard
             </h2>
-            <p className="text-gray-600 dark:text-gray-400">
+            <p className="text-ds-text-secondary">
               Track your fellowship engagement
             </p>
           </div>
           <Button
-            type="primary"
             icon={<BarChartOutlined />}
             onClick={() => router.push("/member/analytics")}
           >
@@ -146,13 +146,13 @@ export default function MemberDashboard() {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mx-2 sm:mx-0">
               <Card
                 title="My Attendance"
-                className="bg-white dark:bg-slate-800 border-gray-200 dark:border-slate-700"
+                className="bg-ds-surface-elevated border-ds-border-base"
               >
                 <div className="text-center py-8">
-                  <div className="text-4xl font-bold text-church-primary dark:text-green-400 mb-2">
+                  <div className="text-4xl font-bold text-ds-brand-accent mb-2">
                     {analytics?.attendanceRate?.toFixed(0) || 0}%
                   </div>
-                  <p className="text-gray-600 dark:text-gray-400">
+                  <p className="text-ds-text-secondary">
                     of meetings attended
                   </p>
                 </div>
@@ -160,10 +160,10 @@ export default function MemberDashboard() {
 
               <Card
                 title="Keep Growing!"
-                className="bg-white dark:bg-slate-800 border-gray-200 dark:border-slate-700"
+                className="bg-ds-surface-elevated border-ds-border-base"
               >
                 <div className="py-4 px-2">
-                  <p className="text-gray-700 dark:text-gray-300 mb-4">
+                  <p className="text-ds-text-secondary mb-4">
                     Your engagement level is{" "}
                     <span
                       className={`font-semibold ${getEngagementColor(analytics?.engagementLevel || "")}`}
@@ -171,7 +171,7 @@ export default function MemberDashboard() {
                       {analytics?.engagementLevel || "N/A"}
                     </span>
                   </p>
-                  <ul className="text-sm text-gray-600 dark:text-gray-400 space-y-2">
+                  <ul className="text-sm text-ds-text-secondary space-y-2">
                     <li>✓ Attend fellowship meetings regularly</li>
                     <li>✓ Participate actively in discussions</li>
                     <li>✓ Stay connected with your fellowship leader</li>
@@ -183,14 +183,14 @@ export default function MemberDashboard() {
         ) : (
           <Card>
             <div className="text-center py-12">
-              <TeamOutlined className="text-6xl text-gray-300 mb-4" />
-              <h3 className="text-lg font-semibold text-gray-700 mb-2">
+              <TeamOutlined className="text-6xl text-ds-text-subtle mb-4" />
+              <h3 className="text-lg font-semibold text-ds-text-secondary mb-2">
                 Not in a Group
               </h3>
-              <p className="text-gray-500">
-                You haven't joined a fellowship group yet.
+              <p className="text-ds-text-subtle">
+                You haven&apos;t joined a fellowship group yet.
               </p>
-              <p className="text-gray-500 text-sm mt-2">
+              <p className="text-ds-text-subtle text-sm mt-2">
                 Browse available groups and request to join one!
               </p>
             </div>

@@ -23,9 +23,9 @@ export async function GET(_request: NextRequest) {
     const allGroups = db.groups.findAll({});
     const allMeetings = db.meetings.findAll({});
 
-    // Calculate engagement scores for all members
+    // Calculate engagement scores for all members (including cell leaders)
     const memberEngagementScores = allUsers
-      .filter((u) => u.role === "MEMBER" || u.role === UserRole.SMALL_GROUP_LEADER)
+      .filter((u) => u.role === "MEMBER" || u.role === UserRole.SMALL_GROUP_LEADER || u.role === "CELL_LEADER")
       .map((member) => {
         const memberMeetings = allMeetings.filter(
           (m) =>
@@ -115,10 +115,10 @@ export async function GET(_request: NextRequest) {
       const avgEngagement =
         groupMemberScores.length > 0
           ? groupMemberScores.reduce(
-              (sum: number, m: { engagementScore: number }) =>
-                sum + m.engagementScore,
-              0
-            ) / groupMemberScores.length
+            (sum: number, m: { engagementScore: number }) =>
+              sum + m.engagementScore,
+            0
+          ) / groupMemberScores.length
           : 0;
 
       const performanceScore = Math.round(

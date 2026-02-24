@@ -101,11 +101,11 @@ export default function MyGroupPage() {
   if (!group) {
     return (
       <DashboardLayout>
-        <Card className="dark:bg-slate-800 dark:border-slate-700">
+        <Card className="dark:bg-ds-surface-elevated dark:border-ds-border-base">
           <Empty
             description={
               <div>
-                <p className="text-gray-600 dark:text-gray-400 mb-4">
+                <p className="text-ds-text-secondary mb-4">
                   You are not currently assigned to a group
                 </p>
                 <Button
@@ -127,11 +127,11 @@ export default function MyGroupPage() {
       <div className="space-y-6">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
-              <TeamOutlined className="text-church-primary dark:text-green-400" />
+            <h1 className="text-2xl font-bold text-ds-text-primary flex items-center gap-2">
+              <TeamOutlined className="text-ds-brand-accent dark:text-ds-status-success" />
               {group.name}
             </h1>
-            <p className="text-gray-600 dark:text-gray-400 mt-1">
+            <p className="text-ds-text-secondary mt-1">
               Your fellowship group
             </p>
           </div>
@@ -139,7 +139,7 @@ export default function MyGroupPage() {
 
         <Card
           title="Group Information"
-          className="dark:bg-slate-800 dark:border-slate-700"
+          className="dark:bg-ds-surface-elevated dark:border-ds-border-base"
         >
           <Descriptions column={{ xs: 1, sm: 2 }} bordered>
             <Descriptions.Item label="Group Name">
@@ -160,19 +160,19 @@ export default function MyGroupPage() {
         {group.leader && (
           <Card
             title="Group Leader"
-            className="dark:bg-slate-800 dark:border-slate-700"
+            className="dark:bg-ds-surface-elevated dark:border-ds-border-base"
           >
             <div className="flex items-center gap-4">
               <Avatar size={64} icon={<UserOutlined />} />
               <div className="flex-1">
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                <h3 className="text-lg font-semibold text-ds-text-primary">
                   {group.leader.firstName} {group.leader.lastName}
                 </h3>
                 <div className="space-y-1 mt-2">
-                  <p className="text-gray-600 dark:text-gray-400 flex items-center gap-2">
+                  <p className="text-ds-text-secondary flex items-center gap-2">
                     <MailOutlined /> {group.leader.email}
                   </p>
-                  <p className="text-gray-600 dark:text-gray-400 flex items-center gap-2">
+                  <p className="text-ds-text-secondary flex items-center gap-2">
                     <PhoneOutlined /> {group.leader.phone}
                   </p>
                 </div>
@@ -183,7 +183,7 @@ export default function MyGroupPage() {
 
         <Card
           title={`Group Members (${group.members?.length || 0})`}
-          className="dark:bg-slate-800 dark:border-slate-700"
+          className="dark:bg-ds-surface-elevated dark:border-ds-border-base"
         >
           <List
             dataSource={group.members || []}
@@ -193,7 +193,7 @@ export default function MyGroupPage() {
                   avatar={<Avatar icon={<UserOutlined />} />}
                   title={
                     <div className="flex items-center gap-2">
-                      <span className="text-gray-900 dark:text-white">
+                      <span className="text-ds-text-primary">
                         {member.firstName} {member.lastName}
                       </span>
                       {member.role === UserRole.SMALL_GROUP_LEADER && (
@@ -202,7 +202,7 @@ export default function MyGroupPage() {
                     </div>
                   }
                   description={
-                    <div className="text-gray-600 dark:text-gray-400">
+                    <div className="text-ds-text-secondary">
                       <div className="flex flex-col sm:flex-row sm:gap-4">
                         <span className="flex items-center gap-1">
                           <MailOutlined /> {member.email}

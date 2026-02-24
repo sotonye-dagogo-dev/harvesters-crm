@@ -1,7 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Button, message, Modal, Switch } from "antd";
+import { message, Switch } from "antd";
+import Modal from "@/components/ui/Modal";
+import Button from "@/components/ui/Button";
 import { BellOutlined } from "@ant-design/icons";
 
 interface PushNotificationService {
@@ -181,7 +183,7 @@ export function PushNotificationManager() {
       <Button
         icon={<BellOutlined />}
         onClick={() => setShowSettings(true)}
-        type={notificationState.isSubscribed ? "default" : "primary"}
+        variant={notificationState.isSubscribed ? "secondary" : "primary"}
       >
         {notificationState.isSubscribed
           ? "Notifications On"
@@ -193,12 +195,13 @@ export function PushNotificationManager() {
         open={showSettings}
         onCancel={() => setShowSettings(false)}
         footer={null}
+        size="sm"
       >
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <div>
               <h4 className="font-medium">Enable Push Notifications</h4>
-              <p className="text-sm text-gray-600">
+              <p className="text-sm text-ds-text-secondary">
                 Receive updates about meetings, requests, and activities
               </p>
             </div>
@@ -210,11 +213,11 @@ export function PushNotificationManager() {
           </div>
 
           {notificationState.isSubscribed && (
-            <div className="mt-4 p-3 bg-green-50 rounded-lg">
-              <p className="text-sm text-green-700">
+            <div className="mt-4 p-3 bg-ds-status-success/5 rounded-lg">
+              <p className="text-sm text-ds-status-success">
                 ✓ You will receive notifications for:
               </p>
-              <ul className="mt-2 text-sm text-green-600 space-y-1">
+              <ul className="mt-2 text-sm text-ds-status-success space-y-1">
                 <li>• Upcoming meeting reminders</li>
                 <li>• Membership request updates</li>
                 <li>• Role assignment changes</li>

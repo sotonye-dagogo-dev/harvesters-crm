@@ -29,7 +29,7 @@ export async function GET(
     const canView =
       user?.role === USER_ROLES.SUPERADMIN ||
       (user?.role === USER_ROLES.ZONAL_LEADER &&
-        user?.zoneId === campusDetails.zoneId) ||
+        user?.zoneId === campusDetails.parentId) ||
       (user?.role === USER_ROLES.CAMPUS_ADMIN && user?.campusId === id) ||
       user?.campusId === id;
 

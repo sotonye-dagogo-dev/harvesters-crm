@@ -10,21 +10,20 @@ export function SearchInput({ className = "", ...props }: SearchInputProps) {
   return (
     <Input.Search
       {...props}
-      prefix={<SearchOutlined className="text-gray-400" />}
+      prefix={<SearchOutlined className="text-ds-text-subtle" />}
       className={`
-        [&_.ant-input]:rounded-lg 
-        [&_.ant-input]:shadow-sm 
-        [&_.ant-input]:border-gray-300 
-        dark:[&_.ant-input]:border-slate-600 
+        [&_.ant-input]:rounded-[var(--ds-radius-lg)] 
+        [&_.ant-input]:shadow-ds-sm 
+        [&_.ant-input]:border-ds-border-base 
         [&_.ant-input]:focus:ring-2 
-        [&_.ant-input]:focus:ring-green-500 
-        [&_.ant-input]:focus:border-green-500
-        [&_.ant-input]:dark:bg-slate-800 
-        [&_.ant-input]:dark:text-white
-        [&_.ant-input-group-addon]:rounded-r-lg
-        [&_.ant-btn-primary]:bg-green-600
-        [&_.ant-btn-primary]:hover:bg-green-700
-        [&_.ant-btn-primary]:border-green-600
+        [&_.ant-input]:focus:ring-ds-brand-accent 
+        [&_.ant-input]:focus:border-ds-brand-accent
+        [&_.ant-input]:bg-ds-surface-sunken 
+        [&_.ant-input]:text-ds-text-primary
+        [&_.ant-input-group-addon]:rounded-r-[var(--ds-radius-lg)]
+        [&_.ant-btn-primary]:bg-ds-brand-accent
+        [&_.ant-btn-primary]:hover:bg-ds-brand-accent-hover
+        [&_.ant-btn-primary]:border-ds-brand-accent
         ${className}
       `.trim()}
     />

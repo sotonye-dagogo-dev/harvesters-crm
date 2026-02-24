@@ -77,14 +77,14 @@ export default function MockFileUpload({
           maxCount={1}
           listType={listType}
         >
-          <div className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded cursor-pointer hover:border-blue-500 hover:text-blue-500 transition-colors">
+          <div className="flex items-center gap-2 px-4 py-2 border border-ds-border-base rounded-[var(--ds-radius-lg)] cursor-pointer hover:border-ds-brand-accent hover:text-ds-brand-accent transition-colors">
             <UploadOutlined />
             <span>{uploadText}</span>
           </div>
         </Upload>
       ) : (
         <div className="space-y-2">
-          <div className="relative w-full max-w-md border border-gray-200 rounded-lg overflow-hidden">
+          <div className="relative w-full max-w-md border border-ds-border-base rounded-[var(--ds-radius-lg)] overflow-hidden">
             <Image
               src={previewUrl}
               alt="Uploaded preview"
@@ -95,14 +95,14 @@ export default function MockFileUpload({
           </div>
           <button
             onClick={handleRemove}
-            className="flex items-center gap-2 px-3 py-1.5 text-sm text-red-600 border border-red-300 rounded hover:bg-red-50 transition-colors"
+            className="flex items-center gap-2 px-3 py-1.5 text-sm text-ds-status-error border border-ds-status-error/30 rounded-[var(--ds-radius-md)] hover:bg-ds-status-error/5 transition-colors"
           >
             <DeleteOutlined />
             Remove File
           </button>
         </div>
       )}
-      <p className="text-xs text-gray-500">
+      <p className="text-xs text-ds-text-subtle">
         {previewUrl
           ? "Mock upload - file stored as base64 (in production, would upload to Cloudinary)"
           : `Accepted formats: ${accept}. Max size: ${maxSize}MB`}

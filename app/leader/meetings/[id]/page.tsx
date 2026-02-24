@@ -99,7 +99,7 @@ export default function MeetingDetailsPage({
       <DashboardLayout role={user?.role || UserRole.SMALL_GROUP_LEADER}>
         <div className="flex items-center justify-center min-h-[60vh]">
           <Card>
-            <p className="text-gray-500">Meeting not found</p>
+            <p className="text-ds-text-subtle">Meeting not found</p>
             <Button
               type="primary"
               onClick={() => router.push("/leader/meetings")}
@@ -129,12 +129,12 @@ export default function MeetingDetailsPage({
       <div className="max-w-4xl mx-auto space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">
+            <h1 className="text-2xl font-bold text-ds-text-primary">
               Meeting Details
             </h1>
-            <p className="text-gray-500 mt-1">
+            <p className="text-ds-text-subtle mt-1">
               {meeting.group?.name || "Unknown Group"} •{" "}
-              {format(new Date(meeting.date), "MMMM d, yyyy")}
+              {format(new Date(meeting.date), "d MMM yyyy")}
             </p>
           </div>
           <div className="flex gap-2">
@@ -182,7 +182,7 @@ export default function MeetingDetailsPage({
                   </span>
                 }
               >
-                {format(new Date(meeting.date), "EEEE, MMMM d, yyyy")}
+                {format(new Date(meeting.date), "EEEE, d MMM yyyy")}
               </Descriptions.Item>
               <Descriptions.Item
                 label={
@@ -230,7 +230,7 @@ export default function MeetingDetailsPage({
               <Descriptions.Item label="Created At" span={2}>
                 {format(
                   new Date(meeting.createdAt),
-                  "MMMM d, yyyy 'at' h:mm a"
+                  "d MMM yyyy 'at' h:mm a"
                 )}
               </Descriptions.Item>
             </Descriptions>
@@ -246,7 +246,7 @@ export default function MeetingDetailsPage({
                 </span>
               }
             >
-              <p className="text-gray-700 whitespace-pre-wrap">
+              <p className="text-ds-text-secondary whitespace-pre-wrap">
                 {meeting.notes}
               </p>
             </Card>

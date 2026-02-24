@@ -39,6 +39,7 @@ export default function MemberAnalyticsPage() {
     if (user) {
       fetchAnalytics();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
 
   const fetchAnalytics = async () => {
@@ -72,7 +73,7 @@ export default function MemberAnalyticsPage() {
     return (
       <DashboardLayout role={UserRole.MEMBER}>
         <div className="text-center py-12">
-          <Card className="bg-white dark:bg-slate-800">
+          <Card className="bg-ds-surface-elevated">
             <Empty description="Analytics data not available" />
           </Card>
         </div>
@@ -97,18 +98,18 @@ export default function MemberAnalyticsPage() {
     <DashboardLayout role={UserRole.MEMBER}>
       <div className="space-y-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+          <h1 className="text-2xl font-bold text-ds-text-primary mb-2">
             My Analytics Dashboard
           </h1>
-          <p className="text-gray-600 dark:text-gray-400">
+          <p className="text-ds-text-secondary">
             Track your engagement and participation over time
           </p>
         </div>
 
         {/* Engagement Score Card */}
-        <Card className="bg-white dark:bg-slate-800">
+        <Card className="bg-ds-surface-elevated">
           <div className="text-center">
-            <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center justify-center gap-2">
+            <h2 className="text-lg font-semibold text-ds-text-primary mb-4 flex items-center justify-center gap-2">
               <TrophyOutlined className="text-yellow-500" />
               Overall Engagement Score
             </h2>
@@ -130,7 +131,7 @@ export default function MemberAnalyticsPage() {
                   format={(percent) => (
                     <div className="flex flex-col items-center">
                       <div className="text-3xl font-bold">{percent}</div>
-                      <div className="text-sm text-gray-500">Score</div>
+                      <div className="text-sm text-ds-text-subtle">Score</div>
                     </div>
                   )}
                 />
@@ -143,10 +144,10 @@ export default function MemberAnalyticsPage() {
                   >
                     {engagementLevel.level}
                   </Tag>
-                  <p className="text-gray-600 mt-4">
+                  <p className="text-ds-text-secondary mt-4">
                     Your engagement score is calculated based on:
                   </p>
-                  <ul className="text-sm text-gray-600 mt-2 space-y-1">
+                  <ul className="text-sm text-ds-text-secondary mt-2 space-y-1">
                     <li>• Meeting attendance (50%)</li>
                     <li>• Leader interactions (30%)</li>
                     <li>• Membership duration (20%)</li>
@@ -164,7 +165,7 @@ export default function MemberAnalyticsPage() {
               title="Attendance Rate"
               value={`${analytics.attendancePercentage.toFixed(1)}%`}
               icon={<CheckCircleOutlined />}
-              color="text-green-600"
+              color="text-ds-status-success"
               description={`${analytics.attendedMeetings} of ${analytics.totalMeetings} meetings`}
             />
           </Col>
@@ -173,7 +174,7 @@ export default function MemberAnalyticsPage() {
               title="Meetings Attended"
               value={analytics.attendedMeetings}
               icon={<CalendarOutlined />}
-              color="text-blue-600"
+              color="text-ds-chart-1"
               description={`${analytics.missedMeetings} missed`}
             />
           </Col>
@@ -182,10 +183,10 @@ export default function MemberAnalyticsPage() {
               title="Leader Interactions"
               value={analytics.interactionCount}
               icon={<PhoneOutlined />}
-              color="text-purple-600"
+              color="text-ds-chart-3"
               description={
                 analytics.lastInteractionDate
-                  ? `Last: ${format(new Date(analytics.lastInteractionDate), "MMM d")}`
+                  ? `Last: ${format(new Date(analytics.lastInteractionDate), "d MMM")}`
                   : "No interactions yet"
               }
             />
@@ -195,7 +196,7 @@ export default function MemberAnalyticsPage() {
               title="Member Since"
               value={`${Math.round(daysSinceMembership / 30)} mo`}
               icon={<UserOutlined />}
-              color="text-orange-600"
+              color="text-ds-chart-4"
               description={format(new Date(analytics.memberSince), "MMM yyyy")}
             />
           </Col>
@@ -215,7 +216,7 @@ export default function MemberAnalyticsPage() {
             <Col xs={24} md={12}>
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
-                  <span className="text-gray-600">Attended</span>
+                  <span className="text-ds-text-secondary">Attended</span>
                   <div className="flex items-center gap-2">
                     <Progress
                       percent={analytics.attendancePercentage}
@@ -223,13 +224,13 @@ export default function MemberAnalyticsPage() {
                       strokeColor="#52c41a"
                       style={{ width: 200 }}
                     />
-                    <span className="font-semibold text-green-600">
+                    <span className="font-semibold text-ds-status-success">
                       {analytics.attendedMeetings}
                     </span>
                   </div>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-gray-600">Missed</span>
+                  <span className="text-ds-text-secondary">Missed</span>
                   <div className="flex items-center gap-2">
                     <Progress
                       percent={
@@ -243,7 +244,7 @@ export default function MemberAnalyticsPage() {
                       strokeColor="#ff4d4f"
                       style={{ width: 200 }}
                     />
-                    <span className="font-semibold text-red-600">
+                    <span className="font-semibold text-ds-status-error">
                       {analytics.missedMeetings}
                     </span>
                   </div>
@@ -270,13 +271,13 @@ export default function MemberAnalyticsPage() {
                   ),
                 children: (
                   <div>
-                    <div className="font-medium text-gray-900 dark:text-white">
+                    <div className="font-medium text-ds-text-primary">
                       {activity.title}
                     </div>
-                    <div className="text-sm text-gray-500 dark:text-gray-400">
+                    <div className="text-sm text-ds-text-subtle">
                       {format(
                         new Date(activity.date),
-                        "MMM d, yyyy 'at' h:mm a"
+                        "d MMM yyyy 'at' h:mm a"
                       )}
                     </div>
                   </div>

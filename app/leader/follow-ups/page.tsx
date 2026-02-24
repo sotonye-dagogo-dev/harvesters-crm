@@ -6,12 +6,10 @@ import { useAuth } from "@/providers/AuthProvider";
 import DashboardLayout from "@/components/features/navigation/DashboardLayout";
 import {
   Card,
-  Table,
   Tag,
   Button,
   Modal,
   Form,
-  Input,
   DatePicker,
   Select,
   message,
@@ -19,6 +17,8 @@ import {
   Tooltip,
   Progress,
 } from "antd";
+import { TextArea } from "@/components/ui/Input";
+import Table from "@/components/ui/Table";
 import {
   WarningOutlined,
   PhoneOutlined,
@@ -27,6 +27,7 @@ import {
   UserOutlined,
 } from "@ant-design/icons";
 import { CardSkeleton } from "@/components/ui/LoadingSkeleton";
+import StatusBadge from "@/components/ui/StatusBadge";
 import { format } from "date-fns";
 import dayjs from "dayjs";
 
@@ -168,32 +169,6 @@ export default function FollowUpManagementPage() {
     }
   };
 
-  const getRiskColor = (level: string) => {
-    switch (level) {
-      case "high":
-        return "red";
-      case "medium":
-        return "orange";
-      case "low":
-        return "yellow";
-      default:
-        return "gray";
-    }
-  };
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "COMPLETED":
-        return "green";
-      case "PENDING":
-        return "blue";
-      case "OVERDUE":
-        return "red";
-      default:
-        return "gray";
-    }
-  };
-
   const inactiveMembersColumns = [
     {
       title: "Member",
@@ -203,7 +178,7 @@ export default function FollowUpManagementPage() {
           <div className="font-medium">
             {record.firstName} {record.lastName}
           </div>
-          <div className="text-xs text-gray-500">{record.email}</div>
+          <div className="text-xs text-ds-text-subtle">{record.email}</div>
         </div>
       ),
     },
@@ -212,7 +187,7 @@ export default function FollowUpManagementPage() {
       dataIndex: "riskLevel",
       key: "riskLevel",
       render: (level: string) => (
-        <Tag color={getRiskColor(level)}>{level.toUpperCase()}</Tag>
+        <StatusBadge status={level} category="risk" />
       ),
       sorter: (a: InactiveMember, b: InactiveMember) => {
         const order = { high: 3, medium: 2, low: 1 };
@@ -243,7 +218,7 @@ export default function FollowUpManagementPage() {
           <div className="text-sm">
             Meeting: {record.daysSinceLastMeeting} days ago
           </div>
-          <div className="text-xs text-gray-500">
+          <div className="text-xs text-ds-text-subtle">
             Interaction: {record.daysSinceLastInteraction} days ago
           </div>
         </div>
@@ -291,20 +266,13 @@ export default function FollowUpManagementPage() {
       title: "Type",
       dataIndex: "type",
       key: "type",
-      render: (type: string) => {
-        const colors: Record<string, string> = {
-          CALL: "blue",
-          VISIT: "green",
-          MESSAGE: "purple",
-        };
-        return <Tag color={colors[type]}>{type}</Tag>;
-      },
+      render: (type: string) => <StatusBadge status={type} category="interaction" />,
     },
     {
       title: "Scheduled Date",
       dataIndex: "scheduledDate",
       key: "scheduledDate",
-      render: (date: Date) => format(new Date(date), "MMM dd, yyyy"),
+      render: (date: Date) => format(new Date(date), "d MMM yyyy"),
       sorter: (a: FollowUp, b: FollowUp) =>
         new Date(a.scheduledDate).getTime() -
         new Date(b.scheduledDate).getTime(),
@@ -314,7 +282,7 @@ export default function FollowUpManagementPage() {
       dataIndex: "status",
       key: "status",
       render: (status: string) => (
-        <Tag color={getStatusColor(status)}>{status}</Tag>
+        <StatusBadge status={status} category="followUp" />
       ),
       filters: [
         { text: "Pending", value: "PENDING" },
@@ -358,7 +326,7 @@ export default function FollowUpManagementPage() {
     return (
       <DashboardLayout role={user?.role || UserRole.SMALL_GROUP_LEADER}>
         <div className="p-6">
-          <h2 className="text-2xl font-bold text-gray-900 mb-6">
+          <h2 className="text-2xl font-bold text-ds-text-primary mb-6">
             Follow-up Management
           </h2>
           <CardSkeleton count={3} />
@@ -381,10 +349,10 @@ export default function FollowUpManagementPage() {
     <DashboardLayout role={user?.role || UserRole.SMALL_GROUP_LEADER}>
       <div className="p-6">
         <div className="mb-6">
-          <h2 className="text-2xl font-bold text-gray-900">
+          <h2 className="text-2xl font-bold text-ds-text-primary">
             Follow-up Management
           </h2>
-          <p className="text-gray-600 mt-1">
+          <p className="text-ds-text-secondary mt-1">
             Track and engage with inactive members
           </p>
         </div>
@@ -405,34 +373,34 @@ export default function FollowUpManagementPage() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
           <Card>
             <div className="text-center">
-              <div className="text-3xl font-bold text-red-600">
+              <div className="text-3xl font-bold text-ds-status-error">
                 {inactiveMembers.length}
               </div>
-              <div className="text-gray-600 text-sm">Inactive Members</div>
+              <div className="text-ds-text-secondary text-sm">Inactive Members</div>
             </div>
           </Card>
           <Card>
             <div className="text-center">
-              <div className="text-3xl font-bold text-blue-600">
+              <div className="text-3xl font-bold text-ds-chart-1">
                 {pendingFollowUps}
               </div>
-              <div className="text-gray-600 text-sm">Pending Follow-ups</div>
+              <div className="text-ds-text-secondary text-sm">Pending Follow-ups</div>
             </div>
           </Card>
           <Card>
             <div className="text-center">
-              <div className="text-3xl font-bold text-orange-600">
+              <div className="text-3xl font-bold text-ds-chart-4">
                 {overdueFollowUps}
               </div>
-              <div className="text-gray-600 text-sm">Overdue</div>
+              <div className="text-ds-text-secondary text-sm">Overdue</div>
             </div>
           </Card>
           <Card>
             <div className="text-center">
-              <div className="text-3xl font-bold text-green-600">
+              <div className="text-3xl font-bold text-ds-status-success">
                 {completedFollowUps}
               </div>
-              <div className="text-gray-600 text-sm">Completed</div>
+              <div className="text-ds-text-secondary text-sm">Completed</div>
             </div>
           </Card>
         </div>
@@ -467,13 +435,13 @@ export default function FollowUpManagementPage() {
           footer={null}
         >
           <div className="mb-4">
-            <p className="text-gray-600">
+            <p className="text-ds-text-secondary">
               Member:{" "}
               <strong>
                 {selectedMember?.firstName} {selectedMember?.lastName}
               </strong>
             </p>
-            <p className="text-sm text-gray-500">
+            <p className="text-sm text-ds-text-subtle">
               Last seen: {selectedMember?.daysSinceLastMeeting} days ago
             </p>
           </div>
@@ -501,7 +469,7 @@ export default function FollowUpManagementPage() {
               label="Notes"
               rules={[{ required: true, message: "Please add notes" }]}
             >
-              <Input.TextArea
+              <TextArea
                 rows={4}
                 placeholder="Reason for follow-up, concerns, etc."
               />
@@ -525,10 +493,10 @@ export default function FollowUpManagementPage() {
           footer={null}
         >
           <div className="mb-4">
-            <p className="text-gray-600">
+            <p className="text-ds-text-secondary">
               Member: <strong>{selectedFollowUp?.memberName}</strong>
             </p>
-            <p className="text-sm text-gray-500">
+            <p className="text-sm text-ds-text-subtle">
               Type: {selectedFollowUp?.type}
             </p>
           </div>
@@ -544,7 +512,7 @@ export default function FollowUpManagementPage() {
                 { required: true, message: "Please describe the outcome" },
               ]}
             >
-              <Input.TextArea
+              <TextArea
                 rows={4}
                 placeholder="What was discussed? Any actions taken?"
               />

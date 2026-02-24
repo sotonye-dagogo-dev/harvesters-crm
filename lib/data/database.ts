@@ -6,8 +6,11 @@ import {
   CampaignInteractionType,
   InviteLinkType,
   ReportStatus,
-  ReportFrequency,
+  ReportEventType,
+  ReportEditStatus,
+  ReportUpdateRequestStatus,
 } from "@/lib/types";
+import { emitDbChange } from "@/lib/utils/dbEvents";
 import {
   mockUsers,
   mockGroups,
@@ -16,13 +19,20 @@ import {
   mockMembershipRequests,
   mockNotifications,
   mockCampuses,
-  mockZones,
+  mockOrgGroups,
   mockDepartments,
   mockCells,
   mockCampaigns,
   mockCampaignInteractions,
   mockInviteLinks,
   mockInviteLinkVisits,
+  mockReportTemplates,
+  mockReportTemplateVersions,
+  mockReports,
+  mockReportEvents,
+  mockReportVersions,
+  mockReportEdits,
+  mockReportUpdateRequests,
 } from "./mockData";
 import {
   mockReportTypes,
@@ -52,20 +62,20 @@ const globalForDb = globalThis as unknown as {
     notifications: appNotification[];
     campuses: Campus[];
     zones: Zone[];
+    orgGroups: OrgGroup[];
     departments: Department[];
     cells: Cell[];
     campaigns: Campaign[];
     campaignInteractions: CampaignInteraction[];
     inviteLinks: InviteLink[];
     inviteLinkVisits: InviteLinkVisit[];
-    reportTypes: ReportType[];
-    reportSubmissions: ReportSubmission[];
-    metricEntries: MetricEntry[];
-    reportComments: ReportComment[];
-    referralLinks: ReferralLink[];
-    reportNotifications: ReportNotification[];
-    strategicIndicators: StrategicIndicator[];
-    keyMetrics: KeyMetric[];
+    reportTemplates: ReportTemplate[];
+    reportTemplateVersions: ReportTemplateVersion[];
+    reports: PeriodicReport[];
+    reportEvents: ReportEvent[];
+    reportVersions: ReportVersion[];
+    reportEdits: ReportEdit[];
+    reportUpdateRequests: ReportUpdateRequest[];
   };
 };
 
@@ -78,46 +88,63 @@ if (!globalForDb.dbStore) {
     membershipRequests: cloneData(mockMembershipRequests),
     notifications: cloneData(mockNotifications),
     campuses: cloneData(mockCampuses),
-    zones: cloneData(mockZones),
+    zones: cloneData(mockOrgGroups).map((g: OrgGroup): Zone => ({
+      id: g.id,
+      name: g.name,
+      description: g.description,
+      orgLevel: "ZONE" as const,
+      parentId: null,
+      parentLevel: null,
+      region: g.region,
+      leaderId: g.leaderId,
+      isActive: g.isActive,
+      createdAt: g.createdAt,
+      updatedAt: g.updatedAt,
+    })),
+    orgGroups: cloneData(mockOrgGroups),
     departments: cloneData(mockDepartments),
     cells: cloneData(mockCells),
     campaigns: cloneData(mockCampaigns),
     campaignInteractions: cloneData(mockCampaignInteractions),
     inviteLinks: cloneData(mockInviteLinks),
     inviteLinkVisits: cloneData(mockInviteLinkVisits),
-    reportTypes: cloneData(mockReportTypes),
-    reportSubmissions: cloneData(mockReportSubmissions),
-    metricEntries: cloneData(mockMetricEntries),
-    reportComments: cloneData(mockReportComments),
-    referralLinks: cloneData(mockReferralLinks),
-    reportNotifications: cloneData(mockReportNotifications),
-    strategicIndicators: cloneData(mockStrategicIndicators),
-    keyMetrics: cloneData(mockKeyMetrics),
+    reportTemplates: cloneData(mockReportTemplates),
+    reportTemplateVersions: cloneData(mockReportTemplateVersions),
+    reports: cloneData(mockReports),
+    reportEvents: cloneData(mockReportEvents),
+    reportVersions: cloneData(mockReportVersions),
+    reportEdits: cloneData(mockReportEdits),
+    reportUpdateRequests: cloneData(mockReportUpdateRequests),
   };
 }
 
-const users = globalForDb.dbStore.users;
-const groups = globalForDb.dbStore.groups;
-const meetings = globalForDb.dbStore.meetings;
-const interactions = globalForDb.dbStore.interactions;
-const membershipRequests = globalForDb.dbStore.membershipRequests;
-let notifications = globalForDb.dbStore.notifications;
-const campuses = globalForDb.dbStore.campuses;
-const zones = globalForDb.dbStore.zones;
-const departments = globalForDb.dbStore.departments;
-const cells = globalForDb.dbStore.cells;
-const campaigns = globalForDb.dbStore.campaigns;
-const campaignInteractions = globalForDb.dbStore.campaignInteractions;
-const inviteLinks = globalForDb.dbStore.inviteLinks;
-const inviteLinkVisits = globalForDb.dbStore.inviteLinkVisits;
-const reportTypes = globalForDb.dbStore.reportTypes;
-const reportSubmissions = globalForDb.dbStore.reportSubmissions;
-const metricEntries = globalForDb.dbStore.metricEntries;
-const reportComments = globalForDb.dbStore.reportComments;
-const referralLinks = globalForDb.dbStore.referralLinks;
-const reportNotifications = globalForDb.dbStore.reportNotifications;
-const strategicIndicators = globalForDb.dbStore.strategicIndicators;
-const keyMetrics = globalForDb.dbStore.keyMetrics;
+// ── Direct references into the singleton store ──────────────────────────────
+// Using a getter-based approach ensures every read goes through GlobalForDb,
+// so even if a module is re-evaluated we always hit the same arrays.
+const store = () => globalForDb.dbStore!;
+
+const users = store().users;
+const groups = store().groups;
+const meetings = store().meetings;
+const interactions = store().interactions;
+const membershipRequests = store().membershipRequests;
+const notifications = store().notifications;
+const campuses = store().campuses;
+const zones = store().zones;
+const orgGroups = store().orgGroups;
+const departments = store().departments;
+const cells = store().cells;
+const campaigns = store().campaigns;
+const campaignInteractions = store().campaignInteractions;
+const inviteLinks = store().inviteLinks;
+const inviteLinkVisits = store().inviteLinkVisits;
+const reportTemplates = store().reportTemplates;
+const reportTemplateVersions = store().reportTemplateVersions;
+const reports = store().reports;
+const reportEvents = store().reportEvents;
+const reportVersions = store().reportVersions;
+const reportEdits = store().reportEdits;
+const reportUpdateRequests = store().reportUpdateRequests;
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 const generateId = () =>
@@ -125,6 +152,32 @@ const generateId = () =>
 const now = () => new Date().toISOString();
 const generateCode = () =>
   Math.random().toString(36).substring(2, 10).toUpperCase();
+
+/** Shared helper: convert User → UserProfile (strips password). */
+const toProfile = (u: User): UserProfile => ({
+  id: u.id,
+  email: u.email,
+  firstName: u.firstName,
+  lastName: u.lastName,
+  phone: u.phone,
+  whatsappPhone: u.whatsappPhone,
+  location: u.location,
+  age: u.age,
+  maritalStatus: u.maritalStatus,
+  employmentStatus: u.employmentStatus,
+  interests: u.interests,
+  role: u.role,
+  campusId: u.campusId,
+  zoneId: u.zoneId,
+  departmentId: u.departmentId,
+  groupId: u.groupId,
+  cellId: u.cellId,
+  avatar: u.avatar,
+  isActive: u.isActive,
+  inviteCode: u.inviteCode,
+  createdAt: u.createdAt,
+  updatedAt: u.updatedAt,
+});
 
 // ============================================================================
 // USER OPERATIONS
@@ -178,6 +231,7 @@ export const userDb = {
       updatedAt: now(),
     };
     users.push(user);
+    emitDbChange("users", "create", user.id);
     return user;
   },
 
@@ -185,6 +239,7 @@ export const userDb = {
     const idx = users.findIndex((u) => u.id === id);
     if (idx === -1) return undefined;
     users[idx] = { ...users[idx], ...data, updatedAt: now() };
+    emitDbChange("users", "update", id);
     return users[idx];
   },
 
@@ -192,6 +247,7 @@ export const userDb = {
     const idx = users.findIndex((u) => u.id === id);
     if (idx === -1) return false;
     users.splice(idx, 1);
+    emitDbChange("users", "delete", id);
     return true;
   },
 
@@ -245,6 +301,9 @@ export const zoneDb = {
     const zone: Zone = {
       id: generateId(),
       ...data,
+      orgLevel: "ZONE",
+      parentId: null,
+      parentLevel: null,
       isActive: true,
       createdAt: now(),
       updatedAt: now(),
@@ -272,35 +331,10 @@ export const zoneDb = {
     if (!zone) return undefined;
 
     const leader = users.find((u) => u.id === zone.leaderId);
-    const zoneCampuses = campuses.filter((c) => c.zoneId === zone.id);
+    const zoneCampuses = campuses.filter((c) => c.parentId === zone.id);
     const zoneDepts = departments.filter((d) => d.zoneId === zone.id);
     const zoneMembers = users.filter((u) => u.zoneId === zone.id);
     const zoneGroups = groups.filter((g) => g.zoneId === zone.id);
-
-    const toProfile = (u: User): UserProfile => ({
-      id: u.id,
-      email: u.email,
-      firstName: u.firstName,
-      lastName: u.lastName,
-      phone: u.phone,
-      whatsappPhone: u.whatsappPhone,
-      location: u.location,
-      age: u.age,
-      maritalStatus: u.maritalStatus,
-      employmentStatus: u.employmentStatus,
-      interests: u.interests,
-      role: u.role,
-      campusId: u.campusId,
-      zoneId: u.zoneId,
-      departmentId: u.departmentId,
-      groupId: u.groupId,
-      cellId: u.cellId,
-      avatar: u.avatar,
-      isActive: u.isActive,
-      inviteCode: u.inviteCode,
-      createdAt: u.createdAt,
-      updatedAt: u.updatedAt,
-    });
 
     return {
       ...zone,
@@ -318,18 +352,93 @@ export const zoneDb = {
 };
 
 // ============================================================================
-// CAMPUS OPERATIONS (belong to zones)
+// ORG GROUP OPERATIONS (top-level org entity in hierarchy)
+// ============================================================================
+
+export const orgGroupDb = {
+  findAll: (filters?: { isActive?: boolean; country?: string; search?: string }): OrgGroup[] => {
+    let result = [...orgGroups];
+    if (filters?.isActive !== undefined)
+      result = result.filter((g) => g.isActive === filters.isActive);
+    if (filters?.country)
+      result = result.filter((g) => g.country === filters.country);
+    if (filters?.search) {
+      const q = filters.search.toLowerCase();
+      result = result.filter(
+        (g) =>
+          g.name.toLowerCase().includes(q) ||
+          g.description.toLowerCase().includes(q) ||
+          g.country?.toLowerCase().includes(q)
+      );
+    }
+    return result;
+  },
+
+  findById: (id: string): OrgGroup | undefined =>
+    orgGroups.find((g) => g.id === id),
+
+  create: (data: CreateOrgGroupInput): OrgGroup => {
+    const group: OrgGroup = {
+      id: generateId(),
+      orgLevel: "GROUP",
+      parentId: null,
+      parentLevel: null,
+      ...data,
+      isActive: true,
+      createdAt: now(),
+      updatedAt: now(),
+    };
+    orgGroups.push(group);
+    return group;
+  },
+
+  update: (id: string, data: UpdateOrgGroupInput): OrgGroup | undefined => {
+    const idx = orgGroups.findIndex((g) => g.id === id);
+    if (idx === -1) return undefined;
+    orgGroups[idx] = { ...orgGroups[idx], ...data, updatedAt: now() };
+    return orgGroups[idx];
+  },
+
+  delete: (id: string): boolean => {
+    const idx = orgGroups.findIndex((g) => g.id === id);
+    if (idx === -1) return false;
+    orgGroups.splice(idx, 1);
+    return true;
+  },
+
+  getWithDetails: (id: string): OrgGroupWithDetails | undefined => {
+    const group = orgGroups.find((g) => g.id === id);
+    if (!group) return undefined;
+
+    const leader = users.find((u) => u.id === group.leaderId);
+    const groupCampuses = campuses.filter((c) => c.parentId === group.id);
+    const groupMembers = users.filter((u) => u.zoneId === group.id);
+
+    return {
+      ...group,
+      leader: leader ? toProfile(leader) : undefined,
+      campuses: groupCampuses,
+      totalCampuses: groupCampuses.length,
+      totalMembers: groupMembers.length,
+    };
+  },
+
+  count: (): number => orgGroups.length,
+};
+
+// ============================================================================
+// CAMPUS OPERATIONS (belong to org groups via parentId)
 // ============================================================================
 
 export const campusDb = {
   findAll: (filters?: {
-    zoneId?: string;
+    parentId?: string;
     isActive?: boolean;
     search?: string;
   }): Campus[] => {
     let result = [...campuses];
-    if (filters?.zoneId)
-      result = result.filter((c) => c.zoneId === filters.zoneId);
+    if (filters?.parentId)
+      result = result.filter((c) => c.parentId === filters.parentId);
     if (filters?.isActive !== undefined)
       result = result.filter((c) => c.isActive === filters.isActive);
     if (filters?.search) {
@@ -351,6 +460,9 @@ export const campusDb = {
     const campus: Campus = {
       id: generateId(),
       ...data,
+      orgLevel: "CAMPUS",
+      parentId: data.parentId,
+      parentLevel: "GROUP",
       isActive: true,
       createdAt: now(),
       updatedAt: now(),
@@ -377,41 +489,16 @@ export const campusDb = {
     const campus = campuses.find((c) => c.id === id);
     if (!campus) return undefined;
 
-    const zone = zones.find((z) => z.id === campus.zoneId);
+    const orgGroup = orgGroups.find((g) => g.id === campus.parentId);
     const admin = users.find((u) => u.id === campus.adminId);
     const campusDepts = departments.filter((d) => d.campusId === campus.id);
     const campusGroups = groups.filter((g) => g.campusId === campus.id);
     const campusCells = cells.filter((c) => c.campusId === campus.id);
     const campusMembers = users.filter((u) => u.campusId === campus.id);
 
-    const toProfile = (u: User): UserProfile => ({
-      id: u.id,
-      email: u.email,
-      firstName: u.firstName,
-      lastName: u.lastName,
-      phone: u.phone,
-      whatsappPhone: u.whatsappPhone,
-      location: u.location,
-      age: u.age,
-      maritalStatus: u.maritalStatus,
-      employmentStatus: u.employmentStatus,
-      interests: u.interests,
-      role: u.role,
-      campusId: u.campusId,
-      zoneId: u.zoneId,
-      departmentId: u.departmentId,
-      groupId: u.groupId,
-      cellId: u.cellId,
-      avatar: u.avatar,
-      isActive: u.isActive,
-      inviteCode: u.inviteCode,
-      createdAt: u.createdAt,
-      updatedAt: u.updatedAt,
-    });
-
     return {
       ...campus,
-      zone: zone as Zone,
+      orgGroup: orgGroup,
       admin: admin ? toProfile(admin) : undefined,
       departments: campusDepts,
       groups: campusGroups,
@@ -423,7 +510,7 @@ export const campusDb = {
     };
   },
 
-  count: (filters?: { zoneId?: string }): number =>
+  count: (filters?: { parentId?: string }): number =>
     campusDb.findAll(filters).length,
 };
 
@@ -463,6 +550,9 @@ export const departmentDb = {
     const dept: Department = {
       id: generateId(),
       ...data,
+      orgLevel: "DEPARTMENT",
+      parentId: data.campusId,
+      parentLevel: "CAMPUS",
       isActive: true,
       createdAt: now(),
       updatedAt: now(),
@@ -493,31 +583,6 @@ export const departmentDb = {
     const hod = users.find((u) => u.id === dept.hodId);
     const deptGroups = groups.filter((g) => g.departmentId === dept.id);
     const deptMembers = users.filter((u) => u.departmentId === dept.id);
-
-    const toProfile = (u: User): UserProfile => ({
-      id: u.id,
-      email: u.email,
-      firstName: u.firstName,
-      lastName: u.lastName,
-      phone: u.phone,
-      whatsappPhone: u.whatsappPhone,
-      location: u.location,
-      age: u.age,
-      maritalStatus: u.maritalStatus,
-      employmentStatus: u.employmentStatus,
-      interests: u.interests,
-      role: u.role,
-      campusId: u.campusId,
-      zoneId: u.zoneId,
-      departmentId: u.departmentId,
-      groupId: u.groupId,
-      cellId: u.cellId,
-      avatar: u.avatar,
-      isActive: u.isActive,
-      inviteCode: u.inviteCode,
-      createdAt: u.createdAt,
-      updatedAt: u.updatedAt,
-    });
 
     return {
       ...dept,
@@ -570,6 +635,9 @@ export const groupDb = {
     const group: Group = {
       id: generateId(),
       ...data,
+      orgLevel: "SMALL_GROUP",
+      parentId: data.campusId || null,
+      parentLevel: "CAMPUS",
       campusId: data.campusId || "",
       zoneId: data.zoneId || "",
       departmentId: data.departmentId || undefined,
@@ -580,6 +648,7 @@ export const groupDb = {
       updatedAt: now(),
     };
     groups.push(group);
+    emitDbChange("groups", "create", group.id);
     return group;
   },
 
@@ -587,6 +656,7 @@ export const groupDb = {
     const idx = groups.findIndex((g) => g.id === id);
     if (idx === -1) return undefined;
     groups[idx] = { ...groups[idx], ...data, updatedAt: now() };
+    emitDbChange("groups", "update", id);
     return groups[idx];
   },
 
@@ -594,6 +664,7 @@ export const groupDb = {
     const idx = groups.findIndex((g) => g.id === id);
     if (idx === -1) return false;
     groups.splice(idx, 1);
+    emitDbChange("groups", "delete", id);
     return true;
   },
 
@@ -650,6 +721,9 @@ export const cellDb = {
     const cell: Cell = {
       id: generateId(),
       ...data,
+      orgLevel: "CELL",
+      parentId: data.groupId,
+      parentLevel: "SMALL_GROUP",
       memberCount: 0,
       inviteCode: generateCode(),
       isActive: true,
@@ -734,6 +808,7 @@ export const meetingDb = {
       updatedAt: now(),
     };
     meetings.push(meeting);
+    emitDbChange("meetings", "create", meeting.id);
     return meeting;
   },
 
@@ -741,6 +816,7 @@ export const meetingDb = {
     const idx = meetings.findIndex((m) => m.id === id);
     if (idx === -1) return undefined;
     meetings[idx] = { ...meetings[idx], ...data, updatedAt: now() };
+    emitDbChange("meetings", "update", id);
     return meetings[idx];
   },
 
@@ -748,6 +824,7 @@ export const meetingDb = {
     const idx = meetings.findIndex((m) => m.id === id);
     if (idx === -1) return false;
     meetings.splice(idx, 1);
+    emitDbChange("meetings", "delete", id);
     return true;
   },
 
@@ -789,6 +866,7 @@ export const interactionDb = {
       createdAt: now(),
     };
     interactions.push(interaction);
+    emitDbChange("interactions", "create", interaction.id);
     return interaction;
   },
 
@@ -796,6 +874,7 @@ export const interactionDb = {
     const idx = interactions.findIndex((i) => i.id === id);
     if (idx === -1) return undefined;
     interactions[idx] = { ...interactions[idx], ...data };
+    emitDbChange("interactions", "update", id);
     return interactions[idx];
   },
 
@@ -803,6 +882,7 @@ export const interactionDb = {
     const idx = interactions.findIndex((i) => i.id === id);
     if (idx === -1) return false;
     interactions.splice(idx, 1);
+    emitDbChange("interactions", "delete", id);
     return true;
   },
 
@@ -862,6 +942,7 @@ export const membershipRequestDb = {
       responseMessage: undefined,
     };
     membershipRequests.push(request);
+    emitDbChange("membershipRequests", "create", request.id);
     return request;
   },
 
@@ -872,6 +953,7 @@ export const membershipRequestDb = {
     const idx = membershipRequests.findIndex((r) => r.id === id);
     if (idx === -1) return undefined;
     membershipRequests[idx] = { ...membershipRequests[idx], ...data };
+    emitDbChange("membershipRequests", "update", id);
     return membershipRequests[idx];
   },
 
@@ -890,6 +972,7 @@ export const membershipRequestDb = {
       respondedById,
       responseMessage,
     };
+    emitDbChange("membershipRequests", "update", id);
     return membershipRequests[idx];
   },
 
@@ -923,13 +1006,32 @@ export const notificationDb = {
   create: (
     data: Omit<appNotification, "id" | "createdAt" | "read">
   ): appNotification => {
+    // Look up the user's email for email simulation
+    const recipientUser = users.find((u) => u.id === data.userId);
+    const channel: NotificationChannel = data.channel || "both";
+    const timestamp = now();
+
+    const emailMeta: appNotification["emailMeta"] =
+      (channel === "email" || channel === "both") && recipientUser
+        ? {
+          to: recipientUser.email,
+          subject: data.title,
+          body: `Dear ${recipientUser.firstName},\n\n${data.message}\n\n— Harvesters Small Groups CRM`,
+          sentAt: timestamp,
+        }
+        : undefined;
+
     const notification: appNotification = {
       ...data,
       id: generateId(),
       read: false,
-      createdAt: now(),
+      createdAt: timestamp,
+      channel,
+      emailSent: !!emailMeta,
+      emailMeta,
     };
     notifications.push(notification);
+    emitDbChange("notifications", "create", notification.id);
     return notification;
   },
 
@@ -937,19 +1039,19 @@ export const notificationDb = {
     const idx = notifications.findIndex((n) => n.id === id);
     if (idx === -1) return undefined;
     notifications[idx] = { ...notifications[idx], read: true };
+    emitDbChange("notifications", "update", id);
     return notifications[idx];
   },
 
   markAllAsRead: (userId: string): number => {
     let count = 0;
-    notifications = notifications.map((n) => {
-      if (n.userId === userId && !n.read) {
+    for (let i = 0; i < notifications.length; i++) {
+      if (notifications[i].userId === userId && !notifications[i].read) {
+        notifications[i] = { ...notifications[i], read: true };
         count++;
-        return { ...n, read: true };
       }
-      return n;
-    });
-    if (globalForDb.dbStore) globalForDb.dbStore.notifications = notifications;
+    }
+    if (count > 0) emitDbChange("notifications", "update");
     return count;
   },
 
@@ -957,6 +1059,7 @@ export const notificationDb = {
     const idx = notifications.findIndex((n) => n.id === id);
     if (idx === -1) return false;
     notifications.splice(idx, 1);
+    emitDbChange("notifications", "delete", id);
     return true;
   },
 
@@ -1316,7 +1419,7 @@ export const analyticsDb = {
 
   /** Stats scoped to a specific zone */
   getZoneStats: (zoneId: string) => {
-    const zoneCampuses = campuses.filter((c) => c.zoneId === zoneId);
+    const zoneCampuses = campuses.filter((c) => c.parentId === zoneId);
     const campusIds = zoneCampuses.map((c) => c.id);
     const zoneMembers = users.filter((u) => u.zoneId === zoneId && u.isActive);
     const zoneMeetings = meetings.filter((m) => m.zoneId === zoneId);
@@ -1368,9 +1471,9 @@ export const analyticsDb = {
     const attendanceRate =
       groupMembers.length > 0 && groupMeetings.length > 0
         ? Math.round(
-            (totalAttendance / (groupMembers.length * groupMeetings.length)) *
-              100
-          )
+          (totalAttendance / (groupMembers.length * groupMeetings.length)) *
+          100
+        )
         : 0;
     return {
       memberCount: groupMembers.length,
@@ -1407,9 +1510,9 @@ export const analyticsDb = {
       engagementRate:
         campaign.viewCount + views > 0
           ? Math.round(
-              ((campaign.clickCount + clicks) / (campaign.viewCount + views)) *
-                100
-            )
+            ((campaign.clickCount + clicks) / (campaign.viewCount + views)) *
+            100
+          )
           : 0,
     };
   },
@@ -1475,820 +1578,1382 @@ export const analyticsDb = {
 };
 
 // ============================================================================
-// REPORT TYPE OPERATIONS
+// REPORT TEMPLATE OPERATIONS
 // ============================================================================
 
-export const reportTypeDb = {
-  findAll: (filters?: ReportTypeFilters): ReportType[] => {
-    let result = [...reportTypes];
-    if (filters?.category)
-      result = result.filter((rt) => rt.category === filters.category);
-    if (filters?.frequency)
-      result = result.filter((rt) => rt.frequency === filters.frequency);
-    if (filters?.organizationalLevel)
-      result = result.filter(
-        (rt) => rt.organizationalLevel === filters.organizationalLevel
-      );
+export const reportTemplateDb = {
+  findAll: (filters?: {
+    isActive?: boolean;
+    search?: string;
+  }): ReportTemplate[] => {
+    let result = [...reportTemplates];
     if (filters?.isActive !== undefined)
-      result = result.filter((rt) => rt.isActive === filters.isActive);
+      result = result.filter((t) => t.isActive === filters.isActive);
     if (filters?.search) {
       const q = filters.search.toLowerCase();
       result = result.filter(
-        (rt) =>
-          rt.name.toLowerCase().includes(q) ||
-          rt.code.toLowerCase().includes(q) ||
-          rt.description?.toLowerCase().includes(q)
+        (t) =>
+          t.name.toLowerCase().includes(q) ||
+          t.description?.toLowerCase().includes(q)
       );
     }
     return result;
   },
 
-  findById: (id: string): ReportType | undefined =>
-    reportTypes.find((rt) => rt.id === id),
+  findById: (id: string): ReportTemplate | undefined =>
+    reportTemplates.find((t) => t.id === id),
 
-  findByCode: (code: string): ReportType | undefined =>
-    reportTypes.find((rt) => rt.code === code),
+  findDefault: (): ReportTemplate | undefined =>
+    reportTemplates.find((t) => t.isDefault && t.isActive),
 
-  create: (
-    data: Omit<ReportType, "id" | "createdAt" | "updatedAt">
-  ): ReportType => {
-    const reportType: ReportType = {
-      ...data,
-      id: generateId(),
+  create: (data: CreateReportTemplateInput, createdById: string): ReportTemplate => {
+    const id = generateId();
+    const sections: ReportTemplateSection[] = (data.sections || []).map(
+      (sec, si) => {
+        const sectionId = `tsec-${id}-${si}`;
+        return {
+          id: sectionId,
+          templateId: id,
+          name: sec.name,
+          description: sec.description,
+          order: sec.order,
+          isRequired: sec.isRequired ?? true,
+          subSections: (sec.subSections || []).map((ss, ssi) => ({
+            id: `tssec-${id}-${si}-${ssi}`,
+            sectionId,
+            name: ss.name,
+            order: ss.order,
+            metrics: (ss.metrics || []).map((m, mi) => ({
+              id: `tm-${id}-${si}-${ssi}-${mi}`,
+              sectionId,
+              name: m.name,
+              fieldType: m.fieldType,
+              isRequired: m.isRequired ?? true,
+              order: m.order,
+              capturesGoal: m.capturesGoal ?? true,
+              capturesAchieved: m.capturesAchieved ?? true,
+              capturesYoY: m.capturesYoY ?? true,
+            })),
+          })),
+          metrics: (sec.metrics || []).map((m, mi) => ({
+            id: `tm-${id}-${si}-${mi}`,
+            sectionId,
+            name: m.name,
+            fieldType: m.fieldType,
+            isRequired: m.isRequired ?? true,
+            order: m.order,
+            capturesGoal: m.capturesGoal ?? true,
+            capturesAchieved: m.capturesAchieved ?? true,
+            capturesYoY: m.capturesYoY ?? true,
+          })),
+        };
+      }
+    );
+
+    const template: ReportTemplate = {
+      id,
+      name: data.name,
+      description: data.description,
+      version: 1,
+      sections,
+      isActive: true,
+      isDefault: data.isDefault ?? false,
+      createdById,
       createdAt: now(),
       updatedAt: now(),
     };
-    reportTypes.push(reportType);
-    return reportType;
-  },
 
-  update: (id: string, data: Partial<ReportType>): ReportType | undefined => {
-    const idx = reportTypes.findIndex((rt) => rt.id === id);
-    if (idx === -1) return undefined;
-    reportTypes[idx] = { ...reportTypes[idx], ...data, updatedAt: now() };
-    return reportTypes[idx];
-  },
-
-  delete: (id: string): boolean => {
-    const idx = reportTypes.findIndex((rt) => rt.id === id);
-    if (idx === -1) return false;
-    reportTypes.splice(idx, 1);
-    return true;
-  },
-
-  count: (filters?: ReportTypeFilters): number =>
-    reportTypeDb.findAll(filters).length,
-};
-
-// ============================================================================
-// REPORT SUBMISSION OPERATIONS
-// ============================================================================
-
-export const reportSubmissionDb = {
-  findAll: (filters?: ReportSubmissionFilters): ReportSubmission[] => {
-    let result = [...reportSubmissions];
-    if (filters?.reportTypeId)
-      result = result.filter((rs) => rs.reportTypeId === filters.reportTypeId);
-    if (filters?.reportTypeCode) {
-      const rType = reportTypes.find(
-        (rt) => rt.code === filters.reportTypeCode
-      );
-      if (rType) result = result.filter((rs) => rs.reportTypeId === rType.id);
-    }
-    if (filters?.status)
-      result = result.filter((rs) => rs.status === filters.status);
-    if (filters?.submittedById)
-      result = result.filter(
-        (rs) => rs.submittedById === filters.submittedById
-      );
-    if (filters?.organizationalLevelType)
-      result = result.filter(
-        (rs) => rs.organizationalLevelType === filters.organizationalLevelType
-      );
-    if (filters?.organizationalUnitId)
-      result = result.filter(
-        (rs) => rs.organizationalUnitId === filters.organizationalUnitId
-      );
-    if (filters?.reportYear)
-      result = result.filter((rs) => rs.reportYear === filters.reportYear);
-    if (filters?.reportMonth)
-      result = result.filter((rs) => rs.reportMonth === filters.reportMonth);
-    if (filters?.reportWeek)
-      result = result.filter((rs) => rs.reportWeek === filters.reportWeek);
-    if (filters?.search) {
-      const q = filters.search.toLowerCase();
-      result = result.filter((rs) => {
-        const rType = reportTypes.find((rt) => rt.id === rs.reportTypeId);
-        return (
-          rType?.name.toLowerCase().includes(q) ||
-          rType?.code.toLowerCase().includes(q)
-        );
+    // If this is set as default, unset other defaults
+    if (template.isDefault) {
+      reportTemplates.forEach((t, idx) => {
+        if (t.id !== id && t.isDefault) {
+          reportTemplates[idx] = { ...t, isDefault: false, updatedAt: now() };
+        }
       });
     }
-    return result.sort(
-      (a, b) =>
-        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-    );
-  },
 
-  findById: (id: string): ReportSubmission | undefined =>
-    reportSubmissions.find((rs) => rs.id === id),
+    reportTemplates.push(template);
 
-  create: (
-    data: CreateReportSubmissionInput & {
-      submittedById: string;
-      submitterRole: string;
-    }
-  ): ReportSubmission => {
-    const submission: ReportSubmission = {
-      ...data,
-      id: generateId(),
-      status: ReportStatus.DRAFT,
-      isLocked: false,
-      lastEditedAt: now(),
-      createdAt: now(),
-      updatedAt: now(),
-    };
-    reportSubmissions.push(submission);
-    return submission;
+    // Create initial version snapshot
+    reportTemplateVersionDb.create(id, 1, template, createdById, "Initial creation");
+
+    return template;
   },
 
   update: (
     id: string,
-    data: Partial<ReportSubmission>
-  ): ReportSubmission | undefined => {
-    const idx = reportSubmissions.findIndex((rs) => rs.id === id);
+    data: UpdateReportTemplateInput,
+    updatedById: string
+  ): ReportTemplate | undefined => {
+    const idx = reportTemplates.findIndex((t) => t.id === id);
     if (idx === -1) return undefined;
-    reportSubmissions[idx] = {
-      ...reportSubmissions[idx],
-      ...data,
+
+    const existing = reportTemplates[idx];
+    const newVersion = existing.version + 1;
+
+    // Rebuild sections if provided
+    let sections = existing.sections;
+    if (data.sections) {
+      sections = data.sections.map((sec, si) => {
+        const sectionId = `tsec-${id}-v${newVersion}-${si}`;
+        return {
+          id: sectionId,
+          templateId: id,
+          name: sec.name,
+          description: sec.description,
+          order: sec.order,
+          isRequired: sec.isRequired ?? true,
+          subSections: (sec.subSections || []).map((ss, ssi) => ({
+            id: `tssec-${id}-v${newVersion}-${si}-${ssi}`,
+            sectionId,
+            name: ss.name,
+            order: ss.order,
+            metrics: (ss.metrics || []).map((m, mi) => ({
+              id: `tm-${id}-v${newVersion}-${si}-${ssi}-${mi}`,
+              sectionId,
+              name: m.name,
+              fieldType: m.fieldType,
+              isRequired: m.isRequired ?? true,
+              order: m.order,
+              capturesGoal: m.capturesGoal ?? true,
+              capturesAchieved: m.capturesAchieved ?? true,
+              capturesYoY: m.capturesYoY ?? true,
+            })),
+          })),
+          metrics: (sec.metrics || []).map((m, mi) => ({
+            id: `tm-${id}-v${newVersion}-${si}-${mi}`,
+            sectionId,
+            name: m.name,
+            fieldType: m.fieldType,
+            isRequired: m.isRequired ?? true,
+            order: m.order,
+            capturesGoal: m.capturesGoal ?? true,
+            capturesAchieved: m.capturesAchieved ?? true,
+            capturesYoY: m.capturesYoY ?? true,
+          })),
+        };
+      });
+    }
+
+    const updated: ReportTemplate = {
+      ...existing,
+      name: data.name ?? existing.name,
+      description: data.description ?? existing.description,
+      version: newVersion,
+      sections,
+      isDefault: data.isDefault ?? existing.isDefault,
       updatedAt: now(),
-      lastEditedAt: now(),
     };
-    return reportSubmissions[idx];
+
+    // Unset other defaults if newly set as default
+    if (data.isDefault && !existing.isDefault) {
+      reportTemplates.forEach((t, i) => {
+        if (t.id !== id && t.isDefault) {
+          reportTemplates[i] = { ...t, isDefault: false, updatedAt: now() };
+        }
+      });
+    }
+
+    reportTemplates[idx] = updated;
+
+    // Snapshot the new version
+    reportTemplateVersionDb.create(
+      id,
+      newVersion,
+      updated,
+      updatedById,
+      data.changeNotes || `Updated to version ${newVersion}`
+    );
+
+    return updated;
   },
 
-  submit: (id: string): ReportSubmission | undefined => {
-    return reportSubmissionDb.update(id, {
-      status: ReportStatus.SUBMITTED,
-      submittedAt: now(),
+  deactivate: (id: string): ReportTemplate | undefined => {
+    const idx = reportTemplates.findIndex((t) => t.id === id);
+    if (idx === -1) return undefined;
+    reportTemplates[idx] = {
+      ...reportTemplates[idx],
+      isActive: false,
+      updatedAt: now(),
+    };
+    return reportTemplates[idx];
+  },
+
+  delete: (id: string): boolean => {
+    const idx = reportTemplates.findIndex((t) => t.id === id);
+    if (idx === -1) return false;
+    reportTemplates.splice(idx, 1);
+    return true;
+  },
+
+  count: (filters?: { isActive?: boolean }): number =>
+    reportTemplateDb.findAll(filters).length,
+};
+
+// ============================================================================
+// REPORT TEMPLATE VERSION OPERATIONS
+// ============================================================================
+
+export const reportTemplateVersionDb = {
+  findByTemplateId: (templateId: string): ReportTemplateVersion[] =>
+    reportTemplateVersions
+      .filter((v) => v.templateId === templateId)
+      .sort((a, b) => b.versionNumber - a.versionNumber),
+
+  findById: (id: string): ReportTemplateVersion | undefined =>
+    reportTemplateVersions.find((v) => v.id === id),
+
+  findByVersion: (
+    templateId: string,
+    versionNumber: number
+  ): ReportTemplateVersion | undefined =>
+    reportTemplateVersions.find(
+      (v) => v.templateId === templateId && v.versionNumber === versionNumber
+    ),
+
+  create: (
+    templateId: string,
+    versionNumber: number,
+    snapshot: ReportTemplate,
+    createdById: string,
+    changeNotes?: string
+  ): ReportTemplateVersion => {
+    const version: ReportTemplateVersion = {
+      id: generateId(),
+      templateId,
+      versionNumber,
+      snapshot: cloneData(snapshot),
+      createdAt: now(),
+      createdById,
+      changeNotes,
+    };
+    reportTemplateVersions.push(version);
+    return version;
+  },
+};
+
+// ============================================================================
+// REPORT OPERATIONS (core report CRUD + workflow)
+// ============================================================================
+
+export const reportDb = {
+  findAll: (filters?: ReportFilters): PeriodicReport[] => {
+    let result = [...reports];
+
+    if (filters?.campusId)
+      result = result.filter((r) => r.campusId === filters.campusId);
+    if (filters?.groupId)
+      result = result.filter((r) => r.groupId === filters.groupId);
+    if (filters?.status)
+      result = result.filter((r) => r.status === filters.status);
+    if (filters?.periodType)
+      result = result.filter((r) => r.periodType === filters.periodType);
+    if (filters?.periodYear)
+      result = result.filter((r) => r.periodYear === filters.periodYear);
+    if (filters?.periodMonth)
+      result = result.filter((r) => r.periodMonth === filters.periodMonth);
+    if (filters?.periodWeek)
+      result = result.filter((r) => r.periodWeek === filters.periodWeek);
+    if (filters?.submittedById)
+      result = result.filter((r) => r.submittedById === filters.submittedById);
+    if (filters?.templateId)
+      result = result.filter((r) => r.templateId === filters.templateId);
+    if (filters?.isDataEntry !== undefined)
+      result = result.filter((r) => r.isDataEntry === filters.isDataEntry);
+    if (filters?.search) {
+      const q = filters.search.toLowerCase();
+      result = result.filter((r) => {
+        // Search in notes and ID
+        if (r.notes?.toLowerCase().includes(q)) return true;
+        if (r.id.toLowerCase().includes(q)) return true;
+        // Search in related template name
+        const tpl = reportTemplates.find((t) => t.id === r.templateId);
+        if (tpl?.name.toLowerCase().includes(q)) return true;
+        // Search in related campus name
+        const cmp = campuses.find((c) => c.id === r.campusId);
+        if (cmp?.name.toLowerCase().includes(q)) return true;
+        // Search in submitter name
+        const usr = users.find((u) => u.id === r.submittedById);
+        if (
+          usr &&
+          `${usr.firstName} ${usr.lastName}`.toLowerCase().includes(q)
+        )
+          return true;
+        return false;
+      });
+    }
+    if (filters?.dateFrom) {
+      const from = new Date(filters.dateFrom).getTime();
+      result = result.filter(
+        (r) => new Date(r.createdAt).getTime() >= from
+      );
+    }
+    if (filters?.dateTo) {
+      const to = new Date(filters.dateTo).getTime();
+      result = result.filter(
+        (r) => new Date(r.createdAt).getTime() <= to
+      );
+    }
+
+    // Most recent first
+    result.sort(
+      (a, b) =>
+        new Date(b.updatedAt || b.createdAt).getTime() -
+        new Date(a.updatedAt || a.createdAt).getTime()
+    );
+    return result;
+  },
+
+  findById: (id: string): PeriodicReport | undefined =>
+    reports.find((r) => r.id === id),
+
+  getWithDetails: (id: string): ReportWithDetails | undefined => {
+    const report = reports.find((r) => r.id === id);
+    if (!report) return undefined;
+
+    const template = reportTemplates.find((t) => t.id === report.templateId);
+    const campus = campuses.find((c) => c.id === report.campusId);
+    const submittedBy = users.find((u) => u.id === report.submittedById);
+    const approvedBy = report.approvedById
+      ? users.find((u) => u.id === report.approvedById)
+      : undefined;
+    const reviewedBy = report.reviewedById
+      ? users.find((u) => u.id === report.reviewedById)
+      : undefined;
+    const events = reportEvents
+      .filter((e) => e.reportId === id)
+      .sort(
+        (a, b) =>
+          new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+      );
+    const edits = reportEdits.filter((e) => e.reportId === id);
+    const updateRequests = reportUpdateRequests.filter(
+      (ur) => ur.reportId === id
+    );
+
+    return {
+      ...report,
+      template,
+      campus,
+      submittedBy: submittedBy ? toProfile(submittedBy) : undefined,
+      approvedBy: approvedBy ? toProfile(approvedBy) : undefined,
+      reviewedBy: reviewedBy ? toProfile(reviewedBy) : undefined,
+      events,
+      edits,
+      updateRequests,
+    };
+  },
+
+  create: (data: CreateReportInput): PeriodicReport => {
+    const id = generateId();
+
+    // Build report sections from input
+    const sections: ReportSection[] = (data.sections || []).map((sec, si) => {
+      const sectionId = `rs-${id}-${si}`;
+      return {
+        id: sectionId,
+        reportId: id,
+        templateSectionId: sec.templateSectionId,
+        sectionName: sec.sectionName,
+        order: sec.order,
+        metrics: (sec.metrics || []).map((m, mi) => ({
+          id: `rm-${id}-${si}-${mi}`,
+          reportSectionId: sectionId,
+          templateMetricId: m.templateMetricId,
+          metricName: m.metricName,
+          fieldType: m.fieldType,
+          monthlyGoal: m.monthlyGoal,
+          monthlyAchieved: m.monthlyAchieved,
+          yoyGoal: m.yoyGoal,
+          computedPercentage:
+            m.monthlyGoal && m.monthlyAchieved
+              ? Math.round((m.monthlyAchieved / m.monthlyGoal) * 100)
+              : undefined,
+          isLocked: false,
+          order: m.order,
+        })),
+      };
     });
+
+    const report: PeriodicReport = {
+      id,
+      templateId: data.templateId,
+      templateVersionId: data.templateVersionId,
+      campusId: data.campusId,
+      periodType: data.periodType,
+      periodYear: data.periodYear,
+      periodMonth: data.periodMonth,
+      periodWeek: data.periodWeek,
+      status: ReportStatus.DRAFT,
+      submittedById: data.submittedById,
+      deadline: data.deadline,
+      isDataEntry: data.isDataEntry || false,
+      dataEntryById: data.dataEntryById,
+      dataEntryDate: data.dataEntryDate,
+      notes: data.notes,
+      sections,
+      createdAt: now(),
+      updatedAt: now(),
+    };
+
+    reports.push(report);
+    emitDbChange("reports", "create", id);
+
+    // Create audit event
+    reportEventDb.create({
+      reportId: id,
+      eventType: data.isDataEntry
+        ? ReportEventType.DATA_ENTRY_CREATED
+        : ReportEventType.CREATED,
+      actorId: data.submittedById,
+      newStatus: ReportStatus.DRAFT,
+      details: data.isDataEntry
+        ? { dataEntryDate: data.dataEntryDate }
+        : undefined,
+    });
+
+    return report;
+  },
+
+  update: (id: string, data: UpdateReportInput): PeriodicReport | undefined => {
+    const idx = reports.findIndex((r) => r.id === id);
+    if (idx === -1) return undefined;
+
+    const existing = reports[idx];
+
+    // Rebuild sections if provided
+    let sections = existing.sections;
+    if (data.sections) {
+      sections = data.sections.map((sec, si) => {
+        const sectionId = `rs-${id}-upd-${si}`;
+        return {
+          id: sectionId,
+          reportId: id,
+          templateSectionId: sec.templateSectionId,
+          sectionName: sec.sectionName,
+          order: sec.order,
+          metrics: (sec.metrics || []).map((m, mi) => ({
+            id: `rm-${id}-upd-${si}-${mi}`,
+            reportSectionId: sectionId,
+            templateMetricId: m.templateMetricId,
+            metricName: m.metricName,
+            fieldType: m.fieldType,
+            monthlyGoal: m.monthlyGoal,
+            monthlyAchieved: m.monthlyAchieved,
+            yoyGoal: m.yoyGoal,
+            computedPercentage:
+              m.monthlyGoal && m.monthlyAchieved
+                ? Math.round((m.monthlyAchieved / m.monthlyGoal) * 100)
+                : undefined,
+            isLocked: false,
+            order: m.order,
+          })),
+        };
+      });
+    }
+
+    reports[idx] = {
+      ...existing,
+      notes: data.notes ?? existing.notes,
+      sections,
+      updatedAt: now(),
+    };
+
+    emitDbChange("reports", "update", id);
+    return reports[idx];
+  },
+
+  /** Submit a draft report for review */
+  submit: (id: string, actorId: string): PeriodicReport | undefined => {
+    const idx = reports.findIndex((r) => r.id === id);
+    if (idx === -1) return undefined;
+    if (reports[idx].status !== ReportStatus.DRAFT && reports[idx].status !== ReportStatus.REQUIRES_EDITS)
+      return undefined;
+
+    const previousStatus = reports[idx].status;
+    reports[idx] = {
+      ...reports[idx],
+      status: ReportStatus.SUBMITTED,
+      updatedAt: now(),
+    };
+
+    reportEventDb.create({
+      reportId: id,
+      eventType: ReportEventType.SUBMITTED,
+      actorId,
+      previousStatus,
+      newStatus: ReportStatus.SUBMITTED,
+    });
+
+    // Create version snapshot
+    reportVersionDb.create(id, reports[idx], actorId, "Submitted for review");
+
+    emitDbChange("reports", "update", id);
+    return reports[idx];
+  },
+
+  /** Approve a submitted report */
+  approve: (id: string, actorId: string): PeriodicReport | undefined => {
+    const idx = reports.findIndex((r) => r.id === id);
+    if (idx === -1) return undefined;
+    if (reports[idx].status !== ReportStatus.SUBMITTED) return undefined;
+
+    reports[idx] = {
+      ...reports[idx],
+      status: ReportStatus.APPROVED,
+      approvedById: actorId,
+      updatedAt: now(),
+    };
+
+    reportEventDb.create({
+      reportId: id,
+      eventType: ReportEventType.APPROVED,
+      actorId,
+      previousStatus: ReportStatus.SUBMITTED,
+      newStatus: ReportStatus.APPROVED,
+    });
+
+    emitDbChange("reports", "update", id);
+    return reports[idx];
+  },
+
+  /** Request edits on a submitted report */
+  requestEdits: (
+    id: string,
+    actorId: string,
+    reason: string
+  ): PeriodicReport | undefined => {
+    const idx = reports.findIndex((r) => r.id === id);
+    if (idx === -1) return undefined;
+    if (reports[idx].status !== ReportStatus.SUBMITTED) return undefined;
+
+    reports[idx] = {
+      ...reports[idx],
+      status: ReportStatus.REQUIRES_EDITS,
+      reviewedById: actorId,
+      updatedAt: now(),
+    };
+
+    reportEventDb.create({
+      reportId: id,
+      eventType: ReportEventType.EDIT_REQUESTED,
+      actorId,
+      previousStatus: ReportStatus.SUBMITTED,
+      newStatus: ReportStatus.REQUIRES_EDITS,
+      details: { reason },
+    });
+
+    return reports[idx];
+  },
+
+  /** Mark an approved report as reviewed */
+  review: (id: string, actorId: string): PeriodicReport | undefined => {
+    const idx = reports.findIndex((r) => r.id === id);
+    if (idx === -1) return undefined;
+    if (reports[idx].status !== ReportStatus.APPROVED) return undefined;
+
+    reports[idx] = {
+      ...reports[idx],
+      status: ReportStatus.REVIEWED,
+      reviewedById: actorId,
+      updatedAt: now(),
+    };
+
+    reportEventDb.create({
+      reportId: id,
+      eventType: ReportEventType.REVIEWED,
+      actorId,
+      previousStatus: ReportStatus.APPROVED,
+      newStatus: ReportStatus.REVIEWED,
+    });
+
+    return reports[idx];
+  },
+
+  /** Lock a reviewed report (final state) */
+  lock: (id: string, actorId: string): PeriodicReport | undefined => {
+    const idx = reports.findIndex((r) => r.id === id);
+    if (idx === -1) return undefined;
+    if (reports[idx].status !== ReportStatus.REVIEWED) return undefined;
+
+    reports[idx] = {
+      ...reports[idx],
+      status: ReportStatus.LOCKED,
+      lockedAt: now(),
+      updatedAt: now(),
+    };
+
+    reportEventDb.create({
+      reportId: id,
+      eventType: ReportEventType.LOCKED,
+      actorId,
+      previousStatus: ReportStatus.REVIEWED,
+      newStatus: ReportStatus.LOCKED,
+    });
+
+    return reports[idx];
+  },
+
+  /** Apply approved edit changes to the report */
+  applyEdit: (reportId: string, editId: string): PeriodicReport | undefined => {
+    const rIdx = reports.findIndex((r) => r.id === reportId);
+    if (rIdx === -1) return undefined;
+
+    const edit = reportEdits.find((e) => e.id === editId);
+    if (!edit || edit.status !== ReportEditStatus.APPROVED) return undefined;
+
+    // Snapshot before applying
+    reportVersionDb.create(
+      reportId,
+      reports[rIdx],
+      edit.submittedById,
+      `Pre-edit snapshot before edit ${editId}`
+    );
+
+    // Merge edit sections into report
+    for (const editSection of edit.sections) {
+      const existingSectionIdx = reports[rIdx].sections.findIndex(
+        (s) => s.templateSectionId === editSection.templateSectionId
+      );
+      if (existingSectionIdx !== -1) {
+        // Update existing section metrics
+        for (const editMetric of editSection.metrics) {
+          const existingMetricIdx = reports[rIdx].sections[
+            existingSectionIdx
+          ].metrics.findIndex(
+            (m) => m.templateMetricId === editMetric.templateMetricId
+          );
+          if (existingMetricIdx !== -1) {
+            reports[rIdx].sections[existingSectionIdx].metrics[
+              existingMetricIdx
+            ] = {
+              ...reports[rIdx].sections[existingSectionIdx].metrics[
+              existingMetricIdx
+              ],
+              monthlyGoal: editMetric.monthlyGoal,
+              monthlyAchieved: editMetric.monthlyAchieved,
+              yoyGoal: editMetric.yoyGoal,
+              computedPercentage:
+                editMetric.monthlyGoal && editMetric.monthlyAchieved
+                  ? Math.round(
+                    (editMetric.monthlyAchieved / editMetric.monthlyGoal) *
+                    100
+                  )
+                  : undefined,
+            };
+          }
+        }
+      }
+    }
+
+    reports[rIdx] = { ...reports[rIdx], updatedAt: now() };
+
+    reportEventDb.create({
+      reportId,
+      eventType: ReportEventType.EDIT_APPLIED,
+      actorId: edit.submittedById,
+      details: { editId },
+    });
+
+    return reports[rIdx];
+  },
+
+  delete: (id: string): boolean => {
+    const idx = reports.findIndex((r) => r.id === id);
+    if (idx === -1) return false;
+    reports.splice(idx, 1);
+    return true;
+  },
+
+  /** Superadmin unlock specific metric fields on a report */
+  unlockFields: (
+    reportId: string,
+    metricIds: string[],
+    actorId: string,
+    reason?: string
+  ): PeriodicReport | undefined => {
+    const idx = reports.findIndex((r) => r.id === reportId);
+    if (idx === -1) return undefined;
+
+    const report = reports[idx];
+
+    // Unlock specified metrics
+    for (const section of report.sections) {
+      for (const metric of section.metrics) {
+        if (metricIds.includes(metric.templateMetricId)) {
+          metric.isLocked = false;
+        }
+      }
+    }
+
+    reports[idx] = { ...report, updatedAt: now() };
+
+    reportEventDb.create({
+      reportId,
+      eventType: ReportEventType.FIELD_UNLOCKED,
+      actorId,
+      details: { metricIds, reason: reason || "Superadmin override" },
+    });
+
+    return reports[idx];
+  },
+
+  /** Auto-approve a report when deadline passes with no reviewer action */
+  autoApprove: (reportId: string): PeriodicReport | undefined => {
+    const idx = reports.findIndex((r) => r.id === reportId);
+    if (idx === -1) return undefined;
+    if (reports[idx].status !== ReportStatus.SUBMITTED) return undefined;
+
+    reports[idx] = {
+      ...reports[idx],
+      status: ReportStatus.APPROVED,
+      updatedAt: now(),
+    };
+
+    reportEventDb.create({
+      reportId,
+      eventType: ReportEventType.AUTO_APPROVED,
+      actorId: "system",
+      previousStatus: ReportStatus.SUBMITTED,
+      newStatus: ReportStatus.APPROVED,
+      details: { reason: "Auto-approved: reviewer deadline expired" },
+    });
+
+    return reports[idx];
+  },
+
+  count: (filters?: ReportFilters): number =>
+    reportDb.findAll(filters).length,
+};
+
+// ============================================================================
+// REPORT EVENT OPERATIONS (Audit Trail)
+// ============================================================================
+
+export const reportEventDb = {
+  findByReportId: (reportId: string): ReportEvent[] =>
+    reportEvents
+      .filter((e) => e.reportId === reportId)
+      .sort(
+        (a, b) =>
+          new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+      ),
+
+  findById: (id: string): ReportEvent | undefined =>
+    reportEvents.find((e) => e.id === id),
+
+  create: (
+    data: Omit<ReportEvent, "id" | "timestamp">
+  ): ReportEvent => {
+    const event: ReportEvent = {
+      ...data,
+      id: generateId(),
+      timestamp: now(),
+    };
+    reportEvents.push(event);
+    return event;
+  },
+
+  getWithDetails: (reportId: string): ReportEventWithDetails[] => {
+    const events = reportEventDb.findByReportId(reportId);
+    return events.map((e) => {
+      const actor = users.find((u) => u.id === e.actorId);
+      return {
+        ...e,
+        actorName: actor
+          ? `${actor.firstName} ${actor.lastName}`
+          : "Unknown User",
+        actorRole: actor?.role,
+      };
+    });
+  },
+};
+
+// ============================================================================
+// REPORT VERSION OPERATIONS (Snapshots)
+// ============================================================================
+
+export const reportVersionDb = {
+  findByReportId: (reportId: string): ReportVersion[] =>
+    reportVersions
+      .filter((v) => v.reportId === reportId)
+      .sort((a, b) => b.versionNumber - a.versionNumber),
+
+  findById: (id: string): ReportVersion | undefined =>
+    reportVersions.find((v) => v.id === id),
+
+  create: (
+    reportId: string,
+    snapshot: PeriodicReport,
+    createdById: string,
+    reason?: string
+  ): ReportVersion => {
+    const existing = reportVersionDb.findByReportId(reportId);
+    const nextVersion =
+      existing.length > 0
+        ? Math.max(...existing.map((v) => v.versionNumber)) + 1
+        : 1;
+
+    const version: ReportVersion = {
+      id: generateId(),
+      reportId,
+      versionNumber: nextVersion,
+      snapshot: cloneData(snapshot),
+      createdAt: now(),
+      createdById,
+      reason,
+    };
+    reportVersions.push(version);
+    return version;
+  },
+};
+
+// ============================================================================
+// REPORT EDIT OPERATIONS
+// ============================================================================
+
+export const reportEditDb = {
+  findAll: (filters?: {
+    reportId?: string;
+    submittedById?: string;
+    status?: ReportEditStatus;
+  }): ReportEdit[] => {
+    let result = [...reportEdits];
+    if (filters?.reportId)
+      result = result.filter((e) => e.reportId === filters.reportId);
+    if (filters?.submittedById)
+      result = result.filter((e) => e.submittedById === filters.submittedById);
+    if (filters?.status)
+      result = result.filter((e) => e.status === filters.status);
+    result.sort(
+      (a, b) =>
+        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+    );
+    return result;
+  },
+
+  findById: (id: string): ReportEdit | undefined =>
+    reportEdits.find((e) => e.id === id),
+
+  findByReportId: (reportId: string): ReportEdit[] =>
+    reportEdits.filter((e) => e.reportId === reportId),
+
+  getWithDetails: (id: string): ReportEditWithDetails | undefined => {
+    const edit = reportEdits.find((e) => e.id === id);
+    if (!edit) return undefined;
+
+    const report = reports.find((r) => r.id === edit.reportId);
+    const submittedBy = users.find((u) => u.id === edit.submittedById);
+    const reviewedBy = edit.reviewedById
+      ? users.find((u) => u.id === edit.reviewedById)
+      : undefined;
+
+    return {
+      ...edit,
+      report,
+      submittedBy: submittedBy ? toProfile(submittedBy) : undefined,
+      reviewedBy: reviewedBy ? toProfile(reviewedBy) : undefined,
+    };
+  },
+
+  create: (data: CreateReportEditInput): ReportEdit => {
+    const id = generateId();
+
+    const sections: ReportEditSection[] = (data.sections || []).map(
+      (sec, si) => {
+        const sectionId = `res-${id}-${si}`;
+        return {
+          id: sectionId,
+          reportEditId: id,
+          templateSectionId: sec.templateSectionId,
+          sectionName: sec.sectionName,
+          order: sec.order,
+          metrics: (sec.metrics || []).map((m, mi) => ({
+            id: `rem-${id}-${si}-${mi}`,
+            reportEditSectionId: sectionId,
+            templateMetricId: m.templateMetricId,
+            metricName: m.metricName,
+            fieldType: m.fieldType,
+            monthlyGoal: m.monthlyGoal,
+            monthlyAchieved: m.monthlyAchieved,
+            yoyGoal: m.yoyGoal,
+            originalMonthlyGoal: m.originalMonthlyGoal,
+            originalMonthlyAchieved: m.originalMonthlyAchieved,
+            originalYoyGoal: m.originalYoyGoal,
+            order: m.order,
+          })),
+        };
+      }
+    );
+
+    const edit: ReportEdit = {
+      id,
+      reportId: data.reportId,
+      submittedById: data.submittedById,
+      status: ReportEditStatus.DRAFT,
+      reason: data.reason,
+      sections,
+      createdAt: now(),
+      updatedAt: now(),
+    };
+
+    reportEdits.push(edit);
+
+    reportEventDb.create({
+      reportId: data.reportId,
+      eventType: ReportEventType.EDIT_SUBMITTED,
+      actorId: data.submittedById,
+      details: { editId: id, reason: data.reason },
+    });
+
+    return edit;
+  },
+
+  submit: (id: string): ReportEdit | undefined => {
+    const idx = reportEdits.findIndex((e) => e.id === id);
+    if (idx === -1) return undefined;
+    if (reportEdits[idx].status !== ReportEditStatus.DRAFT) return undefined;
+
+    reportEdits[idx] = {
+      ...reportEdits[idx],
+      status: ReportEditStatus.SUBMITTED,
+      updatedAt: now(),
+    };
+    return reportEdits[idx];
+  },
+
+  approve: (id: string, reviewerId: string): ReportEdit | undefined => {
+    const idx = reportEdits.findIndex((e) => e.id === id);
+    if (idx === -1) return undefined;
+    if (reportEdits[idx].status !== ReportEditStatus.SUBMITTED) return undefined;
+
+    reportEdits[idx] = {
+      ...reportEdits[idx],
+      status: ReportEditStatus.APPROVED,
+      reviewedById: reviewerId,
+      updatedAt: now(),
+    };
+
+    reportEventDb.create({
+      reportId: reportEdits[idx].reportId,
+      eventType: ReportEventType.EDIT_APPROVED,
+      actorId: reviewerId,
+      details: { editId: id },
+    });
+
+    // Auto-apply the edit to the report
+    reportDb.applyEdit(reportEdits[idx].reportId, id);
+
+    return reportEdits[idx];
+  },
+
+  reject: (
+    id: string,
+    reviewerId: string,
+    reason?: string
+  ): ReportEdit | undefined => {
+    const idx = reportEdits.findIndex((e) => e.id === id);
+    if (idx === -1) return undefined;
+    if (reportEdits[idx].status !== ReportEditStatus.SUBMITTED) return undefined;
+
+    reportEdits[idx] = {
+      ...reportEdits[idx],
+      status: ReportEditStatus.REJECTED,
+      reviewedById: reviewerId,
+      rejectionReason: reason,
+      updatedAt: now(),
+    };
+
+    reportEventDb.create({
+      reportId: reportEdits[idx].reportId,
+      eventType: ReportEventType.EDIT_REJECTED,
+      actorId: reviewerId,
+      details: { editId: id, reason },
+    });
+
+    return reportEdits[idx];
+  },
+
+  count: (filters?: { reportId?: string; status?: ReportEditStatus }): number =>
+    reportEditDb.findAll(filters).length,
+};
+
+// ============================================================================
+// REPORT UPDATE REQUEST OPERATIONS (Post-deadline changes)
+// ============================================================================
+
+export const reportUpdateRequestDb = {
+  findAll: (filters?: {
+    reportId?: string;
+    requestedById?: string;
+    status?: ReportUpdateRequestStatus;
+  }): ReportUpdateRequest[] => {
+    let result = [...reportUpdateRequests];
+    if (filters?.reportId)
+      result = result.filter((r) => r.reportId === filters.reportId);
+    if (filters?.requestedById)
+      result = result.filter((r) => r.requestedById === filters.requestedById);
+    if (filters?.status)
+      result = result.filter((r) => r.status === filters.status);
+    result.sort(
+      (a, b) =>
+        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+    );
+    return result;
+  },
+
+  findById: (id: string): ReportUpdateRequest | undefined =>
+    reportUpdateRequests.find((r) => r.id === id),
+
+  findByReportId: (reportId: string): ReportUpdateRequest[] =>
+    reportUpdateRequests.filter((r) => r.reportId === reportId),
+
+  getWithDetails: (id: string): ReportUpdateRequestWithDetails | undefined => {
+    const request = reportUpdateRequests.find((r) => r.id === id);
+    if (!request) return undefined;
+
+    const report = reports.find((r) => r.id === request.reportId);
+    const requestedBy = users.find((u) => u.id === request.requestedById);
+    const reviewedBy = request.reviewedById
+      ? users.find((u) => u.id === request.reviewedById)
+      : undefined;
+
+    return {
+      ...request,
+      report,
+      requestedBy: requestedBy ? toProfile(requestedBy) : undefined,
+      reviewedBy: reviewedBy ? toProfile(reviewedBy) : undefined,
+    };
+  },
+
+  create: (data: CreateReportUpdateRequestInput): ReportUpdateRequest => {
+    const id = generateId();
+
+    const sections: ReportEditSection[] = (data.sections || []).map(
+      (sec, si) => {
+        const sectionId = `rus-${id}-${si}`;
+        return {
+          id: sectionId,
+          reportEditId: id,
+          templateSectionId: sec.templateSectionId,
+          sectionName: sec.sectionName,
+          order: sec.order,
+          metrics: (sec.metrics || []).map((m, mi) => ({
+            id: `rum-${id}-${si}-${mi}`,
+            reportEditSectionId: sectionId,
+            templateMetricId: m.templateMetricId,
+            metricName: m.metricName,
+            fieldType: m.fieldType,
+            monthlyGoal: m.monthlyGoal,
+            monthlyAchieved: m.monthlyAchieved,
+            yoyGoal: m.yoyGoal,
+            originalMonthlyGoal: m.originalMonthlyGoal,
+            originalMonthlyAchieved: m.originalMonthlyAchieved,
+            originalYoyGoal: m.originalYoyGoal,
+            order: m.order,
+          })),
+        };
+      }
+    );
+
+    const request: ReportUpdateRequest = {
+      id,
+      reportId: data.reportId,
+      requestedById: data.requestedById,
+      reason: data.reason,
+      sections,
+      status: ReportUpdateRequestStatus.PENDING,
+      createdAt: now(),
+      updatedAt: now(),
+    };
+
+    reportUpdateRequests.push(request);
+
+    reportEventDb.create({
+      reportId: data.reportId,
+      eventType: ReportEventType.UPDATE_REQUESTED,
+      actorId: data.requestedById,
+      details: { updateRequestId: id, reason: data.reason },
+    });
+
+    return request;
   },
 
   approve: (
     id: string,
-    approverId: string,
-    notes?: string
-  ): ReportSubmission | undefined => {
-    return reportSubmissionDb.update(id, {
-      status: ReportStatus.APPROVED,
-      approvedById: approverId,
-      approvedAt: now(),
-      approverNotes: notes,
-      isLocked: true,
-    });
-  },
+    reviewerId: string
+  ): ReportUpdateRequest | undefined => {
+    const idx = reportUpdateRequests.findIndex((r) => r.id === id);
+    if (idx === -1) return undefined;
+    if (reportUpdateRequests[idx].status !== ReportUpdateRequestStatus.PENDING)
+      return undefined;
 
-  requestEdits: (
-    id: string,
-    reviewerId: string,
-    notes: string
-  ): ReportSubmission | undefined => {
-    return reportSubmissionDb.update(id, {
-      status: ReportStatus.REQUIRES_EDITS,
+    reportUpdateRequests[idx] = {
+      ...reportUpdateRequests[idx],
+      status: ReportUpdateRequestStatus.APPROVED,
       reviewedById: reviewerId,
-      reviewerNotes: notes,
-      isLocked: false,
+      updatedAt: now(),
+    };
+
+    const req = reportUpdateRequests[idx];
+
+    // Apply the update request changes to the report
+    const rIdx = reports.findIndex((r) => r.id === req.reportId);
+    if (rIdx !== -1) {
+      // Snapshot before applying
+      reportVersionDb.create(
+        req.reportId,
+        reports[rIdx],
+        reviewerId,
+        `Pre-update-request snapshot before request ${id}`
+      );
+
+      // Merge changes
+      for (const urSection of req.sections) {
+        const existingSectionIdx = reports[rIdx].sections.findIndex(
+          (s) => s.templateSectionId === urSection.templateSectionId
+        );
+        if (existingSectionIdx !== -1) {
+          for (const urMetric of urSection.metrics) {
+            const existingMetricIdx = reports[rIdx].sections[
+              existingSectionIdx
+            ].metrics.findIndex(
+              (m) => m.templateMetricId === urMetric.templateMetricId
+            );
+            if (existingMetricIdx !== -1) {
+              reports[rIdx].sections[existingSectionIdx].metrics[
+                existingMetricIdx
+              ] = {
+                ...reports[rIdx].sections[existingSectionIdx].metrics[
+                existingMetricIdx
+                ],
+                monthlyGoal: urMetric.monthlyGoal,
+                monthlyAchieved: urMetric.monthlyAchieved,
+                yoyGoal: urMetric.yoyGoal,
+                computedPercentage:
+                  urMetric.monthlyGoal && urMetric.monthlyAchieved
+                    ? Math.round(
+                      (urMetric.monthlyAchieved / urMetric.monthlyGoal) * 100
+                    )
+                    : undefined,
+              };
+            }
+          }
+        }
+      }
+
+      reports[rIdx] = { ...reports[rIdx], updatedAt: now() };
+    }
+
+    reportEventDb.create({
+      reportId: req.reportId,
+      eventType: ReportEventType.UPDATE_APPROVED,
+      actorId: reviewerId,
+      details: { updateRequestId: id },
     });
+
+    return reportUpdateRequests[idx];
   },
 
-  review: (
+  reject: (
     id: string,
     reviewerId: string,
-    notes?: string
-  ): ReportSubmission | undefined => {
-    return reportSubmissionDb.update(id, {
-      status: ReportStatus.REVIEWED,
+    reason?: string
+  ): ReportUpdateRequest | undefined => {
+    const idx = reportUpdateRequests.findIndex((r) => r.id === id);
+    if (idx === -1) return undefined;
+    if (reportUpdateRequests[idx].status !== ReportUpdateRequestStatus.PENDING)
+      return undefined;
+
+    reportUpdateRequests[idx] = {
+      ...reportUpdateRequests[idx],
+      status: ReportUpdateRequestStatus.REJECTED,
       reviewedById: reviewerId,
-      reviewedAt: now(),
-      reviewerNotes: notes,
+      rejectionReason: reason,
+      updatedAt: now(),
+    };
+
+    reportEventDb.create({
+      reportId: reportUpdateRequests[idx].reportId,
+      eventType: ReportEventType.UPDATE_REJECTED,
+      actorId: reviewerId,
+      details: { updateRequestId: id, reason },
     });
-  },
 
-  finalize: (
-    id: string,
-    reviewerId: string,
-    reviewerRole: string
-  ): ReportSubmission | undefined => {
-    return reportSubmissionDb.update(id, {
-      status: ReportStatus.FINALIZED,
-      finalReviewedById: reviewerId,
-      finalReviewedAt: now(),
-      finalReviewerRole: reviewerRole,
-      isLocked: true,
-    });
-  },
-
-  delete: (id: string): boolean => {
-    const idx = reportSubmissions.findIndex((rs) => rs.id === id);
-    if (idx === -1) return false;
-    reportSubmissions.splice(idx, 1);
-    return true;
-  },
-
-  count: (filters?: ReportSubmissionFilters): number =>
-    reportSubmissionDb.findAll(filters).length,
-};
-
-// ============================================================================
-// METRIC ENTRY OPERATIONS
-// ============================================================================
-
-export const metricEntryDb = {
-  findAll: (filters?: {
-    reportSubmissionId?: string;
-    keyMetricId?: string;
-    strategicIndicatorId?: string;
-  }): MetricEntry[] => {
-    let result = [...metricEntries];
-    if (filters?.reportSubmissionId)
-      result = result.filter(
-        (me) => me.reportSubmissionId === filters.reportSubmissionId
-      );
-    if (filters?.keyMetricId)
-      result = result.filter((me) => me.keyMetricId === filters.keyMetricId);
-    if (filters?.strategicIndicatorId)
-      result = result.filter(
-        (me) => me.strategicIndicatorId === filters.strategicIndicatorId
-      );
-    return result;
-  },
-
-  findById: (id: string): MetricEntry | undefined =>
-    metricEntries.find((me) => me.id === id),
-
-  findBySubmission: (reportSubmissionId: string): MetricEntry[] =>
-    metricEntries.filter((me) => me.reportSubmissionId === reportSubmissionId),
-
-  create: (
-    data: CreateMetricEntryInput & { reportSubmissionId: string }
-  ): MetricEntry => {
-    const goal = data.monthlyGoal ?? 0;
-    const achieved = data.monthlyAchieved ?? 0;
-    const performancePercentage =
-      goal > 0 ? Math.round((achieved / goal) * 1000) / 10 : 0;
-    const variance = achieved - goal;
-
-    const entry: MetricEntry = {
-      ...data,
-      id: generateId(),
-      performancePercentage,
-      variance,
-      monthlyGoalLocked: false,
-      monthlyAchievedLocked: false,
-      yearOnYearGoalLocked: false,
-      lastSavedAt: now(),
-      createdAt: now(),
-      updatedAt: now(),
-    };
-    metricEntries.push(entry);
-    return entry;
-  },
-
-  update: (id: string, data: Partial<MetricEntry>): MetricEntry | undefined => {
-    const idx = metricEntries.findIndex((me) => me.id === id);
-    if (idx === -1) return undefined;
-
-    const updated = {
-      ...metricEntries[idx],
-      ...data,
-      updatedAt: now(),
-      lastSavedAt: now(),
-    };
-
-    // Recalculate performance if goal/achieved changed
-    const goal = updated.monthlyGoal ?? 0;
-    const achieved = updated.monthlyAchieved ?? 0;
-    if (goal > 0) {
-      updated.performancePercentage = Math.round((achieved / goal) * 1000) / 10;
-      updated.variance = achieved - goal;
-    }
-
-    metricEntries[idx] = updated;
-    return metricEntries[idx];
-  },
-
-  delete: (id: string): boolean => {
-    const idx = metricEntries.findIndex((me) => me.id === id);
-    if (idx === -1) return false;
-    metricEntries.splice(idx, 1);
-    return true;
-  },
-
-  deleteBySubmission: (reportSubmissionId: string): number => {
-    const toRemove = metricEntries.filter(
-      (me) => me.reportSubmissionId === reportSubmissionId
-    );
-    toRemove.forEach((me) => {
-      const idx = metricEntries.findIndex((e) => e.id === me.id);
-      if (idx !== -1) metricEntries.splice(idx, 1);
-    });
-    return toRemove.length;
-  },
-};
-
-// ============================================================================
-// REPORT COMMENT OPERATIONS
-// ============================================================================
-
-export const reportCommentDb = {
-  findAll: (filters?: {
-    reportSubmissionId?: string;
-    userId?: string;
-    commentType?: string;
-  }): ReportComment[] => {
-    let result = [...reportComments];
-    if (filters?.reportSubmissionId)
-      result = result.filter(
-        (rc) => rc.reportSubmissionId === filters.reportSubmissionId
-      );
-    if (filters?.userId)
-      result = result.filter((rc) => rc.userId === filters.userId);
-    if (filters?.commentType)
-      result = result.filter((rc) => rc.commentType === filters.commentType);
-    return result.sort(
-      (a, b) =>
-        new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
-    );
-  },
-
-  findById: (id: string): ReportComment | undefined =>
-    reportComments.find((rc) => rc.id === id),
-
-  findBySubmission: (reportSubmissionId: string): ReportComment[] =>
-    reportComments
-      .filter((rc) => rc.reportSubmissionId === reportSubmissionId)
-      .sort(
-        (a, b) =>
-          new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
-      ),
-
-  create: (
-    data: CreateReportCommentInput & {
-      reportSubmissionId: string;
-      userId: string;
-      userRole: string;
-    }
-  ): ReportComment => {
-    const comment: ReportComment = {
-      ...data,
-      id: generateId(),
-      isInternal: data.isInternal ?? false,
-      createdAt: now(),
-      updatedAt: now(),
-    };
-    reportComments.push(comment);
-    return comment;
-  },
-
-  update: (
-    id: string,
-    data: Partial<ReportComment>
-  ): ReportComment | undefined => {
-    const idx = reportComments.findIndex((rc) => rc.id === id);
-    if (idx === -1) return undefined;
-    reportComments[idx] = { ...reportComments[idx], ...data, updatedAt: now() };
-    return reportComments[idx];
-  },
-
-  delete: (id: string): boolean => {
-    const idx = reportComments.findIndex((rc) => rc.id === id);
-    if (idx === -1) return false;
-    reportComments.splice(idx, 1);
-    return true;
-  },
-};
-
-// ============================================================================
-// REFERRAL LINK OPERATIONS
-// ============================================================================
-
-export const referralLinkDb = {
-  findAll: (filters?: {
-    createdById?: string;
-    isActive?: boolean;
-    isUsed?: boolean;
-    assignedRole?: string;
-  }): ReferralLink[] => {
-    let result = [...referralLinks];
-    if (filters?.createdById)
-      result = result.filter((rl) => rl.createdById === filters.createdById);
-    if (filters?.isActive !== undefined)
-      result = result.filter((rl) => rl.isActive === filters.isActive);
-    if (filters?.isUsed !== undefined)
-      result = result.filter((rl) => rl.isUsed === filters.isUsed);
-    if (filters?.assignedRole)
-      result = result.filter((rl) => rl.assignedRole === filters.assignedRole);
-    return result.sort(
-      (a, b) =>
-        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-    );
-  },
-
-  findById: (id: string): ReferralLink | undefined =>
-    referralLinks.find((rl) => rl.id === id),
-
-  findByCode: (code: string): ReferralLink | undefined =>
-    referralLinks.find((rl) => rl.code === code),
-
-  create: (
-    data: CreateReferralLinkInput & {
-      createdById: string;
-      createdByRole: string;
-    }
-  ): ReferralLink => {
-    const expiresAt = data.expiresInDays
-      ? new Date(Date.now() + data.expiresInDays * 86400000).toISOString()
-      : undefined;
-
-    const link: ReferralLink = {
-      id: generateId(),
-      code: generateCode() + "-" + generateCode(),
-      createdById: data.createdById,
-      createdByRole: data.createdByRole,
-      assignedRole: data.assignedRole,
-      organizationalLevelType: data.organizationalLevelType,
-      organizationalUnitId: data.organizationalUnitId,
-      isUsed: false,
-      isActive: true,
-      expiresAt,
-      createdAt: now(),
-      updatedAt: now(),
-    };
-    referralLinks.push(link);
-    return link;
-  },
-
-  markUsed: (code: string, userId: string): ReferralLink | undefined => {
-    const link = referralLinks.find((rl) => rl.code === code);
-    if (!link) return undefined;
-    link.isUsed = true;
-    link.usedById = userId;
-    link.usedAt = now();
-    link.updatedAt = now();
-    return link;
-  },
-
-  deactivate: (id: string): ReferralLink | undefined => {
-    const idx = referralLinks.findIndex((rl) => rl.id === id);
-    if (idx === -1) return undefined;
-    referralLinks[idx] = {
-      ...referralLinks[idx],
-      isActive: false,
-      updatedAt: now(),
-    };
-    return referralLinks[idx];
-  },
-
-  validate: (
-    code: string
-  ): { valid: boolean; link?: ReferralLink; error?: string } => {
-    const link = referralLinks.find((rl) => rl.code === code);
-    if (!link) return { valid: false, error: "Invalid referral code" };
-    if (link.isUsed)
-      return { valid: false, error: "Referral code already used" };
-    if (!link.isActive)
-      return { valid: false, error: "Referral code is inactive" };
-    if (link.expiresAt && new Date() > new Date(link.expiresAt)) {
-      return { valid: false, error: "Referral code has expired" };
-    }
-    return { valid: true, link };
-  },
-
-  delete: (id: string): boolean => {
-    const idx = referralLinks.findIndex((rl) => rl.id === id);
-    if (idx === -1) return false;
-    referralLinks.splice(idx, 1);
-    return true;
+    return reportUpdateRequests[idx];
   },
 
   count: (filters?: {
-    createdById?: string;
-    isActive?: boolean;
-    isUsed?: boolean;
-  }): number => referralLinkDb.findAll(filters).length,
+    reportId?: string;
+    status?: ReportUpdateRequestStatus;
+  }): number => reportUpdateRequestDb.findAll(filters).length,
 };
 
 // ============================================================================
-// REPORT NOTIFICATION OPERATIONS
-// ============================================================================
-
-export const reportNotificationDb = {
-  findAll: (filters?: {
-    userId?: string;
-    isRead?: boolean;
-    notificationType?: string;
-  }): ReportNotification[] => {
-    let result = [...reportNotifications];
-    if (filters?.userId)
-      result = result.filter((rn) => rn.userId === filters.userId);
-    if (filters?.isRead !== undefined)
-      result = result.filter((rn) => rn.isRead === filters.isRead);
-    if (filters?.notificationType)
-      result = result.filter(
-        (rn) => rn.notificationType === filters.notificationType
-      );
-    return result.sort(
-      (a, b) =>
-        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-    );
-  },
-
-  findById: (id: string): ReportNotification | undefined =>
-    reportNotifications.find((rn) => rn.id === id),
-
-  findByUser: (userId: string): ReportNotification[] =>
-    reportNotifications
-      .filter((rn) => rn.userId === userId)
-      .sort(
-        (a, b) =>
-          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-      ),
-
-  create: (
-    data: Omit<ReportNotification, "id" | "createdAt">
-  ): ReportNotification => {
-    const notification: ReportNotification = {
-      ...data,
-      id: generateId(),
-      createdAt: now(),
-    };
-    reportNotifications.push(notification);
-    return notification;
-  },
-
-  markRead: (id: string): ReportNotification | undefined => {
-    const idx = reportNotifications.findIndex((rn) => rn.id === id);
-    if (idx === -1) return undefined;
-    reportNotifications[idx] = {
-      ...reportNotifications[idx],
-      isRead: true,
-      readAt: now(),
-    };
-    return reportNotifications[idx];
-  },
-
-  markAllRead: (userId: string): number => {
-    let count = 0;
-    reportNotifications.forEach((rn, idx) => {
-      if (rn.userId === userId && !rn.isRead) {
-        reportNotifications[idx] = { ...rn, isRead: true, readAt: now() };
-        count++;
-      }
-    });
-    return count;
-  },
-
-  countUnread: (userId: string): number =>
-    reportNotifications.filter((rn) => rn.userId === userId && !rn.isRead)
-      .length,
-
-  delete: (id: string): boolean => {
-    const idx = reportNotifications.findIndex((rn) => rn.id === id);
-    if (idx === -1) return false;
-    reportNotifications.splice(idx, 1);
-    return true;
-  },
-};
-
-// ============================================================================
-// STRATEGIC INDICATOR OPERATIONS
-// ============================================================================
-
-export const strategicIndicatorDb = {
-  findAll: (filters?: {
-    category?: string;
-    isActive?: boolean;
-  }): StrategicIndicator[] => {
-    let result = [...strategicIndicators];
-    if (filters?.category)
-      result = result.filter((si) => si.category === filters.category);
-    if (filters?.isActive !== undefined)
-      result = result.filter((si) => si.isActive === filters.isActive);
-    return result.sort((a, b) => a.displayOrder - b.displayOrder);
-  },
-
-  findById: (id: string): StrategicIndicator | undefined =>
-    strategicIndicators.find((si) => si.id === id),
-
-  create: (
-    data: Omit<StrategicIndicator, "id" | "createdAt" | "updatedAt">
-  ): StrategicIndicator => {
-    const indicator: StrategicIndicator = {
-      ...data,
-      id: generateId(),
-      createdAt: now(),
-      updatedAt: now(),
-    };
-    strategicIndicators.push(indicator);
-    return indicator;
-  },
-
-  update: (
-    id: string,
-    data: Partial<StrategicIndicator>
-  ): StrategicIndicator | undefined => {
-    const idx = strategicIndicators.findIndex((si) => si.id === id);
-    if (idx === -1) return undefined;
-    strategicIndicators[idx] = {
-      ...strategicIndicators[idx],
-      ...data,
-      updatedAt: now(),
-    };
-    return strategicIndicators[idx];
-  },
-
-  delete: (id: string): boolean => {
-    const idx = strategicIndicators.findIndex((si) => si.id === id);
-    if (idx === -1) return false;
-    strategicIndicators.splice(idx, 1);
-    return true;
-  },
-};
-
-// ============================================================================
-// KEY METRIC OPERATIONS
-// ============================================================================
-
-export const keyMetricDb = {
-  findAll: (filters?: {
-    strategicIndicatorId?: string;
-    isActive?: boolean;
-  }): KeyMetric[] => {
-    let result = [...keyMetrics];
-    if (filters?.strategicIndicatorId)
-      result = result.filter(
-        (km) => km.strategicIndicatorId === filters.strategicIndicatorId
-      );
-    if (filters?.isActive !== undefined)
-      result = result.filter((km) => km.isActive === filters.isActive);
-    return result.sort((a, b) => a.displayOrder - b.displayOrder);
-  },
-
-  findById: (id: string): KeyMetric | undefined =>
-    keyMetrics.find((km) => km.id === id),
-
-  findByIndicator: (strategicIndicatorId: string): KeyMetric[] =>
-    keyMetrics
-      .filter((km) => km.strategicIndicatorId === strategicIndicatorId)
-      .sort((a, b) => a.displayOrder - b.displayOrder),
-
-  create: (
-    data: Omit<KeyMetric, "id" | "createdAt" | "updatedAt">
-  ): KeyMetric => {
-    const metric: KeyMetric = {
-      ...data,
-      id: generateId(),
-      createdAt: now(),
-      updatedAt: now(),
-    };
-    keyMetrics.push(metric);
-    return metric;
-  },
-
-  update: (id: string, data: Partial<KeyMetric>): KeyMetric | undefined => {
-    const idx = keyMetrics.findIndex((km) => km.id === id);
-    if (idx === -1) return undefined;
-    keyMetrics[idx] = { ...keyMetrics[idx], ...data, updatedAt: now() };
-    return keyMetrics[idx];
-  },
-
-  delete: (id: string): boolean => {
-    const idx = keyMetrics.findIndex((km) => km.id === id);
-    if (idx === -1) return false;
-    keyMetrics.splice(idx, 1);
-    return true;
-  },
-};
-
-// ============================================================================
-// REPORT ANALYTICS OPERATIONS
+// REPORT ANALYTICS HELPERS
 // ============================================================================
 
 export const reportAnalyticsDb = {
-  /** Get compliance metrics for a given time period and organizational unit */
-  getComplianceMetrics: (filters?: {
-    organizationalUnitId?: string;
-    reportYear?: number;
-    reportMonth?: number;
-  }): ReportComplianceMetrics => {
-    let submissions = [...reportSubmissions];
-    if (filters?.organizationalUnitId) {
-      submissions = submissions.filter(
-        (rs) => rs.organizationalUnitId === filters.organizationalUnitId
-      );
-    }
-    if (filters?.reportYear) {
-      submissions = submissions.filter(
-        (rs) => rs.reportYear === filters.reportYear
-      );
-    }
-    if (filters?.reportMonth) {
-      submissions = submissions.filter(
-        (rs) => rs.reportMonth === filters.reportMonth
-      );
-    }
+  /** Get dashboard stats for reports, scoped by campus or church-wide */
+  getDashboardStats: (campusId?: string): ReportDashboardStats => {
+    let scoped = [...reports];
+    if (campusId) scoped = scoped.filter((r) => r.campusId === campusId);
 
-    const totalSubmitted = submissions.length;
-    const approved = submissions.filter((s) =>
-      [
-        ReportStatus.APPROVED,
-        ReportStatus.REVIEWED,
-        ReportStatus.FINALIZED,
-      ].includes(s.status)
+    const total = scoped.length;
+    const submitted = scoped.filter(
+      (r) => r.status === ReportStatus.SUBMITTED
     ).length;
-    const pending = submissions.filter((s) =>
-      [ReportStatus.DRAFT, ReportStatus.SUBMITTED].includes(s.status)
+    const approved = scoped.filter(
+      (r) => r.status === ReportStatus.APPROVED
     ).length;
-    const needsEdits = submissions.filter(
-      (s) => s.status === ReportStatus.REQUIRES_EDITS
+    const draft = scoped.filter(
+      (r) => r.status === ReportStatus.DRAFT
     ).length;
-
-    // Estimate expected: assume 1 per campus per week-type report
-    const weeklyTypes = reportTypes.filter(
-      (rt) => rt.frequency === ReportFrequency.WEEKLY
+    const requiresEdits = scoped.filter(
+      (r) => r.status === ReportStatus.REQUIRES_EDITS
     ).length;
-    const totalExpected = CAMPUS_IDS_COUNT * weeklyTypes * 4; // ~4 weeks per month
-    const onTime = approved;
-    const late = needsEdits;
-    const missing = Math.max(0, totalExpected - totalSubmitted);
-    const complianceRate =
-      totalExpected > 0
-        ? Math.round((totalSubmitted / totalExpected) * 100)
-        : 0;
+    const locked = scoped.filter(
+      (r) => r.status === ReportStatus.LOCKED
+    ).length;
+    const overdue = scoped.filter(
+      (r) =>
+        r.status === ReportStatus.DRAFT &&
+        r.deadline &&
+        new Date(r.deadline).getTime() < Date.now()
+    ).length;
 
     return {
-      totalExpected,
-      totalSubmitted,
-      onTime,
-      late,
-      pending,
-      missing,
-      complianceRate,
+      totalReports: total,
+      submittedReports: submitted,
+      approvedReports: approved,
+      draftReports: draft,
+      requiresEditsReports: requiresEdits,
+      lockedReports: locked,
+      overdueReports: overdue,
+      complianceRate:
+        total > 0
+          ? Math.round(
+            ((approved + locked + submitted) / total) * 100
+          )
+          : 0,
     };
   },
 
-  /** Get analytics overview with submission counts by status */
-  getOverview: (): ReportAnalyticsOverview => {
-    // Get compliance metrics
-    const compliance = reportAnalyticsDb.getComplianceMetrics({});
-
-    // Calculate top performers (simplified placeholder)
-    const topPerformers: ReportPerformanceMetrics[] = [];
-
-    // Calculate areas needing support (simplified placeholder)
-    const areasNeedingSupport: ReportPerformanceMetrics[] = [];
-
-    // Submissions by status
-    const byStatus: Record<string, number> = {};
-    for (const rs of reportSubmissions) {
-      byStatus[rs.status] = (byStatus[rs.status] ?? 0) + 1;
-    }
-
-    // Trend data (last 6 months)
-    const now = new Date();
-    const trendData = Array.from({ length: 6 }, (_, i) => {
-      const month = new Date(now.getFullYear(), now.getMonth() - (5 - i), 1);
-      const monthNum = month.getMonth() + 1;
-      const yearNum = month.getFullYear();
-      const monthSubmissions = reportSubmissions.filter(
-        (rs) => rs.reportMonth === monthNum && rs.reportYear === yearNum
+  /** Compliance summary across all campuses */
+  getComplianceSummary: (): ReportComplianceSummary[] => {
+    const campusList = [...campuses];
+    return campusList.map((campus) => {
+      const campusReports = reports.filter(
+        (r) => r.campusId === campus.id
       );
-      const expectedCount = 10; // Simplified estimate
-      const submissions = monthSubmissions.length;
-      const complianceRate = expectedCount > 0 
-        ? Math.round((submissions / expectedCount) * 100) 
-        : 0;
+      const total = campusReports.length;
+      const onTime = campusReports.filter(
+        (r) =>
+          r.deadline &&
+          r.status !== ReportStatus.DRAFT &&
+          new Date(r.updatedAt || r.createdAt).getTime() <=
+          new Date(r.deadline).getTime()
+      ).length;
+      const late = campusReports.filter(
+        (r) =>
+          r.deadline &&
+          r.status !== ReportStatus.DRAFT &&
+          new Date(r.updatedAt || r.createdAt).getTime() >
+          new Date(r.deadline).getTime()
+      ).length;
+      const missing = campusReports.filter(
+        (r) =>
+          r.status === ReportStatus.DRAFT &&
+          r.deadline &&
+          new Date(r.deadline).getTime() < Date.now()
+      ).length;
 
       return {
-        period: month.toLocaleDateString('en-US', { month: 'short', year: 'numeric' }),
-        submissions,
-        complianceRate,
+        campusId: campus.id,
+        campusName: campus.name,
+        totalExpected: total || 1,
+        submitted: onTime + late,
+        onTime,
+        late,
+        missing,
+        compliancePercentage:
+          total > 0 ? Math.round(((onTime + late) / total) * 100) : 0,
       };
     });
+  },
 
-    return {
-      compliance,
-      topPerformers,
-      areasNeedingSupport,
-      submissionsByStatus: byStatus,
-      trendData,
-    };
+  /** Metric aggregates for analytics dashboards */
+  getMetricAggregates: (filters?: {
+    campusId?: string;
+    periodYear?: number;
+    periodMonth?: number;
+    metricName?: string;
+  }): ReportAnalytics[] => {
+    let scoped = reports.filter(
+      (r) =>
+        r.status === ReportStatus.APPROVED ||
+        r.status === ReportStatus.REVIEWED ||
+        r.status === ReportStatus.LOCKED
+    );
+    if (filters?.campusId)
+      scoped = scoped.filter((r) => r.campusId === filters.campusId);
+    if (filters?.periodYear)
+      scoped = scoped.filter((r) => r.periodYear === filters.periodYear);
+    if (filters?.periodMonth)
+      scoped = scoped.filter((r) => r.periodMonth === filters.periodMonth);
+
+    // Aggregate metrics across all matching reports
+    const metricMap = new Map<
+      string,
+      { totalGoal: number; totalAchieved: number; totalYoY: number; count: number }
+    >();
+
+    for (const report of scoped) {
+      for (const section of report.sections) {
+        for (const metric of section.metrics) {
+          if (filters?.metricName && metric.metricName !== filters.metricName)
+            continue;
+          const key = metric.metricName;
+          const existing = metricMap.get(key) || {
+            totalGoal: 0,
+            totalAchieved: 0,
+            totalYoY: 0,
+            count: 0,
+          };
+          metricMap.set(key, {
+            totalGoal: existing.totalGoal + (metric.monthlyGoal || 0),
+            totalAchieved:
+              existing.totalAchieved + (metric.monthlyAchieved || 0),
+            totalYoY: existing.totalYoY + (metric.yoyGoal || 0),
+            count: existing.count + 1,
+          });
+        }
+      }
+    }
+
+    const results: ReportAnalytics[] = [];
+    metricMap.forEach((agg, metricName) => {
+      results.push({
+        metricName,
+        totalGoal: agg.totalGoal,
+        totalAchieved: agg.totalAchieved,
+        achievementRate:
+          agg.totalGoal > 0
+            ? Math.round((agg.totalAchieved / agg.totalGoal) * 100)
+            : 0,
+        yoyGrowth:
+          agg.totalYoY > 0
+            ? Math.round(
+              ((agg.totalAchieved - agg.totalYoY) / agg.totalYoY) * 100
+            )
+            : 0,
+        reportCount: agg.count,
+      });
+    });
+
+    return results.sort((a, b) => b.reportCount - a.reportCount);
   },
 };
-
-// Count of campus IDs for expected calculation
-const CAMPUS_IDS_COUNT = 3;
 
 // ============================================================================
 // Combined Database Export (for backward compatibility)
@@ -2296,6 +2961,7 @@ const CAMPUS_IDS_COUNT = 3;
 export const db = {
   users: userDb,
   zones: zoneDb,
+  orgGroups: orgGroupDb,
   campuses: campusDb,
   departments: departmentDb,
   groups: groupDb,
@@ -2309,13 +2975,12 @@ export const db = {
   inviteLinks: inviteLinkDb,
   inviteLinkVisits: inviteLinkVisitDb,
   analytics: analyticsDb,
-  reportTypes: reportTypeDb,
-  reportSubmissions: reportSubmissionDb,
-  metricEntries: metricEntryDb,
-  reportComments: reportCommentDb,
-  referralLinks: referralLinkDb,
-  reportNotifications: reportNotificationDb,
-  strategicIndicators: strategicIndicatorDb,
-  keyMetrics: keyMetricDb,
+  reportTemplates: reportTemplateDb,
+  reportTemplateVersions: reportTemplateVersionDb,
+  reports: reportDb,
+  reportEvents: reportEventDb,
+  reportVersions: reportVersionDb,
+  reportEdits: reportEditDb,
+  reportUpdateRequests: reportUpdateRequestDb,
   reportAnalytics: reportAnalyticsDb,
 };

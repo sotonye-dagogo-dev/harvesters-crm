@@ -56,7 +56,7 @@ export async function GET(request: NextRequest) {
       filter.zoneId = user.zoneId;
       if (campusId) {
         const campus = campusDb.findById(campusId);
-        if (campus?.zoneId === user.zoneId) {
+        if (campus?.parentId === user.zoneId) {
           filter.campusId = campusId;
         }
       }
@@ -65,7 +65,7 @@ export async function GET(request: NextRequest) {
         const campus = department?.campusId
           ? campusDb.findById(department.campusId)
           : null;
-        if (campus?.zoneId === user.zoneId) {
+        if (campus?.parentId === user.zoneId) {
           filter.departmentId = departmentId;
         }
       }
@@ -74,7 +74,7 @@ export async function GET(request: NextRequest) {
         const campus = group?.campusId
           ? campusDb.findById(group.campusId)
           : null;
-        if (campus?.zoneId === user.zoneId) {
+        if (campus?.parentId === user.zoneId) {
           filter.groupId = groupId;
         }
       }
@@ -84,7 +84,7 @@ export async function GET(request: NextRequest) {
         const campus = group?.campusId
           ? campusDb.findById(group.campusId)
           : null;
-        if (campus?.zoneId === user.zoneId) {
+        if (campus?.parentId === user.zoneId) {
           filter.cellId = cellId;
         }
       }

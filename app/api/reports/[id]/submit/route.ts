@@ -1,93 +1,69 @@
 import { NextRequest } from "next/server";
-import {
-  reportSubmissionDb,
-  reportTypeDb,
-  reportNotificationDb,
-} from "@/lib/data/database";
+import { reportDb, reportTemplateDb } from "@/lib/data/database";
 import { getAuthenticatedUser } from "@/lib/utils/middleware";
 import {
-  successResponse,
-  notFoundResponse,
-  badRequestResponse,
-  forbiddenResponse,
-  handleApiError,
+    successResponse,
+    notFoundResponse,
+    badRequestResponse,
+    forbiddenResponse,
+    handleApiError,
 } from "@/lib/utils/api";
-import { ReportStatus, ReportNotificationKind } from "@/lib/types";
+import { USER_ROLES } from "@/lib/constants";
+import { ReportStatus } from "@/lib/types";
+import { sendReportSubmittedNotification } from "@/lib/utils/notificationHelpers";
+import { validateReportForSubmission } from "@/lib/utils/reportFieldUtils";
 
-interface RouteParams {
-  params: Promise<{ id: string }>;
-}
+// POST /api/reports/:id/submit — Submit a report for review
+export async function POST(
+    _request: NextRequest,
+    { params }: { params: Promise<{ id: string }> }
+) {
+    try {
+        const { id } = await params;
+        const { user, error } = await getAuthenticatedUser();
+        if (error) return error;
 
-// POST /api/reports/[id]/submit — Submit a draft report for review
-export async function POST(request: NextRequest, { params }: RouteParams) {
-  try {
-    const { user, error } = await getAuthenticatedUser();
-    if (error) return error;
-    if (!user) return forbiddenResponse("Authentication required.");
+        const report = reportDb.findById(id);
+        if (!report) return notFoundResponse("Report not found");
 
-    const { id } = await params;
-    const existing = reportSubmissionDb.findById(id);
+        // Only submitter can submit
+        if (
+            report.submittedById !== user!.id &&
+            user!.role !== USER_ROLES.SUPERADMIN
+        ) {
+            return forbiddenResponse("You can only submit your own reports.");
+        }
 
-    if (!existing) {
-      return notFoundResponse("Report submission not found.");
+        if (
+            report.status !== ReportStatus.DRAFT &&
+            report.status !== ReportStatus.REQUIRES_EDITS
+        ) {
+            return badRequestResponse(
+                "Only draft or requires-edits reports can be submitted."
+            );
+        }
+
+        // Validate required fields against the report template (FR17)
+        const template = reportTemplateDb.findById(report.templateId);
+        if (template) {
+            const validation = validateReportForSubmission(report, template);
+            if (!validation.isValid) {
+                return badRequestResponse(
+                    `Report has ${validation.errors.length} validation error(s): ${validation.errors
+                        .map((e) => e.message)
+                        .join("; ")}`
+                );
+            }
+        }
+
+        const updated = reportDb.submit(id, user!.id);
+        if (!updated) return badRequestResponse("Failed to submit report.");
+
+        // Send notifications to approvers
+        await sendReportSubmittedNotification(id, user!.id);
+
+        return successResponse(updated, "Report submitted successfully");
+    } catch (err) {
+        return handleApiError(err);
     }
-
-    if (existing.submittedById !== user.id) {
-      return forbiddenResponse("You can only submit your own reports.");
-    }
-
-    if (
-      ![ReportStatus.DRAFT, ReportStatus.REQUIRES_EDITS].includes(
-        existing.status
-      )
-    ) {
-      return badRequestResponse(
-        "Only draft or edited reports can be submitted."
-      );
-    }
-
-    // Validate that required form data is filled
-    const reportType = reportTypeDb.findById(existing.reportTypeId);
-    if (reportType) {
-      const requiredFields = reportType.formDefinition.sections
-        .flatMap((s) => s.fields)
-        .filter((f) => f.isRequired);
-
-      const formData = existing.formData as Record<string, unknown>;
-      const missingFields = requiredFields.filter((f) => {
-        const val = formData[f.name];
-        return val === undefined || val === null || val === "";
-      });
-
-      if (missingFields.length > 0) {
-        return badRequestResponse(
-          `Please fill in required fields: ${missingFields.map((f) => f.label).join(", ")}`
-        );
-      }
-    }
-
-    const updated = reportSubmissionDb.submit(id);
-
-    if (!updated) {
-      return badRequestResponse("Failed to submit report.");
-    }
-
-    // Create notification for reviewers
-    if (reportType) {
-      // Notify reviewers (in a real app, we'd find users with reviewer roles)
-      reportNotificationDb.create({
-        userId: existing.submittedById, // In real app, would be reviewer
-        reportSubmissionId: id,
-        notificationType: ReportNotificationKind.REPORT_SUBMITTED,
-        title: "Report Submitted",
-        message: `A ${reportType.name} report has been submitted for review.`,
-        isRead: false,
-        emailSent: false,
-      });
-    }
-
-    return successResponse(updated, "Report submitted for review.");
-  } catch (error) {
-    return handleApiError(error);
-  }
 }

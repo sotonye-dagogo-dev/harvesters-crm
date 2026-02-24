@@ -5,10 +5,11 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/providers/AuthProvider";
 import DashboardLayout from "@/components/features/navigation/DashboardLayout";
-import { Form, Input, Select, Button, Card, message, Spin } from "antd";
+import { Form, Select, message, Spin } from "antd";
+import Button from "@/components/ui/Button";
+import Card from "@/components/ui/Card";
+import Input, { TextArea } from "@/components/ui/Input";
 import { SaveOutlined } from "@ant-design/icons";
-
-const { TextArea } = Input;
 
 export default function EditGroupPage({ params }: { params: { id: string } }) {
   const router = useRouter();
@@ -112,11 +113,10 @@ export default function EditGroupPage({ params }: { params: { id: string } }) {
       <DashboardLayout role={UserRole.SUPERADMIN}>
         <div className="flex items-center justify-center min-h-[60vh]">
           <Card>
-            <p className="text-gray-500">
+            <p className="text-ds-text-subtle">
               You don&apos;t have permission to edit this group
             </p>
             <Button
-              type="primary"
               onClick={() => router.push(`/superadmin/groups/${params.id}`)}
             >
               Back to Group
@@ -131,8 +131,8 @@ export default function EditGroupPage({ params }: { params: { id: string } }) {
     <DashboardLayout role={UserRole.SUPERADMIN}>
       <div className="max-w-2xl mx-auto space-y-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Edit Group</h1>
-          <p className="text-gray-500 mt-1">
+          <h1 className="text-2xl font-bold text-ds-text-primary">Edit Group</h1>
+          <p className="text-ds-text-subtle mt-1">
             Update fellowship group information
           </p>
         </div>
@@ -186,12 +186,12 @@ export default function EditGroupPage({ params }: { params: { id: string } }) {
 
             <div className="flex gap-2 justify-end">
               <Button
+                variant="secondary"
                 onClick={() => router.push(`/superadmin/groups/${params.id}`)}
               >
                 Cancel
               </Button>
               <Button
-                type="primary"
                 htmlType="submit"
                 icon={<SaveOutlined />}
                 loading={submitting}

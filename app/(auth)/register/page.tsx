@@ -5,13 +5,13 @@ import { ThemeToggle } from "@/components/ui/ThemeToggle";
 import { Spin } from "antd";
 
 export const metadata: Metadata = {
-  title: "Register - Church Fellowship CRM",
+  title: "Register - Harvesters Church CRM",
   description: "Create your church fellowship account",
 };
 
 export default function RegisterPage() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-church-primary/10 to-church-accent/10 dark:from-slate-900 dark:to-slate-800 p-4 py-12">
+    <div className="min-h-screen flex items-center justify-center bg-ds-surface-base p-4 py-12">
       {/* Theme Toggle - Fixed Position */}
       <div className="fixed top-4 right-4 z-50">
         <ThemeToggle />

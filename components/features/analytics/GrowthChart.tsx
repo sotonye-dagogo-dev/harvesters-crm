@@ -1,6 +1,7 @@
 "use client";
 
-import { Card, Empty } from "antd";
+import { Empty } from "antd";
+import Card from "@/components/ui/Card";
 import { CHART_COLORS } from "@/lib/constants";
 import {
   LineChart,
@@ -69,12 +70,12 @@ export default function GrowthChart({
           dataKey="period"
           tick={{ fontSize: 12 }}
           stroke="currentColor"
-          className="text-gray-600 dark:text-gray-400"
+          className="text-ds-text-secondary"
         />
         <YAxis
           tick={{ fontSize: 12 }}
           stroke="currentColor"
-          className="text-gray-600 dark:text-gray-400"
+          className="text-ds-text-secondary"
         />
         <Tooltip
           contentStyle={{
@@ -179,7 +180,7 @@ export default function GrowthChart({
     <Card
       title={title}
       extra={
-        subtitle && <span className="text-sm text-gray-500">{subtitle}</span>
+        subtitle && <span className="text-sm text-ds-text-subtle">{subtitle}</span>
       }
       className="shadow-md"
     >

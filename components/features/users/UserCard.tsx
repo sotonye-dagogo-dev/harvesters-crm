@@ -1,5 +1,5 @@
 import { UserRole } from "@/lib/types";
-import { Card } from "antd";
+import Card from "@/components/ui/Card";
 import { MailOutlined, PhoneOutlined } from "@ant-design/icons";
 import Link from "next/link";
 
@@ -29,21 +29,21 @@ export default function UserCard({
   const getRoleBadgeColor = (role: UserRole) => {
     switch (role) {
       case UserRole.SUPERADMIN:
-        return "bg-red-100 text-red-800";
+        return "bg-ds-status-error/10 text-ds-status-error";
       case UserRole.ZONAL_LEADER:
-        return "bg-purple-100 text-purple-800";
+        return "bg-ds-chart-3/10 text-purple-800";
       case UserRole.CAMPUS_ADMIN:
-        return "bg-indigo-100 text-indigo-800";
+        return "bg-ds-brand-accent-subtle text-ds-brand-accent";
       case UserRole.HOD:
-        return "bg-blue-100 text-blue-800";
+        return "bg-ds-chart-1/10 text-ds-chart-1";
       case UserRole.SMALL_GROUP_LEADER:
         return "bg-cyan-100 text-cyan-800";
       case UserRole.CELL_LEADER:
         return "bg-teal-100 text-teal-800";
       case UserRole.MEMBER:
-        return "bg-green-100 text-green-800";
+        return "bg-ds-status-success/10 text-ds-status-success";
       default:
-        return "bg-gray-100 text-gray-800";
+        return "bg-ds-surface-sunken text-ds-text-primary";
     }
   };
 
@@ -57,7 +57,7 @@ export default function UserCard({
               <button
                 key="edit"
                 onClick={() => onEdit?.(user.id)}
-                className="text-blue-600 hover:text-blue-800"
+                className="text-ds-chart-1 hover:text-ds-chart-1"
               >
                 Edit
               </button>,
@@ -65,7 +65,7 @@ export default function UserCard({
                 <button
                   key="assign"
                   onClick={() => onAssignGroup(user.id)}
-                  className="text-green-600 hover:text-green-800"
+                  className="text-ds-status-success hover:text-ds-status-success"
                 >
                   Assign Group
                 </button>
@@ -73,7 +73,7 @@ export default function UserCard({
               <button
                 key="deactivate"
                 onClick={() => onDeactivate?.(user.id)}
-                className="text-red-600 hover:text-red-800"
+                className="text-ds-status-error hover:text-ds-status-error"
               >
                 {user.isActive ? "Deactivate" : "Activate"}
               </button>,
@@ -83,7 +83,7 @@ export default function UserCard({
     >
       <div className="flex items-start gap-4">
         <div className="flex-shrink-0">
-          <div className="w-12 h-12 bg-church-primary text-white rounded-full flex items-center justify-center text-lg font-semibold">
+          <div className="w-12 h-12 bg-ds-brand-accent text-white rounded-full flex items-center justify-center text-lg font-semibold">
             {user.firstName[0]}
             {user.lastName[0]}
           </div>
@@ -91,7 +91,7 @@ export default function UserCard({
         <div className="flex-1 min-w-0">
           <Link
             href={`/users/${user.id}`}
-            className="text-lg font-semibold text-gray-900 hover:text-church-primary"
+            className="text-lg font-semibold text-ds-text-primary hover:text-ds-brand-accent"
           >
             {user.firstName} {user.lastName}
           </Link>
@@ -102,7 +102,7 @@ export default function UserCard({
               {user.role}
             </span>
           </div>
-          <div className="mt-3 space-y-1 text-sm text-gray-600">
+          <div className="mt-3 space-y-1 text-sm text-ds-text-secondary">
             <div className="flex items-center gap-2">
               <MailOutlined />
               <span className="truncate">{user.email}</span>

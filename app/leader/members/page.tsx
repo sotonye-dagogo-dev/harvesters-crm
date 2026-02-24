@@ -3,26 +3,24 @@
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import DashboardLayout from "@/components/features/navigation/DashboardLayout";
-import {
-  Card,
-  Table,
-  Button,
-  Tag,
-  message,
-  Spin,
-  Input,
-  Space,
-  Avatar,
-} from "antd";
-import {
-  UserOutlined,
-  PhoneOutlined,
-  MailOutlined,
-  SearchOutlined,
-  CheckCircleOutlined,
-  CloseCircleOutlined,
-} from "@ant-design/icons";
-import { UserRole } from "@/lib/types";
+import { useAuth } from "@/providers/AuthProvider";
+import { Card, message, Spin, Space, Avatar } from "antd";
+import Table from "@/components/ui/Table";
+import StatusBadge, { BooleanBadge } from "@/components/ui/StatusBadge";
+import FilterToolbar, {
+  type FilterConfig,
+} from "@/components/ui/FilterToolbar";
+import { UserOutlined, PhoneOutlined, MailOutlined } from "@ant-design/icons";
+
+const leaderMemberFilters: FilterConfig[] = [
+  {
+    key: "search",
+    type: "search",
+    label: "Members",
+    placeholder: "Search members by name or email...",
+    width: 400,
+  },
+];
 
 interface GroupMember {
   id: string;
@@ -39,6 +37,7 @@ interface GroupMember {
 
 export default function LeaderMembersPage() {
   const router = useRouter();
+  const { user } = useAuth();
   const [members, setMembers] = useState<GroupMember[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchText, setSearchText] = useState("");
@@ -103,12 +102,10 @@ export default function LeaderMembersPage() {
             {record.lastName[0]}
           </Avatar>
           <div>
-            <div className="font-semibold text-gray-900 dark:text-white">
+            <div className="font-semibold text-ds-text-primary">
               {record.firstName} {record.lastName}
             </div>
-            <div className="text-sm text-gray-500 dark:text-gray-400">
-              {record.location}
-            </div>
+            <div className="text-sm text-ds-text-subtle">{record.location}</div>
           </div>
         </Space>
       ),
@@ -119,16 +116,12 @@ export default function LeaderMembersPage() {
       render: (record: GroupMember) => (
         <div className="space-y-1">
           <div className="flex items-center gap-2 text-sm">
-            <MailOutlined className="text-gray-500" />
-            <span className="text-gray-700 dark:text-gray-300">
-              {record.email}
-            </span>
+            <MailOutlined className="text-ds-text-subtle" />
+            <span className="text-ds-text-secondary">{record.email}</span>
           </div>
           <div className="flex items-center gap-2 text-sm">
-            <PhoneOutlined className="text-gray-500" />
-            <span className="text-gray-700 dark:text-gray-300">
-              {record.phone}
-            </span>
+            <PhoneOutlined className="text-ds-text-subtle" />
+            <span className="text-ds-text-secondary">{record.phone}</span>
           </div>
         </div>
       ),
@@ -139,7 +132,7 @@ export default function LeaderMembersPage() {
       key: "age",
       width: 80,
       render: (age: number) => (
-        <span className="text-gray-700 dark:text-gray-300">{age}</span>
+        <span className="text-ds-text-secondary">{age}</span>
       ),
     },
     {
@@ -148,14 +141,14 @@ export default function LeaderMembersPage() {
       width: 150,
       render: (record: GroupMember) => {
         const rate = record.attendanceRate || 0;
-        let color = "red";
-        if (rate >= 80) color = "green";
-        else if (rate >= 50) color = "orange";
-
+        const status = rate >= 80 ? "present" : rate >= 50 ? "late" : "absent";
         return (
-          <Tag color={color} className="font-semibold">
-            {rate.toFixed(1)}%
-          </Tag>
+          <StatusBadge
+            status={status}
+            category="attendance"
+            label={`${rate.toFixed(1)}%`}
+            className="font-semibold"
+          />
         );
       },
     },
@@ -164,37 +157,18 @@ export default function LeaderMembersPage() {
       key: "status",
       width: 120,
       render: (record: GroupMember) => (
-        <Tag
-          icon={
-            record.isActive ? <CheckCircleOutlined /> : <CloseCircleOutlined />
-          }
-          color={record.isActive ? "success" : "default"}
-        >
-          {record.isActive ? "Active" : "Inactive"}
-        </Tag>
-      ),
-    },
-    {
-      title: "Actions",
-      key: "actions",
-      width: 150,
-      render: (record: GroupMember) => (
-        <Space>
-          <Button
-            type="link"
-            size="small"
-            onClick={() => router.push(`/leader/members/${record.id}`)}
-          >
-            View Details
-          </Button>
-        </Space>
+        <BooleanBadge
+          value={record.isActive}
+          trueLabel="Active"
+          falseLabel="Inactive"
+        />
       ),
     },
   ];
 
   if (loading) {
     return (
-      <DashboardLayout role={UserRole.SMALL_GROUP_LEADER}>
+      <DashboardLayout role={user?.role}>
         <div className="flex items-center justify-center min-h-[400px]">
           <Spin size="large" />
         </div>
@@ -203,30 +177,31 @@ export default function LeaderMembersPage() {
   }
 
   return (
-    <DashboardLayout role={UserRole.SMALL_GROUP_LEADER}>
+    <DashboardLayout role={user?.role}>
       <div className="space-y-8">
         {/* Page Header */}
-        <div className="bg-gradient-to-r from-green-50 to-blue-50 dark:from-slate-800 dark:to-slate-900 p-6 rounded-2xl shadow-lg border border-gray-200 dark:border-slate-700">
-          <h2 className="text-3xl font-bold text-gray-900 dark:text-white flex items-center gap-3">
-            <div className="w-12 h-12 bg-green-100 dark:bg-green-900/30 rounded-xl flex items-center justify-center">
-              <UserOutlined className="text-2xl text-green-600 dark:text-green-400" />
+        <div className="bg-gradient-to-r from-green-50 to-blue-50 dark:from-slate-800 dark:to-slate-900 p-6 rounded-2xl shadow-lg border border-ds-border-base">
+          <h2 className="text-3xl font-bold text-ds-text-primary flex items-center gap-3">
+            <div className="w-12 h-12 bg-ds-status-success/10 dark:bg-green-900/30 rounded-xl flex items-center justify-center">
+              <UserOutlined className="text-2xl text-ds-status-success" />
             </div>
             Group Members
           </h2>
-          <p className="text-gray-600 dark:text-gray-400 mt-2 ml-15">
+          <p className="text-ds-text-secondary mt-2 ml-15">
             View and manage members in your fellowship group
           </p>
         </div>
 
         {/* Search and Filters */}
-        <Card className="shadow-lg dark:bg-slate-800 dark:border-slate-700">
-          <Input
-            placeholder="Search members by name or email..."
-            prefix={<SearchOutlined />}
-            size="large"
-            value={searchText}
-            onChange={(e) => setSearchText(e.target.value)}
-            className="max-w-md"
+        <Card className="shadow-lg dark:bg-ds-surface-elevated dark:border-ds-border-base">
+          <FilterToolbar
+            filters={leaderMemberFilters}
+            values={{ search: searchText }}
+            onChange={(key, value) => {
+              if (key === "search") setSearchText(value as string);
+            }}
+            onReset={() => setSearchText("")}
+            className="!mb-0"
           />
         </Card>
 
@@ -237,12 +212,20 @@ export default function LeaderMembersPage() {
               All Members ({filteredMembers.length})
             </span>
           }
-          className="shadow-xl"
+          className="shadow-ds-xl"
         >
           <Table
             columns={columns}
             dataSource={filteredMembers}
             rowKey="id"
+            actions={[
+              {
+                key: "viewDetails",
+                label: "View Details",
+                onClick: (record) =>
+                  router.push(`/leader/members/${record.id}`),
+              },
+            ]}
             scroll={{ x: 1000 }}
             pagination={{
               pageSize: 10,

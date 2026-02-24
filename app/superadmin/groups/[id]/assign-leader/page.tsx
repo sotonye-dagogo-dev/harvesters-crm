@@ -5,7 +5,9 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/providers/AuthProvider";
 import DashboardLayout from "@/components/features/navigation/DashboardLayout";
-import { Card, Select, Button, message, Spin, Alert, Avatar, Tag } from "antd";
+import { Select, message, Spin, Alert, Avatar, Tag } from "antd";
+import Card from "@/components/ui/Card";
+import Button from "@/components/ui/Button";
 import { UserSwitchOutlined, UserOutlined } from "@ant-design/icons";
 
 export default function AssignLeaderPage({
@@ -148,11 +150,10 @@ export default function AssignLeaderPage({
       <DashboardLayout role={UserRole.SUPERADMIN}>
         <div className="flex items-center justify-center min-h-[60vh]">
           <Card>
-            <p className="text-gray-500">
+            <p className="text-ds-text-subtle">
               You don&apos;t have permission to assign group leaders
             </p>
             <Button
-              type="primary"
               onClick={() => router.push(`/superadmin/groups/${params.id}`)}
             >
               Back to Group
@@ -167,10 +168,10 @@ export default function AssignLeaderPage({
     <DashboardLayout role={UserRole.SUPERADMIN}>
       <div className="max-w-2xl mx-auto space-y-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">
+          <h1 className="text-2xl font-bold text-ds-text-primary">
             Assign Group Leader
           </h1>
-          <p className="text-gray-500 mt-1">
+          <p className="text-ds-text-subtle mt-1">
             Assign or change the leader for {group.name}
           </p>
         </div>
@@ -186,11 +187,11 @@ export default function AssignLeaderPage({
 
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-ds-text-secondary mb-2">
                 Current Leader
               </label>
               {group.leader ? (
-                <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+                <div className="flex items-center gap-3 p-3 bg-ds-surface-sunken rounded-lg">
                   <Avatar
                     size={40}
                     icon={<UserOutlined />}
@@ -203,18 +204,18 @@ export default function AssignLeaderPage({
                     <div className="font-medium">
                       {group.leader.firstName} {group.leader.lastName}
                     </div>
-                    <div className="text-sm text-gray-500">
+                    <div className="text-sm text-ds-text-subtle">
                       {group.leader.email}
                     </div>
                   </div>
                 </div>
               ) : (
-                <p className="text-gray-500 italic">No leader assigned</p>
+                <p className="text-ds-text-subtle italic">No leader assigned</p>
               )}
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-ds-text-secondary mb-2">
                 Select New Leader
               </label>
               <Select
@@ -252,7 +253,7 @@ export default function AssignLeaderPage({
                         <div className="font-medium">
                           {leader.firstName} {leader.lastName}
                         </div>
-                        <div className="text-xs text-gray-500">
+                        <div className="text-xs text-ds-text-subtle">
                           {leader.email}
                         </div>
                       </div>
@@ -271,19 +272,19 @@ export default function AssignLeaderPage({
                   );
                 }}
               />
-              <p className="text-sm text-gray-500 mt-2">
+              <p className="text-sm text-ds-text-subtle mt-2">
                 Showing {potentialLeaders.length} potential leader(s)
               </p>
             </div>
 
             <div className="flex gap-2 justify-end pt-4">
               <Button
+                variant="secondary"
                 onClick={() => router.push(`/superadmin/groups/${params.id}`)}
               >
                 Cancel
               </Button>
               <Button
-                type="primary"
                 icon={<UserSwitchOutlined />}
                 onClick={handleAssignLeader}
                 loading={submitting}

@@ -1,4 +1,5 @@
-import { Timeline, Tag } from "antd";
+import { Timeline } from "antd";
+import StatusBadge, { getColor } from "@/components/ui/StatusBadge";
 import {
   PhoneOutlined,
   MessageOutlined,
@@ -22,26 +23,13 @@ interface InteractionLogProps {
 const getInteractionIcon = (type: string) => {
   switch (type) {
     case "CALL":
-      return <PhoneOutlined className="text-blue-600" />;
+      return <PhoneOutlined className="text-ds-chart-1" />;
     case "FOLLOW_UP":
-      return <MessageOutlined className="text-green-600" />;
+      return <MessageOutlined className="text-ds-status-success" />;
     case "CHECK_IN":
-      return <CheckCircleOutlined className="text-purple-600" />;
+      return <CheckCircleOutlined className="text-ds-chart-3" />;
     default:
       return <MessageOutlined />;
-  }
-};
-
-const getInteractionColor = (type: string) => {
-  switch (type) {
-    case "CALL":
-      return "blue";
-    case "FOLLOW_UP":
-      return "green";
-    case "CHECK_IN":
-      return "purple";
-    default:
-      return "default";
   }
 };
 
@@ -51,35 +39,33 @@ export default function InteractionLog({
 }: InteractionLogProps) {
   if (interactions.length === 0) {
     return (
-      <div className="text-center py-8 text-gray-500">
-        <MessageOutlined className="text-4xl mb-2 text-gray-300" />
+      <div className="text-center py-8 text-ds-text-subtle">
+        <MessageOutlined className="text-4xl mb-2 text-ds-text-subtle" />
         <p>{emptyMessage}</p>
       </div>
     );
   }
 
   const timelineItems = interactions.map((interaction) => ({
-    color: getInteractionColor(interaction.type),
+    color: getColor(interaction.type, "interaction"),
     dot: getInteractionIcon(interaction.type),
     children: (
       <div className="pb-4">
         <div className="flex items-center justify-between mb-1">
-          <Tag color={getInteractionColor(interaction.type)}>
-            {interaction.type.replace("_", " ")}
-          </Tag>
-          <span className="text-xs text-gray-500">
+          <StatusBadge status={interaction.type} category="interaction" />
+          <span className="text-xs text-ds-text-subtle">
             {format(
               new Date(interaction.timestamp),
-              "MMM dd, yyyy 'at' h:mm a"
+              "d MMM yyyy 'at' h:mm a"
             )}
           </span>
         </div>
         {interaction.leaderName && (
-          <p className="text-sm text-gray-600 mb-1">
+          <p className="text-sm text-ds-text-secondary mb-1">
             By: <span className="font-medium">{interaction.leaderName}</span>
           </p>
         )}
-        <p className="text-gray-700">{interaction.notes}</p>
+        <p className="text-ds-text-secondary">{interaction.notes}</p>
       </div>
     ),
   }));
