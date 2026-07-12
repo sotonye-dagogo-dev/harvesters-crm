@@ -2,11 +2,11 @@
 
 > **Metadata**
 >
-> - last-updated-by: (set on first entry)
-> - last-verified-against-code: (set after each session)
+> - last-updated-by: bootstrap-project
+> - last-verified-against-code: 2026-07-12
 > - staleness-policy: append-only — never modify past entries
 
-> **Overview:** Append-only running log of development sessions. Each entry records what was completed, what comes next, and which files were modified. Agents write here at the end of every session so work can be resumed without re-reading the entire codebase. This file is the **append-only historical record** — use `checkpoints/in-progress.md` for current in-progress work.
+> **Overview:** Append-only running log of development sessions. Each entry records what was completed, what comes next, and which files were modified.
 
 ---
 
@@ -37,20 +37,22 @@
 
 ---
 
-## Session 1 — [DATE]
+## Session 1 — 2026-07-12
 
 **Completed:**
-Initial ai-system setup and project bootstrap
+Installed `ai-system` and `.github/workflows/opencode.yml` from `default-template`, removed the legacy `.ai-system`, and bootstrapped project-specific ai docs.
 
 **Files Modified:**
-
-- ai-system/ (entire directory created)
+- `ai-system/` — replaced with new v2 structure and initialized content
+- `ai-context.md` — added repository-specific context
+- `.github/workflows/opencode.yml` — added opencode trigger workflow
+- `.ai-system/` — removed legacy structure
 
 **Next Task:**
-Run dev-cycle.md to begin first development task from task-queue.md
+Select implementation stack and create the first source-code module structure for Harvesters CRM.
 
 **Assumptions Made:**
-None
+The repository is intentionally in a pre-implementation documentation/bootstrap state.
 
 **Notes / Blockers:**
-None — fresh project start
+No blocker; next work should introduce real application code.

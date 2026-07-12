@@ -2,11 +2,11 @@
 
 > **Metadata**
 >
-> - last-updated-by: (set on first entry)
-> - last-verified-against-code: (set after each entry)
+> - last-updated-by: bootstrap-project
+> - last-verified-against-code: 2026-07-12
 > - staleness-policy: historical entries do not go stale
 
-> **Overview:** Chronological log of completed development work. Each sprint ends with a summary entry. Agents add entries after completing tasks. Useful for understanding what has been built, when decisions were made, and what patterns have emerged.
+> **Overview:** Chronological log of completed development work.
 
 ---
 
@@ -35,19 +35,18 @@
 
 ---
 
-## [DATE] — Project Initialization
+## 2026-07-12 — AI System Migration and Bootstrap
 
 **Summary:**
-Project repository created and ai-system documentation structure initialized. Bootstrap prompt run to establish initial architecture understanding. Task queue populated with first sprint tasks.
+Installed the current `ai-system` and opencode workflow from the default template repository, removed the deprecated `.ai-system` directory, and initialized project-specific AI context documentation for Harvesters CRM.
 
 **Completed:**
-
-- ai-system directory created with all template files
-- Initial project scan completed
+- Replaced legacy `.ai-system` with `ai-system` v2
+- Added `.github/workflows/opencode.yml`
+- Bootstrapped core AI context, planning, architecture, and memory docs
 
 **Key Changes:**
-
-- None yet — project start
+- Repository now follows the default-template AI operating structure and workflow trigger pattern
 
 **Next Sprint Focus:**
-Begin first development tasks from task-queue.md
+Start implementation planning by selecting the stack and creating first application source modules.

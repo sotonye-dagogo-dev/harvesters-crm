@@ -1,11 +1,11 @@
 # Design System
 
 > **Metadata**
-> - last-updated-by: (set on first run)
-> - last-verified-against-code: (set after visual audit)
+> - last-updated-by: bootstrap-project
+> - last-verified-against-code: 2026-07-12
 > - staleness-policy: re-verify if UI components or styling dependencies change
 
-> **Overview:** Visual language, component patterns, and UX principles. Agents building UI must read this before writing any frontend code. The colour, typography, and spacing tables below are the **single source of truth** for design tokens (per `standards/engineering-principles.md` §5) — components must consume these tokens rather than redeclaring values.
+> **Overview:** UI implementation has not started in this repository, so this file records baseline conventions to use once frontend work begins. These tokens are provisional and should be validated against product design decisions when the first UI module is created.
 
 ---
 
@@ -15,57 +15,57 @@
 
 | Token | Value | Usage |
 |-------|-------|-------|
-| primary | [#hex] | [buttons, links, CTAs] |
-| secondary | [#hex] | [accents, highlights] |
-| background | [#hex] | [page background] |
-| surface | [#hex] | [cards, modals] |
-| text-primary | [#hex] | [main body text] |
-| text-muted | [#hex] | [labels, captions] |
-| danger | [#hex] | [errors, destructive actions] |
-| success | [#hex] | [confirmations] |
+| primary | #0B5FFF | Primary actions and links |
+| secondary | #0EA5E9 | Highlights and secondary actions |
+| background | #F8FAFC | Page background |
+| surface | #FFFFFF | Cards and surfaces |
+| text-primary | #0F172A | Main text |
+| text-muted | #64748B | Secondary text |
+| danger | #DC2626 | Error and destructive actions |
+| success | #16A34A | Success states |
 
 ### Typography
 
 | Style | Font | Size | Weight |
 |-------|------|------|--------|
-| Heading 1 | [font] | [size] | [weight] |
-| Body | [font] | [size] | [weight] |
-| Code | [font] | [size] | [weight] |
+| Heading 1 | Inter, sans-serif | 32px | 700 |
+| Body | Inter, sans-serif | 16px | 400 |
+| Code | JetBrains Mono, monospace | 14px | 400 |
 
 ### Spacing Scale
 
-[e.g. 4px base unit: 4, 8, 12, 16, 24, 32, 48, 64]
+4px base scale: 4, 8, 12, 16, 24, 32, 48, 64
 
 ---
 
 ## Component Patterns
 
 ### Buttons
-- Primary: [style and usage]
-- Secondary: [style and usage]
-- Destructive: [describe]
-- Disabled state: [describe]
+- Primary: filled primary background with white text
+- Secondary: outlined style with neutral background
+- Destructive: red background and confirm intent before execution
+- Disabled state: reduced contrast and blocked interactions
 
 ### Forms
-- Input fields: [style and validation rules]
-- Error messages: [placement and style]
+- Input fields: label above input, helper text below
+- Error messages: inline below field with high-contrast red text
 
 ### Navigation
-- [sidebar / topnav / tabs — describe pattern]
+- Use a top-level app shell with sidebar navigation once UI is introduced
 
 ### Cards / Containers
-- [shadow, border radius, padding]
+- Rounded corners (8px), subtle border, 16px internal padding
 
 ### Modals / Dialogs
-- [confirmation, form-in-modal, alert patterns]
+- Confirm destructive actions and form submission side effects
 
 ---
 
 ## UX Principles
 
-1. [e.g. Always show loading state for async actions]
-2. [e.g. Destructive actions require confirmation]
-3. [e.g. Error messages must explain what the user can do]
+1. Always show explicit loading states for async actions.
+2. Destructive actions must require confirmation.
+3. Error messages must state both cause and next action.
 
 ---
 

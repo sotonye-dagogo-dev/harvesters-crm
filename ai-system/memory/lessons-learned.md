@@ -1,11 +1,11 @@
 # Lessons Learned
 
 > **Metadata**
-> - last-updated-by: (set on first entry)
-> - last-verified-against-code: (set after lesson review)
+> - last-updated-by: bootstrap-project
+> - last-verified-against-code: 2026-07-12
 > - staleness-policy: each entry has its own staleness — check supersedes links
 
-> **Overview:** Practical knowledge accumulated during development — things that worked well, things that didn't, and patterns worth repeating. Different from `repair-system.md` (tracks errors); this file tracks development process insights and architectural wisdom. Uses supersedes/superseded-by links for evolving practices.
+> **Overview:** Practical knowledge accumulated during development.
 
 ---
 
@@ -31,4 +31,16 @@
 
 ## Lessons
 
-[Entries added here as lessons are discovered]
+## Replace Legacy AI System in One Step
+
+**Context:**
+Migrating from an old `.ai-system` tree to the new `ai-system` template structure.
+
+**What We Learned:**
+Replacing the entire directory from a known-good template and then bootstrapping project-specific content is cleaner than partial manual migration.
+
+**Apply When:**
+Any repository migration where the source and target system versions differ significantly.
+
+**Supersedes:** None
+**Superseded by:** None

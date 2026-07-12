@@ -1,17 +1,17 @@
 # Project Context
 
 > **Metadata**
-> - last-updated-by: (set on first run)
-> - last-verified-against-code: (set after validation)
+> - last-updated-by: bootstrap-project
+> - last-verified-against-code: 2026-07-12
 > - staleness-policy: re-verify if >10 sessions old or after major scope changes
 
-> **Overview:** Why this project exists, who it serves, and what constraints govern development. Agents should read this to understand the "why" behind the work.
+> **Overview:** This project is preparing the foundation for Harvesters CRM. The repository is in initialization stage and currently tracks AI operating documents plus workflow automation. Product and technical implementation are still to be executed.
 
 ---
 
 ## Project Purpose
 
-[Describe the project goal in plain language — 3-5 sentences]
+Harvesters CRM is intended to centralize customer relationship operations for the Harvesters organization. The current repository stage focuses on creating a reliable AI-assisted execution framework before application code is introduced. This ensures future development is structured, auditable, and repeatable.
 
 ---
 
@@ -19,23 +19,24 @@
 
 | User Type | Needs | Key Interactions |
 |-----------|-------|-----------------|
-| [user type] | [what they need] | [how they interact] |
+| Internal business/admin users | Manage customer records and workflows | CRM dashboard, records management, reporting |
+| Engineering contributors | Deliver features safely with shared process | Use ai-system commands, task queue, and checkpoints |
 
 ---
 
 ## Business Constraints
 
-- [e.g. Must work offline]
-- [e.g. Data must stay on-premise]
-- [e.g. Must support mobile browsers]
+- Keep documentation and workflows aligned with actual repository state
+- Maintain reproducible AI-assisted development processes
+- Avoid introducing vendor-locked AI instructions into core system files
 
 ---
 
 ## Current Project Phase
 
-Phase: [ Planning | Active Development | Stabilization | Maintenance ]
+Phase: Planning
 
-Active sprint focus: [describe current focus]
+Active sprint focus: bootstrap the new `ai-system` baseline and prepare first implementation tasks.
 
 ---
 
@@ -43,13 +44,15 @@ Active sprint focus: [describe current focus]
 
 | Decision | Reason |
 |----------|--------|
-| [decision] | [why it was made] |
+| Adopt `ai-system` v2 structure from default-template | Standardize AI workflow and quality protocols |
+| Add opencode comment-trigger workflow | Enable remote agent execution from GitHub comments |
 
 ---
 
 ## Out of Scope
 
-- [List exclusions here to prevent scope creep]
+- Production feature implementation in this bootstrap task
+- Infrastructure and deployment configuration beyond workflow trigger setup
 
 ---
 
@@ -57,4 +60,4 @@ Active sprint focus: [describe current focus]
 
 | Service | Purpose | Auth Method |
 |---------|---------|------------|
-| [service] | [what it does] | [API key / OAuth] |
+| `sotonye-dagogo-dev/.github-workflows` | Reusable opencode and design runner workflows | GitHub Actions `secrets: inherit` |

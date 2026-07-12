@@ -1,11 +1,11 @@
 # Project Decisions
 
 > **Metadata**
-> - last-updated-by: (set on first entry)
-> - last-verified-against-code: (set after decision review)
+> - last-updated-by: bootstrap-project
+> - last-verified-against-code: 2026-07-12
 > - staleness-policy: each entry has its own staleness — check supersedes links
 
-> **Overview:** Log of significant architectural, technical, and product decisions. Agents consult this before proposing changes to avoid contradicting prior reasoning. Uses supersedes/superseded-by links so contradictory entries are explicitly resolved rather than both appearing equally valid.
+> **Overview:** Log of significant architectural, technical, and product decisions.
 
 ---
 
@@ -34,4 +34,19 @@
 
 ## Decisions
 
-[Entries added here as decisions are made]
+## Adopt ai-system v2 Bootstrap Baseline
+
+**Decision:** Use `default-template` as the authoritative baseline for `ai-system` and workflow setup in this repository.
+**Date:** 2026-07-12
+**Made by:** Implementer
+**Supersedes:** None
+**Superseded by:** None
+
+**Reason:**
+The repository contained an outdated `.ai-system` format. Migrating to the template baseline provides modern protocols, role definitions, and command contracts.
+
+**Alternatives Considered:**
+Patch the old `.ai-system` incrementally. Rejected because full replacement is lower risk and keeps the structure aligned with maintained upstream template files.
+
+**Implications:**
+Future work should update `ai-system/` files through normal command workflows and keep compatibility with the template model.

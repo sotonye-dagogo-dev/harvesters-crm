@@ -2,7 +2,7 @@
 
 > **Metadata**
 > - last-updated-by: bootstrap-project
-> - last-verified-against-code: (set on first run)
+> - last-verified-against-code: 2026-07-12
 > - staleness-policy: re-verify if async session constraints change
 
 > **Overview:** Protocol for unattended/asynchronous sessions where there is no human in the loop to interrupt bad direction in real time. Requires tighter pre-authorized scope boundaries, mandatory checkpoint cadence, and a hard stop-and-flag condition list.

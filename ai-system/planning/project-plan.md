@@ -1,8 +1,8 @@
 # Project Plan
 
 > **Metadata**
-> - last-updated-by: (set on first update)
-> - last-verified-against-code: (set after plan review)
+> - last-updated-by: bootstrap-project
+> - last-verified-against-code: 2026-07-12
 > - staleness-policy: re-verify if project scope or phase changes
 
 > **Overview:** High-level feature checklist organized by development phase. See `planning/task-queue.md` for granular, sprint-level tasks.
@@ -11,26 +11,26 @@
 
 ## Phase 1 — Foundation
 
-- [ ] Repository structure and folder conventions established
-- [ ] Configuration system implemented (env vars, config files)
-- [ ] Logging framework in place
-- [ ] Error handling middleware / global error boundaries
-- [ ] CI/CD pipeline (if applicable)
+- [x] Repository structure and folder conventions established
+- [x] AI system v2 baseline installed
+- [x] Opencode trigger workflow installed
+- [ ] Define initial application architecture and module boundaries
+- [ ] Choose implementation stack and create first source directories
 
 ---
 
 ## Phase 2 — Core Features
 
-- [ ] [Feature 1]
-- [ ] [Feature 2]
-- [ ] [Feature 3]
+- [ ] CRM authentication and user roles
+- [ ] Customer profile and contact management
+- [ ] Sales/activity tracking workflows
 
 ---
 
 ## Phase 3 — Secondary Features
 
-- [ ] [Feature 4]
-- [ ] [Feature 5]
+- [ ] Reporting dashboards and analytics exports
+- [ ] Notification and reminder workflows
 
 ---
 
@@ -55,4 +55,5 @@
 
 ## Completed
 
-- [x] [Completed item]
+- [x] Installed `ai-system` and GitHub workflow from default-template
+- [x] Removed legacy `.ai-system`

@@ -3,7 +3,7 @@
 > **Metadata**
 >
 > - last-updated-by: bootstrap-project
-> - last-verified-against-code: (set on first run)
+> - last-verified-against-code: 2026-07-12
 > - staleness-policy: re-verify if refactoring conventions change
 
 > **Overview:** Structural improvement without behavioural change. Analyzes current code, proposes a better structure, updates docs, and implements safely one module at a time.

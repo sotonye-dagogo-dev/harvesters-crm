@@ -3,33 +3,35 @@
 > **Metadata**
 >
 > - last-updated-by: bootstrap-project
-> - last-verified-against-code: (set on first run)
+> - last-verified-against-code: 2026-07-12
 > - staleness-policy: re-verify before trusting if project structure has changed
 
-> **Overview:** Project overview — the very first file any AI agent should read. Provides a 30-second orientation to what this project is, what stack it uses, and where to find everything.
+> **Overview:** Harvesters CRM is currently a bootstrapped repository for AI-assisted planning and implementation. The codebase currently contains AI system documentation, workflow automation, and no production source modules yet. This file provides the fastest orientation for agents starting a new session.
 
 ---
 
 ## Quick Reference
 
-| Field            | Value                             |
-| ---------------- | --------------------------------- |
-| Project Name     | [name]                            |
-| Type             | [e.g. Web App / API / Mobile App] |
-| Primary Language | [e.g. TypeScript]                 |
-| Frontend         | [e.g. Next.js 14]                 |
-| Backend          | [e.g. Node.js + Express]          |
-| Database         | [e.g. PostgreSQL]                 |
-| Styling          | [e.g. Tailwind CSS + Ant Design]  |
-| Deployment       | [e.g. Vercel + Railway]           |
+| Field            | Value                     |
+| ---------------- | ------------------------- |
+| Project Name     | Harvesters CRM            |
+| Type             | CRM Platform (planned)    |
+| Primary Language | Not implemented yet       |
+| Frontend         | Planned                   |
+| Backend          | Planned                   |
+| Database         | Planned                   |
+| Styling          | Planned                   |
+| Deployment       | GitHub repository setup   |
 
 ---
 
 ## Key Modules
 
-| Module   | Location | Purpose        |
-| -------- | -------- | -------------- |
-| [module] | [path]   | [what it does] |
+| Module          | Location         | Purpose                                      |
+| --------------- | ---------------- | -------------------------------------------- |
+| AI system docs  | `ai-system/`     | Session protocols, planning, and QA workflow |
+| AI context root | `ai-context.md`  | Entry context for AI agents                  |
+| Opencode trigger| `.github/workflows/opencode.yml` | Routes `/oc` comment commands to shared runners |
 
 ---
 
@@ -43,4 +45,4 @@ Start with: `ai-system/protocols/entry-protocol.md`
 
 ## Active Development Focus
 
-[1–2 sentences about what is currently being built or fixed]
+The current focus is repository initialization and documentation-driven planning for the Harvesters CRM build-out.

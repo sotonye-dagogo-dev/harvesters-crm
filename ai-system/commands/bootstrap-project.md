@@ -3,7 +3,7 @@
 > **Metadata**
 >
 > - last-updated-by: bootstrap-project
-> - last-verified-against-code: (set on completion)
+> - last-verified-against-code: 2026-07-12
 > - staleness-policy: run once per project — re-run only if project structure fundamentally changes
 
 > **Overview:** One-time project initialization. Analyzes the actual codebase and generates all `ai-system` documentation files with project-specific content. Vendor-neutral — works with any AI tool.

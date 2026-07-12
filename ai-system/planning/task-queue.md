@@ -1,8 +1,8 @@
 # Development Task Queue
 
 > **Metadata**
-> - last-updated-by: (set on first update)
-> - last-verified-against-code: (set after task-list review)
+> - last-updated-by: bootstrap-project
+> - last-verified-against-code: 2026-07-12
 > - staleness-policy: re-verify before each session
 
 > **Overview:** Sprint-level task queue with complexity tagging. Agents execute tasks top to bottom within the current sprint. Each task is sized so it can be completed in a single session.
@@ -28,7 +28,9 @@ Tags help agents self-select whether a task needs the full `execute-feature.md` 
 
 | Size | Task | Status |
 |------|------|--------|
-| [XS/S/M/L/XL/BUG] | [Task description — be specific] | [ ] / [x] |
+| [S] | Confirm stack choices for backend, frontend, and database | [ ] |
+| [M] | Create initial source folder structure and baseline configs | [ ] |
+| [S] | Add first implementation milestone to project-plan.md | [ ] |
 
 ---
 
@@ -36,7 +38,8 @@ Tags help agents self-select whether a task needs the full `execute-feature.md` 
 
 | Size | Task |
 |------|------|
-| [tag] | [task description] |
+| [M] | Implement authentication module skeleton |
+| [M] | Define customer entity model and validation rules |
 
 ---
 
@@ -44,7 +47,8 @@ Tags help agents self-select whether a task needs the full `execute-feature.md` 
 
 | Size | Task |
 |------|------|
-| [tag] | [task description] |
+| [L] | Build end-to-end customer lifecycle workflow |
+| [M] | Introduce reporting module scaffold |
 
 ---
 
@@ -52,10 +56,11 @@ Tags help agents self-select whether a task needs the full `execute-feature.md` 
 
 | Task | Completed |
 |------|-----------|
-| [task] | [x] |
+| Install ai-system v2 and opencode workflow | [x] |
+| Remove deprecated `.ai-system` directory | [x] |
 
 ---
 
 ## Notes
 
-[Any context agents need to know about current sprint constraints, blockers, or priorities]
+No application code exists yet; prioritize architecture and stack decisions before feature implementation.

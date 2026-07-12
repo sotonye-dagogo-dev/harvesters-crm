@@ -1,17 +1,17 @@
 # Test Plan
 
 > **Metadata**
-> - last-updated-by: (set on first update)
-> - last-verified-against-code: (set after test plan review)
+> - last-updated-by: bootstrap-project
+> - last-verified-against-code: 2026-07-12
 > - staleness-policy: re-verify if new features are added
 
-> **Overview:** Defines what needs to be tested and at what level. Referenced by `verify-work.md` during the quality gate. Updated as new features are added.
+> **Overview:** Defines what needs to be tested and at what level. Since there is no application code yet, this plan captures bootstrap validation and the first test goals for upcoming implementation.
 
 ---
 
 ## Unit Tests
 
-- [ ] [Module / function to test]
+- [ ] Domain model validation logic (when introduced)
 - [ ] Service layer functions
 - [ ] Utility functions
 - [ ] Data transformation logic
@@ -29,8 +29,8 @@
 
 ## End-to-End Tests
 
-- [ ] [Critical user flow 1]
-- [ ] [Critical user flow 2]
+- [ ] User login and session flow
+- [ ] Customer lifecycle flow (create, update, search)
 
 ---
 
@@ -38,4 +38,4 @@
 
 - [ ] API response time under normal load
 - [ ] Database query performance
-- [ ] Page load times (frontend)
+- [ ] UI load and interaction responsiveness

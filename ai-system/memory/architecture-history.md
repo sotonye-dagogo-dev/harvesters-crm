@@ -1,23 +1,23 @@
 # Architecture History
 
 > **Metadata**
-> - last-updated-by: (set on first entry)
-> - last-verified-against-code: (set after history review)
+> - last-updated-by: bootstrap-project
+> - last-verified-against-code: 2026-07-12
 > - staleness-policy: historical entries do not go stale — only the current architecture (in system-architecture.md) needs re-verification
 
-> **Overview:** Chronological record of how the system architecture has evolved. Useful for understanding why things are structured the way they are, and for identifying patterns in how the codebase has grown.
+> **Overview:** Chronological record of how the system architecture has evolved.
 
 ---
 
 ## History
 
-### [DATE] — Initial Architecture
+### 2026-07-12 — Initial Architecture
 
 **State:**
-[Describe the initial structure]
+Repository bootstrapped with `ai-system` v2 documentation architecture and GitHub opencode trigger workflow; no production application code yet.
 
 **Rationale:**
-[Why it was structured this way at the start]
+Standardizing the development process first establishes consistent planning, quality-gate behavior, and session continuity before implementation begins.
 
 ---
 
